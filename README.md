@@ -40,3 +40,23 @@
 
 7. 涉及到时间的属性，需要调用`GetTime.h`以保证时间存储格式的一致，这里面既有返回 "2026-4-7 10:0:0" 格式的函数`getTime()`
  也有可以获取单个时间位置的函数`getYear()`, `getMonth()`, `getDay()`, `getHour()`, `getMinute()`, `getSecond()`
+
+8. 数据持久化存储的框架应按照如下格式：
+```
+C课设-HIS
+└── Data
+    ├── RecordData
+    │   ├── ConsultationChainData
+    │   ├── ExaminationChainData
+    │   ├── HospitalizationChainData
+    │   ├── MedicineChainData
+    │   └── RegistrationChainData
+    └── UserData
+        ├── AdminChainData
+        ├── DoctorChainData
+        ├── NurseChainData
+        ├── PatientChainData
+        └── PharmacistChainData
+
+```
+注意：上图中的名词全部都是文件夹的名称，而不是文件的名称，比如存储医生的相关信息的txt文件的路径是 `./Data/UserData/DoctorChainData/doctor_users.txt`
