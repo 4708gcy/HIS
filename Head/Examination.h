@@ -12,25 +12,31 @@
 
 #include <string>
 
+/**
+ * @file Examination.h
+ * @brief 检查/检验记录结构体
+ * @details 包括检查项目、下单时间、报告时间与报告摘要
+ */
+
 enum class ExaminationStatus
 {
-    ORDERED,
-    IN_PROGRESS,
-    REPORTED,
-    CANCELED
+    ORDERED,     // 已下单
+    IN_PROGRESS, // 检查中
+    REPORTED,    // 报告已出
+    CANCELED     // 取消
 };
 
 struct Examination
 {
-    std::string examinationID;
-    std::string consultationID;
-    std::string patientID;
-    std::string doctorID;
+    std::string examinationID;  // 检查记录唯一ID
+    std::string consultationID; // 关联看诊记录ID
+    std::string patientID;      // 患者ID
+    std::string doctorID;       // 开单医生ID
 
-    std::string itemName;
-    std::string orderTime;
-    std::string reportTime;
-    std::string reportSummary;
+    std::string itemName;      // 检查项目名称
+    std::string orderTime;     // 下单时间
+    std::string reportTime;    // 报告时间（若已出）
+    std::string reportSummary; // 报告摘要或结果文本
 
     ExaminationStatus status = ExaminationStatus::ORDERED;
 
@@ -38,4 +44,4 @@ struct Examination
     Examination *next = nullptr;
 };
 
-#endif
+#endif // EXAMINATION_H

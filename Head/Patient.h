@@ -13,15 +13,20 @@
 #include <string>
 #include "User.h"
 
+/**
+ * @file Patient.h
+ * @brief 患者类，包含身份证、联系电话、过敏史等属性
+ */
+
 class Patient : public User
 {
 private:
-    std::string idCardNo;
-    std::string phone;
-    std::string allergyHistory;
-    std::string emergencyContact;
-    std::string insuranceNo;
-    std::string userDataPath; // Data/UserData/PatientChainData/patient_users.txt
+    std::string idCardNo;         // 身份证号
+    std::string phone;            // 联系电话
+    std::string allergyHistory;   // 过敏史
+    std::string emergencyContact; // 紧急联系人信息
+    std::string insuranceNo;      // 医保号
+    std::string userDataPath;     // Data/UserData/PatientChainData/patient_users.txt
 
 public:
     explicit Patient(const std::string &patientID,
@@ -31,12 +36,13 @@ public:
         loadFromFile();
     }
 
-    void loadFromFile() override;
-    void saveToFile() override;
+    void loadFromFile() override; // 从 patient_users.txt 中读取个人字段
+    void saveToFile() override;   // 保存个人字段回文件
 
+    // 患者业务
     bool bookRegistration(const std::string &department, const std::string &doctorID);
-    void queryMyTimeline() const;
-    void queryMyCost() const;
+    void queryMyTimeline() const; // 打印个人就诊时间轴（遍历链表）
+    void queryMyCost() const;     // 统计个人费用（遍历挂号/住院账单）
 
     const std::string &getIdCardNo() const { return idCardNo; }
     const std::string &getPhone() const { return phone; }
@@ -51,4 +57,4 @@ public:
     void setInsuranceNo(const std::string &v) { insuranceNo = v; }
 };
 
-#endif
+#endif // PATIENT_H

@@ -13,12 +13,17 @@
 #include <string>
 #include "User.h"
 
+/**
+ * @file Admin.h
+ * @brief 管理员类（继承 User），包含账号管理与全局查询方法
+ */
+
 class Admin : public User
 {
 private:
-    std::string adminLevel; // SUPER / NORMAL
-    double historyBalance = 0.0;
-    std::string userDataPath; // Data/UserData/AdminChainData/admin_users.txt
+    std::string adminLevel;      // 管理员级别（例如 "SUPER","NORMAL"）
+    double historyBalance = 0.0; // 医院流水/余额概览（示例字段）
+    std::string userDataPath;    // 对应用户数据文件路径（用于 loadFromFile/saveToFile）
 
 public:
     explicit Admin(const std::string &adminID,
@@ -28,14 +33,16 @@ public:
         loadFromFile();
     }
 
+    // 从 userDataPath 加载管理员 profile（级别/余额等）
     void loadFromFile() override;
+    // 将管理员 profile 写回文件
     void saveToFile() override;
 
-    // 账号管理
-    bool unlockUser(const std::string &targetUserID);
-    bool lockUser(const std::string &targetUserID);
+    // 账号管理接口
+    bool unlockUser(const std::string &targetUserID); // 管理员解封账户
+    bool lockUser(const std::string &targetUserID);   // 管理员封禁账户
 
-    // 数据字典与全局查询
+    // 全局查询/报表
     void queryHospitalOverview() const;
     void queryDepartmentStats(const std::string &department) const;
     void queryFinanceReport() const;
@@ -46,4 +53,4 @@ public:
     void setHistoryBalance(double v) { historyBalance = v; }
 };
 
-#endif
+#endif // ADMIN_H

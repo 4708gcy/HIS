@@ -6,20 +6,24 @@
  * @date 2026-4-7
  * @version 1.0
  */
-
 #ifndef NURSE_H
 #define NURSE_H
 
 #include <string>
 #include "User.h"
 
+/**
+ * @file Nurse.h
+ * @brief 护士类，包含科室、班次和技能标签等字段
+ */
+
 class Nurse : public User
 {
 private:
-    std::string department;
-    std::string level;        // N1/N2/主管护师
-    std::string shift;        // 白班/夜班
-    std::string skillTag;     // 如 ICU, PICC
+    std::string department;   // 护士所属科室
+    std::string level;        // 护士级别（N1/N2/主管护师等）
+    std::string shift;        // 班次（白班/夜班）
+    std::string skillTag;     // 技能标签（ICU/PICC 等）
     std::string userDataPath; // Data/UserData/NurseChainData/nurse_users.txt
 
 public:
@@ -33,6 +37,7 @@ public:
     void loadFromFile() override;
     void saveToFile() override;
 
+    // 护士业务方法
     bool recordVitals(const std::string &patientID, const std::string &vitalsText);
     bool updateBedRound(const std::string &hospitalizationID, const std::string &note);
 
@@ -47,4 +52,4 @@ public:
     void setSkillTag(const std::string &v) { skillTag = v; }
 };
 
-#endif
+#endif // NURSE_H

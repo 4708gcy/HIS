@@ -13,13 +13,18 @@
 #include <string>
 #include "User.h"
 
+/**
+ * @file Pharmacist.h
+ * @brief 药师类，包含药房属性与发药/审核方法声明
+ */
+
 class Pharmacist : public User
 {
 private:
-    std::string pharmacyDepartment; // 门诊药房/住院药房
-    std::string qualificationLevel; // 初级/中级/高级
-    bool canAuditSpecialDrug = false;
-    std::string userDataPath; // Data/UserData/PharmacistChainData/pharmacist_users.txt
+    std::string pharmacyDepartment;   // 药房类型（门诊/住院）
+    std::string qualificationLevel;   // 资质等级
+    bool canAuditSpecialDrug = false; // 是否可审核专科/限制药
+    std::string userDataPath;         // Data/UserData/PharmacistChainData/...
 
 public:
     explicit Pharmacist(const std::string &pharmacistID,
@@ -32,6 +37,7 @@ public:
     void loadFromFile() override;
     void saveToFile() override;
 
+    // 药师业务
     bool auditPrescription(const std::string &prescriptionID);
     bool dispenseMedicine(const std::string &prescriptionID);
     bool confirmDrugReturn(const std::string &prescriptionID, const std::string &medicineID, int quantity);
@@ -45,4 +51,4 @@ public:
     void setCanAuditSpecialDrug(bool v) { canAuditSpecialDrug = v; }
 };
 
-#endif
+#endif // PHARMACIST_H

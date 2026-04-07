@@ -12,29 +12,35 @@
 
 #include <string>
 
+/**
+ * @file Consultation.h
+ * @brief 看诊/就诊记录结构体
+ * @details 每条看诊记录包含主诉、初步诊断、医嘱等信息
+ */
+
 enum class ConsultationStatus
 {
-    OPEN,
-    CLOSED,
-    VOIDED
+    OPEN,   // 正在处理
+    CLOSED, // 已结束
+    VOIDED  // 作废
 };
 
 struct Consultation
 {
-    std::string consultationID;
-    std::string registrationID;
-    std::string patientID;
-    std::string doctorID;
-    std::string consultationTime;
+    std::string consultationID;   // 看诊记录唯一ID
+    std::string registrationID;   // 对应挂号ID
+    std::string patientID;        // 患者ID
+    std::string doctorID;         // 医生ID
+    std::string consultationTime; // 看诊时间戳
 
-    std::string chiefComplaint;
-    std::string preliminaryDiagnosis;
-    std::string medicalAdvice;
+    std::string chiefComplaint;       // 主诉
+    std::string preliminaryDiagnosis; // 初步诊断
+    std::string medicalAdvice;        // 医嘱或处方摘要
 
-    ConsultationStatus status = ConsultationStatus::OPEN;
+    ConsultationStatus status = ConsultationStatus::OPEN; // 状态
 
     Consultation *prev = nullptr;
     Consultation *next = nullptr;
 };
 
-#endif
+#endif // CONSULTATION_H

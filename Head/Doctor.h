@@ -13,14 +13,19 @@
 #include <string>
 #include "User.h"
 
+/**
+ * @file Doctor.h
+ * @brief 医生类，继承 User，包含科室/职称/擅长等属性及常用业务方法声明
+ */
+
 class Doctor : public User
 {
 private:
-    std::string department;
-    std::string title;     // 主治/副主任等
-    std::string licenseNo; // 执业证编号
-    std::string specialty; // 擅长方向
-    bool onDuty = false;
+    std::string department;   // 所属科室
+    std::string title;        // 职称（主治/副主任等）
+    std::string licenseNo;    // 执业证编号
+    std::string specialty;    // 擅长方向
+    bool onDuty = false;      // 出诊状态
     std::string userDataPath; // Data/UserData/DoctorChainData/doctor_users.txt
 
 public:
@@ -31,10 +36,10 @@ public:
         loadFromFile();
     }
 
-    void loadFromFile() override;
-    void saveToFile() override;
+    void loadFromFile() override; // 从医生 profile 文件加载字段
+    void saveToFile() override;   // 保存医生 profile 到文件
 
-    // 业务动作
+    // 医生业务方法（声明，具体实现放在 .cpp）
     bool createConsultation(const std::string &patientID, const std::string &regID);
     bool createExamination(const std::string &consultationID, const std::string &itemName);
     bool applyHospitalization(const std::string &patientID, const std::string &dept, const std::string &wardType);
@@ -52,4 +57,4 @@ public:
     void setOnDuty(bool v) { onDuty = v; }
 };
 
-#endif
+#endif // DOCTOR_H
