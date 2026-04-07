@@ -38,6 +38,10 @@ struct Examination
     std::string reportTime;    // 报告时间（若已出）
     std::string reportSummary; // 报告摘要或结果文本
 
+    // 新增用于计费/支付的字段
+    double fee = 0.0;    // 该检查的费用
+    bool isPaid = false; // 是否已由患者缴费（缴费后医院可安排检查）
+
     ExaminationStatus status = ExaminationStatus::ORDERED;
 
     Examination *prev = nullptr;

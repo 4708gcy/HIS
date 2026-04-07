@@ -15,6 +15,7 @@
 #include <iomanip>
 #include <sstream>
 #include <cstdint>
+#include <random>
 
 // SHA-256 核心算法实现
 
@@ -46,6 +47,8 @@ public:
     // 对输入的字符串进行 SHA-256 哈希处理，结合盐值和迭代次数以增强安全性
     static std::string hash(const std::string &input);
 };
+
+std::string generateSalt(unsigned int len = 16);
 
 std::string SHA256Encrypt(const std::string &password, const std::string &salt, int iterations);
 

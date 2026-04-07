@@ -37,12 +37,15 @@ struct Hospitalization
     std::string wardType;   // 病房类型（普通/隔离/VIP）
     std::string bedNo;      // 床位号
 
-    std::string admitTime;     // 入院时间
-    std::string dischargeTime; // 出院时间（若已出院）
+    std::string applyTime;          // 申请时间
+    std::string admitTime;          // 实际入院时间
+    std::string dischargeTime;      // 出院时间
+    std::string availableAdmitTime; // 护士分床后给出的可入住时间
 
     double deposit = 0.0;   // 押金
     double totalCost = 0.0; // 总费用
 
+    bool isDepositPaid = false; // 押金是否已缴费
     HospitalizationStatus status = HospitalizationStatus::APPLIED;
 
     Hospitalization *prev = nullptr;

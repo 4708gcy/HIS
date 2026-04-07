@@ -1,0 +1,88 @@
+/** 
+ * @file MedicationRecord.h
+ * @brief 医疗管理系统中的用药记录结构体定义
+ * @details 该头文件定义了一个 MedicationRecord 结构体，用于存储患者的用药信息，包括用药ID、患者ID、医生ID、药品ID、用药时间、剂量和用法等
+ * @author 郭承宇
+ * @date 2026-4-7
+ * @version 1.0
+ */
+
+#ifndef MEDICATIONRECORD_H
+#define MEDICATIONRECORD_H
+
+#include <string>
+#include <vector>
+
+/**
+ * @brief 用药审核状态
+ */
+enum class MedicationReviewStatus
+{
+    PENDING_REVIEW, // 待药师审核
+    REJECTED,       // 审核拒绝
+    APPROVED,       // 审核通过
+    CANCELED        // 医生撤销
+};
+
+/**
+ * @brief 用药支付/发药状态
+ */
+enum class MedicationStatus
+{
+    UNPAID,    // 未缴费
+    PAID,      // 已缴费未发药
+    DISPENSED, // 已发药（已扣库存）
+    RETURNED   // 已退药（已回库）
+};
+
+/**
+ * @brief 用药明细项（处方行）
+ */
+struct MedicationLine
+{
+    std::string medicineID; // 药品ID
+    int quantity = 0;       // 药品数量
+    double unitPrice = 0.0; // 下单时单价
+    std::string note;       // 用法备注
+};
+
+/**
+ * @brief 用药记录（即处方）
+ */
+struct MedicationRecord
+{
+    std::string medRecordID;  // 用药记录ID
+    std::string doctorID;     // 医生ID
+    std::string pharmacistID; // 药师ID
+    std::string patientID;    // 患者ID
+    std::string department;   // 科室
+    std::string createTime;   // 创建时间
+
+    std::vector<MedicationLine> lines; // 用药明细
+    double totalCost = 0.0;            // 总费用
+
+    MedicationReviewStatus reviewStatus = MedicationReviewStatus::PENDING_REVIEW; // 审核状态
+    MedicationStatus medStatus = MedicationStatus::UNPAID;                        // 支付/发药状态
+
+    std::string paymentTime;  // 支付时间
+    std::string dispenseTime; // 发药时间
+    std::string note;         // 备注
+
+    MedicationRecord *prev = nullptr; // 双向链表前指针
+    MedicationRecord *next = nullptr; // 双向链表后指针
+
+    /**
+     * @brief 将当前用药记录序列化为一行文本
+     * @return 文本行，字段用'|'分隔，明细用';'分隔
+     */
+    std::string serialize() const;
+
+    /**
+     * @brief 从文本行反序列化为用药记录对象
+     * @param line 一行文本
+     * @return 解析出的对象（失败字段会保留默认值）
+     */
+    static MedicationRecord deserialize(const std::string &line);
+};
+
+#endif // MEDICATIONRECORD_H

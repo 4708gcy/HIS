@@ -12,13 +12,14 @@
 
 #include <string>
 #include <vector>
-#include "InputCheck.h"
 #include "SHA-256.h"
 #include "GetTime.h"
 #include "Registration.h"
 #include "Consultation.h"
 #include "Examination.h"
 #include "Hospitalization.h"
+#include "MedicationRecord.h"
+#include "Medicine.h"
 
 /**
  * @file User.h
@@ -53,11 +54,15 @@ protected:
     Consultation *conHead = nullptr;
     Examination *examHead = nullptr;
     Hospitalization *hospHead = nullptr;
+    MedicationRecord *medHead = nullptr; // 用药记录链表头
+    Medicine *medicineHead = nullptr;    // 药品链表头
 
     static constexpr int kMaxLoginAttempts = 5;  // 锁定门槛
     static constexpr int kHashIterations = 1000; // 哈希迭代次数
 
 public:
+
+    User() = default; // 默认构造函数
     /**
      * @brief 已有账号构造（仅uid和role），可选择是否自动加载全量记录
      * @param uid 用户ID
@@ -95,8 +100,13 @@ public:
     const std::string &getStoredHash() const;
     UserRole getRole() const;
     const std::string &getCreateTime() const;
+    MedicationRecord *getMedicationHead() const;
+    Medicine *getMedicineHead() const;
+    int getKHashIterations() const;
 
     // setter / 管理方法
+    void setRole(UserRole r);
+    void setUserID(const std::string &uid);
     void setUsername(const std::string &uname);
     void setStoredHash(const std::string &hashValue);
     void setAccountActive(bool active);
@@ -123,6 +133,8 @@ protected:
     void loadConsultationList(const std::string &filePath);
     void loadExaminationList(const std::string &filePath);
     void loadHospitalizationList(const std::string &filePath);
+    void loadMedicationRecordList(const std::string &filePath); // 加载用药记录链表
+    void loadMedicineList(const std::string &filePath);         // 加载药品链表
 
     // 辅助静态工具
     static std::vector<std::string> split(const std::string &line, char sep);

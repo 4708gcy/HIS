@@ -118,6 +118,23 @@ bool SHA256Verify(const std::string& inputPassword, const std::string& storedHas
     return calculatedHash == storedHash;
 }
 
+std::string generateSalt(unsigned int len)
+{
+    static const char charset[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+    thread_local static std::mt19937 rng(std::random_device{}());
+    std::uniform_int_distribution<std::size_t> dist(0, sizeof(charset) - 2);
+
+    std::string salt;
+    salt.reserve(len);
+    for (unsigned int i = 0; i < len; ++i)
+    {
+        salt += charset[dist(rng)];
+    }
+    return salt;
+}
 
 // 测试代码
 
