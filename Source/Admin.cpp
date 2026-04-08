@@ -7,13 +7,13 @@ Admin::~Admin()
     clearAllStaffLists();
 }
 
-void Admin::loadFromFile()
+void Admin::loadFromFile( const std::string &path)
 {
     // 简单占位：如需加载，请在此实现实际逻辑
     // 可以读取 userDataPath 文件并填充 adminLevel / historyBalance 等
 }
 
-void Admin::saveToFile()
+void Admin::saveToFile( const std::string &path)
 {
     // 简单占位：如需保存，请在此实现实际逻辑
 }

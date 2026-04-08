@@ -40,3 +40,16 @@ void User::setRole(UserRole r) { role = r; }
 User::~User()
 {
 }
+
+
+#include "User.h"
+
+void User::loadFromFile(const std::string &path)
+{
+    
+}
+
+void User::saveToFile(const std::string &path)
+{
+   
+}

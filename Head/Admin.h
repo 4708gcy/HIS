@@ -43,8 +43,8 @@ public:
 
     ~Admin() override;
 
-    void loadFromFile() override; // 加载管理员档案
-    void saveToFile() override;   // 保存管理员档案
+    void loadFromFile(const std::string &path) override; // 加载管理员档案
+    void saveToFile(const std::string &path) override;   // 保存管理员档案
 
     // 人员链表加载/释放
     void loadAllStaffLists();

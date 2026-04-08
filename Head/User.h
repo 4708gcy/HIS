@@ -65,6 +65,8 @@ public:
 
     virtual ~User(); // 析构函数负责释放链表内存
 
+    virtual void loadFromFile(const std::string &path);
+    virtual void saveToFile(const std::string &path);
 
     // 简单 getter
     bool getIsLoggedIn() const;
