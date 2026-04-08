@@ -97,7 +97,6 @@ std::string SHA256Encrypt(const std::string& password, const std::string& salt, 
         currentHash = SHA256::hash(currentHash);
     }
     
-    // 最终存储格式建议：salt$hash，方便验证时取出 salt
     return salt + "$" + currentHash;
 }
 

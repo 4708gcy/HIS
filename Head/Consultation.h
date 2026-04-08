@@ -25,6 +25,17 @@ enum class ConsultationStatus
     VOIDED  // 作废
 };
 
+// 简化处方/医嘱结构（仅摘要用）
+struct Prescription
+{
+    std::string medicineID; // 药品ID（若无可留空）
+    std::string name;       // 药品名（冗余以便展示）
+    std::string dosage;     // 用量，例如 "500 mg"
+    std::string frequency;  // 频次，例如 "每日3次"
+    std::string duration;   // 疗程，例如 "7 天"
+    std::string note;       // 备注/注意事项
+};
+
 struct Consultation
 {
     std::string consultationID;   // 看诊记录唯一ID
@@ -33,11 +44,25 @@ struct Consultation
     std::string doctorID;         // 医生ID
     std::string consultationTime; // 看诊时间戳
 
-    std::string chiefComplaint;       // 主诉
+    std::string chiefComplaint;       // 主诉(患者或家属描述的症状, 简短)
+    std::string historyOfPresentIllness; // 现病史(对主诉的详细描述, 包括发病时间, 症状发展、伴随症状等)
+    std::string pastMedicalHistory;     // 既往史(患者的相关病史, 包括慢性病、手术史、过敏史等)
+    std::string familyHistory;          // 家族史(患者家族成员的相关病史, 如遗传病、慢性病等)
+
+
+
     std::string preliminaryDiagnosis; // 初步诊断
-    std::string medicalAdvice;        // 医嘱或处方摘要
+    std::vector<std::string> examinationlist; // 计划检查项目列表
+    std::vector<Prescription> prescriptions; // 处方列表（可包含多条医嘱）
+
+    // 附件和备注
+    std::vector<std::string> attachments; // 看诊相关的附件文件路径列表
+    std::string note;                     // 医生备注或特殊说明
 
     ConsultationStatus status = ConsultationStatus::OPEN; // 状态
+
+    // 关联之前的看诊记录（如同一挂号中多次看诊）
+    std::vector<std::string> relatedConsultationIDs; // 相关看诊记录ID列表
 
     Consultation *prev = nullptr;
     Consultation *next = nullptr;

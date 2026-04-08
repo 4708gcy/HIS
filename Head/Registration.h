@@ -20,8 +20,8 @@
 
 enum class RegistrationStatus
 {
-    BOOKED,   // 已预约
-    PAID,     // 已支付
+    BOOKED,   // 已预约(尚未缴费或就诊)
+    PAID,     // 已支付(支付成功之后才可以将这条记录链接到挂号链表中)
     CANCELED, // 已取消
     FINISHED  // 已完成（看诊结束）
 };
@@ -36,6 +36,9 @@ struct Registration
     double fee = 0.0;                                       // 挂号费用
     RegistrationStatus status = RegistrationStatus::BOOKED; // 挂号状态
     std::string note;                                       // 备注信息
+
+    // 关联之前的挂号记录（如同一患者多次挂号）
+    std::vector<std::string> relatedRegistrationIDs; // 相关挂号记录ID列表
 
     Registration *prev = nullptr; // 链表前向指针
     Registration *next = nullptr; // 链表后向指针

@@ -11,6 +11,7 @@
 #define EXAMINATION_H
 
 #include <string>
+#include <optional>
 
 /**
  * @file Examination.h
@@ -26,6 +27,17 @@ enum class ExaminationStatus
     CANCELED     // 取消
 };
 
+// 生命体征：记录检查时的瞬时体征（如测量时采集）
+struct VitalSigns
+{
+    std::optional<double> temperatureC;    // 体温（摄氏度）
+    std::optional<int> systolicBP;         // 收缩压（mmHg）
+    std::optional<int> diastolicBP;        // 舒张压（mmHg）
+    std::optional<int> heartRate;          // 心率（次/分钟）
+    std::optional<double> respiratoryRate; // 呼吸频率（次/分钟）
+    std::optional<int> spo2;               // 血氧饱和度（%）
+};
+
 struct Examination
 {
     std::string examinationID;  // 检查记录唯一ID
@@ -38,11 +50,20 @@ struct Examination
     std::string reportTime;    // 报告时间（若已出）
     std::string reportSummary; // 报告摘要或结果文本
 
+    VitalSigns vitalSigns;     // 生命体征（可选，视检查类型而定）
+
     // 新增用于计费/支付的字段
     double fee = 0.0;    // 该检查的费用
     bool isPaid = false; // 是否已由患者缴费（缴费后医院可安排检查）
 
     ExaminationStatus status = ExaminationStatus::ORDERED;
+
+    // 附件和备注
+    std::vector<std::string> attachments; // 检查相关的附件文件路径列表
+    std::string note;                     // 医生备注或特殊说明
+
+    // 关联之前的检查记录（如同一看诊中多次检查）
+    std::vector<std::string> relatedExaminationIDs; // 相关检查记录ID列表
 
     Examination *prev = nullptr;
     Examination *next = nullptr;

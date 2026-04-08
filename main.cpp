@@ -7,12 +7,11 @@
 #include"Head/MedicationRecord.h"
 #include"Head/Medicine.h"
 #include"Head/Registration.h"
-#include"Head/Login.h"
 
 
 
 int main() { 
-    login();
+
 }
 
 

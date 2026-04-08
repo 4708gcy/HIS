@@ -10,6 +10,7 @@
 #ifndef USER_H
 #define USER_H
 
+// 包含必要的头文件
 #include <string>
 #include <vector>
 #include "SHA-256.h"
@@ -20,6 +21,20 @@
 #include "Hospitalization.h"
 #include "MedicationRecord.h"
 #include "Medicine.h"
+#include "UI.h"
+
+// 定义存储人物信息文件的路径
+#define ADMIN_FILE "../Data/UserData/admin_users.txt"
+#define DOCTOR_FILE "../Data/UserData/doctor_users.txt"
+#define NURSE_FILE "../Data/UserData/nurse_users.txt"
+#define PHARMACIST_FILE "../Data/UserData/pharmacist_users.txt"
+#define PATIENT_FILE "../Data/UserData/patient_users.txt"
+
+
+// 定义全局常量
+#define failedLoginLimit 5 // 连续登录失败次数限制
+#define hashIterations 1000 // 密码哈希迭代次数
+
 
 /**
  * @file User.h
@@ -37,6 +52,8 @@ enum class UserRole
     PATIENT
 };
 
+// 人物的ID一共6位数字，前一位表示身份（0-管理员，1-医生，2-护士，3-药剂师，4-患者），后五位为递增数字
+
 class User
 {
 protected:
@@ -44,31 +61,28 @@ protected:
     std::string userID;          // 用户唯一ID
     std::string username;        // 显示用户名
     std::string storedHash;      // 存储的密码串（格式 salt$hash）
+    std::string salt;            // 密码盐值
     int loginAttempts = 0;       // 连续失败次数
-    bool isAccountActive = true; // 账户是否被激活/未锁定
+    bool isAccountActive = false; // 账户是否被激活/未锁定
     UserRole role;               // 角色类型
     std::string createTime;      // 账户创建时间字符串
 
-    // 四类记录链表头（protected，子类可访问）
-    Registration *regHead = nullptr;
-    Consultation *conHead = nullptr;
-    Examination *examHead = nullptr;
-    Hospitalization *hospHead = nullptr;
-    MedicationRecord *medHead = nullptr; // 用药记录链表头
-    Medicine *medicineHead = nullptr;    // 药品链表头
+    static constexpr int kMaxLoginAttempts = failedLoginLimit;  // 锁定门槛
+    static constexpr int kHashIterations = hashIterations; // 哈希迭代次数
 
-    static constexpr int kMaxLoginAttempts = 5;  // 锁定门槛
-    static constexpr int kHashIterations = 1000; // 哈希迭代次数
+    int adminIDnum = 0; // 用来保存管理员还未使用过的ID起始数字，注册新管理员时递增分配
+    int doctorIDnum = 0; // 用来保存医生还未使用过的ID起始数字，注册新医生时递增分配
+    int nurseIDnum = 0; // 用来保存护士还未使用过的ID起始数字，注册新护士时递增分配
+    int pharmacistIDnum = 0; // 用来保存药剂师还未使用过的ID起始数字，注册新药剂师时递增分配
+    int patientIDnum = 0; // 用来保存患者还未使用过的ID起始数字，注册新患者时递增分配
+
 
 public:
+    // 注册新用户 : 1 - Admin, 2 - Doctor, 3 - Nurse, 4 - Pharmacist, 5 - Patient
+    bool signUp(int choice);
 
+    virtual ~User(); // 虚析构函数，确保子类资源正确释放
 
-    virtual ~User(); // 析构函数负责释放链表内存
-
-    virtual void loadFromFile(const std::string &path);
-    virtual void saveToFile(const std::string &path);
-
-    // 简单 getter
     bool getIsLoggedIn() const;
     bool getIsAccountActive() const;
     int getLoginAttempts() const;
@@ -77,17 +91,9 @@ public:
     const std::string &getStoredHash() const;
     UserRole getRole() const;
     const std::string &getCreateTime() const;
-    MedicationRecord *getMedicationHead() const;
-    Medicine *getMedicineHead() const;
     int getKHashIterations() const;
 
-    // setter / 管理方法
-    void setRole(UserRole r);
-    void setUserID(const std::string &uid);
     void setUsername(const std::string &uname);
-    void setStoredHash(const std::string &hashValue);
-    void setAccountActive(bool active);
-    void resetLoginAttempts();
 
 };
 

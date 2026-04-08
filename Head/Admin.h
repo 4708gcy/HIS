@@ -13,70 +13,33 @@
 #include <string>
 #include <vector>
 #include "User.h"
-
-/**
- * @brief 管理端人员节点（医生/护士/药师/患者统一结构）
- */
-struct StaffNode
-{
-    std::string userID;         // 账号ID
-    std::string username;       // 用户名
-    std::string hashedPassword; // 密码哈希
-    std::string department;     // 科室（患者可为空）
-    bool isActive = true;       // 是否启用
-
-    StaffNode *prev = nullptr; // 双向链表前指针
-    StaffNode *next = nullptr; // 双向链表后指针
-};
+#include "Registration.h"
+#include "Consultation.h"
+#include "Examination.h"
+#include "Hospitalization.h"
+#include "MedicationRecord.h"
+#include "Medicine.h"
 
 class Admin : public User
 {
-private:
-
-    StaffNode *doctorHead = nullptr;     // 医生链表头
-    StaffNode *nurseHead = nullptr;      // 护士链表头
-    StaffNode *pharmacistHead = nullptr; // 药师链表头
-    StaffNode *patientHead = nullptr;    // 患者链表头
-
 public:
-    Admin() = default; // 默认构造函数
+    Admin *next; // 管理员链表的下一个节点指针
 
-    ~Admin() override;
+    Admin();
 
-    void loadFromFile(const std::string &path) override; // 加载管理员档案
-    void saveToFile(const std::string &path) override;   // 保存管理员档案
+    Admin *adminSignUp(); // 管理员注册，调用基类的 signUp(1) 方法，并将管理员信息保存到文件中
+    bool adminSignIn();   // 管理员登录，验证用户ID和密码，并设置登录状态
 
-    // 人员链表加载/释放
-    void loadAllStaffLists();
-    void clearAllStaffLists();
+    template <typename T>
+    void setAccountActive(T* head); // 激活或锁定账户
 
-    // 人员管理（管理员创建账号）
-    bool addDoctorAccount(const std::string &id, const std::string &name, const std::string &plainPassword, const std::string &department);
-    bool addNurseAccount(const std::string &id, const std::string &name, const std::string &plainPassword, const std::string &department);
-    bool addPharmacistAccount(const std::string &id, const std::string &name, const std::string &plainPassword, const std::string &department);
-    bool addPatientAccount(const std::string &id, const std::string &name, const std::string &plainPassword);
-
-    // 封号/解锁账号
-    bool unlockUser(const std::string &targetUserID);
-    bool lockUser(const std::string &targetUserID); 
-
-    // 按科室列出人员
-    std::vector<std::string> listDoctorsByDepartment(const std::string &department) const;
-    std::vector<std::string> listNursesByDepartment(const std::string &department) const;
-    std::vector<std::string> listPharmacistsByDepartment(const std::string &department) const;
-
-    // 医疗/药品/患者查询
-    std::vector<std::string> listMedicinesByDepartment(const std::string &department) const;
-    std::vector<std::string> listRecordsByDepartment(const std::string &department, const std::string &recordType) const;
-    bool updatePatientProfile(const std::string &patientID, const std::string &field, const std::string &newValue);
-    bool deletePatient(const std::string &patientID);
-    std::vector<std::string> searchPatients(const std::string &keyword) const;
-
-    // 报表
-    void queryHospitalOverview() const;
-    void queryDepartmentStats(const std::string &department) const;
-    void queryFinanceReport() const;
-
+    // === 管理医疗记录 ===
+    void manageRegistrations(Registration *reg, std::string department);            // 管理挂号记录（查看、修改状态等）
+    void manageConsultations(Consultation *con, std::string department);            // 管理看诊记录（查看、修改诊断结果等）
+    void manageExaminations(Examination *exam, std::string department);             // 管理检查记录（查看、修改报告摘要等）
+    void manageHospitalizations(Hospitalization *hos, std::string department);      // 管理住院记录（查看、修改出院日期等）
+    void manageMedicationRecords(MedicationRecord *medRec, std::string department); // 管理用药记录（查看、修改用药详情等）
+    void manageMedicines(Medicine *med, std::string department);                    // 管理药品信息（查看、修改库存等）
 };
 
 #endif // ADMIN_H
