@@ -22,6 +22,12 @@
 
 class Admin : public User
 {
+private:
+    double totalRevenue = 0.0; // 医院总收入统计（可选）
+    double totalExpenses = 0.0; // 医院总支出统计（可选）
+    double netProfit = 0.0;    // 医院净利润统计（可选）
+
+
 public:
     Admin *next; // 管理员链表的下一个节点指针
 

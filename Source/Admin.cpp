@@ -11,18 +11,9 @@ Admin *Admin::adminSignUp()
     bool flag = signUp(1); // 1 - Admin
     if (flag)
     {
-        std::ofstream ofs(ADMIN_FILE, std::ios::app);
-        if (ofs.is_open())
-        {
-            // userID|username|storedHash|salt|createTime|role
-            ofs << userID << '|' << username << '|' << storedHash << '|' << salt << '|' << createTime << '|' << "ADMIN" << '\n';
-            ofs.close();
-        }
-        else
-        {
-            std::cout << "无法打开管理员数据文件，注册失败！" << std::endl;
-            return nullptr;
-        }
+        totalRevenue = 0.0;
+        totalExpenses = 0.0;
+        netProfit = 0.0;
 
         std::cout << "管理员注册成功! 您的用户ID是: " << getUserID() << std::endl;
         return this; // 返回当前对象以便链式调用
