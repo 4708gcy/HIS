@@ -62,34 +62,9 @@ protected:
 
 public:
 
-    User() = default; // 默认构造函数
-    /**
-     * @brief 已有账号构造（仅uid和role），可选择是否自动加载全量记录
-     * @param uid 用户ID
-     * @param r   角色类型
-     * @param autoLoadRecords 是否自动加载 RecordData 下的链表文件
-     */
-    User(const std::string &uid, UserRole r, bool autoLoadRecords = true);
-
-    /**
-     * @brief 新账号构造：提供用户名和明文密码，会生成 salt 并存储哈希
-     * @param uid 用户ID
-     * @param uname 用户名
-     * @param plainPassword 明文密码（构造函数中会加盐哈希）
-     * @param r 角色类型
-     * @param autoLoadRecords 是否自动加载记录链表
-     */
-    User(const std::string &uid,
-         const std::string &uname,
-         const std::string &plainPassword,
-         UserRole r,
-         bool autoLoadRecords = true);
 
     virtual ~User(); // 析构函数负责释放链表内存
 
-    // 登录/登出相关
-    bool login(const std::string &inputPassword); // 校验后更新状态并处理锁定逻辑
-    void logout();
 
     // 简单 getter
     bool getIsLoggedIn() const;
@@ -112,33 +87,6 @@ public:
     void setAccountActive(bool active);
     void resetLoginAttempts();
 
-    // 记录链表头访问，用于外部查询/遍历
-    Registration *getRegistrationHead() const;
-    Consultation *getConsultationHead() const;
-    Examination *getExaminationHead() const;
-    Hospitalization *getHospitalizationHead() const;
-
-    // 子类必须实现用于加载/保存用户 profile（角色特有字段）
-    virtual void loadFromFile() = 0;
-    virtual void saveToFile() = 0;
-
-protected:
-    // 初始化/清理链表头与加载实现
-    void initRecordHeads();  // 分配/置空头节点（或置为 nullptr）
-    void clearRecordLists(); // 释放所有链表内存
-
-    // 从磁盘加载全部记录（User 构造时调用）
-    void loadAllRecordLists();
-    void loadRegistrationList(const std::string &filePath);
-    void loadConsultationList(const std::string &filePath);
-    void loadExaminationList(const std::string &filePath);
-    void loadHospitalizationList(const std::string &filePath);
-    void loadMedicationRecordList(const std::string &filePath); // 加载用药记录链表
-    void loadMedicineList(const std::string &filePath);         // 加载药品链表
-
-    // 辅助静态工具
-    static std::vector<std::string> split(const std::string &line, char sep);
-    static std::string generateSalt(unsigned int len = 16); // 用于新建账号时生成随机盐
 };
 
 #endif // USER_H
