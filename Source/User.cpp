@@ -5,6 +5,7 @@
 #include <algorithm>
 
 // 简单 getter
+int User::getKHashIterations() const { return kHashIterations; }
 bool User::getIsLoggedIn() const { return isLoggedIn; }
 bool User::getIsAccountActive() const { return isAccountActive; }
 int User::getLoginAttempts() const { return loginAttempts; }
@@ -30,8 +31,6 @@ void User::setAccountActive(bool active)
     }
 }
 void User::resetLoginAttempts() { loginAttempts = 0; }
-
-int User::getKHashIterations() const { return kHashIterations; }
 void User::setUserID(const std::string &uid) { userID = uid; }
 void User::setRole(UserRole r) { role = r; }
 
