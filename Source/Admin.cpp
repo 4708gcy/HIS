@@ -98,51 +98,195 @@ void Admin::setAccountActive(T *head)
 
 void Admin::manageRegistrations(Registration *reg, std::string department)
 {
-    while(true){
+    while (true)
+    {
         int choice = adminRegistrationManagementMenu();
-        if(choice == 0) break;
+        if (choice == 0)
+            break;
 
-        if(choice == 1){
-            Registration *current = reg;
-            std::cout << "挂号记录列表:" << std::endl;
-            while(current != nullptr){
-                if(current->department == department){
-                    std::string statusStr = (current->status == RegistrationStatus::BOOKED) ? "已预约" :
-                                            (current->status == RegistrationStatus::PAID) ? "已支付" :
-                                            (current->status == RegistrationStatus::CANCELED) ? "已取消" : "已完成";
-                    std::cout << "ID: " << current->registrationID 
-                              << ", 患者ID: " << current->patientID 
-                              << ", 医生ID: " << current->doctorID 
-                              << ", 时间: " << current->registerTime 
-                              << ", 费用: " << current->fee 
-                              << ", 状态: " << statusStr
-                              << ", 备注: " << current->note 
-                              << std::endl;
+        if (choice == 1)
+        {
+            while (true)
+            {
+                int viewChoice = adminRegistrationViewMenu();
+
+                if (viewChoice == 0)
+                    break;
+                else if (viewChoice == 1)
+                {
+                    Registration *current = reg;
+                    std::cout << "挂号记录列表:" << std::endl;
+                    while (current != nullptr)
+                    {
+                        if (current->department == department)
+                        {
+                            std::string statusStr = (current->status == RegistrationStatus::BOOKED) ? "已预约" : (current->status == RegistrationStatus::PAID)   ? "已支付"
+                                                                                                             : (current->status == RegistrationStatus::CANCELED) ? "已取消"
+                                                                                                                                                                 : "已完成";
+                            std::cout << "ID: " << current->registrationID
+                                      << ", 患者ID: " << current->patientID
+                                      << ", 医生ID: " << current->doctorID
+                                      << ", 时间: " << current->registerTime
+                                      << ", 费用: " << current->fee
+                                      << ", 状态: " << statusStr
+                                      << ", 备注: " << current->note
+                                      << std::endl;
+                        }
+                        current = current->next;
+                    }
+
+                    system("pause");
                 }
-                current = current->next;
+                else if (viewChoice == 2)
+                {
+                    int statusFilter;
+                    std::cout << "请输入要过滤的挂号状态 (0 - 已预约, 1 - 已支付, 2 - 已取消, 3 - 已完成): ";
+                    std::cin >> statusFilter;
+                    if (statusFilter < 0 || statusFilter > 3)
+                    {
+                        std::cout << "无效的状态输入！" << std::endl;
+                        system("pause");
+                        continue;
+                    }
+                    RegistrationStatus filterStatus = static_cast<RegistrationStatus>(statusFilter);
+
+                    Registration *current = reg;
+                    std::cout << "挂号记录列表 (状态过滤: " << ((filterStatus == RegistrationStatus::BOOKED) ? "已预约" : (filterStatus == RegistrationStatus::PAID)   ? "已支付"
+                                                                                                                      : (filterStatus == RegistrationStatus::CANCELED) ? "已取消"
+                                                                                                                                                                       : "已完成")
+                              << "):" << std::endl;
+                    while (current != nullptr)
+                    {
+                        if (current->department == department && current->status == filterStatus)
+                        {
+                            std::string statusStr = (current->status == RegistrationStatus::BOOKED) ? "已预约" : (current->status == RegistrationStatus::PAID)   ? "已支付"
+                                                                                                             : (current->status == RegistrationStatus::CANCELED) ? "已取消"
+                                                                                                                                                                 : "已完成";
+                            std::cout << "ID: " << current->registrationID
+                                      << ", 患者ID: " << current->patientID
+                                      << ", 医生ID: " << current->doctorID
+                                      << ", 时间: " << current->registerTime
+                                      << ", 费用: " << current->fee
+                                      << ", 状态: " << statusStr
+                                      << ", 备注: " << current->note
+                                      << std::endl;
+                        }
+                        current = current->next;
+                    }
+
+                    system("pause");
+                }
+                else if (viewChoice == 3)
+                {
+                    std::string patientID;
+                    std::cout << "请输入患者ID: ";
+                    std::cin >> patientID;
+
+                    bool found = false;
+
+                    Registration *current = reg;
+                    std::cout << "挂号记录列表 (患者ID: " << patientID << "):" << std::endl;
+                    while (current != nullptr)
+                    {
+                        if (current->department == department && current->patientID == patientID)
+                        {
+                            std::string statusStr = (current->status == RegistrationStatus::BOOKED) ? "已预约" : (current->status == RegistrationStatus::PAID)   ? "已支付"
+                                                                                                             : (current->status == RegistrationStatus::CANCELED) ? "已取消"
+                                                                                                                                                                 : "已完成";
+                            std::cout << "ID: " << current->registrationID
+                                      << ", 患者ID: " << current->patientID
+                                      << ", 医生ID: " << current->doctorID
+                                      << ", 时间: " << current->registerTime
+                                      << ", 费用: " << current->fee
+                                      << ", 状态: " << statusStr
+                                      << ", 备注: " << current->note
+                                      << std::endl;
+                            found = true;
+                        }
+                        current = current->next;
+                    }
+
+                    if (!found)
+                    {
+                        std::cout << "未找到该患者的挂号记录！" << std::endl;
+                    }
+
+                    system("pause");
+                }
+                else if (viewChoice == 4)
+                {
+                    std::string doctorID;
+                    std::cout << "请输入医生ID: ";
+                    std::cin >> doctorID;
+
+                    bool found = false;
+
+                    Registration *current = reg;
+                    std::cout << "挂号记录列表 (医生ID: " << doctorID << "):" << std::endl;
+                    while (current != nullptr)
+                    {
+                        if (current->department == department && current->doctorID == doctorID)
+                        {
+                            std::string statusStr = (current->status == RegistrationStatus::BOOKED) ? "已预约" : (current->status == RegistrationStatus::PAID)   ? "已支付"
+                                                                                                             : (current->status == RegistrationStatus::CANCELED) ? "已取消"
+                                                                                                                                                                 : "已完成";
+                            std::cout << "ID: " << current->registrationID
+                                      << ", 患者ID: " << current->patientID
+                                      << ", 医生ID: " << current->doctorID
+                                      << ", 时间: " << current->registerTime
+                                      << ", 费用: " << current->fee
+                                      << ", 状态: " << statusStr
+                                      << ", 备注: " << current->note
+                                      << std::endl;
+                            found = true;
+                        }
+                        current = current->next;
+                    }
+
+                    if (!found)
+                    {
+                        std::cout << "未找到该医生的挂号记录！" << std::endl;
+                    }
+
+                    system("pause");
+                }
+                else
+                {
+                    std::cout << "无效的选择! 请重新选择。" << std::endl;
+                    system("pause");
+                }
             }
-        }else if(choice == 2){
+        }
+        else if (choice == 2)
+        {
             std::string regID;
             std::cout << "请输入要修改状态的挂号记录ID: ";
             std::cin >> regID;
 
             Registration *current = reg;
-            while(current != nullptr){
-                if(current->registrationID == regID && current->department == department){
+            while (current != nullptr)
+            {
+                if (current->registrationID == regID && current->department == department)
+                {
                     int newStatus;
                     std::cout << "请输入新的挂号状态 (0 - 已预约, 1 - 已支付, 2 - 已取消, 3 - 已完成): ";
                     std::cin >> newStatus;
-                    if(newStatus >= 0 && newStatus <= 3){
+                    if (newStatus >= 0 && newStatus <= 3)
+                    {
                         current->status = static_cast<RegistrationStatus>(newStatus);
                         std::cout << "挂号状态已更新！" << std::endl;
-                    }else{
+                    }
+                    else
+                    {
                         std::cout << "无效的状态输入！" << std::endl;
                     }
                     break;
                 }
                 current = current->next;
             }
-    }else if(choice == 3){
+        }
+        else if (choice == 3)
+        {
             std::string regID;
             std::cout << "请输入要删除的挂号记录ID: ";
             std::cin >> regID;
@@ -150,11 +294,15 @@ void Admin::manageRegistrations(Registration *reg, std::string department)
             bool found = false;
 
             Registration *current = reg;
-            while(current != nullptr){
-                if(current->registrationID == regID && current->department == department){
+            while (current != nullptr)
+            {
+                if (current->registrationID == regID && current->department == department)
+                {
                     // 从链表中删除 current
-                    if(current->prev) current->prev->next = current->next;
-                    if(current->next) current->next->prev = current->prev;
+                    if (current->prev)
+                        current->prev->next = current->next;
+                    if (current->next)
+                        current->next->prev = current->prev;
                     delete current; // 释放内存
                     std::cout << "挂号记录已删除！" << std::endl;
                     found = true;
@@ -162,13 +310,15 @@ void Admin::manageRegistrations(Registration *reg, std::string department)
                 }
                 current = current->next;
             }
-            if (!found) {
+            if (!found)
+            {
                 std::cout << "未找到指定的挂号记录！" << std::endl;
             }
-        }else{
+        }
+        else
+        {
             std::cout << "无效的选择! 请重新选择。" << std::endl;
             system("pause");
         }
     }
-
 }

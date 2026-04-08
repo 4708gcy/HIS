@@ -24,6 +24,8 @@ int adminMedicalRecordMenu(); // 管理员医疗记录管理菜单
 
 int adminRegistrationManagementMenu(); // 管理员挂号记录管理菜单
 
+int adminRegistrationViewMenu(); // 管理员挂号记录查看方式选择菜单
+
 
 
 #endif

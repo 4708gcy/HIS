@@ -69,7 +69,7 @@ int adminMenu()
 }
 
 
-// 管理员医疗记录管理菜单(可扩展)
+// 管理员医疗记录管理菜单
 int adminMedicalRecordMenu()
 {
     std::cout << "医疗记录管理界面" << std::endl;
@@ -86,6 +86,7 @@ int adminMedicalRecordMenu()
     return choice;
 }
 
+// 管理员挂号记录管理菜单
 int adminRegistrationManagementMenu()
 {
     std::cout << "挂号记录管理界面" << std::endl;
@@ -98,4 +99,17 @@ int adminRegistrationManagementMenu()
     int choice;
     std::cin >> choice;
     return choice;
+}
+
+// 管理员挂号记录查看方式选择菜单
+int adminRegistrationViewMenu(){
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看该科室的所有挂号记录" << std::endl;
+    std::cout << "2. 根据挂号状态查看" << std::endl;
+    std::cout << "3. 根据患者ID查看" << std::endl;
+    std::cout << "4. 根据医生ID查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+    int viewChoice;
+    std::cin >> viewChoice;
+    return viewChoice;
 }
