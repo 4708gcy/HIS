@@ -24,12 +24,19 @@
 #include "UI.h"
 
 // 定义存储人物信息文件的路径
-#define ADMIN_FILE "../Data/UserData/admin_users.txt"
-#define DOCTOR_FILE "../Data/UserData/doctor_users.txt"
-#define NURSE_FILE "../Data/UserData/nurse_users.txt"
-#define PHARMACIST_FILE "../Data/UserData/pharmacist_users.txt"
-#define PATIENT_FILE "../Data/UserData/patient_users.txt"
+#define ADMIN_FILE "../Data/UserData/AdminChainData/admin_users.txt"
+#define DOCTOR_FILE "../Data/UserData/DoctorChainData/doctor_users.txt"
+#define NURSE_FILE "../Data/UserData/NurseChainData/nurse_users.txt"
+#define PHARMACIST_FILE "../Data/UserData/PharmacistChainData/pharmacist_users.txt"
+#define PATIENT_FILE "../Data/UserData/PatientChainData/patient_users.txt"
 
+// 定义存储医疗记录文件的路径
+#define REGISTRATION_FILE "../Data/RecordData/RegistrationChainData/registrations.txt"
+#define CONSULTATION_FILE "../Data/RecordData/ConsultationChainData/consultations.txt"
+#define EXAMINATION_FILE "../Data/RecordData/ExaminationChainData/examinations.txt"
+#define HOSPITALIZATION_FILE "../Data/RecordData/HospitalizationChainData/hospitalizations.txt"
+#define MEDICATION_RECORD_FILE "../Data/RecordData/MedicineChainData/medication_records.txt"
+#define MEDICINE_FILE "../Data/RecordData/MedicineChainData/medicines.txt"
 
 // 定义全局常量
 #define failedLoginLimit 5 // 连续登录失败次数限制
@@ -76,6 +83,13 @@ protected:
     int pharmacistIDnum = 0; // 用来保存药剂师还未使用过的ID起始数字，注册新药剂师时递增分配
     int patientIDnum = 0; // 用来保存患者还未使用过的ID起始数字，注册新患者时递增分配
 
+    int registrationCount = 0; // 挂号记录计数器
+    int consultationCount = 0; // 看诊记录计数器
+    int examinationCount = 0; // 检查记录计数器
+    int hospitalizationCount = 0; // 住院记录计数器
+    int medicationRecordCount = 0; // 用药记录计数器
+    int medicineCount = 0; // 药品记录计数器
+
 
 public:
     // 注册新用户 : 1 - Admin, 2 - Doctor, 3 - Nurse, 4 - Pharmacist, 5 - Patient
@@ -92,8 +106,24 @@ public:
     UserRole getRole() const;
     const std::string &getCreateTime() const;
     int getKHashIterations() const;
+    std::string getSalt() const;
 
+
+    void setUserID(const std::string &uid);
     void setUsername(const std::string &uname);
+    void setSalt(const std::string &s);
+    void setStoredHash(const std::string &hash);
+    void setIsAccountActive(bool active);
+    void setRole(UserRole r);
+    void setCreateTime(const std::string &time);
+
+
+    std::string regStatusToString(RegistrationStatus status); // 将挂号状态枚举转换为字符串表示
+    std::string examStatusToString(ExaminationStatus status);  // 将检查状态枚举转换为字符串表示
+    std::string hosStatusToString(HospitalizationStatus status); // 将住院状态枚举转换为字符串表示
+    std::string medicationStatusToString(MedicationStatus status); // 将用药状态枚举转换为字符串表示
+    std::string medicationReviewStatusToString(MedicationReviewStatus status); // 将用药审核状态枚举转换为字符串表示
+    std::string medicineStatusToString(MedicineStatus status); // 将药品状态枚举转换为字符串表示
 
 };
 
