@@ -1,25 +1,87 @@
-<h1 style="text-align:center"> HIS 开发日志 </h1>
+# HIS 开发日志
 
 ---
 
-### 2026.4.8
+## 2026.4.8
 
-* 创建了3个医疗信息类
-  * Registration    -挂号信息类
-  * Consultation    -看诊信息类
-  * Examination     -检查信息类
-* 创建了用户交互界面的头文件 `UI.h`, 并完成了 6 个界面的初步设计
-  * int beginUI();                          - 启动界面，显示欢迎信息和主菜单
-  * int adminMenu();                        - 管理员菜单，提供账户管理和医疗记录管理选项
-  * std::string adminDepartmentMenu();      - 管理员科室管理菜单
-  * int adminMedicalRecordMenu();           - 管理员医疗记录管理菜单
-  * int adminRegistrationManagementMenu();  - 管理员挂号记录管理菜单
-  * int adminRegistrationViewMenu()         - 管理员挂号记录查看方式选择菜单
+### 1. 类与数据结构设计
 
-* 完成了管理员的 `注册账号`函数
-* 完成了管理员的 `登录账号`函数
-* 完成了管理员的 `解锁/封禁账号`函数(使用泛函编程的方式实现)
-* 完成了管理员的 `挂号信息管理`中的 3 个功能
-  * 查看某一个科室的挂号信息(支持全部检索，按照挂号信息的状态检索，按照患者ID检索，按照医生ID进行检索)
-  * 修改某一个科室的挂号信息的状态(已预约/已支付/已取消/已完成)
-  * 删除某一个科室中的某一条挂号信息
+- 创建了3个医疗信息类
+  - Registration    - 挂号信息类
+  - Consultation    - 看诊信息类
+  - Examination     - 检查信息类
+
+### 2. 用户交互界面
+
+- 创建了用户交互界面的头文件 `UI.h`，并完成了 6 个界面的初步设计
+  - int beginUI();                          - 启动界面，显示欢迎信息和主菜单
+  - int adminMenu();                        - 管理员菜单，提供账户管理和医疗记录管理选项
+  - std::string adminDepartmentMenu();      - 管理员科室管理菜单
+  - int adminMedicalRecordMenu();           - 管理员医疗记录管理菜单
+  - int adminRegistrationManagementMenu();  - 管理员挂号记录管理菜单
+  - int adminRegistrationViewMenu()         - 管理员挂号记录查看方式选择菜单
+
+### 3. 管理员相关功能
+
+- 完成了管理员的 `注册账号`函数
+- 完成了管理员的 `登录账号`函数
+- 完成了管理员的 `解锁/封禁账号`函数（使用泛函编程的方式实现）
+
+### 4. 挂号信息管理
+
+- 完成了挂号信息管理中的 3 个功能
+  - 查看某一个科室的挂号信息（支持全部检索，按照挂号信息的状态检索，按照患者ID检索，按照医生ID进行检索）
+  - 修改某一个科室的挂号信息的状态（已预约/已支付/已取消/已完成）
+  - 删除某一个科室中的某一条挂号信息
+
+---
+
+## 2026.4.9
+
+### 1. 输入校验与数据录入
+
+- 在 `UI.h` 中添加并实现了 6 个输入校验函数
+  - int selectIntCheck(const int min, const int max); // 检查输入的选择是否在指定范围内
+  - double inputFeeCheck(); // 检查输入的费用是否为有效的正数
+  - std::string inputStringCheck(const std::string &prompt); // 检查输入的字符串是否符合要求（如非空等）
+  - std::string inputIDCheck(const std::string &prompt); // 检查输入的用户ID是否符合格式要求（如长度、前缀等）
+  - std::string inputRecordIDCheck(const std::string &prompt); // 检查输入的记录ID是否符合格式要求（如长度、前缀等）
+  - std::string inputPwdCheck(const std::string &prompt); // 检查输入的密码是否符合安全要求（如长度、复杂度等）
+
+### 2. 挂号信息管理优化
+
+- 将昨天的挂号信息管理中查看操作的 4 种视图还有修改和删除挂号信息的代码全部封装成单独的函数，提高可读性
+- 添加了创建挂号信息的函数：
+  - void addRegistration(Registration *&reg, const std::string &department); // 添加挂号记录（根据输入信息创建新的 Registration 对象，并插入到链表中）
+
+### 3. 数据持久化与加载
+
+- 创建了从文件中加载数据的头文件 `LoadData.h`，并实现了管理员信息的加载函数
+  - Admin *loadAdminData(); // 从文件中加载管理员数据并返回管理员链表的头指针
+- 创建了实现数据持久化的头文件 `SaveData.h`，并实现了管理员信息的存储函数，以及 4 种医疗信息（挂号/看诊/检查/住院）记录的存储函数
+  - void saveAdminData(Admin *adminHead); // 将管理员数据保存到文件中
+  - void saveRegistrations(Registration *regHead); // 将挂号记录保存到文件中
+  - void saveConsultations(Consultation*conHead); // 将看诊记录保存到文件中
+  - void saveExaminations(Examination *examHead); // 将检查记录保存到文件中
+  - void saveHospitalizations(Hospitalization*hosHead); // 将住院记录保存到文件中
+
+### 4. 登录功能
+
+- 创建了可以实现登录功能的头文件 `Login.h`，并实现了管理员的登录验证函数
+  - Admin*adminLogin(Admin*&adminHead); // 管理员登录函数，验证管理员身份并返回登录结果
+
+### 5. 状态转字符串工具
+
+- 在 User 基类中添加并实现了 6 个将医疗记录的状态转为可识别字符串的函数，提高了后序代码的可读性，降低了编写难度
+  - std::string regStatusToString(RegistrationStatus status); // 将挂号状态枚举转换为字符串表示
+  - std::string examStatusToString(ExaminationStatus status);  // 将检查状态枚举转换为字符串表示
+  - std::string hosStatusToString(HospitalizationStatus status); // 将住院状态枚举转换为字符串表示
+  - std::string medicationStatusToString(MedicationStatus status); // 将用药状态枚举转换为字符串表示
+  - std::string medicationReviewStatusToString(MedicationReviewStatus status); // 将用药审核状态枚举转换为字符串表示
+  - std::string medicineStatusToString(MedicineStatus status); // 将药品状态枚举转换为字符串表示
+
+### 6. 主程序框架与调试经验
+
+- 在 main.cpp 文件中编写了系统的大体运行框架，将不同的功能简单地串联了一下，并且测试了管理员的注册和登录功能，都可以正常运行
+- 在测试过程中踩的最大的坑就是 `Admin` 类中的 "**next**" 指针一定不能是野指针，必须要初始化为 nullptr，一开始没有注意，程序莫名其妙崩了好几次
+- 后来通过网上学习了配置 `launch.json` 和 `tasks.json`，进行一步步调试才发现程序是因为野指针崩溃的，这是一个教训，不过也让我学会了在 VSCode 中如何配置调试文件
