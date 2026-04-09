@@ -6,9 +6,12 @@ Admin* adminLogin(Admin *&adminHead){
     Admin *current = adminHead;
     std::string id = inputIDCheck("请输入管理员用户ID: ");
 
+    std::cout << id << std::endl;
+
 
     while (current != nullptr)
     {
+        std::cout << current->getUserID() << std::endl;
   
         if (current->getUserID() == id)
         {
@@ -20,6 +23,8 @@ Admin* adminLogin(Admin *&adminHead){
                 return nullptr; // 登录失败（如密码错误或账户锁定）
             }
         }
+
+        std::cout << "failed to find user, checking next..." << std::endl;
 
       
         current = current->next;

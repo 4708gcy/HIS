@@ -23,7 +23,7 @@ private:
     double netProfit = 0.0;     // 医院净利润统计（可选）
 
 public:
-    Admin *next; // 管理员链表的下一个节点指针
+    Admin *next = nullptr; // 管理员链表的下一个节点指针
 
     Admin();
 

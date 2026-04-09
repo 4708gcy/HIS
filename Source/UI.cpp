@@ -4,30 +4,27 @@
 // 暂停函数，等待用户按键继续
 void pause()
 {
-    std::cout << "按下回车键继续...\n";
-    
-    // 清空输入缓冲区残留的所有字符（直到换行）
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-    std::cin.get(); // 【关键修复】等待用户按回车
+    std::cout << "按下回车键继续..." << std::flush;
+    std::string dummy;
+    std::getline(std::cin, dummy);
 }
 
 // ============================ 输入校验函数区域 =======================================
 int selectIntCheck(const int min, const int max)
 {
     int choice;
-    std::string line;
     while (true)
     {
         std::cout << "请输入你的选择: ";
-        std::getline(std::cin, line);
-        std::istringstream iss(line);
-        if (iss >> choice && choice >= min && choice <= max)
+        if (std::cin >> choice && choice >= min && choice <= max)
         {
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             return choice;
         }
         else
         {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "无效输入，请输入 " << min << " - " << max << " 之间的数字!" << std::endl;
         }
     }
@@ -41,6 +38,7 @@ double inputFeeCheck()
         std::cout << "请输入费用: ";
         if (std::cin >> fee && fee >= 0)
         {
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             return fee;
         }
         else
@@ -58,7 +56,9 @@ std::string inputStringCheck(const std::string &prompt)
     while (true)
     {
         std::cout << prompt;
-        std::getline(std::cin, input);
+        std::cin >> input;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
         if (!input.empty())
         {
             return input;
@@ -76,7 +76,8 @@ std::string inputIDCheck(const std::string &prompt)
     while (true)
     {
         std::cout << prompt;
-        std::getline(std::cin, id);
+        std::cin >> id;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         // 检查长度、首位、后五位是否全为数字
         if (id.length() == 6 &&
             (id[0] >= '0' && id[0] <= '4') &&
@@ -107,7 +108,8 @@ std::string inputRecordIDCheck(const std::string &prompt, const std::vector<std:
     while (true)
     {
         std::cout << prompt;
-        std::getline(std::cin, id);
+        std::cin >> id;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         bool valid = false;
         for (const auto &prefix : prefixes)
@@ -134,7 +136,8 @@ std::string inputPwdCheck(const std::string &prompt)
     while (true)
     {
         std::cout << prompt << "(密码必须至少8位，包含字母和数字): " << std::endl;
-        std::getline(std::cin, pwd);
+        std::cin >> pwd;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         if (pwd.length() < 8)
         {

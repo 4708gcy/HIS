@@ -26,6 +26,7 @@ bool User::signUp(int choice)
             username = inputStringCheck("请输入管理员姓名: ");
 
             std::string password = inputPwdCheck("请输入密码: ");
+            
             storedHash = SHA256Encrypt(password, salt, kHashIterations);
 
             return true; // 管理员注册成功
@@ -62,7 +63,9 @@ bool User::signUp(int choice)
         username = inputStringCheck("请输入护士姓名: ");
         std::string password = inputPwdCheck("请输入密码: ");
         storedHash = SHA256Encrypt(password, salt, kHashIterations);
+
         std::cout << "护士注册成功! 您的用户ID是: " << userID << std::endl;
+
         return true; // 护士注册成功
     }
     case 4:
@@ -76,7 +79,9 @@ bool User::signUp(int choice)
         username = inputStringCheck("请输入药剂师姓名: ");
         std::string password = inputPwdCheck("请输入密码: ");
         storedHash = SHA256Encrypt(password, salt, kHashIterations);
+
         std::cout << "药剂师注册成功! 您的用户ID是: " << userID << std::endl;
+
         return true; // 药剂师注册成功
     }
     case 5:
