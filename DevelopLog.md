@@ -85,3 +85,59 @@
 - 在 main.cpp 文件中编写了系统的大体运行框架，将不同的功能简单地串联了一下，并且测试了管理员的注册和登录功能，都可以正常运行
 - 在测试过程中踩的最大的坑就是 `Admin` 类中的 "**next**" 指针一定不能是野指针，必须要初始化为 nullptr，一开始没有注意，程序莫名其妙崩了好几次
 - 后来通过网上学习了配置 `launch.json` 和 `tasks.json`，进行一步步调试才发现程序是因为野指针崩溃的，这是一个教训，不过也让我学会了在 VSCode 中如何配置调试文件
+
+---
+
+## 2026.4.10
+
+### 1. 任务与调试配置
+
+- 将昨天的`tasks.json`文件新增了两个任务("cmake环境配置"和"build文件夹清理")，并为"cmake编译"添加了依赖:"cmake环境配置"，将`launch.json`文件添加了调试之后自动调用任务"build文件夹清理"
+
+### 2. 挂号记录加载函数
+
+- 在`LoadData.h`中添加了挂号记录的加载函数
+  - Registration *loadRegistrations(int& count); // 从文件中加载挂号记录并返回挂号链表的头指针
+
+### 3. 看诊记录属性扩展
+
+- 给`Consultation.h`中的看诊记录添加了两个新属性
+  - bool isHospitalizationRecommended = false; // 是否建议住院（根据病情严重程度等因素评估得出）
+  - bool isPrecriptionReviewed = false; // 处方是否已审核（由药师或医生审核后设置为 true）
+
+### 4. 管理员看诊信息管理功能
+
+- 在`Admin.h`中添加并实现了管理员医疗记录管理功能中的看诊信息管理，总共拆分为 9 个函数
+  - void manageConsultations(Consultation *&con, const std::string &department, Registration*reg, int &conCounter);               // 管理看诊记录（查看、修改诊断结果等）
+  - void viewAllConsultations(Consultation *&con, const std::string &department);                                            // 查看所有看诊记录（可按患者ID、医生ID、状态过滤）
+  - void viewConsultationsByDoctor(Consultation*&con, const std::string &department);                                       // 查看指定医生的看诊记录
+  - void viewConsultationsByPatient(Consultation *&con, const std::string &department);                                      // 查看指定患者的看诊记录
+  - void viewConsultationsByStatus(Consultation*&con, const std::string &department);                                       // 查看指定状态的看诊记录
+  - void viewConsultationByRegistrationID(Consultation *&con, const std::string &department);                                // 根据挂号ID查看看诊记录
+  - void modifyConsultation(Consultation*&con, const std::string &department);                                              // 修改看诊记录（如修改诊断结果、添加医生备注等）
+  - void deleteConsultation(Consultation *&con, const std::string &department);                                              // 删除看诊记录（逻辑删除，设置 isDeleted 标志）
+  - void addConsultation(Consultation*&con, const std::string &department, Registration*reg, int &conCounter); // 添加看诊记录（根据输入信息创建新的 Consultation 对象，并插入到链表中）
+
+### 5. 管理员看诊记录管理UI
+
+- 在`UI.h`中添加并实现了管理员管理看诊记录的UI交互界面函数，共 2 个
+  - int adminConsultationManagementMenu(); // 管理员看诊记录管理菜单
+  - int adminConsultationViewMenu(); // 管理员看诊记录查看方式选择菜单
+
+### 6. 输入处理辅助函数
+
+- 在`UI.h`中又添加并实现了一个好用的输入处理函数
+  - std::string trim(const std::string &str); // 去除字符串首尾空格的辅助函数
+
+### 7. 看诊记录状态转字符串
+
+- 在`User.h`中补充了看诊记录信息的状态转字符串函数
+  - std::string conStatusToString(ConsultationStatus status); // 将看诊状态枚举转换为字符串表示
+
+### 8. ID变量存储策略调整
+
+- 废除了原来各个人物和各类医疗管理信息的可用ID变量存储到`User`基类中的策略，改用全局变量存储可用ID变量
+
+### 9. 看诊记录枚举修正
+
+- 修正了看诊记录中的枚举类型变量，让其更贴合实际

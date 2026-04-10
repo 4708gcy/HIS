@@ -19,6 +19,7 @@
 #include <vector>
 
 void pause(); // 暂停函数，等待用户按键继续
+std::string trim(const std::string &str); // 去除字符串首尾空格的辅助函数
 
 //  ======================================== 输入校验函数区域 =======================================
 
@@ -26,7 +27,7 @@ int selectIntCheck(const int min, const int max); // 检查输入的选择是否
 double inputFeeCheck(); // 检查输入的费用是否为有效的正数
 std::string inputStringCheck(const std::string &prompt); // 检查输入的字符串是否符合要求（如非空等）
 std::string inputIDCheck(const std::string &prompt); // 检查输入的用户ID是否符合格式要求（如长度、前缀等）
-std::string inputRecordIDCheck(const std::string &prompt); // 检查输入的记录ID是否符合格式要求（如长度、前缀等）
+std::string inputRecordIDCheck(const std::string &prompt, const std::vector<std::string> &validPrefixes); // 检查输入的记录ID是否符合格式要求（如长度、前缀等）
 std::string inputPwdCheck(const std::string &prompt); // 检查输入的密码是否符合安全要求（如长度、复杂度等）
 
 
@@ -48,6 +49,10 @@ int adminMedicalRecordMenu(); // 管理员医疗记录管理菜单
 int adminRegistrationManagementMenu(); // 管理员挂号记录管理菜单
 
 int adminRegistrationViewMenu(); // 管理员挂号记录查看方式选择菜单
+
+int adminConsultationManagementMenu(); // 管理员看诊记录管理菜单
+
+int adminConsultationViewMenu(); // 管理员看诊记录查看方式选择菜单
 
 
 

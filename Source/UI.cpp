@@ -9,56 +9,68 @@ void pause()
     std::getline(std::cin, dummy);
 }
 
+// 去除字符串首尾空格的辅助函数
+std::string trim(const std::string &s)
+{
+    auto start = s.find_first_not_of(" \t\r\n");
+    auto end = s.find_last_not_of(" \t\r\n");
+    return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
+}
+
 // ============================ 输入校验函数区域 =======================================
+// 1. 安全整数输入
 int selectIntCheck(const int min, const int max)
 {
     int choice;
+    std::string line;
     while (true)
     {
         std::cout << "请输入你的选择: ";
-        if (std::cin >> choice && choice >= min && choice <= max)
+        std::getline(std::cin, line);
+        line = trim(line); // 去除首尾空格
+        std::stringstream ss(line);
+        if (ss >> choice && !(ss >> line) && choice >= min && choice <= max)
         {
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             return choice;
         }
         else
         {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "无效输入，请输入 " << min << " - " << max << " 之间的数字!" << std::endl;
         }
     }
 }
 
+// 2. 安全 double 输入
 double inputFeeCheck()
 {
     double fee;
+    std::string line;
     while (true)
     {
         std::cout << "请输入费用: ";
-        if (std::cin >> fee && fee >= 0)
+        std::getline(std::cin, line);
+        line = trim(line); // 去除首尾空格
+        std::stringstream ss(line);
+        if (ss >> fee && !(ss >> line) && fee >= 0)
         {
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             return fee;
         }
         else
         {
-            std::cin.clear();                                                   // 清除错误状态
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // 丢弃无效输入
             std::cout << "无效输入，请输入一个非负数!" << std::endl;
         }
     }
 }
 
+// 3. 安全字符串输入
 std::string inputStringCheck(const std::string &prompt)
 {
     std::string input;
     while (true)
     {
         std::cout << prompt;
-        std::cin >> input;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
+        std::getline(std::cin, input);
+        input = trim(input); // 去除首尾空格
         if (!input.empty())
         {
             return input;
@@ -70,14 +82,15 @@ std::string inputStringCheck(const std::string &prompt)
     }
 }
 
+// 4. 安全ID输入
 std::string inputIDCheck(const std::string &prompt)
 {
     std::string id;
     while (true)
     {
         std::cout << prompt;
-        std::cin >> id;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::getline(std::cin, id);
+        id = trim(id); // 去除首尾空格
         // 检查长度、首位、后五位是否全为数字
         if (id.length() == 6 &&
             (id[0] >= '0' && id[0] <= '4') &&
@@ -91,7 +104,6 @@ std::string inputIDCheck(const std::string &prompt)
         }
     }
 }
-
 /*
 挂号记录：inputRecordIDCheck("请输入挂号记录ID: ", {"reg"});
 看诊记录：inputRecordIDCheck("请输入看诊记录ID: ", {"con"});
@@ -108,8 +120,8 @@ std::string inputRecordIDCheck(const std::string &prompt, const std::vector<std:
     while (true)
     {
         std::cout << prompt;
-        std::cin >> id;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::getline(std::cin, id);
+        id = trim(id); // 去除首尾空格
 
         bool valid = false;
         for (const auto &prefix : prefixes)
@@ -130,14 +142,16 @@ std::string inputRecordIDCheck(const std::string &prompt, const std::vector<std:
     }
 }
 
+// 5. 安全密码输入
 std::string inputPwdCheck(const std::string &prompt)
 {
     std::string pwd;
     while (true)
     {
         std::cout << prompt << "(密码必须至少8位，包含字母和数字): " << std::endl;
-        std::cin >> pwd;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::getline(std::cin, pwd);
+        pwd = trim(pwd); // 去除首尾空格
+
 
         if (pwd.length() < 8)
         {
@@ -145,7 +159,6 @@ std::string inputPwdCheck(const std::string &prompt)
             continue;
         }
 
-        // 可选：要求必须包含字母和数字
         bool hasAlpha = false, hasDigit = false;
         for (char c : pwd)
         {
@@ -160,11 +173,9 @@ std::string inputPwdCheck(const std::string &prompt)
             continue;
         }
 
-        // 通过所有检查
         return pwd;
     }
 }
-
 //============================= 菜单显示函数区域 =======================================
 
 // 登录和注册选择界面
@@ -285,5 +296,34 @@ int adminRegistrationViewMenu()
     std::cout << "4. 根据医生ID查看" << std::endl;
     std::cout << "0. 返回上级菜单" << std::endl;
     int viewChoice = selectIntCheck(0, 4);
+    return viewChoice;
+}
+
+// 管理员看诊记录管理菜单
+int adminConsultationManagementMenu()
+{
+    std::cout << "看诊记录管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看看诊记录" << std::endl;
+    std::cout << "2. 修改看诊状态" << std::endl;
+    std::cout << "3. 删除看诊记录" << std::endl;
+    std::cout << "4. 添加看诊记录" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员看诊记录查看方式选择菜单
+int adminConsultationViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看该科室的所有看诊记录" << std::endl;
+    std::cout << "2. 根据患者ID查看" << std::endl;
+    std::cout << "3. 根据医生ID查看" << std::endl;
+    std::cout << "4. 根据状态查看" << std::endl;
+    std::cout << "5. 根据挂号记录ID查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+    int viewChoice = selectIntCheck(0, 5);
     return viewChoice;
 }

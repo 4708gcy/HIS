@@ -6,7 +6,7 @@
 #include <iostream>
 
 // 1 - Admin, 2 - Doctor, 3 - Nurse, 4 - Pharmacist, 5 - Patient
-bool User::signUp(int choice)
+bool User::signUp(int choice, int &idCounter)
 {
     switch (choice)
     {
@@ -17,7 +17,7 @@ bool User::signUp(int choice)
         if (apiKey == "88888888")
         {
             role = UserRole::ADMIN;
-            userID = "0" + std::to_string(adminIDnum++).insert(0, 5 - std::to_string(adminIDnum).length(), '0');
+            userID = "0" + std::to_string(idCounter++).insert(0, 5 - std::to_string(idCounter).length(), '0');
             salt = generateSalt();
             MyTime &myTime = MyTime::getInstance();
             createTime = myTime.getTime();
@@ -40,7 +40,7 @@ bool User::signUp(int choice)
     case 2:
     {
         role = UserRole::DOCTOR;
-        userID = "1" + std::to_string(doctorIDnum++).insert(0, 5 - std::to_string(doctorIDnum).length(), '0');
+        userID = "1" + std::to_string(idCounter++).insert(0, 5 - std::to_string(idCounter).length(), '0');
         salt = generateSalt();
         MyTime &myTime = MyTime::getInstance();
         createTime = myTime.getTime();
@@ -55,7 +55,7 @@ bool User::signUp(int choice)
     case 3:
     {
         role = UserRole::NURSE;
-        userID = "2" + std::to_string(nurseIDnum++).insert(0, 5 - std::to_string(nurseIDnum).length(), '0');
+        userID = "2" + std::to_string(idCounter++).insert(0, 5 - std::to_string(idCounter).length(), '0');
         salt = generateSalt();
         MyTime &myTime = MyTime::getInstance();
         createTime = myTime.getTime();
@@ -71,7 +71,7 @@ bool User::signUp(int choice)
     case 4:
     {
         role = UserRole::PHARMACIST;
-        userID = "3" + std::to_string(pharmacistIDnum++).insert(0, 5 - std::to_string(pharmacistIDnum).length(), '0');
+        userID = "3" + std::to_string(idCounter++).insert(0, 5 - std::to_string(idCounter).length(), '0');
         salt = generateSalt();
         MyTime &myTime = MyTime::getInstance();
         createTime = myTime.getTime();
@@ -87,7 +87,7 @@ bool User::signUp(int choice)
     case 5:
     {
         role = UserRole::PATIENT;
-        userID = "4" + std::to_string(patientIDnum++).insert(0, 5 - std::to_string(patientIDnum).length(), '0');
+        userID = "4" + std::to_string(idCounter++).insert(0, 5 - std::to_string(idCounter).length(), '0');
         salt = generateSalt();
         MyTime &myTime = MyTime::getInstance();
         createTime = myTime.getTime();
@@ -167,6 +167,25 @@ std::string User::regStatusToString(RegistrationStatus status)
         return "未知状态";
     }
 }
+
+// 将看诊状态枚举转换为字符串表示
+std::string User::conStatusToString(ConsultationStatus status)
+{
+    switch (status)
+    {
+    case ConsultationStatus::PENDING:
+        return "待就诊";
+    case ConsultationStatus::IN_PROGRESS:
+        return "正在处理";
+    case ConsultationStatus::COMPLETED:
+        return "已结束";
+    case ConsultationStatus::VOIDED:
+        return "已作废";
+    default:
+        return "未知状态";
+    }
+}
+
 // 将检查状态枚举转换为字符串表示
 std::string User::examStatusToString(ExaminationStatus status)
 {

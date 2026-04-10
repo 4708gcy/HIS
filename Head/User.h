@@ -77,23 +77,10 @@ protected:
     static constexpr int kMaxLoginAttempts = failedLoginLimit;  // 锁定门槛
     static constexpr int kHashIterations = hashIterations; // 哈希迭代次数
 
-    int adminIDnum = 0; // 用来保存管理员还未使用过的ID起始数字，注册新管理员时递增分配
-    int doctorIDnum = 0; // 用来保存医生还未使用过的ID起始数字，注册新医生时递增分配
-    int nurseIDnum = 0; // 用来保存护士还未使用过的ID起始数字，注册新护士时递增分配
-    int pharmacistIDnum = 0; // 用来保存药剂师还未使用过的ID起始数字，注册新药剂师时递增分配
-    int patientIDnum = 0; // 用来保存患者还未使用过的ID起始数字，注册新患者时递增分配
-
-    int registrationCount = 0; // 挂号记录计数器
-    int consultationCount = 0; // 看诊记录计数器
-    int examinationCount = 0; // 检查记录计数器
-    int hospitalizationCount = 0; // 住院记录计数器
-    int medicationRecordCount = 0; // 用药记录计数器
-    int medicineCount = 0; // 药品记录计数器
-
 
 public:
     // 注册新用户 : 1 - Admin, 2 - Doctor, 3 - Nurse, 4 - Pharmacist, 5 - Patient
-    bool signUp(int choice);
+    bool signUp(int choice, int &idCounter); // 注册新用户
 
     virtual ~User(); // 虚析构函数，确保子类资源正确释放
 
@@ -119,6 +106,7 @@ public:
 
 
     std::string regStatusToString(RegistrationStatus status); // 将挂号状态枚举转换为字符串表示
+    std::string conStatusToString(ConsultationStatus status); // 将看诊状态枚举转换为字符串表示
     std::string examStatusToString(ExaminationStatus status);  // 将检查状态枚举转换为字符串表示
     std::string hosStatusToString(HospitalizationStatus status); // 将住院状态枚举转换为字符串表示
     std::string medicationStatusToString(MedicationStatus status); // 将用药状态枚举转换为字符串表示

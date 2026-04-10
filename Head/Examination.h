@@ -44,6 +44,7 @@ struct Examination
     std::string consultationID; // 关联看诊记录ID
     std::string patientID;      // 患者ID
     std::string doctorID;       // 开单医生ID
+    std::string department;       // 科室名称
 
     std::string itemName;      // 检查项目名称
     std::string orderTime;     // 下单时间

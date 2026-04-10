@@ -8,6 +8,23 @@
 #include <windows.h>
 #endif
 
+// 记录各个人物已经使用的ID数量，用于生成新的唯一ID
+int adminIDCount = 0;
+int doctorIDCount = 0;
+int nurseIDCount = 0;
+int pharmacistIDCount = 0;
+int patientIDCount = 0;
+
+
+// 记录医疗记录的数量，用于生成新的唯一ID
+int registrationCount = 0;
+int consultationCount = 0;
+int examinationCount = 0;
+int hospitalizationCount = 0;
+int medicationRecordCount = 0;
+int medicineCount = 0;
+
+
 int main()
 {
 #ifdef _WIN32
@@ -15,12 +32,12 @@ int main()
     SetConsoleCP(CP_UTF8);
 #endif
 
-    Admin *adminHead = loadAdminData(); // 加载管理员数据
+    Admin *adminHead = loadAdminData(adminIDCount); // 加载管理员数据
     if (adminHead == nullptr)
     {
         std::cout << "没有管理员数据，请先创建管理员账号，否则系统无法启动！" << std::endl;
         Admin *newAdmin = new Admin();
-        if (newAdmin->adminSignUp())
+        if (newAdmin->adminSignUp(adminIDCount)) // 注册新管理员并更新ID计数器
         {
             adminHead = newAdmin;
         }
@@ -32,12 +49,15 @@ int main()
         }
     }
 
-    Registration *regHead = loadRegistrations();            // 加载挂号记录数据
-    Consultation *conHead = loadConsultations();            // 加载看诊记录数据
-    Examination *examHead = loadExaminations();             // 加载检查记录数据
-    Hospitalization *hosHead = loadHospitalizations();      // 加载住院记录数据
-    MedicationRecord *medRecHead = loadMedicationRecords(); // 加载用药记录数据
-    Medicine *medHead = loadMedicines();                    // 加载药品信息数据
+    Doctor *docHead = loadDoctorData(doctorIDCount); // 加载医生数据
+
+
+    Registration *regHead = loadRegistrations(registrationCount);            // 加载挂号记录数据
+    Consultation *conHead = loadConsultations(consultationCount);            // 加载看诊记录数据
+    Examination *examHead = loadExaminations(examinationCount);             // 加载检查记录数据
+    Hospitalization *hosHead = loadHospitalizations(hospitalizationCount);      // 加载住院记录数据
+    MedicationRecord *medRecHead = loadMedicationRecords(medicationRecordCount); // 加载用药记录数据
+    Medicine *medHead = loadMedicines(medicineCount);                    // 加载药品信息数据
 
     while (true) // 系统主循环，处理登录和注册逻辑
     {
@@ -71,23 +91,23 @@ int main()
                                             int recordChoice = adminMedicalRecordMenu();
                                             if (recordChoice == 1)
                                             {
-                                                client->manageRegistrations(regHead, department);
+                                                client->manageRegistrations(regHead,docHead, department,registrationCount);
                                             }
                                             else if (recordChoice == 2)
                                             {
-                                                client->manageConsultations(conHead, department);
+                                                client->manageConsultations(conHead, department, regHead, consultationCount);
                                             }
                                             else if (recordChoice == 3)
                                             {
-                                                client->manageExaminations(examHead, department);
+                                                client->manageExaminations(examHead, department, examinationCount);
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead, department);
+                                                client->manageHospitalizations(hosHead, department, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, department);
+                                                client->manageMedicationRecords(medRecHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -106,23 +126,23 @@ int main()
                                             int recordChoice = adminMedicalRecordMenu();
                                             if (recordChoice == 1)
                                             {
-                                                client->manageRegistrations(regHead, department);
+                                                client->manageRegistrations(regHead, docHead, department, registrationCount);
                                             }
                                             else if (recordChoice == 2)
                                             {
-                                                client->manageConsultations(conHead, department);
+                                                client->manageConsultations(conHead, department, regHead, consultationCount);
                                             }
                                             else if (recordChoice == 3)
                                             {
-                                                client->manageExaminations(examHead, department);
+                                                client->manageExaminations(examHead, department, examinationCount);
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead, department);
+                                                client->manageHospitalizations(hosHead, department, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, department);
+                                                client->manageMedicationRecords(medRecHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -141,23 +161,23 @@ int main()
                                             int recordChoice = adminMedicalRecordMenu();
                                             if (recordChoice == 1)
                                             {
-                                                client->manageRegistrations(regHead, department);
+                                                client->manageRegistrations(regHead, docHead, department, registrationCount);
                                             }
                                             else if (recordChoice == 2)
                                             {
-                                                client->manageConsultations(conHead, department);
+                                                client->manageConsultations(conHead, department, regHead, consultationCount);
                                             }
                                             else if (recordChoice == 3)
                                             {
-                                                client->manageExaminations(examHead, department);
+                                                client->manageExaminations(examHead, department, examinationCount);
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead, department);
+                                                client->manageHospitalizations(hosHead, department, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, department);
+                                                client->manageMedicationRecords(medRecHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -176,23 +196,23 @@ int main()
                                             int recordChoice = adminMedicalRecordMenu();
                                             if (recordChoice == 1)
                                             {
-                                                client->manageRegistrations(regHead, department);
+                                                client->manageRegistrations(regHead, docHead, department, registrationCount);
                                             }
                                             else if (recordChoice == 2)
                                             {
-                                                client->manageConsultations(conHead, department);
+                                                client->manageConsultations(conHead, department, regHead, consultationCount);
                                             }
                                             else if (recordChoice == 3)
                                             {
-                                                client->manageExaminations(examHead, department);
+                                                client->manageExaminations(examHead, department, examinationCount);
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead, department);
+                                                client->manageHospitalizations(hosHead, department, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, department);
+                                                client->manageMedicationRecords(medRecHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -211,23 +231,23 @@ int main()
                                             int recordChoice = adminMedicalRecordMenu();
                                             if (recordChoice == 1)
                                             {
-                                                client->manageRegistrations(regHead, department);
+                                                client->manageRegistrations(regHead, docHead, department, registrationCount);
                                             }
                                             else if (recordChoice == 2)
                                             {
-                                                client->manageConsultations(conHead, department);
+                                                client->manageConsultations(conHead, department, regHead, consultationCount);
                                             }
                                             else if (recordChoice == 3)
                                             {
-                                                client->manageExaminations(examHead, department);
+                                                client->manageExaminations(examHead, department, examinationCount);
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead, department);
+                                                client->manageHospitalizations(hosHead, department, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, department);
+                                                client->manageMedicationRecords(medRecHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -299,5 +319,5 @@ int main()
         }
     }
 
-    saveAdminData(adminHead); // 保存管理员数据
+    saveAdminData(adminHead, adminIDCount); // 保存管理员数据
 }

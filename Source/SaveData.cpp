@@ -1,8 +1,7 @@
 #include "../Head/SaveData.h"
 
-
 // =====================人物数据保存函数=====================
-void saveAdminData(Admin *adminHead)
+void saveAdminData(Admin *adminHead, int count)
 {
     std::ofstream outFile(ADMIN_FILE);
     if (!outFile)
@@ -25,15 +24,15 @@ void saveAdminData(Admin *adminHead)
         current = current->next;
     }
 
+    outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
     std::cout << "管理员数据保存成功！" << std::endl;
 
     outFile.close();
 }
 
-
 // =====================医疗记录数据保存函数=====================
 
-void saveRegistrations(Registration *regHead)
+void saveRegistrations(Registration *regHead, int count)
 {
     std::ofstream outFile(REGISTRATION_FILE);
     if (!outFile)
@@ -52,16 +51,18 @@ void saveRegistrations(Registration *regHead)
                 << current->registerTime << ","
                 << current->fee << ","
                 << static_cast<int>(current->status) << "," // 枚举转int
-                << current->note << ","
+                << (current->note.empty() ? "无备注" : current->note) << ","
                 << (current->isDeleted ? "1" : "0")
                 << std::endl;
         current = current->next;
     }
 
+    outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
+
     outFile.close();
 }
 
-void saveConsultations(Consultation *conHead)
+void saveConsultations(Consultation *conHead, int count)
 {
     std::ofstream outFile(CONSULTATION_FILE);
     if (!outFile)
@@ -78,6 +79,7 @@ void saveConsultations(Consultation *conHead)
                 << current->patientID << ","
                 << current->doctorID << ","
                 << current->consultationTime << ","
+                << current->department << ","
                 << current->chiefComplaint << ","
                 << current->historyOfPresentIllness << ","
                 << current->pastMedicalHistory << ","
@@ -85,15 +87,17 @@ void saveConsultations(Consultation *conHead)
                 << current->preliminaryDiagnosis << ","
                 // examinationlist、prescriptions、attachments、relatedConsultationIDs 建议用分号拼接
                 << static_cast<int>(current->status) << ","
-                << current->note
+                << (current->note.empty() ? "无备注" : current->note)
                 << std::endl;
         current = current->next;
     }
 
+    outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
+
     outFile.close();
 }
 
-void saveExaminations(Examination *examHead)
+void saveExaminations(Examination *examHead, int count)
 {
     std::ofstream outFile(EXAMINATION_FILE);
     if (!outFile)
@@ -109,6 +113,7 @@ void saveExaminations(Examination *examHead)
                 << current->consultationID << ","
                 << current->patientID << ","
                 << current->doctorID << ","
+                << current->department << ","
                 << current->itemName << ","
                 << current->orderTime << ","
                 << current->reportTime << ","
@@ -117,15 +122,16 @@ void saveExaminations(Examination *examHead)
                 << current->fee << ","
                 << (current->isPaid ? "1" : "0") << ","
                 << static_cast<int>(current->status) << ","
-                << current->note
+                << (current->note.empty() ? "无备注" : current->note)
                 << std::endl;
         current = current->next;
     }
 
+    outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
     outFile.close();
 }
 
-void saveHospitalizations(Hospitalization *hosHead)
+void saveHospitalizations(Hospitalization *hosHead, int count)
 {
     std::ofstream outFile(HOSPITALIZATION_FILE);
     if (!outFile)
@@ -156,5 +162,6 @@ void saveHospitalizations(Hospitalization *hosHead)
         current = current->next;
     }
 
+    outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
     outFile.close();
 }

@@ -16,7 +16,8 @@
 				"kind": "build",
 				"isDefault": true
 			},
-			"problemMatcher": []
+			"problemMatcher": [],
+			"detail": "进入 build 目录后执行 cmake --build . --config Debug 命令，编译项目"
 		},
 		{
 			"label": "CMake: 配置",
