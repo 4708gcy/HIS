@@ -11,11 +11,45 @@
 				"--config",
 				"Debug"
 			],
+			"dependsOn":["CMake: 配置"],
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			},
 			"problemMatcher": []
+		},
+		{
+			"label": "CMake: 配置",
+			"type": "shell",
+			"command": "cmake",
+			"args": [
+				".."
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/build"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"problemMatcher": [],
+			"detail": "进入 build 目录后执行 cmake .. 命令，生成构建文件"
+		},
+		{
+			"type": "shell",
+			"label": "CMake: build清理",
+			"command": "Remove-Item",
+			"args": [
+				"-Recurse",
+				"-Force",
+				"${workspaceFolder}/build/*"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"problemMatcher": [],
+			"detail": "CMake 模板 清理 任务"
 		}
 	]
 }
