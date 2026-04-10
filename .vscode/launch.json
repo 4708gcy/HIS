@@ -9,7 +9,8 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "preLaunchTask": "CMake: 编译"
+            "preLaunchTask": "CMake: 编译",
+            "postDebugTask": "CMake: build清理"
         }
     ]
 }
