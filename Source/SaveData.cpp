@@ -17,8 +17,12 @@ void saveAdminData(Admin *adminHead, int count)
                 << current->getUsername() << ","
                 << current->getStoredHash() << ","
                 << current->getSalt() << ","
-                << (current->getIsAccountActive() ? "true" : "false") << ","
-                << current->getCreateTime()
+                << (current->getIsAccountActive() ? "1" : "0") << ","
+                << current->getCreateTime() << ","
+                << current->getTotalRevenue() << ","
+                << current->getTotalExpenses() << ","
+                << current->getNetProfit() << ","
+                << (current->getIsDeleted() ? "1" : "0") << ","
                 << std::endl;
 
         current = current->next;
@@ -54,8 +58,16 @@ void saveRegistrations(Registration *regHead, int count)
                 << (current->note.empty() ? "无备注" : current->note) << ","
                 << (current->isDeleted ? "1" : "0")
                 << std::endl;
+
+        // 输出相关挂号记录ID列表
+        for (const auto &relatedID : current->relatedRegistrationIDs)
+        {
+            outFile << "RELATED_REGISTRATION_ID:" << relatedID << std::endl;
+        }
+        
         current = current->next;
     }
+
 
     outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
 
@@ -86,9 +98,42 @@ void saveConsultations(Consultation *conHead, int count)
                 << current->familyHistory << ","
                 << current->preliminaryDiagnosis << ","
                 // examinationlist、prescriptions、attachments、relatedConsultationIDs 建议用分号拼接
+                << (current->isPrecriptionReviewed ? "1" : "0") << ","
+                << (current->isHospitalizationRecommended ? "1" : "0") << ","
                 << static_cast<int>(current->status) << ","
-                << (current->note.empty() ? "无备注" : current->note)
-                << std::endl;
+                << (current->note.empty() ? "无备注" : current->note) << ","
+                << (current->isDeleted ? "1" : "0") << std::endl;
+            
+        // 保存处方列表
+        for (const auto &pres : current->prescriptions)
+        {
+            outFile << "PRESCRIPTION:" << pres.medicineID << ","
+                    << pres.name << ","
+                    << pres.dosage << ","
+                    << pres.frequency << ","
+                    << pres.duration << ","
+                    << (pres.note.empty() ? "无备注" : pres.note) << std::endl;
+        }
+
+        // 保存检查项目列表
+        for (const auto &exam : current->examinationlist)
+        {
+            outFile << "EXAMINATION_ITEM:" << exam << std::endl;
+        }
+
+        // 保存附件列表
+        for (const auto &attach : current->attachments)
+        {
+            outFile << "ATTACHMENT:" << attach << std::endl;
+        }
+
+        // 保存相关看诊记录ID列表
+        for (const auto &relatedID : current->relatedConsultationIDs)
+        {
+            outFile << "RELATED_CONSULTATION_ID:" << relatedID << std::endl;
+        }
+
+
         current = current->next;
     }
 
@@ -118,50 +163,45 @@ void saveExaminations(Examination *examHead, int count)
                 << current->orderTime << ","
                 << current->reportTime << ","
                 << current->reportSummary << ","
-                // vitalSigns 建议用分号拼接
                 << current->fee << ","
-                << (current->isPaid ? "1" : "0") << ","
                 << static_cast<int>(current->status) << ","
-                << (current->note.empty() ? "无备注" : current->note)
+                << (current->isDeleted ? "1" : "0") << std::endl;
+
+        // 保存生命体征
+        const VitalSigns &vs = current->vitalSigns;
+        outFile << "VITAL_SIGNS:"
+                << (vs.temperatureC ? std::to_string(*vs.temperatureC) : "") << ";"
+                << (vs.systolicBP ? std::to_string(*vs.systolicBP) : "") << ";"
+                << (vs.diastolicBP ? std::to_string(*vs.diastolicBP) : "") << ";"
+                << (vs.heartRate ? std::to_string(*vs.heartRate) : "") << ";"
+                << (vs.respiratoryRate ? std::to_string(*vs.respiratoryRate) : "") << ";"
+                << (vs.spo2 ? std::to_string(*vs.spo2) : "") << ";"
+                << (vs.height ? std::to_string(*vs.height) : "") << ";"
+                << (vs.weight ? std::to_string(*vs.weight) : "") << ";"
+                << (vs.bmi ? std::to_string(*vs.bmi) : "") << ";"
+                << (vs.painScore ? std::to_string(*vs.painScore) : "") << ";"
+                << (vs.waistCircumference ? std::to_string(*vs.waistCircumference) : "") << ";"
+                << (vs.bloodSugar ? std::to_string(*vs.bloodSugar) : "") << ";"
+                << (vs.bodyFat ? std::to_string(*vs.bodyFat) : "") << ";"
+                << (vs.uricAcid ? std::to_string(*vs.uricAcid) : "") << ";"
+                << (vs.cholesterol ? std::to_string(*vs.cholesterol) : "")
                 << std::endl;
+
+        // 保存附件
+        for (const auto &attach : current->attachments)
+            outFile << "ATTACHMENT:" << attach << std::endl;
+
+        // 保存相关检查记录ID
+        for (const auto &relatedID : current->relatedExaminationIDs)
+            outFile << "RELATED_EXAMINATION_ID:" << relatedID << std::endl;
+
         current = current->next;
     }
 
-    outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
+    outFile << "count:" << count << std::endl;
     outFile.close();
 }
-
 void saveHospitalizations(Hospitalization *hosHead, int count)
 {
-    std::ofstream outFile(HOSPITALIZATION_FILE);
-    if (!outFile)
-    {
-        std::cerr << "无法打开住院记录文件进行保存！" << std::endl;
-        return;
-    }
 
-    Hospitalization *current = hosHead;
-    while (current != nullptr)
-    {
-        outFile << current->hospitalizationID << ","
-                << current->patientID << ","
-                << current->doctorID << ","
-                << current->nurseID << ","
-                << current->department << ","
-                << current->wardType << ","
-                << current->bedNo << ","
-                << current->applyTime << ","
-                << current->admitTime << ","
-                << current->dischargeTime << ","
-                << current->availableAdmitTime << ","
-                << current->deposit << ","
-                << current->totalCost << ","
-                << (current->isDepositPaid ? "1" : "0") << ","
-                << static_cast<int>(current->status)
-                << std::endl;
-        current = current->next;
-    }
-
-    outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
-    outFile.close();
 }

@@ -41,13 +41,13 @@ int selectIntCheck(const int min, const int max)
 }
 
 // 2. 安全 double 输入
-double inputFeeCheck()
+double inputFeeCheck(const std::string &prompt)
 {
     double fee;
     std::string line;
     while (true)
     {
-        std::cout << "请输入费用: ";
+        std::cout << prompt;
         std::getline(std::cin, line);
         line = trim(line); // 去除首尾空格
         std::stringstream ss(line);
@@ -151,7 +151,6 @@ std::string inputPwdCheck(const std::string &prompt)
         std::cout << prompt << "(密码必须至少8位，包含字母和数字): " << std::endl;
         std::getline(std::cin, pwd);
         pwd = trim(pwd); // 去除首尾空格
-
 
         if (pwd.length() < 8)
         {
@@ -294,8 +293,9 @@ int adminRegistrationViewMenu()
     std::cout << "2. 根据挂号状态查看" << std::endl;
     std::cout << "3. 根据患者ID查看" << std::endl;
     std::cout << "4. 根据医生ID查看" << std::endl;
+    std::cout << "5. 根据挂号记录ID查看" << std::endl;
     std::cout << "0. 返回上级菜单" << std::endl;
-    int viewChoice = selectIntCheck(0, 4);
+    int viewChoice = selectIntCheck(0, 5);
     return viewChoice;
 }
 
@@ -323,7 +323,108 @@ int adminConsultationViewMenu()
     std::cout << "3. 根据医生ID查看" << std::endl;
     std::cout << "4. 根据状态查看" << std::endl;
     std::cout << "5. 根据挂号记录ID查看" << std::endl;
+    std::cout << "6. 根据看诊记录ID查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+    int viewChoice = selectIntCheck(0, 6);
+    return viewChoice;
+}
+
+// 管理员检查记录管理菜单
+int adminExaminationManagementMenu()
+{
+    std::cout << "检查记录管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看检查记录" << std::endl;
+    std::cout << "2. 修改检查状态" << std::endl;
+    std::cout << "3. 删除检查记录" << std::endl;
+    std::cout << "4. 添加检查记录" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员检查记录查看方式选择菜单
+int adminExaminationViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看该科室的所有检查记录" << std::endl;
+    std::cout << "2. 根据患者ID查看" << std::endl;
+    std::cout << "3. 根据医生ID查看" << std::endl;
+    std::cout << "4. 根据状态查看" << std::endl;
+    std::cout << "5. 根据检查记录ID查看" << std::endl;
     std::cout << "0. 返回上级菜单" << std::endl;
     int viewChoice = selectIntCheck(0, 5);
     return viewChoice;
+}
+
+// 检查项目选择菜单
+std::string ExaminationItemMenu()
+{
+    std::cout << "请输入检查项目名称: " << std::endl;
+    std::cout << "1. 体温测量" << std::endl;
+    std::cout << "2. 血压测量" << std::endl;
+    std::cout << "3. 心率测量" << std::endl;
+    std::cout << "4. 呼吸频率测量" << std::endl;
+    std::cout << "5. 脉搏血氧测量" << std::endl;
+    std::cout << "6. 身高测量" << std::endl;
+    std::cout << "7. 体重测量" << std::endl;
+    std::cout << "8. BMI计算" << std::endl;
+    std::cout << "9. 疼痛评估" << std::endl;
+    std::cout << "10. 腰围测量" << std::endl;
+    std::cout << "11. 血糖测量" << std::endl;
+    std::cout << "12. 体脂测量" << std::endl;
+    std::cout << "13. 尿酸测定" << std::endl;
+    std::cout << "14. 血脂测定" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int itemChoice = selectIntCheck(0, 14);
+
+    std::string itemName = "0"; // 默认返回上级菜单
+
+    if(itemChoice == 1){
+        itemName = "体温测量";
+    }
+    else if(itemChoice == 2){
+        itemName = "血压测量";
+    }
+    else if(itemChoice == 3){
+        itemName = "心率测量";
+    }
+    else if(itemChoice == 4){
+        itemName = "呼吸频率测量";
+    }
+    else if(itemChoice == 5){
+        itemName = "脉搏血氧测量";
+    }
+    else if(itemChoice == 6){
+        itemName = "身高测量";
+    }
+    else if(itemChoice == 7){
+        itemName = "体重测量";
+    }
+    else if(itemChoice == 8){
+        itemName = "BMI计算";
+    }
+    else if(itemChoice == 9){
+        itemName = "疼痛评估";
+    }
+    else if(itemChoice == 10){
+        itemName = "腰围测量";
+    }
+    else if(itemChoice == 11){
+        itemName = "血糖测量";
+    }
+    else if(itemChoice == 12){
+        itemName = "体脂测量";
+    }
+    else if(itemChoice == 13){
+        itemName = "尿酸测定";
+    }
+    else if(itemChoice == 14){
+        itemName = "血脂测定";
+    }
+
+    return itemName; // 返回上级菜单
+
 }

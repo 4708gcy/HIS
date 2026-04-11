@@ -1,4 +1,4 @@
-/** 
+/**
  * @file User.h
  * @brief 用户基类的定义
  * @details 该头文件定义了一个 User 类，作为所有用户类型的基类，包含用户的基本信息、安全认证和权限管理功能
@@ -39,9 +39,8 @@
 #define MEDICINE_FILE "../Data/RecordData/MedicineChainData/medicines.txt"
 
 // 定义全局常量
-#define failedLoginLimit 5 // 连续登录失败次数限制
+#define failedLoginLimit 5  // 连续登录失败次数限制
 #define hashIterations 1000 // 密码哈希迭代次数
-
 
 /**
  * @file User.h
@@ -64,19 +63,20 @@ enum class UserRole
 class User
 {
 protected:
-    bool isLoggedIn = false;     // 登录状态
-    std::string userID;          // 用户唯一ID
-    std::string username;        // 显示用户名
-    std::string storedHash;      // 存储的密码串（格式 salt$hash）
-    std::string salt;            // 密码盐值
-    int loginAttempts = 0;       // 连续失败次数
+    bool isLoggedIn = false;      // 登录状态
+    std::string userID;           // 用户唯一ID
+    std::string username;         // 显示用户名
+    std::string storedHash;       // 存储的密码串（格式 salt$hash）
+    std::string salt;             // 密码盐值
+    int loginAttempts = 0;        // 连续失败次数
     bool isAccountActive = false; // 账户是否被激活/未锁定
-    UserRole role;               // 角色类型
-    std::string createTime;      // 账户创建时间字符串
+    UserRole role;                // 角色类型
+    std::string createTime;       // 账户创建时间字符串
 
-    static constexpr int kMaxLoginAttempts = failedLoginLimit;  // 锁定门槛
-    static constexpr int kHashIterations = hashIterations; // 哈希迭代次数
+    bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
 
+    static constexpr int kMaxLoginAttempts = failedLoginLimit; // 锁定门槛
+    static constexpr int kHashIterations = hashIterations;     // 哈希迭代次数
 
 public:
     // 注册新用户 : 1 - Admin, 2 - Doctor, 3 - Nurse, 4 - Pharmacist, 5 - Patient
@@ -94,7 +94,7 @@ public:
     const std::string &getCreateTime() const;
     int getKHashIterations() const;
     std::string getSalt() const;
-
+    bool getIsDeleted() const;
 
     void setUserID(const std::string &uid);
     void setUsername(const std::string &uname);
@@ -103,16 +103,16 @@ public:
     void setIsAccountActive(bool active);
     void setRole(UserRole r);
     void setCreateTime(const std::string &time);
+    void setIsDeleted(bool deleted);
 
-
-    std::string regStatusToString(RegistrationStatus status); // 将挂号状态枚举转换为字符串表示
-    std::string conStatusToString(ConsultationStatus status); // 将看诊状态枚举转换为字符串表示
-    std::string examStatusToString(ExaminationStatus status);  // 将检查状态枚举转换为字符串表示
-    std::string hosStatusToString(HospitalizationStatus status); // 将住院状态枚举转换为字符串表示
-    std::string medicationStatusToString(MedicationStatus status); // 将用药状态枚举转换为字符串表示
+    std::string regStatusToString(RegistrationStatus status);                  // 将挂号状态枚举转换为字符串表示
+    std::string conStatusToString(ConsultationStatus status);                  // 将看诊状态枚举转换为字符串表示
+    std::string examStatusToString(ExaminationStatus status);                  // 将检查状态枚举转换为字符串表示
+    std::string hosStatusToString(HospitalizationStatus status);               // 将住院状态枚举转换为字符串表示
+    std::string medicationStatusToString(MedicationStatus status);             // 将用药状态枚举转换为字符串表示
     std::string medicationReviewStatusToString(MedicationReviewStatus status); // 将用药审核状态枚举转换为字符串表示
-    std::string medicineStatusToString(MedicineStatus status); // 将药品状态枚举转换为字符串表示
-
+    std::string medicineStatusToString(MedicineStatus status);                 // 将药品状态枚举转换为字符串表示
+    std::string findVitalSignToString(Examination* exa); // 将体征信息转换为字符串表示
 };
 
 #endif // USER_H

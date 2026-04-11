@@ -6,6 +6,21 @@ Admin::Admin()
 {
 }
 
+double &Admin::getTotalRevenue()
+{
+    return totalRevenue;
+}
+
+double &Admin::getTotalExpenses()
+{
+    return totalExpenses;
+}
+
+double &Admin::getNetProfit()
+{
+    return netProfit;
+}
+
 Admin *Admin::adminSignUp(int &idCounter)
 {
     bool flag = signUp(1, idCounter); // 1 - Admin
@@ -265,7 +280,7 @@ void Admin::addRegistration(Registration *&reg, Doctor *&doc, const std::string 
 
     newReg->doctorID = inputIDCheck("请输入医生ID: ");
 
-    newReg->fee = inputFeeCheck(); // 输入费用并检查有效性
+    newReg->fee = inputFeeCheck("请输入挂号费用: "); // 输入费用并检查有效性
 
     // 生成唯一的挂号ID（可以根据实际需求改为更复杂的生成方式）
     newReg->registrationID = "reg" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0');
@@ -279,6 +294,39 @@ void Admin::addRegistration(Registration *&reg, Doctor *&doc, const std::string 
     reg = newReg;
 
     std::cout << "挂号记录已添加！新挂号ID: " << newReg->registrationID << std::endl;
+}
+// 根据挂号信息ID查看挂号记录
+void Admin::viewRegistrationsByID(Registration *&reg, const std::string &department)
+{
+    std::string regID = inputRecordIDCheck("请输入要查看的挂号记录ID: ", {"reg"});
+
+    bool found = false;
+
+    Registration *current = reg;
+    std::cout << "正在查找挂号记录ID: " << regID << " 的挂号记录..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department && current->registrationID == regID)
+        {
+            std::string statusStr = regStatusToString(current->status);
+            std::cout << "ID: " << current->registrationID
+                      << ", 患者ID: " << current->patientID
+                      << ", 医生ID: " << current->doctorID
+                      << ", 时间: " << current->registerTime
+                      << ", 费用: " << current->fee
+                      << ", 状态: " << statusStr
+                      << ", 备注: " << current->note
+                      << std::endl;
+            found = true;
+            break;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到指定的挂号记录！" << std::endl;
+    }
 }
 
 // 管理挂号记录的主函数，提供查看、修改状态、删除和添加等功能
@@ -318,6 +366,11 @@ void Admin::manageRegistrations(Registration *&reg, Doctor *&doc, const std::str
                     viewRegistrationsByDoctor(reg, department);
                     pause();
                 }
+                else if (viewChoice == 5)
+                {
+                    viewRegistrationsByID(reg, department);
+                    pause();
+                }
                 else
                 {
                     std::cout << "无效的选择! 请重新选择。" << std::endl;
@@ -355,7 +408,7 @@ void Admin::viewAllConsultations(Consultation *&con, const std::string &departme
 {
     Consultation *current = con;
     std::vector<Consultation *> temp;
-    std::cout << "看诊记录列表:" << std::endl;
+    std::cout << "正在查找所有看诊记录..." << std::endl;
 
     bool foundAny = false;
 
@@ -428,9 +481,7 @@ void Admin::viewAllConsultations(Consultation *&con, const std::string &departme
 // 查看指定医生的看诊记录
 void Admin::viewConsultationsByDoctor(Consultation *&con, const std::string &department)
 {
-    std::string doctorID;
-    std::cout << "请输入医生ID: ";
-    std::cin >> doctorID;
+    std::string doctorID = inputIDCheck("请输入医生ID: ");
 
     bool found = false;
 
@@ -505,9 +556,7 @@ void Admin::viewConsultationsByDoctor(Consultation *&con, const std::string &dep
 // 查看指定患者的看诊记录
 void Admin::viewConsultationsByPatient(Consultation *&con, const std::string &department)
 {
-    std::string patientID;
-    std::cout << "请输入患者ID: ";
-    std::cin >> patientID;
+    std::string patientID = inputIDCheck("请输入患者ID: ");
 
     bool found = false;
 
@@ -583,8 +632,8 @@ void Admin::viewConsultationsByPatient(Consultation *&con, const std::string &de
 // 查看指定状态的看诊记录
 void Admin::viewConsultationsByStatus(Consultation *&con, const std::string &department)
 {
-    std::cout << "请输入要过滤的看诊状态 (0 - 待处理, 1 - 正在处理, 2 - 已完成): ";
-    int statusFilter = selectIntCheck(0, 2);
+    std::cout << "请输入要过滤的看诊状态 (0 - 待处理, 1 - 正在处理, 2 - 已完成, 3 - 已作废): ";
+    int statusFilter = selectIntCheck(0, 3);
 
     bool found = false;
 
@@ -659,9 +708,7 @@ void Admin::viewConsultationsByStatus(Consultation *&con, const std::string &dep
 // 查看指定挂号ID的看诊记录
 void Admin::viewConsultationByRegistrationID(Consultation *&con, const std::string &department)
 {
-    std::string registrationID;
-    std::cout << "请输入挂号ID: ";
-    std::cin >> registrationID;
+    std::string registrationID = inputRecordIDCheck("请输入挂号记录ID: ", {"reg"});
 
     bool found = false;
 
@@ -692,7 +739,7 @@ void Admin::viewConsultationByRegistrationID(Consultation *&con, const std::stri
 
     if (!found)
     {
-        std::cout << "未找到该挂号ID的看诊记录！" << std::endl;
+        std::cout << "未找到与该挂号ID关联的看诊记录！" << std::endl;
         return;
     }
 
@@ -791,7 +838,7 @@ void Admin::addConsultation(Consultation *&con, const std::string &department, R
 {
     Consultation *newCon = new Consultation();
 
-    std::cout << department << " 当前的挂号记录列表:" << std::endl;
+    std::cout << department << " 当前可关联的挂号记录列表:" << std::endl;
     Registration *currentReg = reg;
     while (currentReg != nullptr)
     { // 只显示当前科室的挂号记录，并且状态为已支付的记录
@@ -817,6 +864,12 @@ void Admin::addConsultation(Consultation *&con, const std::string &department, R
     {
         if (!currentReg->isDeleted && currentReg->registrationID == regID && currentReg->department == department)
         {
+            if (currentReg->status != RegistrationStatus::PAID)
+            {
+                std::cout << "只能关联已支付的挂号记录！" << std::endl;
+                delete newCon; // 释放内存
+                return;
+            }
             newCon->registrationID = regID;            // 关联挂号记录ID
             newCon->patientID = currentReg->patientID; // 从挂号记录获取患者ID
             newCon->department = department;           // 设置科室
@@ -845,6 +898,76 @@ void Admin::addConsultation(Consultation *&con, const std::string &department, R
     con = newCon;
 
     std::cout << "看诊记录已添加！新看诊ID: " << newCon->consultationID << std::endl;
+}
+// 根据看诊记录ID查看看诊记录
+void Admin::viewConsultationByID(Consultation *&con, const std::string &department)
+{
+    std::string conID = inputRecordIDCheck("请输入要查看的看诊记录ID: ", {"con"}); // 输入看诊记录ID并检查格式
+
+    bool found = false;
+
+    Consultation *current = con;
+    std::cout << "正在查找看诊记录ID: " << conID << " 的看诊记录..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->consultationID == conID && current->department == department)
+        {
+            std::string statusStr = conStatusToString(current->status);
+            if (statusStr == "正在处理")
+            {
+                std::string statusStr = conStatusToString(current->status);
+                std::cout << "ID: " << current->consultationID
+                          << ", 患者ID: " << current->patientID
+                          << ", 医生ID: " << current->doctorID
+                          << ", 时间: " << current->consultationTime
+                          << ", 科室: " << current->department
+                          << ", 状态: " << statusStr
+                          << std::endl;
+
+                std::cout << "  主诉: " << current->chiefComplaint << std::endl;
+                std::cout << "  现病史: " << current->historyOfPresentIllness << std::endl;
+                std::cout << "  既往史: " << current->pastMedicalHistory << std::endl;
+                std::cout << "  家族史: " << current->familyHistory << std::endl;
+
+                std::cout << "  初步诊断: " << current->preliminaryDiagnosis << std::endl;
+                std::cout << "  计划检查项目: ";
+                for (const auto &exam : current->examinationlist)
+                {
+                    std::cout << exam << " ";
+                }
+                std::cout << std::endl;
+                std::cout << "  计划用药" << (current->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+                for (const auto &med : current->prescriptions)
+                {
+                    std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
+                              << ", 频次: " << med.frequency << ", 疗程: " << med.duration
+                              << ", 备注: " << med.note << std::endl;
+                }
+
+                std::cout << "是否建议住院: " << (current->isHospitalizationRecommended ? "是" : "否") << std::endl;
+
+                std::cout << "  医生备注: " << current->note << std::endl;
+            }
+            else
+            {
+                std::cout << "ID: " << current->consultationID
+                          << ", 患者ID: " << current->patientID
+                          << ", 医生ID: " << current->doctorID
+                          << ", 时间: " << current->consultationTime
+                          << ", 科室: " << current->department
+                          << ", 状态: " << statusStr
+                          << ", 备注: " << current->note
+                          << std::endl;
+            }
+
+            found = true;
+            break;
+        }
+    }
+    if (!found)
+    {
+        std::cout << "未找到指定的看诊记录！" << std::endl;
+    }
 }
 
 // 管理看诊记录的主函数，提供查看、修改状态、删除和添加等功能
@@ -891,6 +1014,11 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
                     viewConsultationByRegistrationID(con, department);
                     pause();
                 }
+                else if (viewChoice == 6)
+                {
+                    viewConsultationByID(con, department);
+                    pause();
+                }
                 else
                 {
                     std::cout << "无效的选择! 请重新选择。" << std::endl;
@@ -921,10 +1049,512 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
     }
 }
 
-void Admin::manageExaminations(Examination *&exam, const std::string &department, int &idCounter)
-{ // 管理检查记录的函数实现（类似于 manageRegistrations，可以根据实际需求添加查看、修改等功能）
-    std::cout << "管理检查记录功能尚未实现！" << std::endl;
+// ==================================== 检查记录管理 =================================
+
+// 查看所有的检查记录
+void Admin::viewAllExaminations(Examination *&exam, const std::string &department)
+{
+    Examination *current = exam;
+    bool found = false;
+    std::cout << "正在查找所有检查记录..." << std::endl;
+
+    std::vector<Examination *> temp;
+
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department)
+        {
+            std::string statusStr = examStatusToString(current->status);
+            std::cout << "ID: " << current->examinationID
+                      << ", 患者ID: " << current->patientID
+                      << ", 医生ID: " << current->doctorID
+                      << ", 科室: " << current->department
+                      << ", 检查项目: " << current->itemName
+                      << ", 下单时间: " << current->orderTime
+                      << ", 状态: " << statusStr
+                      << ", 出报告时间: " << (current->reportTime.empty() ? "报告未出" : current->reportTime)
+                      << ", 费用: " << current->fee
+                      << std::endl;
+
+            if (!current->reportTime.empty())
+            {
+                temp.push_back(current);
+            }
+
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "该科室暂无检查记录！" << std::endl;
+    }
+
+    std::cout << "已出报告的检查记录:" << std::endl;
+    for (Examination *e : temp)
+    {
+        std::string statusStr = examStatusToString(e->status);
+        std::cout << "ID: " << e->examinationID
+                  << ", 患者ID: " << e->patientID
+                  << ", 医生ID: " << e->doctorID
+                  << ", 科室: " << e->department
+                  << ", 检查项目: " << e->itemName
+                  << ", 下单时间: " << e->orderTime
+                  << ", 状态: " << statusStr
+                  << ", 出报告时间: " << e->reportTime
+                  << ", 费用: " << e->fee
+                  << std::endl;
+        std::cout << "检查结果：" << findVitalSignToString(e) << std::endl;
+        std::cout << "报告摘要：" << e->reportSummary << std::endl;
+        std::cout << "医生备注：" << e->note << std::endl;
+    }
 }
+// 查看指定医生的检查记录
+void Admin::viewExaminationsByDoctor(Examination *&exam, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入医生ID: ");
+
+    bool found = false;
+
+    Examination *current = exam;
+    std::vector<Examination *> temp;
+    std::cout << "正在查找医生ID: " << doctorID << " 的检查记录..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department && current->doctorID == doctorID)
+        {
+            std::string statusStr = examStatusToString(current->status);
+            std::cout << "ID: " << current->examinationID
+                      << ", 患者ID: " << current->patientID
+                      << ", 医生ID: " << current->doctorID
+                      << ", 科室: " << current->department
+                      << ", 检查项目: " << current->itemName
+                      << ", 下单时间: " << current->orderTime
+                      << ", 状态: " << statusStr
+                      << ", 出报告时间: " << (current->reportTime.empty() ? "报告未出" : current->reportTime)
+                      << ", 费用: " << current->fee
+                      << std::endl;
+
+            if (!current->reportTime.empty())
+            {
+                temp.push_back(current);
+            }
+
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到该医生的检查记录！" << std::endl;
+        return;
+    }
+
+    std::cout << "已出报告的检查记录:" << std::endl;
+    for (Examination *e : temp)
+    {
+        std::string statusStr = examStatusToString(e->status);
+        std::cout << "ID: " << e->examinationID
+                  << ", 患者ID: " << e->patientID
+                  << ", 医生ID: " << e->doctorID
+                  << ", 科室: " << e->department
+                  << ", 检查项目: " << e->itemName
+                  << ", 下单时间: " << e->orderTime
+                  << ", 状态: " << statusStr
+                  << ", 出报告时间: " << (e->reportTime.empty() ? "报告未出" : e->reportTime)
+                  << ", 费用: " << e->fee
+                  << std::endl;
+        std::cout << "检查结果：" << findVitalSignToString(e) << std::endl;
+        std::cout << "报告摘要：" << e->reportSummary << std::endl;
+        std::cout << "医生备注：" << e->note << std::endl;
+    }
+}
+// 查看指定患者的检查记录
+void Admin::viewExaminationsByPatient(Examination *&exam, const std::string &department)
+{
+    std::string patientID = inputIDCheck("请输入患者ID: ");
+
+    bool found = false;
+
+    Examination *current = exam;
+    std::vector<Examination *> temp;
+    std::cout << "正在查找患者ID: " << patientID << " 的检查记录..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department && current->patientID == patientID)
+        {
+            std::string statusStr = examStatusToString(current->status);
+            std::cout << "ID: " << current->examinationID
+                      << ", 患者ID: " << current->patientID
+                      << ", 医生ID: " << current->doctorID
+                      << ", 科室: " << current->department
+                      << ", 检查项目: " << current->itemName
+                      << ", 下单时间: " << current->orderTime
+                      << ", 状态: " << statusStr
+                      << ", 出报告时间: " << (current->reportTime.empty() ? "报告未出" : current->reportTime)
+                      << ", 费用: " << current->fee
+                      << std::endl;
+
+            if (!current->reportTime.empty())
+            {
+                temp.push_back(current);
+            }
+
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到该患者的检查记录！" << std::endl;
+        return;
+    }
+
+    std::cout << "已出报告的检查记录:" << std::endl;
+    for (Examination *e : temp)
+    {
+        std::string statusStr = examStatusToString(e->status);
+        std::cout << "ID: " << e->examinationID
+                  << ", 患者ID: " << e->patientID
+                  << ", 医生ID: " << e->doctorID
+                  << ", 科室: " << e->department
+                  << ", 检查项目: " << e->itemName
+                  << ", 下单时间: " << e->orderTime
+                  << ", 状态: " << statusStr
+                  << ", 出报告时间: " << (e->reportTime.empty() ? "报告未出" : e->reportTime)
+                  << ", 费用: " << e->fee
+                  << std::endl;
+        std::cout << "检查结果：" << findVitalSignToString(e) << std::endl;
+        std::cout << "报告摘要：" << e->reportSummary << std::endl;
+        std::cout << "医生备注：" << e->note << std::endl;
+    }
+}
+// 查看指定状态的检查记录
+void Admin::viewExaminationsByStatus(Examination *&exam, const std::string &department)
+{
+    std::cout << "请输入要过滤的检查状态 (0 - 已下单, 1 - 已支付, 2 - 检查中, 3 - 检查完成, 4 - 报告已出, 5 - 已作废): ";
+    int statusFilter = selectIntCheck(0, 5);
+
+    bool found = false;
+
+    ExaminationStatus filterStatus = static_cast<ExaminationStatus>(statusFilter);
+
+    Examination *current = exam;
+    std::cout << "正在查找状态为: " << examStatusToString(filterStatus) << " 的检查记录..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department && current->status == filterStatus)
+        {
+            std::string statusStr = examStatusToString(current->status);
+
+            if (statusStr == "检查完成")
+            {
+                std::string statusStr = examStatusToString(current->status);
+                std::cout << "ID: " << current->examinationID
+                          << ", 患者ID: " << current->patientID
+                          << ", 医生ID: " << current->doctorID
+                          << ", 科室: " << current->department
+                          << ", 检查项目: " << current->itemName
+                          << ", 下单时间: " << current->orderTime
+                          << ", 状态: " << statusStr
+                          << ", 出报告时间: " << (current->reportTime.empty() ? "报告未出" : current->reportTime)
+                          << ", 费用: " << current->fee
+                          << std::endl;
+                std::cout << "检查结果：" << findVitalSignToString(current) << std::endl;
+                std::cout << "报告摘要：" << current->reportSummary << std::endl;
+                std::cout << "医生备注：" << current->note << std::endl;
+            }
+            else
+            {
+                std::cout << "ID: " << current->examinationID
+                          << ", 患者ID: " << current->patientID
+                          << ", 医生ID: " << current->doctorID
+                          << ", 科室: " << current->department
+                          << ", 检查项目: " << current->itemName
+                          << ", 下单时间: " << current->orderTime
+                          << ", 状态: " << statusStr
+                          << ", 出报告时间: " << (current->reportTime.empty() ? "报告未出" : current->reportTime)
+                          << ", 费用: " << current->fee
+                          << std::endl;
+            }
+
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到该状态的检查记录！" << std::endl;
+        return;
+    }
+}
+// 修改检查记录的状态
+void Admin::modifyExaminationStatus(Examination *&exam, const std::string &department)
+{
+    std::string examID = inputRecordIDCheck("请输入要修改状态的检查记录ID: ", {"exa"}); // 输入检查记录ID并检查格式
+
+    bool found = false;
+
+    Examination *current = exam;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->examinationID == examID && current->department == department)
+        {
+
+            std::cout << "请输入新的检查状态 (0 - 已下单, 1 - 已支付, 2 - 检查中, 3 - 检查完成, 4 - 报告已出, 5 - 已作废): ";
+            int newStatus = selectIntCheck(0, 5);
+            current->status = static_cast<ExaminationStatus>(newStatus);
+            std::cout << "检查记录状态已更新！" << std::endl;
+            found = true;
+            break;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到指定的检查记录！" << std::endl;
+    }
+}
+// 删除检查记录（逻辑删除，设置 isDeleted 标志）
+void Admin::deleteExamination(Examination *&exam, const std::string &department)
+{
+    std::string examID = inputRecordIDCheck("请输入要删除的检查记录ID: ", {"exa"}); // 输入检查记录ID并检查格式
+
+    bool found = false;
+
+    Examination *current = exam;
+    while (current != nullptr)
+    {
+        if (current->examinationID == examID && current->department == department)
+        {
+            current->isDeleted = true; // 逻辑删除
+            std::cout << "ID: " << current->examinationID << " " << "检查记录已删除！" << std::endl;
+            found = true;
+            break;
+        }
+        current = current->next;
+    }
+    if (!found)
+    {
+        std::cout << "未找到指定的检查记录！" << std::endl;
+    }
+}
+// 添加检查记录（根据输入信息创建新的 Examination 对象，并插入到链表中）
+void Admin::addExamination(Examination *&exam, const std::string &department, Consultation *con, int &idCounter)
+{
+    Examination *newExam = new Examination();
+    std::cout << department << " 当前可关联的看诊记录列表:" << std::endl;
+
+    Consultation *currentCon = con;
+    while (currentCon != nullptr)
+    { // 只显示当前科室的看诊记录，并且状态为正在处理的记录
+        if (!currentCon->isDeleted && currentCon->status == ConsultationStatus::IN_PROGRESS && currentCon->department == department)
+        {
+            std::string statusStr = conStatusToString(currentCon->status);
+            std::cout << "ID: " << currentCon->consultationID
+                      << ", 患者ID: " << currentCon->patientID
+                      << ", 医生ID: " << currentCon->doctorID
+                      << ", 时间: " << currentCon->consultationTime
+                      << ", 科室: " << currentCon->department
+                      << ", 状态: " << statusStr
+                      << std::endl;
+        }
+        currentCon = currentCon->next;
+    }
+
+    std::string conID = inputRecordIDCheck("请输入要添加检查记录的看诊记录ID: ", {"con"}); // 输入看诊记录ID并检查格式
+
+    currentCon = con;
+    while (currentCon != nullptr)
+    {
+        if (!currentCon->isDeleted && currentCon->consultationID == conID && currentCon->department == department)
+        {
+
+            if (currentCon->status != ConsultationStatus::IN_PROGRESS)
+            {
+                std::cout << "只能关联正在处理的看诊记录！" << std::endl;
+                delete newExam; // 释放内存
+                return;
+            }
+            newExam->consultationID = conID;            // 关联看诊记录ID
+            newExam->patientID = currentCon->patientID; // 从看诊记录获取患者ID
+            newExam->doctorID = currentCon->doctorID;   // 从看诊记录获取医生ID
+            newExam->department = department;           // 设置科室
+            break;
+        }
+        currentCon = currentCon->next;
+    }
+
+    if (currentCon == nullptr)
+    {
+        std::cout << "未找到指定的看诊记录！无法添加检查记录。" << std::endl;
+        delete newExam; // 释放内存
+        return;
+    }
+
+    std::string itemName = ExaminationItemMenu();
+    if (itemName == "0")
+    {
+        std::cout << "取消添加检查记录。" << std::endl;
+        delete newExam; // 释放内存
+        return;
+    }
+
+    newExam->itemName = itemName; // 设置检查项目名称
+    // 生成唯一的检查ID（可以根据实际需求改为更复杂的生成方式）
+    newExam->examinationID = "exa" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    MyTime &t = MyTime::getInstance();
+    newExam->orderTime = t.getTime(); // 获取当前时间字符串
+
+    newExam->fee = inputFeeCheck("请输入检查费用: "); // 输入检查费用并检查格式
+
+    // 插入到链表头部
+    newExam->next = exam;
+    if (exam != nullptr)
+        exam->prev = newExam;
+    exam = newExam;
+
+    std::cout << "检查记录已添加！新检查ID: " << newExam->examinationID << std::endl;
+}
+// 根据检查记录ID查看检查记录
+void Admin::viewExaminationByID(Examination *&exam, const std::string &department)
+{
+    std::string examID = inputRecordIDCheck("请输入要查看的检查记录ID: ", {"exa"}); // 输入检查记录ID并检查格式
+
+    bool found = false;
+
+    Examination *current = exam;
+    std::cout << "正在查找检查记录ID: " << examID << " 的检查记录..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->examinationID == examID && current->department == department)
+        {
+            std::string statusStr = examStatusToString(current->status);
+
+            if (statusStr == "检查完成")
+            {
+                std::string statusStr = examStatusToString(current->status);
+                std::cout << "ID: " << current->examinationID
+                          << ", 患者ID: " << current->patientID
+                          << ", 医生ID: " << current->doctorID
+                          << ", 科室: " << current->department
+                          << ", 检查项目: " << current->itemName
+                          << ", 下单时间: " << current->orderTime
+                          << ", 状态: " << statusStr
+                          << ", 出报告时间: " << (current->reportTime.empty() ? "报告未出" : current->reportTime)
+                          << ", 费用: " << current->fee
+                          << std::endl;
+                std::cout << "检查结果：" << findVitalSignToString(current) << std::endl;
+                std::cout << "报告摘要：" << current->reportSummary << std::endl;
+                std::cout << "医生备注：" << current->note << std::endl;
+            }
+            else
+            {
+                std::cout << "ID: " << current->examinationID
+                          << ", 患者ID: " << current->patientID
+                          << ", 医生ID: " << current->doctorID
+                          << ", 科室: " << current->department
+                          << ", 检查项目: " << current->itemName
+                          << ", 下单时间: " << current->orderTime
+                          << ", 状态: " << statusStr
+                          << ", 出报告时间: " << (current->reportTime.empty() ? "报告未出" : current->reportTime)
+                          << ", 费用: " << current->fee
+                          << std::endl;
+            }
+
+            found = true;
+            break;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到指定的检查记录！" << std::endl;
+    }
+}
+
+void Admin::manageExaminations(Examination *&exam, const std::string &department, Consultation *con, int &idCounter)
+{
+    while (true)
+    {
+        int choice = adminExaminationManagementMenu();
+        if (choice == 0)
+        {
+            break;
+        }
+        else if (choice == 1)
+        {
+            while (true)
+            {
+                int viewChoice = adminExaminationViewMenu();
+                if (viewChoice == 0)
+                {
+                    break;
+                }
+                else if (viewChoice == 1)
+                {
+                    viewAllExaminations(exam, department);
+                    pause();
+                }
+                else if (viewChoice == 2)
+                {
+                    viewExaminationsByPatient(exam, department);
+                    pause();
+                }
+                else if (viewChoice == 3)
+                {
+                    viewExaminationsByDoctor(exam, department);
+                    pause();
+                }
+                else if (viewChoice == 4)
+                {
+                    viewExaminationsByStatus(exam, department);
+                    pause();
+                }
+                else if (viewChoice == 5)
+                {
+                    viewExaminationByID(exam, department);
+                    pause();
+                }
+                else
+                {
+                    std::cout << "无效的选择! 请重新选择。" << std::endl;
+                    pause();
+                }
+            }
+        }
+        else if (choice == 2)
+        {
+            modifyExaminationStatus(exam, department);
+            pause();
+        }
+        else if (choice == 3)
+        {
+            deleteExamination(exam, department);
+            pause();
+        }
+        else if (choice == 4)
+        {
+            addExamination(exam, department, con, idCounter);
+            pause();
+        }
+        else
+        {
+            std::cout << "无效的选择! 请重新选择。" << std::endl;
+            pause();
+        }
+    }
+}
+
+
+
+
 
 void Admin::manageHospitalizations(Hospitalization *&hos, const std::string &department, int &idCounter)
 { // 管理住院记录的函数实现（类似于 manageRegistrations，可以根据实际需求添加查看、修改等功能）
