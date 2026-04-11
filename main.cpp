@@ -99,7 +99,7 @@ int main()
                                             }
                                             else if (recordChoice == 3)
                                             {
-                                                client->manageExaminations(examHead, department, examinationCount);
+                                                client->manageExaminations(examHead, department, conHead, examinationCount);
                                             }
                                             else if (recordChoice == 4)
                                             {
@@ -134,7 +134,7 @@ int main()
                                             }
                                             else if (recordChoice == 3)
                                             {
-                                                client->manageExaminations(examHead, department, examinationCount);
+                                                client->manageExaminations(examHead, department, conHead, examinationCount);
                                             }
                                             else if (recordChoice == 4)
                                             {
@@ -169,7 +169,7 @@ int main()
                                             }
                                             else if (recordChoice == 3)
                                             {
-                                                client->manageExaminations(examHead, department, examinationCount);
+                                                client->manageExaminations(examHead, department, conHead, examinationCount);
                                             }
                                             else if (recordChoice == 4)
                                             {
@@ -204,7 +204,7 @@ int main()
                                             }
                                             else if (recordChoice == 3)
                                             {
-                                                client->manageExaminations(examHead, department, examinationCount);
+                                                client->manageExaminations(examHead, department, conHead, examinationCount);
                                             }
                                             else if (recordChoice == 4)
                                             {
@@ -239,7 +239,7 @@ int main()
                                             }
                                             else if (recordChoice == 3)
                                             {
-                                                client->manageExaminations(examHead, department, examinationCount);
+                                                client->manageExaminations(examHead, department, conHead, examinationCount);
                                             }
                                             else if (recordChoice == 4)
                                             {
