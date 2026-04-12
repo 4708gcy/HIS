@@ -201,7 +201,92 @@ void saveExaminations(Examination *examHead, int count)
     outFile << "count:" << count << std::endl;
     outFile.close();
 }
+
 void saveHospitalizations(Hospitalization *hosHead, int count)
 {
+    std::ofstream outFile(HOSPITALIZATION_FILE);
+    if (!outFile)
+    {
+        std::cerr << "无法打开住院记录文件进行保存！" << std::endl;
+        return;
+    }
 
+    Hospitalization *current = hosHead;
+    while (current != nullptr)
+    {
+        outFile << current->hospitalizationID << ","
+                << current->consultationID << ","
+                << current->patientID << ","
+                << current->doctorID << ","
+                << current->nurseID << ","
+                << current->department << ","
+                << current->wardType << ","
+                << current->bedNumber << ","
+                << current->applyTime << ","
+                << current->admitTime << ","
+                << current->dischargeTime << ","
+                << current->availableAdmitTime << ","
+                << current->deposit << ","
+                << current->totalCost << ","
+                << static_cast<int>(current->status) << ","
+                << (current->isDeleted ? "1" : "0") << std::endl;
+
+        // 保存相关住院记录ID列表
+        for (const auto &relatedID : current->relatedHospitalizationIDs)
+            outFile << "RELATED_HOSPITALIZATION_ID:" << relatedID << std::endl;
+
+        current = current->next;
+    }
+
+    outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
+    outFile.close();
+}
+
+void saveBedInfos(bedInfo *bedHead, int count)
+{
+    std::ofstream outFile(BED_FILE);
+    if (!outFile)
+    {
+        std::cerr << "无法打开床位信息文件进行保存！" << std::endl;
+        return;
+    }
+
+    bedInfo *current = bedHead;
+    while (current != nullptr)
+    {
+        outFile << current->bedID << ","
+                << static_cast<int>(current->status) << ","
+                << current->wardType << ","
+                << current->department << ","
+                << current->areaNumber << ","
+                << current->wardNumber << ","
+                << current->bedNumber << ","
+                << current->note << ","
+                << current->patientID << ","
+                << current->nurseID << std::endl;
+
+        // 保存体征信息
+        const VitalSigns &vs = current->vitalSigns;
+        outFile << "VITAL_SIGNS:"
+                << (vs.temperatureC ? std::to_string(*vs.temperatureC) : "") << ";"
+                << (vs.systolicBP ? std::to_string(*vs.systolicBP) : "") << ";"
+                << (vs.diastolicBP ? std::to_string(*vs.diastolicBP) : "") << ";"
+                << (vs.heartRate ? std::to_string(*vs.heartRate) : "") << ";"
+                << (vs.respiratoryRate ? std::to_string(*vs.respiratoryRate) : "") << ";"
+                << (vs.spo2 ? std::to_string(*vs.spo2) : "") << ";"
+                << (vs.height ? std::to_string(*vs.height) : "") << ";"
+                << (vs.weight ? std::to_string(*vs.weight) : "") << ";"
+                << (vs.bmi ? std::to_string(*vs.bmi) : "") << ";"
+                << (vs.painScore ? std::to_string(*vs.painScore) : "") << ";"
+                << (vs.waistCircumference ? std::to_string(*vs.waistCircumference) : "") << ";"
+                << (vs.bloodSugar ? std::to_string(*vs.bloodSugar) : "") << ";"
+                << (vs.bodyFat ? std::to_string(*vs.bodyFat) : "") << ";"
+                << (vs.uricAcid ? std::to_string(*vs.uricAcid) : "") << ";"
+                << (vs.cholesterol ? std::to_string(*vs.cholesterol) : "")
+                << std::endl;
+
+        current = current->next;
+    }
+    outFile << "count:" << count << std::endl;
+    outFile.close();
 }

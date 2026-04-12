@@ -21,32 +21,68 @@
 enum class HospitalizationStatus
 {
     APPLIED,    // 申请中/待处理
+    PAID,       // 已缴费,待分床
     ADMITTED,   // 已入院
     DISCHARGED, // 已出院
-    CANCELED    // 已取消
+    VOIDED      // 已作废
+};
+
+enum class bedStatus
+{
+    OCCUPIED,   // 已占用
+    ClEANING,   // 清洁中
+    AVAILABLE,  // 可分配
+    UNAVAILABLE // 不可用（如维修中等）
+};
+
+struct bedInfo
+{
+    std::string bedID = "";  // 生成的床位ID（格式：科室-区域-类型-病房-床位）
+
+    bedStatus status = bedStatus::AVAILABLE; // 床位状态
+    std::string wardType;          // 病房类型（如普通病房/隔离病房/VIP病房/ICU等）
+    std::string department;         // 所属科室
+    int areaNumber;                // 区域号（如1-10）
+    int wardNumber;                // 病房号（如1-999）
+    int bedNumber;                 // 床位号（如1-10）
+
+    std::string note = ""; // 备注信息（如特殊护理需求等）
+
+    VitalSigns vitalSigns; // 病人的生命体征
+
+    int patientID; // 占用该床位的患者ID
+    int nurseID;   // 看护该床位的护士ID
+
+    bedInfo *prev = nullptr;
+    bedInfo *next = nullptr; // 链表指针
 };
 
 struct Hospitalization
 {
+    std::string consultationID;    // 关联看诊记录ID
     std::string hospitalizationID; // 住院记录唯一ID
     std::string patientID;         // 患者ID
     std::string doctorID;          // 申请医生ID
     std::string nurseID;           // 负责护士ID（可选）
 
     std::string department; // 所属科室
-    std::string wardType;   // 病房类型（普通/隔离/VIP）
-    std::string bedNo;      // 床位号
+    std::string wardType;   // 病房类型（如普通病房/隔离病房/VIP病房/ICU等）
+    std::string bedNumber;  // 床位号
 
-    std::string applyTime;          // 申请时间
-    std::string admitTime;          // 实际入院时间
-    std::string dischargeTime;      // 出院时间
-    std::string availableAdmitTime; // 护士分床后给出的可入住时间
+    std::string applyTime = "0";          // 申请时间
+    std::string admitTime = "0";          // 实际入院时间
+    std::string dischargeTime = "0";      // 出院时间
+    std::string availableAdmitTime = "0"; // 护士分床后给出的可入住时间
 
     double deposit = 0.0;   // 押金
     double totalCost = 0.0; // 总费用
 
-    bool isDepositPaid = false; // 押金是否已缴费
     HospitalizationStatus status = HospitalizationStatus::APPLIED;
+
+    bool isDeleted = false; // 逻辑删除标志
+
+    // 关联的住院记录ID列表（如转科、转院等情况）
+    std::vector<std::string> relatedHospitalizationIDs;
 
     Hospitalization *prev = nullptr;
     Hospitalization *next = nullptr;

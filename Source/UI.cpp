@@ -175,6 +175,104 @@ std::string inputPwdCheck(const std::string &prompt)
         return pwd;
     }
 }
+
+// 6. 安全床位号输入
+std::string inputBedNumberCheck(const std::string &prompt, std::string department, std::string wardType)
+{
+    std::string bedNumber, dpt, area,type, ward, num;
+    if (department.empty() || wardType.empty())
+    {
+        std::cout << "部门和病房类型不能为空！" << std::endl;
+        return "";
+    }
+
+    if (department == "内科")
+    {
+        dpt = "N";
+    }
+    else if (department == "外科")
+    {
+        dpt = "W";
+    }
+    else if (department == "妇产科")
+    {
+        dpt = "F";
+    }
+    else if (department == "急诊科")
+    {
+        dpt = "J";
+    }
+    else if (department == "儿科")
+    {
+        dpt = "E";
+    }
+    else
+    {
+        std::cout << "无效的部门！" << std::endl;
+        return "";
+    }
+
+    if (wardType == "普通病房")
+    {
+        type = "P";
+    }
+    else if (wardType == "隔离病房")
+    {
+        type = "G";
+    }
+    else if (wardType == "VIP病房")
+    {
+        type = "V";
+    }
+    else if (wardType == "ICU病房")
+    {
+        type = "I";
+    }
+    else
+    {
+        std::cout << "无效的病房类型！" << std::endl;
+        return "";
+    }
+
+    while (true)
+    {
+        std::cout << prompt << "（区域号2位[00-10]，病房号3位[000-999]，床位号2位[00-10]）" << std::endl;
+
+        std::cout << "请输入区域号（2位数字，00-10）：";
+        std::getline(std::cin, area);
+        area = trim(area);
+        if (area.length() != 2 || !std::isdigit(area[0]) || !std::isdigit(area[1]) ||
+            std::stoi(area) < 0 || std::stoi(area) > 10)
+        {
+            std::cout << "区域号格式错误，请重新输入！" << std::endl;
+            continue;
+        }
+
+        std::cout << "请输入病房号（3位数字，000-999）：";
+        std::getline(std::cin, ward);
+        ward = trim(ward);
+        if (ward.length() != 3 || !std::isdigit(ward[0]) || !std::isdigit(ward[1]) || !std::isdigit(ward[2]) ||
+            std::stoi(ward) < 0 || std::stoi(ward) > 999)
+        {
+            std::cout << "病房号格式错误，请重新输入！" << std::endl;
+            continue;
+        }
+
+        std::cout << "请输入床位号（2位数字，00-10）：";
+        std::getline(std::cin, num);
+        num = trim(num);
+        if (num.length() != 2 || !std::isdigit(num[0]) || !std::isdigit(num[1]) ||
+            std::stoi(num) < 0 || std::stoi(num) > 10)
+        {
+            std::cout << "床位号格式错误，请重新输入！" << std::endl;
+            continue;
+        }
+
+        // 拼接床位号
+        std::string bedNumber = dpt + "-" + area + "-" + type + "-" + ward + "-" + num;
+        return bedNumber;
+    }
+}
 //============================= 菜单显示函数区域 =======================================
 
 // 登录和注册选择界面
@@ -382,49 +480,121 @@ std::string ExaminationItemMenu()
 
     std::string itemName = "0"; // 默认返回上级菜单
 
-    if(itemChoice == 1){
+    if (itemChoice == 1)
+    {
         itemName = "体温测量";
     }
-    else if(itemChoice == 2){
+    else if (itemChoice == 2)
+    {
         itemName = "血压测量";
     }
-    else if(itemChoice == 3){
+    else if (itemChoice == 3)
+    {
         itemName = "心率测量";
     }
-    else if(itemChoice == 4){
+    else if (itemChoice == 4)
+    {
         itemName = "呼吸频率测量";
     }
-    else if(itemChoice == 5){
+    else if (itemChoice == 5)
+    {
         itemName = "脉搏血氧测量";
     }
-    else if(itemChoice == 6){
+    else if (itemChoice == 6)
+    {
         itemName = "身高测量";
     }
-    else if(itemChoice == 7){
+    else if (itemChoice == 7)
+    {
         itemName = "体重测量";
     }
-    else if(itemChoice == 8){
+    else if (itemChoice == 8)
+    {
         itemName = "BMI计算";
     }
-    else if(itemChoice == 9){
+    else if (itemChoice == 9)
+    {
         itemName = "疼痛评估";
     }
-    else if(itemChoice == 10){
+    else if (itemChoice == 10)
+    {
         itemName = "腰围测量";
     }
-    else if(itemChoice == 11){
+    else if (itemChoice == 11)
+    {
         itemName = "血糖测量";
     }
-    else if(itemChoice == 12){
+    else if (itemChoice == 12)
+    {
         itemName = "体脂测量";
     }
-    else if(itemChoice == 13){
+    else if (itemChoice == 13)
+    {
         itemName = "尿酸测定";
     }
-    else if(itemChoice == 14){
+    else if (itemChoice == 14)
+    {
         itemName = "血脂测定";
     }
 
     return itemName; // 返回上级菜单
+}
 
+// 管理员住院记录管理菜单
+int adminHospitalizationManagementMenu()
+{
+    std::cout << "住院记录管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看住院记录" << std::endl;
+    std::cout << "2. 修改住院记录状态" << std::endl;
+    std::cout << "3. 删除住院记录" << std::endl;
+    std::cout << "4. 添加住院记录" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员住院记录查看方式选择菜单
+int adminHospitalizationViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看该科室的所有住院记录" << std::endl;
+    std::cout << "2. 根据患者ID查看" << std::endl;
+    std::cout << "3. 根据医生ID查看" << std::endl;
+    std::cout << "4. 根据护士ID查看" << std::endl;
+    std::cout << "5.根据住院记录ID查看" << std::endl;
+    std::cout << "6. 根据状态查看" << std::endl;
+    std::cout << "7. 根据病房类型查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+    int viewChoice = selectIntCheck(0, 7);
+    return viewChoice;
+}
+
+// 管理员住院记录病房类型选择菜单
+std::string HospitalizationWardTypeMenu()
+{
+    std::cout << "请选择病房类型:" << std::endl;
+    std::cout << "1. 普通病房" << std::endl;
+    std::cout << "2. 隔离病房" << std::endl;
+    std::cout << "3. VIP病房" << std::endl;
+    std::cout << "4. ICU病房" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    switch (choice)
+    {
+    case 0:
+        return "0";
+    case 1:
+        return "普通病房";
+    case 2:
+        return "隔离病房";
+    case 3:
+        return "VIP病房";
+    case 4:
+        return "ICU病房";
+    default:
+        return "";
+    }
 }

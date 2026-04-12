@@ -1552,13 +1552,580 @@ void Admin::manageExaminations(Examination *&exam, const std::string &department
     }
 }
 
+// ==================================== 住院记录管理 =================================
+
+// 查看所有的住院记录
+void Admin::viewAllHospitalizations(Hospitalization *&hos, const std::string &department)
+{
+    Hospitalization *current = hos;
+    bool found = false;
+    std::cout << "正在查找所有住院记录..." << std::endl;
+
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department)
+        {
+            std::string statusStr = hosStatusToString(current->status);
+            std::string wardTypeStr = current->wardType;
+            std::cout << "ID: " << current->hospitalizationID
+                      << ", 患者ID: " << current->patientID
+                      << ", 医生ID: " << current->doctorID
+                      << ", 负责护士ID: " << current->nurseID
+                      << ", 科室: " << current->department
+                      << ", 病房类型: " << (wardTypeStr.empty() ? "未分配" : wardTypeStr)
+                      << ", 床位号: " << (current->bedNumber.empty() ? "未分配" : current->bedNumber)
+                      << ", 申请时间: " << current->applyTime
+                      << ", 允许入院时间: " << (current->availableAdmitTime.empty() ? "未分配" : current->availableAdmitTime)
+                      << ", 实际入院时间: " << (current->admitTime.empty() ? "未入院" : current->admitTime)
+                      << ", 出院时间: " << (current->dischargeTime.empty() ? "未出院" : current->dischargeTime)
+                      << ", 押金: " << current->deposit
+                      << ", 总费用: " << current->totalCost
+                      << ", 住院记录状态: " << statusStr
+                      << std::endl;
+
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "该科室暂无住院记录！" << std::endl;
+    }
+}
+// 根据患者ID查看住院记录
+void Admin::viewHospitalizationsByPatient(Hospitalization *&hos, const std::string &department)
+{
+    std::string patientID = inputIDCheck("请输入患者ID: ");
+
+    bool found = false;
+
+    Hospitalization *current = hos;
+    std::cout << "正在查找患者ID: " << patientID << " 的住院记录..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department && current->patientID == patientID)
+        {
+            std::string statusStr = hosStatusToString(current->status);
+            std::string wardTypeStr = current->wardType;
+            std::cout << "ID: " << current->hospitalizationID
+                      << ", 患者ID: " << current->patientID
+                      << ", 医生ID: " << current->doctorID
+                      << ", 负责护士ID: " << current->nurseID
+                      << ", 科室: " << current->department
+                      << ", 病房类型: " << (wardTypeStr.empty() ? "未分配" : wardTypeStr)
+                      << ", 床位号: " << (current->bedNumber.empty() ? "未分配" : current->bedNumber)
+                      << ", 申请时间: " << current->applyTime
+                      << ", 允许入院时间: " << (current->availableAdmitTime.empty() ? "未分配" : current->availableAdmitTime)
+                      << ", 实际入院时间: " << (current->admitTime.empty() ? "未入院" : current->admitTime)
+                      << ", 出院时间: " << (current->dischargeTime.empty() ? "未出院" : current->dischargeTime)
+                      << ", 押金: " << current->deposit
+                      << ", 总费用: " << current->totalCost
+                      << ", 住院记录状态: " << statusStr
+                      << std::endl;
+
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到该患者的住院记录！" << std::endl;
+        return;
+    }
+}
+// 根据医生ID查看住院记录
+void Admin::viewHospitalizationsByDoctor(Hospitalization *&hos, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入医生ID: ");
+
+    bool found = false;
+
+    Hospitalization *current = hos;
+    std::cout << "正在查找医生ID: " << doctorID << " 的住院记录..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department && current->doctorID == doctorID)
+        {
+            std::string statusStr = hosStatusToString(current->status);
+            std::string wardTypeStr = current->wardType;
+            std::cout << "ID: " << current->hospitalizationID
+                      << ", 患者ID: " << current->patientID
+                      << ", 医生ID: " << current->doctorID
+                      << ", 负责护士ID: " << current->nurseID
+                      << ", 科室: " << current->department
+                      << ", 病房类型: " << (wardTypeStr.empty() ? "未分配" : wardTypeStr)
+                      << ", 床位号: " << (current->bedNumber.empty() ? "未分配" : current->bedNumber)
+                      << ", 申请时间: " << current->applyTime
+                      << ", 允许入院时间: " << (current->availableAdmitTime.empty() ? "未分配" : current->availableAdmitTime)
+                      << ", 实际入院时间: " << (current->admitTime.empty() ? "未入院" : current->admitTime)
+                      << ", 出院时间: " << (current->dischargeTime.empty() ? "未出院" : current->dischargeTime)
+                      << ", 押金: " << current->deposit
+                      << ", 总费用: " << current->totalCost
+                      << ", 住院记录状态: " << statusStr
+                      << std::endl;
+
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到该医生的住院记录！" << std::endl;
+        return;
+    }
+}
+// 根据负责护士ID查看住院记录
+void Admin::viewHospitalizationByNurse(Hospitalization *&hos, const std::string &department)
+{
+    std::string nurseID = inputIDCheck("请输入负责护士ID: ");
+
+    bool found = false;
+
+    Hospitalization *current = hos;
+    std::cout << "正在查找负责护士ID: " << nurseID << " 的住院记录..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department && current->nurseID == nurseID)
+        {
+            std::string statusStr = hosStatusToString(current->status);
+            std::string wardTypeStr = current->wardType;
+            std::cout << "ID: " << current->hospitalizationID
+                      << ", 患者ID: " << current->patientID
+                      << ", 医生ID: " << current->doctorID
+                      << ", 负责护士ID: " << current->nurseID
+                      << ", 科室: " << current->department
+                      << ", 病房类型: " << (wardTypeStr.empty() ? "未分配" : wardTypeStr)
+                      << ", 床位号: " << (current->bedNumber.empty() ? "未分配" : current->bedNumber)
+                      << ", 申请时间: " << current->applyTime
+                      << ", 允许入院时间: " << (current->availableAdmitTime.empty() ? "未分配" : current->availableAdmitTime)
+                      << ", 实际入院时间: " << (current->admitTime.empty() ? "未入院" : current->admitTime)
+                      << ", 出院时间: " << (current->dischargeTime.empty() ? "未出院" : current->dischargeTime)
+                      << ", 押金: " << current->deposit
+                      << ", 总费用: " << current->totalCost
+                      << ", 住院记录状态: " << statusStr
+                      << std::endl;
+
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到该负责护士的住院记录！" << std::endl;
+        return;
+    }
+}
+// 根据住院记录ID查看住院记录
+void Admin::viewHospitalizationByID(Hospitalization *&hos, const std::string &department)
+{
+    std::string hosID = inputRecordIDCheck("请输入要查看的住院记录ID: ", {"hos"}); // 输入住院记录ID并检查格式
+
+    bool found = false;
+
+    Hospitalization *current = hos;
+    std::cout << "正在查找住院记录ID: " << hosID << " 的住院记录..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->hospitalizationID == hosID && current->department == department)
+        {
+            std::string statusStr = hosStatusToString(current->status);
+            std::string wardTypeStr = current->wardType;
+            std::cout << "ID: " << current->hospitalizationID
+                      << ", 患者ID: " << current->patientID
+                      << ", 医生ID: " << current->doctorID
+                      << ", 负责护士ID: " << current->nurseID
+                      << ", 科室: " << current->department
+                      << ", 病房类型: " << (wardTypeStr.empty() ? "未分配" : wardTypeStr)
+                      << ", 床位号: " << (current->bedNumber.empty() ? "未分配" : current->bedNumber)
+                      << ", 申请时间: " << current->applyTime
+                      << ", 允许入院时间: " << (current->availableAdmitTime.empty() ? "未分配" : current->availableAdmitTime)
+                      << ", 实际入院时间: " << (current->admitTime.empty() ? "未入院" : current->admitTime)
+                      << ", 出院时间: " << (current->dischargeTime.empty() ? "未出院" : current->dischargeTime)
+                      << ", 押金: " << current->deposit
+                      << ", 总费用: " << current->totalCost
+                      << ", 住院记录状态: " << statusStr
+                      << std::endl;
+
+            found = true;
+            break;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到指定的住院记录！" << std::endl;
+    }
+}
+// 根据住院状态查看住院记录
+void Admin::viewHospitalizationsByStatus(Hospitalization *&hos, const std::string &department)
+{
+    std::cout << "请输入要过滤的住院记录状态 (0 - 申请中, 1 - 已缴费待分床, 2 - 已入院, 3 - 已出院, 4 - 已作废): ";
+    int statusFilter = selectIntCheck(0, 4);
+
+    bool found = false;
+
+    HospitalizationStatus filterStatus = static_cast<HospitalizationStatus>(statusFilter);
+
+    Hospitalization *current = hos;
+    std::cout << "正在查找状态为: " << hosStatusToString(filterStatus) << " 的住院记录..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department && current->status == filterStatus)
+        {
+            std::string statusStr = hosStatusToString(current->status);
+            std::string wardTypeStr = current->wardType;
+            std::cout << "ID: " << current->hospitalizationID
+                      << ", 患者ID: " << current->patientID
+                      << ", 医生ID: " << current->doctorID
+                      << ", 负责护士ID: " << current->nurseID
+                      << ", 科室: " << current->department
+                      << ", 病房类型: " << (wardTypeStr.empty() ? "未分配" : wardTypeStr)
+                      << ", 床位号: " << (current->bedNumber.empty() ? "未分配" : current->bedNumber)
+                      << ", 申请时间: " << current->applyTime
+                      << ", 允许入院时间: " << (current->availableAdmitTime.empty() ? "未分配" : current->availableAdmitTime)
+                      << ", 实际入院时间: " << (current->admitTime.empty() ? "未入院" : current->admitTime)
+                      << ", 出院时间: " << (current->dischargeTime.empty() ? "未出院" : current->dischargeTime)
+                      << ", 押金: " << current->deposit
+                      << ", 总费用: " << current->totalCost
+                      << ", 住院记录状态: " << statusStr
+                      << std::endl;
+
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到该状态的住院记录！" << std::endl;
+        return;
+    }
+}
+// 根据病房类型查看住院记录
+void Admin::viewHospitalizationByWardType(Hospitalization *&hos, const std::string &department)
+{
+    std::string wardTypeStr = HospitalizationWardTypeMenu();
+
+    bool found = false;
+
+    Hospitalization *current = hos;
+    std::cout << "正在查找病房类型为: " << wardTypeStr << " 的住院记录..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department && current->wardType == wardTypeStr)
+        {
+            std::string statusStr = hosStatusToString(current->status);
+            std::cout << "ID: " << current->hospitalizationID
+                      << ", 患者ID: " << current->patientID
+                      << ", 医生ID: " << current->doctorID
+                      << ", 负责护士ID: " << current->nurseID
+                      << ", 科室: " << current->department
+                      << ", 病房类型: " << current->wardType
+                      << ", 床位号: " << (current->bedNumber.empty() ? "未分配" : current->bedNumber)
+                      << ", 申请时间: " << current->applyTime
+                      << ", 允许入院时间: " << (current->availableAdmitTime.empty() ? "未分配" : current->availableAdmitTime)
+                      << ", 实际入院时间: " << (current->admitTime.empty() ? "未入院" : current->admitTime)
+                      << ", 出院时间: " << (current->dischargeTime.empty() ? "未出院" : current->dischargeTime)
+                      << ", 押金: " << current->deposit
+                      << ", 总费用: " << current->totalCost
+                      << ", 住院记录状态: " << statusStr
+                      << std::endl;
+
+            found = true;
+        }
+        current = current->next;
+    }
+}
+// 修改住院记录的状态
+void Admin::modifyHospitalizationStatus(Hospitalization *&hos, const std::string &department)
+{
+    std::string hosID = inputRecordIDCheck("请输入要修改状态的住院记录ID: ", {"hos"}); // 输入住院记录ID并检查格式
+
+    bool found = false;
+
+    Hospitalization *current = hos;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->hospitalizationID == hosID && current->department == department)
+        {
+
+            std::cout << "请输入新的住院记录状态 (0 - 申请中, 1 - 已缴费待分床, 2 - 已入院, 3 - 已出院, 4 - 已作废): ";
+            int newStatus = selectIntCheck(0, 4);
+            current->status = static_cast<HospitalizationStatus>(newStatus);
+            std::cout << "住院记录状态已更新！" << std::endl;
+            found = true;
+            break;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到指定的住院记录！" << std::endl;
+    }
+}
+// 删除住院记录（逻辑删除，设置 isDeleted 标志）
+void Admin::deleteHospitalization(Hospitalization *&hos, const std::string &department)
+{
+    std::string hosID = inputRecordIDCheck("请输入要删除的住院记录ID: ", {"hos"}); // 输入住院记录ID并检查格式
+
+    bool found = false;
+
+    Hospitalization *current = hos;
+    while (current != nullptr)
+    {
+        if (current->hospitalizationID == hosID && current->department == department)
+        {
+            current->isDeleted = true; // 逻辑删除
+            std::cout << "ID: " << current->hospitalizationID << " " << "住院记录已删除！" << std::endl;
+            found = true;
+            break;
+        }
+        current = current->next;
+    }
+    if (!found)
+    {
+        std::cout << "未找到指定的住院记录！" << std::endl;
+    }
+}
+// 添加住院记录（根据输入信息创建新的 Hospitalization 对象，并插入到链表中）
+void Admin::addHospitalization(Hospitalization *&hos, const std::string &department, Consultation *con, bedInfo *&bed, int &idCounter)
+{
+    Consultation *currentCon = con;
+    std::cout << department << " 当前待处理的关联的看诊记录列表:" << std::endl;
+    while (currentCon != nullptr)
+    { // 只显示当前科室的看诊记录，并且状态为正在处理的记录
+        if (!currentCon->isDeleted && currentCon->status == ConsultationStatus::IN_PROGRESS && currentCon->isHospitalizationRecommended && currentCon->department == department)
+        {
+            std::string statusStr = conStatusToString(currentCon->status);
+            std::cout << "ID: " << currentCon->consultationID
+                      << ", 患者ID: " << currentCon->patientID
+                      << ", 医生ID: " << currentCon->doctorID
+                      << ", 时间: " << currentCon->consultationTime
+                      << ", 科室: " << currentCon->department
+                      << ", 状态: " << statusStr
+                      << ", 是否建议住院: " << (currentCon->isHospitalizationRecommended ? "是" : "否")
+                      << std::endl;
+        }
+        currentCon = currentCon->next;
+    }
+
+    std::string conID = inputRecordIDCheck("请输入要添加住院记录的看诊记录ID: ", {"con"}); // 输入看诊记录ID并检查格式
+
+    Hospitalization *newHos = new Hospitalization();
+
+    currentCon = con;
+    while (currentCon != nullptr)
+    {
+        if (!currentCon->isDeleted && currentCon->consultationID == conID && currentCon->department == department)
+        {
+
+            if (currentCon->status != ConsultationStatus::IN_PROGRESS)
+            {
+                std::cout << "只能关联正在处理的看诊记录！" << std::endl;
+                return;
+            }
+            if (!currentCon->isHospitalizationRecommended)
+            {
+                std::cout << "该看诊记录未建议住院，无法关联！" << std::endl;
+                return;
+            }
+
+            newHos->consultationID = conID;            // 关联看诊记录ID
+            newHos->patientID = currentCon->patientID; // 从看诊记录获取患者ID
+            newHos->doctorID = currentCon->doctorID;   // 从看诊记录获取医生ID
+            newHos->department = department;           // 设置科室
+
+            break;
+        }
+        currentCon = currentCon->next;
+    }
+
+    if (currentCon == nullptr)
+    {
+        std::cout << "未找到指定的看诊记录！无法添加住院记录。" << std::endl;
+        delete newHos; // 释放内存
+        return;
+    }
+
+    newHos->wardType = HospitalizationWardTypeMenu(); // 选择病房类型
+    if (newHos->wardType == "0")
+    {
+        std::cout << "取消添加住院记录。" << std::endl;
+        delete newHos; // 释放内存
+        return;
+    }
+
+    bedInfo *b = bed;
+    bool bedFound = false;
+
+    std::cout << "正在检查病房类型为: " << newHos->wardType << " 的空闲床位..." << std::endl;
+    while (b != nullptr)
+    {
+        if (b->status == bedStatus::AVAILABLE && b->department == department && b->wardType == newHos->wardType)
+        {
+            std::cout << "区域：" << b->areaNumber << "病房号：" << b->wardNumber << "床位号：" << b->bedNumber << " 空闲" << std::endl;
+            bedFound = true;
+        }
+        b = b->next;
+    }
+
+    if (!bedFound)
+    {
+        std::cout << "未找到空闲床位！无法添加住院记录。" << std::endl;
+        delete newHos; // 释放内存
+        return;
+    }
+
+    bedFound = false; // 重置标志，准备检查用户输入的床位号
+
+    newHos->bedNumber = inputBedNumberCheck("请输入床位号: ", department, newHos->wardType); // 输入床位号并检查格式
+
+    b = bed;
+    while (b != nullptr)
+    {
+        if (b->department == department && b->wardType == newHos->wardType && b->bedID == newHos->bedNumber)
+        {
+            if (b->status == bedStatus::OCCUPIED)
+            {
+                std::cout << "该床位已被占用！无法添加住院记录。" << std::endl;
+                delete newHos; // 释放内存
+                return;
+            }
+            else if (b->status == bedStatus::ClEANING)
+            {
+                std::cout << "该床位正在清洁中！无法添加住院记录。" << std::endl;
+                delete newHos; // 释放内存
+                return;
+            }
+            else if (b->status == bedStatus::UNAVAILABLE)
+            {
+                std::cout << "该床位不可用！无法添加住院记录。" << std::endl;
+                delete newHos; // 释放内存
+                return;
+            }
+            else
+            {
+                b->status = bedStatus::OCCUPIED; // 占用床位
+                break;
+            }
+
+            bedFound = true;
+        }
+        b = b->next;
+    }
+
+    if(!bedFound)
+    {
+        std::cout << "未找到指定的床位！无法添加住院记录。" << std::endl;
+        delete newHos; // 释放内存
+        return;
+    }
 
 
+    // 生成唯一的住院记录ID（可以根据实际需求改为更复杂的生成方式）
+    newHos->hospitalizationID = "hos" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    MyTime &t = MyTime::getInstance();
+    newHos->applyTime = t.getTime(); // 获取当前时间字符串
 
+    newHos->nurseID = inputIDCheck("请输入负责护士ID: "); // 输入负责护士ID并检查格式
+    newHos->deposit = inputFeeCheck("请输入押金金额: ");  // 输入押金金额并检查格式
 
-void Admin::manageHospitalizations(Hospitalization *&hos, const std::string &department, int &idCounter)
-{ // 管理住院记录的函数实现（类似于 manageRegistrations，可以根据实际需求添加查看、修改等功能）
-    std::cout << "管理住院记录功能尚未实现！" << std::endl;
+    // 插入到链表头部
+    newHos->next = hos;
+    if (hos != nullptr)
+    {
+        hos->prev = newHos;
+    }
+    hos = newHos;
+}
+
+void Admin::manageHospitalizations(Hospitalization *&hos, const std::string &department, Consultation *con, bedInfo *bed, int &idCounter)
+{
+    while (true)
+    {
+        int choice = adminHospitalizationManagementMenu();
+        if (choice == 0)
+        {
+            break;
+        }
+        else if (choice == 1)
+        {
+            while (true)
+            {
+                int viewChoice = adminHospitalizationViewMenu();
+                if (viewChoice == 0)
+                {
+                    break;
+                }
+                else if (viewChoice == 1)
+                {
+                    viewAllHospitalizations(hos, department);
+                    pause();
+                }
+                else if (viewChoice == 2)
+                {
+                    viewHospitalizationsByPatient(hos, department);
+                    pause();
+                }
+                else if (viewChoice == 3)
+                {
+                    viewHospitalizationsByDoctor(hos, department);
+                    pause();
+                }
+                else if (viewChoice == 4)
+                {
+                    viewHospitalizationByNurse(hos, department);
+                    pause();
+                }
+                else if (viewChoice == 5)
+                {
+                    viewHospitalizationByID(hos, department);
+                    pause();
+                }
+                else if (viewChoice == 6)
+                {
+                    viewHospitalizationsByStatus(hos, department);
+                    pause();
+                }
+                else if (viewChoice == 7)
+                {
+                    viewHospitalizationByWardType(hos, department);
+                    pause();
+                }
+                else
+                {
+                    std::cout << "无效的选择! 请重新选择。" << std::endl;
+                    pause();
+                }
+            }
+        }
+        else if (choice == 2)
+        {
+            modifyHospitalizationStatus(hos, department);
+            pause();
+        }
+        else if (choice == 3)
+        {
+            deleteHospitalization(hos, department);
+            pause();
+        }
+        else if (choice == 4)
+        {
+            addHospitalization(hos, department, con, bed, idCounter);
+            pause();
+        }
+        else
+        {
+            std::cout << "无效的选择! 请重新选择。" << std::endl;
+            pause();
+        }
+    }
 }
 
 void Admin::manageMedicationRecords(MedicationRecord *&medRec, const std::string &department, int &idCounter)

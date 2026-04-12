@@ -29,7 +29,7 @@ std::string inputStringCheck(const std::string &prompt); // 检查输入的字�
 std::string inputIDCheck(const std::string &prompt); // 检查输入的用户ID是否符合格式要求（如长度、前缀等）
 std::string inputRecordIDCheck(const std::string &prompt, const std::vector<std::string> &validPrefixes); // 检查输入的记录ID是否符合格式要求（如长度、前缀等）
 std::string inputPwdCheck(const std::string &prompt); // 检查输入的密码是否符合安全要求（如长度、复杂度等）
-
+std::string inputBedNumberCheck(const std::string &prompt, std::string department, std::string wardType); // 检查输入的床位号是否符合格式要求（如非空、特定格式等）
 
 
 
@@ -59,6 +59,13 @@ int adminExaminationManagementMenu(); // 管理员检查记录管理菜单
 int adminExaminationViewMenu(); // 管理员检查记录查看方式选择菜单
 
 std::string ExaminationItemMenu(); // 检查项目选择菜单
+
+int adminHospitalizationManagementMenu(); // 管理员住院记录管理菜单
+
+int adminHospitalizationViewMenu(); // 管理员住院记录查看方式选择菜单
+
+std::string HospitalizationWardTypeMenu(); // 住院记录病房类型选择菜单
+
 
 
 

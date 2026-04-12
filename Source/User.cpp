@@ -212,12 +212,14 @@ std::string User::hosStatusToString(HospitalizationStatus status)
     {
     case HospitalizationStatus::APPLIED:
         return "申请中";
+    case HospitalizationStatus::PAID:
+        return "已缴费,待分床";
     case HospitalizationStatus::ADMITTED:
         return "已入院";
     case HospitalizationStatus::DISCHARGED:
         return "已出院";
-    case HospitalizationStatus::CANCELED:
-        return "已取消";
+    case HospitalizationStatus::VOIDED:
+        return "已作废";
     default:
         return "未知状态";
     }
@@ -310,6 +312,24 @@ std::string User::findVitalSignToString(Examination* exa)
         return "总胆固醇(" + std::to_string(*vs.cholesterol) + "mmol/L)";
 
     return "无体征信息";
+}
+
+// 将床位状态枚举转换为字符串表示
+std::string User::bedStatusToString(bedStatus status)
+{
+    switch (status)
+    {
+    case bedStatus::AVAILABLE:
+        return "可分配";
+    case bedStatus::OCCUPIED:
+        return "已占用";
+    case bedStatus::ClEANING:
+        return "清洁中";
+    case bedStatus::UNAVAILABLE:
+        return "不可用";
+    default:
+        return "未知状态";
+    }
 }
 
 User::~User()

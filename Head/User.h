@@ -37,6 +37,7 @@
 #define HOSPITALIZATION_FILE "../Data/RecordData/HospitalizationChainData/hospitalizations.txt"
 #define MEDICATION_RECORD_FILE "../Data/RecordData/MedicineChainData/medication_records.txt"
 #define MEDICINE_FILE "../Data/RecordData/MedicineChainData/medicines.txt"
+#define BED_FILE "../Data/RecordData/HospitalizationChainData/bed_info.txt"
 
 // 定义全局常量
 #define failedLoginLimit 5  // 连续登录失败次数限制
@@ -113,6 +114,7 @@ public:
     std::string medicationReviewStatusToString(MedicationReviewStatus status); // 将用药审核状态枚举转换为字符串表示
     std::string medicineStatusToString(MedicineStatus status);                 // 将药品状态枚举转换为字符串表示
     std::string findVitalSignToString(Examination* exa); // 将体征信息转换为字符串表示
+    std::string bedStatusToString(bedStatus status); // 将床位状态枚举转换为字符串表示
 };
 
 #endif // USER_H

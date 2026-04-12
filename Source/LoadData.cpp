@@ -402,11 +402,251 @@ Examination *loadExaminations(int &count)
     return examHead;
 }
 
-
 Hospitalization *loadHospitalizations(int &count)
 {
+    Hospitalization *hosHead = nullptr;
+    std::ifstream inFile(HOSPITALIZATION_FILE);
+    if (!inFile)
+    {
+        std::cerr << "无法打开住院记录文件！" << std::endl;
+        count = 0;
+        return nullptr;
+    }
 
-    return nullptr;
+    std::string line;
+    count = 0;
+    Hospitalization *lastHos = nullptr;
+    while (std::getline(inFile, line))
+    {
+        if (line.rfind("count:", 0) == 0)
+        {
+            std::string countStr = line.substr(6);
+            try
+            {
+                count = std::stoi(countStr);
+            }
+            catch (...)
+            {
+                count = 0;
+            }
+            break;
+        }
+        if (line.empty())
+            continue;
+
+        if (line.rfind("RELATED_HOSPITALIZATION_ID:", 0) == 0)
+        {
+            if (lastHos)
+                lastHos->relatedHospitalizationIDs.push_back(line.substr(27));
+            continue;
+        }
+
+        std::istringstream iss(line);
+        Hospitalization *newHos = new Hospitalization();
+        std::string depositStr, totalCostStr, statusStr, isDeletedStr;
+
+        std::getline(iss, newHos->hospitalizationID, ',');
+        std::getline(iss, newHos->consultationID, ',');
+        std::getline(iss, newHos->patientID, ',');
+        std::getline(iss, newHos->doctorID, ',');
+        std::getline(iss, newHos->nurseID, ',');
+        std::getline(iss, newHos->department, ',');
+        std::getline(iss, newHos->wardType, ',');
+        std::getline(iss, newHos->bedNumber, ',');
+        std::getline(iss, newHos->applyTime, ',');
+        std::getline(iss, newHos->admitTime, ',');
+        std::getline(iss, newHos->dischargeTime, ',');
+        std::getline(iss, newHos->availableAdmitTime, ',');
+        std::getline(iss, depositStr, ',');
+        std::getline(iss, totalCostStr, ',');
+        std::getline(iss, statusStr, ',');
+        std::getline(iss, isDeletedStr);
+
+        try
+        {
+            newHos->deposit = std::stod(depositStr);
+        }
+        catch (...)
+        {
+            newHos->deposit = 0.0;
+        }
+        try
+        {
+            newHos->totalCost = std::stod(totalCostStr);
+        }
+        catch (...)
+        {
+            newHos->totalCost = 0.0;
+        }
+        try
+        {
+            newHos->status = static_cast<HospitalizationStatus>(std::stoi(statusStr));
+        }
+        catch (...)
+        {
+            newHos->status = HospitalizationStatus::APPLIED;
+        }
+        newHos->isDeleted = (isDeletedStr == "1");
+
+        // 插入链表头部
+        newHos->next = hosHead;
+        if (hosHead)
+            hosHead->prev = newHos;
+        hosHead = newHos;
+        lastHos = newHos;
+    }
+    inFile.close();
+    return hosHead;
+}
+
+bedInfo *loadBedInfos(int &count)
+{
+    bedInfo *bedHead = nullptr;
+    std::ifstream inFile(BED_FILE);
+    if (!inFile)
+    {
+        std::cerr << "无法打开床位信息文件！" << std::endl;
+        count = 0;
+        return nullptr;
+    }
+
+    std::string line;
+    count = 0;
+    bedInfo *lastBed = nullptr;
+    while (std::getline(inFile, line))
+    {
+        if (line.rfind("count:", 0) == 0)
+        {
+            std::string countStr = line.substr(6);
+            try
+            {
+                count = std::stoi(countStr);
+            }
+            catch (...)
+            {
+                count = 0;
+            }
+            break;
+        }
+        if (line.empty())
+            continue;
+
+        std::istringstream iss(line);
+        bedInfo *newBed = new bedInfo();
+        std::string statusStr, areaStr, wardStr, bedNumStr, patientIDStr, nurseIDStr;
+
+        std::getline(iss, newBed->bedID, ',');
+        std::getline(iss, statusStr, ',');
+        std::getline(iss, newBed->wardType, ',');
+        std::getline(iss, newBed->department, ',');
+        std::getline(iss, areaStr, ',');
+        std::getline(iss, wardStr, ',');
+        std::getline(iss, bedNumStr, ',');
+        std::getline(iss, newBed->note, ',');
+        std::getline(iss, patientIDStr, ',');
+        std::getline(iss, nurseIDStr);
+
+        try
+        {
+            newBed->status = static_cast<bedStatus>(std::stoi(statusStr));
+        }
+        catch (...)
+        {
+            newBed->status = bedStatus::AVAILABLE;
+        }
+        try
+        {
+            newBed->areaNumber = std::stoi(areaStr);
+        }
+        catch (...)
+        {
+            newBed->areaNumber = 0;
+        }
+        try
+        {
+            newBed->wardNumber = std::stoi(wardStr);
+        }
+        catch (...)
+        {
+            newBed->wardNumber = 0;
+        }
+        try
+        {
+            newBed->bedNumber = std::stoi(bedNumStr);
+        }
+        catch (...)
+        {
+            newBed->bedNumber = 0;
+        }
+        try
+        {
+            newBed->patientID = std::stoi(patientIDStr);
+        }
+        catch (...)
+        {
+            newBed->patientID = 0;
+        }
+        try
+        {
+            newBed->nurseID = std::stoi(nurseIDStr);
+        }
+        catch (...)
+        {
+            newBed->nurseID = 0;
+        }
+
+        // 在 while 读取每个床位主数据后，继续读取下一行
+        if (std::getline(inFile, line) && line.rfind("VITAL_SIGNS:", 0) == 0)
+        {
+            std::string vsStr = line.substr(12);
+            std::istringstream iss(vsStr);
+            std::string field;
+            std::vector<std::string> fields;
+            while (std::getline(iss, field, ';'))
+                fields.push_back(field);
+
+            if (fields.size() > 0 && !fields[0].empty())
+                newBed->vitalSigns.temperatureC = std::stod(fields[0]);
+            if (fields.size() > 1 && !fields[1].empty())
+                newBed->vitalSigns.systolicBP = std::stoi(fields[1]);
+            if (fields.size() > 2 && !fields[2].empty())
+                newBed->vitalSigns.diastolicBP = std::stoi(fields[2]);
+            if (fields.size() > 3 && !fields[3].empty())
+                newBed->vitalSigns.heartRate = std::stoi(fields[3]);
+            if (fields.size() > 4 && !fields[4].empty())
+                newBed->vitalSigns.respiratoryRate = std::stod(fields[4]);
+            if (fields.size() > 5 && !fields[5].empty())
+                newBed->vitalSigns.spo2 = std::stoi(fields[5]);
+            if (fields.size() > 6 && !fields[6].empty())
+                newBed->vitalSigns.height = std::stod(fields[6]);
+            if (fields.size() > 7 && !fields[7].empty())
+                newBed->vitalSigns.weight = std::stod(fields[7]);
+            if (fields.size() > 8 && !fields[8].empty())
+                newBed->vitalSigns.bmi = std::stod(fields[8]);
+            if (fields.size() > 9 && !fields[9].empty())
+                newBed->vitalSigns.painScore = std::stoi(fields[9]);
+            if (fields.size() > 10 && !fields[10].empty())
+                newBed->vitalSigns.waistCircumference = std::stod(fields[10]);
+            if (fields.size() > 11 && !fields[11].empty())
+                newBed->vitalSigns.bloodSugar = std::stod(fields[11]);
+            if (fields.size() > 12 && !fields[12].empty())
+                newBed->vitalSigns.bodyFat = std::stod(fields[12]);
+            if (fields.size() > 13 && !fields[13].empty())
+                newBed->vitalSigns.uricAcid = std::stod(fields[13]);
+            if (fields.size() > 14 && !fields[14].empty())
+                newBed->vitalSigns.cholesterol = std::stod(fields[14]);
+        }
+
+        // 链表头插
+        newBed->next = bedHead;
+        if (bedHead)
+            bedHead->prev = newBed;
+        bedHead = newBed;
+        lastBed = newBed;
+    }
+
+    inFile.close();
+    return bedHead;
 }
 
 MedicationRecord *loadMedicationRecords(int &count)

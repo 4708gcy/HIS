@@ -11,7 +11,9 @@
 #define EXAMINATION_H
 
 #include <string>
+#include <vector>
 #include <optional>
+
 
 /**
  * @file Examination.h
@@ -50,6 +52,7 @@ struct VitalSigns
     std::optional<double> cholesterol;        // 总胆固醇（mmol/L）——血脂测定
     // 可根据实际需求继续扩展
 };
+
 struct Examination
 {
     std::string examinationID;  // 检查记录唯一ID
