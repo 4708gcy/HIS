@@ -34,11 +34,16 @@ Admin *loadAdminData(int &count)
 
         std::istringstream iss(line);
         Admin *newAdmin = new Admin();
-        std::string isActiveStr, isDeletedStr, totalRevenueStr, totalExpensesStr, netProfitStr;
-        std::string userID, username, storedHash, salt, createTime;
+        std::string isActiveStr, totalRevenueStr, totalExpensesStr, netProfitStr, isDeletedStr;
+        std::string userID, username, gender, ageStr, telephone, email, storedHash, salt, createTime;
 
+        // 按保存顺序读取
         std::getline(iss, userID, ',');
         std::getline(iss, username, ',');
+        std::getline(iss, gender, ',');
+        std::getline(iss, ageStr, ',');
+        std::getline(iss, telephone, ',');
+        std::getline(iss, email, ',');
         std::getline(iss, storedHash, ',');
         std::getline(iss, salt, ',');
         std::getline(iss, isActiveStr, ',');
@@ -50,6 +55,17 @@ Admin *loadAdminData(int &count)
 
         newAdmin->setUserID(userID);
         newAdmin->setUsername(username);
+        newAdmin->setGender(gender);
+        try
+        {
+            newAdmin->setAge(std::stoi(ageStr));
+        }
+        catch (...)
+        {
+            newAdmin->setAge(0);
+        }
+        newAdmin->setTelephone(telephone);
+        newAdmin->setEmail(email);
         newAdmin->setStoredHash(storedHash);
         newAdmin->setSalt(salt);
         newAdmin->setIsAccountActive(isActiveStr == "1");
@@ -69,6 +85,16 @@ Admin *loadAdminData(int &count)
 }
 
 Doctor *loadDoctorData(int &count)
+{
+    return nullptr;
+}
+
+Nurse *loadNurseData(int &count)
+{
+    return nullptr;
+}
+
+Pharmacist *loadPharmacistData(int &count)
 {
     return nullptr;
 }
@@ -310,36 +336,126 @@ Examination *loadExaminations(int &count)
                     fields.push_back(field);
 
                 // 按顺序赋值
-                if (fields.size() > 0 && !fields[0].empty())
+                try
+                {
                     lastExam->vitalSigns.temperatureC = std::stod(fields[0]);
-                if (fields.size() > 1 && !fields[1].empty())
-                    lastExam->vitalSigns.systolicBP = std::stoi(fields[1]);
-                if (fields.size() > 2 && !fields[2].empty())
-                    lastExam->vitalSigns.diastolicBP = std::stoi(fields[2]);
-                if (fields.size() > 3 && !fields[3].empty())
-                    lastExam->vitalSigns.heartRate = std::stoi(fields[3]);
-                if (fields.size() > 4 && !fields[4].empty())
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.temperatureC = 0.0;
+                }
+                try
+                {
+                    lastExam->vitalSigns.systolicBP = std::stod(fields[1]);
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.systolicBP = 0.0;
+                }
+                try
+                {
+                    lastExam->vitalSigns.diastolicBP = std::stod(fields[2]);
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.diastolicBP = 0.0;
+                }
+                try
+                {
+                    lastExam->vitalSigns.heartRate = std::stod(fields[3]);
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.heartRate = 0.0;
+                }
+                try
+                {
                     lastExam->vitalSigns.respiratoryRate = std::stod(fields[4]);
-                if (fields.size() > 5 && !fields[5].empty())
-                    lastExam->vitalSigns.spo2 = std::stoi(fields[5]);
-                if (fields.size() > 6 && !fields[6].empty())
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.respiratoryRate = 0.0;
+                }
+                try
+                {
+                    lastExam->vitalSigns.spo2 = std::stod(fields[5]);
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.spo2 = 0.0;
+                }
+                try
+                {
                     lastExam->vitalSigns.height = std::stod(fields[6]);
-                if (fields.size() > 7 && !fields[7].empty())
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.height = 0.0;
+                }
+                try
+                {
                     lastExam->vitalSigns.weight = std::stod(fields[7]);
-                if (fields.size() > 8 && !fields[8].empty())
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.weight = 0.0;
+                }
+                try
+                {
                     lastExam->vitalSigns.bmi = std::stod(fields[8]);
-                if (fields.size() > 9 && !fields[9].empty())
-                    lastExam->vitalSigns.painScore = std::stoi(fields[9]);
-                if (fields.size() > 10 && !fields[10].empty())
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.bmi = 0.0;
+                }
+                try
+                {
+                    lastExam->vitalSigns.painScore = std::stod(fields[9]);
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.painScore = 0.0;
+                }
+                try
+                {
                     lastExam->vitalSigns.waistCircumference = std::stod(fields[10]);
-                if (fields.size() > 11 && !fields[11].empty())
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.waistCircumference = 0.0;
+                }
+                try
+                {
                     lastExam->vitalSigns.bloodSugar = std::stod(fields[11]);
-                if (fields.size() > 12 && !fields[12].empty())
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.bloodSugar = 0.0;
+                }
+                try
+                {
                     lastExam->vitalSigns.bodyFat = std::stod(fields[12]);
-                if (fields.size() > 13 && !fields[13].empty())
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.bodyFat = 0.0;
+                }
+                try
+                {
                     lastExam->vitalSigns.uricAcid = std::stod(fields[13]);
-                if (fields.size() > 14 && !fields[14].empty())
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.uricAcid = 0.0;
+                }
+                try
+                {
                     lastExam->vitalSigns.cholesterol = std::stod(fields[14]);
+                }
+                catch (...)
+                {
+                    lastExam->vitalSigns.cholesterol = 0.0;
+                }
             }
             continue;
         }
@@ -517,15 +633,7 @@ bedInfo *loadBedInfos(int &count)
     {
         if (line.rfind("count:", 0) == 0)
         {
-            std::string countStr = line.substr(6);
-            try
-            {
-                count = std::stoi(countStr);
-            }
-            catch (...)
-            {
-                count = 0;
-            }
+            count = std::stoi(line.substr(6));
             break;
         }
         if (line.empty())
@@ -533,7 +641,7 @@ bedInfo *loadBedInfos(int &count)
 
         std::istringstream iss(line);
         bedInfo *newBed = new bedInfo();
-        std::string statusStr, areaStr, wardStr, bedNumStr, patientIDStr, nurseIDStr;
+        std::string statusStr, areaStr, wardStr, bedNumStr, isDeletedStr, useTimesStr, daysOccupiedStr;
 
         std::getline(iss, newBed->bedID, ',');
         std::getline(iss, statusStr, ',');
@@ -543,8 +651,11 @@ bedInfo *loadBedInfos(int &count)
         std::getline(iss, wardStr, ',');
         std::getline(iss, bedNumStr, ',');
         std::getline(iss, newBed->note, ',');
-        std::getline(iss, patientIDStr, ',');
-        std::getline(iss, nurseIDStr);
+        std::getline(iss, newBed->patientID, ',');
+        std::getline(iss, newBed->nurseID, ',');
+        std::getline(iss, isDeletedStr, ',');
+        std::getline(iss, useTimesStr, ',');
+        std::getline(iss, daysOccupiedStr);
 
         try
         {
@@ -578,63 +689,154 @@ bedInfo *loadBedInfos(int &count)
         {
             newBed->bedNumber = 0;
         }
+        newBed->isDeleted = (isDeletedStr == "1");
         try
         {
-            newBed->patientID = std::stoi(patientIDStr);
+            newBed->useTimes = std::stoi(useTimesStr);
         }
         catch (...)
         {
-            newBed->patientID = 0;
+            newBed->useTimes = 0;
         }
         try
         {
-            newBed->nurseID = std::stoi(nurseIDStr);
+            newBed->daysOccupied = std::stoi(daysOccupiedStr);
         }
         catch (...)
         {
-            newBed->nurseID = 0;
+            newBed->daysOccupied = 0;
         }
 
-        // 在 while 读取每个床位主数据后，继续读取下一行
+        // 读取体征信息
         if (std::getline(inFile, line) && line.rfind("VITAL_SIGNS:", 0) == 0)
         {
             std::string vsStr = line.substr(12);
-            std::istringstream iss(vsStr);
+            std::istringstream vsStream(vsStr);
             std::string field;
             std::vector<std::string> fields;
-            while (std::getline(iss, field, ';'))
+            while (std::getline(vsStream, field, ';'))
                 fields.push_back(field);
 
-            if (fields.size() > 0 && !fields[0].empty())
+            try
+            {
                 newBed->vitalSigns.temperatureC = std::stod(fields[0]);
-            if (fields.size() > 1 && !fields[1].empty())
-                newBed->vitalSigns.systolicBP = std::stoi(fields[1]);
-            if (fields.size() > 2 && !fields[2].empty())
-                newBed->vitalSigns.diastolicBP = std::stoi(fields[2]);
-            if (fields.size() > 3 && !fields[3].empty())
-                newBed->vitalSigns.heartRate = std::stoi(fields[3]);
-            if (fields.size() > 4 && !fields[4].empty())
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.temperatureC = 0.0;
+            }
+            try
+            {
+                newBed->vitalSigns.systolicBP = std::stod(fields[1]);
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.systolicBP = 0.0;
+            }
+            try
+            {
+                newBed->vitalSigns.diastolicBP = std::stod(fields[2]);
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.diastolicBP = 0.0;
+            }
+            try
+            {
+                newBed->vitalSigns.heartRate = std::stod(fields[3]);
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.heartRate = 0.0;
+            }
+            try
+            {
                 newBed->vitalSigns.respiratoryRate = std::stod(fields[4]);
-            if (fields.size() > 5 && !fields[5].empty())
-                newBed->vitalSigns.spo2 = std::stoi(fields[5]);
-            if (fields.size() > 6 && !fields[6].empty())
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.respiratoryRate = 0.0;
+            }
+            try
+            {
+                newBed->vitalSigns.spo2 = std::stod(fields[5]);
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.spo2 = 0.0;
+            }
+            try
+            {
                 newBed->vitalSigns.height = std::stod(fields[6]);
-            if (fields.size() > 7 && !fields[7].empty())
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.height = 0.0;
+            }
+            try
+            {
                 newBed->vitalSigns.weight = std::stod(fields[7]);
-            if (fields.size() > 8 && !fields[8].empty())
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.weight = 0.0;
+            }
+            try
+            {
                 newBed->vitalSigns.bmi = std::stod(fields[8]);
-            if (fields.size() > 9 && !fields[9].empty())
-                newBed->vitalSigns.painScore = std::stoi(fields[9]);
-            if (fields.size() > 10 && !fields[10].empty())
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.bmi = 0.0;
+            }
+            try
+            {
+                newBed->vitalSigns.painScore = std::stod(fields[9]);
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.painScore = 0.0;
+            }
+            try
+            {
                 newBed->vitalSigns.waistCircumference = std::stod(fields[10]);
-            if (fields.size() > 11 && !fields[11].empty())
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.waistCircumference = 0.0;
+            }
+            try
+            {
                 newBed->vitalSigns.bloodSugar = std::stod(fields[11]);
-            if (fields.size() > 12 && !fields[12].empty())
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.bloodSugar = 0.0;
+            }
+            try
+            {
                 newBed->vitalSigns.bodyFat = std::stod(fields[12]);
-            if (fields.size() > 13 && !fields[13].empty())
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.bodyFat = 0.0;
+            }
+            try
+            {
                 newBed->vitalSigns.uricAcid = std::stod(fields[13]);
-            if (fields.size() > 14 && !fields[14].empty())
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.uricAcid = 0.0;
+            }
+            try
+            {
                 newBed->vitalSigns.cholesterol = std::stod(fields[14]);
+            }
+            catch (...)
+            {
+                newBed->vitalSigns.cholesterol = 0.0;
+            }
         }
 
         // 链表头插
@@ -651,9 +853,129 @@ bedInfo *loadBedInfos(int &count)
 
 MedicationRecord *loadMedicationRecords(int &count)
 {
+    MedicationRecord *head = nullptr;
+    MedicationRecord *last = nullptr;
+    std::ifstream inFile(MEDICATION_RECORD_FILE);
+    if (!inFile)
+    {
+        std::cerr << "无法打开用药记录文件！" << std::endl;
+        count = 0;
+        return nullptr;
+    }
 
-    return nullptr;
+    std::string line;
+    count = 0;
+    MedicationRecord *current = nullptr;
+    while (std::getline(inFile, line))
+    {
+        if (line.rfind("count:", 0) == 0)
+        {
+            try
+            {
+                count = std::stoi(line.substr(6));
+            }
+            catch (...)
+            {
+                count = 0;
+            }
+            break;
+        }
+        if (line.empty())
+            continue;
+
+        if (line.rfind("MEDICATION_LINE:", 0) == 0)
+        {
+            if (current)
+            {
+                std::string detail = line.substr(16);
+                std::istringstream iss(detail);
+                MedicationLine medLine;
+                std::string quantityStr, unitPriceStr;
+                std::getline(iss, medLine.medicineID, ',');
+                std::getline(iss, medLine.medicineName, ',');
+                std::getline(iss, quantityStr, ',');
+                std::getline(iss, unitPriceStr, ',');
+                std::getline(iss, medLine.note);
+
+                try
+                {
+                    medLine.quantity = std::stoi(quantityStr);
+                }
+                catch (...)
+                {
+                    medLine.quantity = 0;
+                }
+                try
+                {
+                    medLine.unitPrice = std::stod(unitPriceStr);
+                }
+                catch (...)
+                {
+                    medLine.unitPrice = 0.0;
+                }
+
+                current->lines.push_back(medLine);
+            }
+            continue;
+        }
+
+        // 主记录
+        std::istringstream iss(line);
+        MedicationRecord *newRec = new MedicationRecord();
+        std::string totalCostStr, reviewStatusStr, statusStr, isDeletedStr;
+        std::getline(iss, newRec->medRecordID, ',');
+        std::getline(iss, newRec->consultationID, ',');
+        std::getline(iss, newRec->doctorID, ',');
+        std::getline(iss, newRec->pharmacistID, ',');
+        std::getline(iss, newRec->patientID, ',');
+        std::getline(iss, newRec->department, ',');
+        std::getline(iss, newRec->createTime, ',');
+        std::getline(iss, totalCostStr, ',');
+        std::getline(iss, reviewStatusStr, ',');
+        std::getline(iss, statusStr, ',');
+        std::getline(iss, newRec->paymentTime, ',');
+        std::getline(iss, newRec->dispenseTime, ',');
+        std::getline(iss, newRec->note, ',');
+        std::getline(iss, isDeletedStr);
+
+        try
+        {
+            newRec->totalCost = std::stod(totalCostStr);
+        }
+        catch (...)
+        {
+            newRec->totalCost = 0.0;
+        }
+        try
+        {
+            newRec->reviewStatus = static_cast<MedicationReviewStatus>(std::stoi(reviewStatusStr));
+        }
+        catch (...)
+        {
+            newRec->reviewStatus = MedicationReviewStatus::PENDING_REVIEW;
+        }
+        try
+        {
+            newRec->status = static_cast<MedicationStatus>(std::stoi(statusStr));
+        }
+        catch (...)
+        {
+            newRec->status = MedicationStatus::UNPAID;
+        }
+        newRec->isDeleted = (isDeletedStr == "1");
+
+        // 链表插入
+        newRec->prev = nullptr;
+        newRec->next = head;
+        if (head)
+            head->prev = newRec;
+        head = newRec;
+        current = newRec;
+    }
+    inFile.close();
+    return head;
 }
+
 
 Medicine *loadMedicines(int &count)
 {

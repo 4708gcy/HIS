@@ -12,7 +12,6 @@
 
 #include <string>
 #include <vector>
-#include <optional>
 
 
 /**
@@ -35,21 +34,21 @@ enum class ExaminationStatus
 // 生命体征：记录检查时的瞬时体征（如测量时采集）
 struct VitalSigns
 {
-    std::optional<double> temperatureC;       // 体温（摄氏度）——体温测量
-    std::optional<int> systolicBP;            // 收缩压（mmHg）——血压测量
-    std::optional<int> diastolicBP;           // 舒张压（mmHg）——血压测量
-    std::optional<int> heartRate;             // 心率（次/分钟）——心率测量/脉搏
-    std::optional<double> respiratoryRate;    // 呼吸频率（次/分钟）——呼吸频率测量
-    std::optional<int> spo2;                  // 血氧饱和度（%）——脉搏血氧测量
-    std::optional<double> height;             // 身高（cm）——身高测量
-    std::optional<double> weight;             // 体重（kg）——体重测量
-    std::optional<double> bmi;                // 体质指数——BMI计算
-    std::optional<int> painScore;             // 疼痛评分（0-10）——疼痛评估
-    std::optional<double> waistCircumference; // 腰围（cm）——腰围测量
-    std::optional<double> bloodSugar;         // 血糖（mmol/L）——血糖测量
-    std::optional<double> bodyFat;            // 体脂率（%）——体脂测量
-    std::optional<double> uricAcid;           // 尿酸（μmol/L）——尿酸测定
-    std::optional<double> cholesterol;        // 总胆固醇（mmol/L）——血脂测定
+    double temperatureC;       // 体温（摄氏度）——体温测量
+    double systolicBP;            // 收缩压（mmHg）——血压测量
+    double diastolicBP;           // 舒张压（mmHg）——血压测量
+    double heartRate;             // 心率（次/分钟）——心率测量/脉搏
+    double respiratoryRate;    // 呼吸频率（次/分钟）——呼吸频率测量
+    double spo2;                  // 血氧饱和度（%）——脉搏血氧测量
+    double height;             // 身高（cm）——身高测量
+    double weight;             // 体重（kg）——体重测量
+    double bmi;                // 体质指数——BMI计算
+    double painScore;             // 疼痛评分（0-10）——疼痛评估
+    double waistCircumference; // 腰围（cm）——腰围测量
+    double bloodSugar;         // 血糖（mmol/L）——血糖测量
+    double bodyFat;            // 体脂率（%）——体脂测量
+    double uricAcid;           // 尿酸（μmol/L）——尿酸测定
+    double cholesterol;        // 总胆固醇（mmol/L）——血脂测定
     // 可根据实际需求继续扩展
 };
 

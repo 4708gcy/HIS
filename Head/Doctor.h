@@ -7,11 +7,12 @@
 class Doctor : public User
 {
 public:
+    std::string department;     // 医生所属科室（如内科、外科等）
+    std::string title;          // 医生职称（如主任医师、副主任医师等）
+    std::string specialization; // 医生专业领域（如心血管、消化等）
+    bool isDeleted = false;     // 逻辑删除标志（实际删除时设置为 true）
+
     Doctor *next = nullptr; // 医生链表的下一个节点指针
-    std::string department; // 医生所属科室（如内科、外科等）
-
-    Doctor();
-
-    Doctor *doctorSignUp(int &idCounter); // 医生注册，调用基类的 signUp(2) 方法，并将医生信息保存到文件中
+    Doctor *pre = nullptr;  // 医生链表的前一个节点指针
 };
 #endif // DOCTOR_H

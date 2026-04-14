@@ -14,6 +14,8 @@
 #include <vector>
 #include "User.h"
 #include "Doctor.h"
+#include "Nurse.h"
+#include "Pharmacist.h"
 
 class Admin : public User
 {
@@ -99,20 +101,47 @@ public:
     void deleteExamination(Examination *&exam, const std::string &department);                                     // 删除检查记录（逻辑删除，设置 isDeleted 标志）
     void addExamination(Examination *&exam, const std::string &department, Consultation *con, int &idCounter);     // 添加检查记录（根据输入信息创建新的 Examination 对象，并插入到链表中）
 
-    void manageHospitalizations(Hospitalization *&hos, const std::string &department,Consultation *con,bedInfo *bed, int &idCounter); // 管理住院记录（查看、修改出院日期等）
-    void viewAllHospitalizations(Hospitalization *&hos, const std::string &department);                // 查看所有住院记录（可按患者ID、医生ID、状态过滤）
-    void viewHospitalizationByID(Hospitalization *&hos, const std::string &department);                // 根据住院ID查看住院记录
-    void viewHospitalizationsByDoctor(Hospitalization *&hos, const std::string &department);           // 查看指定医生的住院记录
-    void viewHospitalizationsByPatient(Hospitalization *&hos, const std::string &department);          // 查看指定患者的住院记录
-    void viewHospitalizationByNurse(Hospitalization *&hos, const std::string &department);             // 根据负责护士ID查看住院记录
-    void viewHospitalizationByWardType(Hospitalization *&hos, const std::string &department);          // 根据病房类型查看住院记录
-    void viewHospitalizationsByStatus(Hospitalization *&hos, const std::string &department);           // 查看指定状态的住院记录
-    void modifyHospitalizationStatus(Hospitalization *&hos, const std::string &department);            // 修改住院记录状态（如修改出院日期、分床等）
-    void deleteHospitalization(Hospitalization *&hos, const std::string &department);                  // 删除住院记录（逻辑删除，设置 isDeleted 标志）
-    void addHospitalization(Hospitalization *&hos, const std::string &department, Consultation *con,bedInfo *&bed, int &idCounter);     // 添加住院记录（根据输入信息创建新的 Hospitalization 对象，并插入到链表中）
+    void manageHospitalizations(Hospitalization *&hos, Nurse *nurse, const std::string &department, Consultation *con, bedInfo *bed, int &idCounter); // 管理住院记录（查看、修改出院日期等）
+    void viewAllHospitalizations(Hospitalization *&hos, const std::string &department);                                                               // 查看所有住院记录（可按患者ID、医生ID、状态过滤）
+    void viewHospitalizationByID(Hospitalization *&hos, const std::string &department);                                                               // 根据住院ID查看住院记录
+    void viewHospitalizationsByDoctor(Hospitalization *&hos, const std::string &department);                                                          // 查看指定医生的住院记录
+    void viewHospitalizationsByPatient(Hospitalization *&hos, const std::string &department);                                                         // 查看指定患者的住院记录
+    void viewHospitalizationByNurse(Hospitalization *&hos, const std::string &department);                                                            // 根据负责护士ID查看住院记录
+    void viewHospitalizationByWardType(Hospitalization *&hos, const std::string &department);                                                         // 根据病房类型查看住院记录
+    void viewHospitalizationsByStatus(Hospitalization *&hos, const std::string &department);                                                          // 查看指定状态的住院记录
+    void modifyHospitalizationStatus(Hospitalization *&hos, const std::string &department);                                                           // 修改住院记录状态（如修改出院日期、分床等）
+    void deleteHospitalization(Hospitalization *&hos, const std::string &department);                                                                 // 删除住院记录（逻辑删除，设置 isDeleted 标志）
+    void addHospitalization(Hospitalization *&hos, Nurse *nurse, const std::string &department, Consultation *con, bedInfo *&bed, int &idCounter);    // 添加住院记录（根据输入信息创建新的 Hospitalization 对象，并插入到链表中）
 
-    void manageMedicationRecords(MedicationRecord *&medRec, const std::string &department, int &idCounter); // 管理用药记录（查看、修改用药详情等）
-    void manageMedicines(Medicine *&med, const std::string &department, int &idCounter);                    // 管理药品信息（查看、修改库存等）
+    void manageBedInfo(bedInfo *&bed, Hospitalization *&hos, const std::string &department);               // 管理床位信息（查看、修改状态等）
+    void viewAllBeds(bedInfo *&bed, const std::string &department);                                        // 查看所有床位信息（可按病房类型、状态过滤）
+    void viewBedsByWardType(bedInfo *&bed, const std::string &department);                                 // 根据病房类型查看床位信息
+    void viewBedsByStatus(bedInfo *&bed, const std::string &department);                                   // 根据状态查看床位信息
+    void viewBedByID(bedInfo *&bed, const std::string &department);                                        // 根据床位ID查看床位信息
+    void viewBedsByNurseID(bedInfo *&bed, const std::string &department);                                  // 根据负责护士ID查看床位信息
+    void viewBedsByPatientID(bedInfo *&bed, const std::string &department);                                // 根据占用患者ID查看床位信息
+    void viewBedsByHospitalizationID(bedInfo *&bed, Hospitalization *&hos, const std::string &department); // 根据关联住院记录ID查看床位信息
+    void modifyBedStatus(bedInfo *&bed, const std::string &department);                                    // 修改床位状态（如修改为占用、空闲等）
+    void deleteBedInfo(bedInfo *&bed, const std::string &department);                                      // 删除床位信息（逻辑删除，设置 isDeleted 标志）
+    void addBedInfo(bedInfo *&bed, const std::string &department);                                         // 添加床位信息（根据输入信息创建新的 bedInfo 对象，并插入到链表中）
+
+    void manageMedicationRecords(MedicationRecord *&medRec, Consultation *con, Pharmacist *pha, const std::string &department, int &idCounter); // 管理用药记录（查看、修改用药详情等）
+    void viewAllMedicationRecords(MedicationRecord *&medRec, const std::string &department);                                                    // 查看所有用药记录（可按患者ID、医生ID、状态过滤）
+    void viewMedicationRecordByID(MedicationRecord *&medRec, const std::string &department);                                                    // 根据用药记录ID查看用药记录
+    void viewMedicationRecordsByDoctor(MedicationRecord *&medRec, const std::string &department);                                               // 根据医生ID查看用药记录
+    void viewMedicationRecordsByPatient(MedicationRecord *&medRec, const std::string &department);                                              // 根据患者ID查看用药记录
+    void viewMedicationRecordsByPharmacist(MedicationRecord *&medRec, const std::string &department);                                           // 根据审核药师ID查看用药记录
+    void viewMedicationRecordsByStatus(MedicationRecord *&medRec, const std::string &department);                                               // 查看指定状态的用药记录
+    void viewMedicationRecordsByReviewStatus(MedicationRecord *&medRec, const std::string &department);                                         // 根据审核状态查看用药记录
+    void viewMedicationRecordsByMedicationID(MedicationRecord *&medRec, const std::string &department);                                         // 根据药品ID查看用药记录
+    void viewMedicationRecordsByConsultationID(MedicationRecord *&medRec, const std::string &department);                                       // 根据看诊记录ID查看用药记录
+    void modifyMedicationRecordReviewStatus(MedicationRecord *&medRec, const std::string &department);                                          // 修改用药记录审核状态（如审核通过、驳回等）
+    void deleteMedicationRecord(MedicationRecord *&medRec, const std::string &department);                                                      // 删除用药记录（逻辑删除，设置 isDeleted 标志）
+    void addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Pharmacist *pha, const std::string &department, int &idCounter);                      // 添加用药记录（根据输入信息创建新的 MedicationRecord 对象，并插入到链表中）
+
+
+    
+    void manageMedicines(Medicine *&med, const std::string &department, int &idCounter); // 管理药品信息（查看、修改库存等）
 };
 
 #endif // ADMIN_H

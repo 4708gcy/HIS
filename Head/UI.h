@@ -30,9 +30,11 @@ std::string inputIDCheck(const std::string &prompt); // 检查输入的用户ID�
 std::string inputRecordIDCheck(const std::string &prompt, const std::vector<std::string> &validPrefixes); // 检查输入的记录ID是否符合格式要求（如长度、前缀等）
 std::string inputPwdCheck(const std::string &prompt); // 检查输入的密码是否符合安全要求（如长度、复杂度等）
 std::string inputBedNumberCheck(const std::string &prompt, std::string department, std::string wardType); // 检查输入的床位号是否符合格式要求（如非空、特定格式等）
-
-
-
+std::string autoGenerateBedID(const std::string &department, const std::string &wardType, int areaNumber, int wardNumber, int bedNumber); // 根据输入信息自动生成床位ID
+std::string inputGenderCheck(const std::string &prompt); // 检查输入的性别是否为有效选项（如男、女、其他等）
+std::string inputTelephoneCheck(const std::string &prompt); // 检查输入的电话号码是否符合格式要求（如长度、数字等）
+std::string inputEmailCheck(const std::string &prompt); // 检查输入的邮箱地址是否符合格式要求（如包含@和.等）
+int inputAgeCheck(const std::string &prompt); // 检查输入的年龄是否为有效的正整数
 
 // ======================================== 菜单显示函数区域 =======================================
 
@@ -66,8 +68,17 @@ int adminHospitalizationViewMenu(); // 管理员住院记录查看方式选择�
 
 std::string HospitalizationWardTypeMenu(); // 住院记录病房类型选择菜单
 
+int bedManagementMenu(); // 床位管理菜单
 
+int bedViewMenu(); // 床位查看方式选择菜单
 
+int adminMedicationRecordManagementMenu(); // 管理员药物记录管理菜单
+
+int adminMedicationRecordViewMenu(); // 管理员药物记录查看方式选择菜单
+
+int MedicationReviewResultMenu(); // 用药审核结果选择菜单
+
+int MedicationStatusMenu(); // 用药状态选择菜单
 
 
 #endif

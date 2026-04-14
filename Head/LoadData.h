@@ -18,6 +18,8 @@
 // =====================人物数据加载函数=====================
 Admin *loadAdminData(int& count); // 从文件中加载管理员数据并返回管理员链表的头指针
 Doctor *loadDoctorData(int &count); // 从文件中加载医生数据并返回医生链表的头指针
+Nurse *loadNurseData(int &count); // 从文件中加载护士数据并返回护士链表的头指针
+Pharmacist *loadPharmacistData(int &count); // 从文件中加载药师数据并返回药师链表的头指针
 
 // =====================医疗记录数据加载函数=====================
 Registration *loadRegistrations(int& count); // 从文件中加载挂号记录并返回挂号链表的头指针

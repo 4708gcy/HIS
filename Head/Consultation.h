@@ -31,6 +31,7 @@ struct Prescription
 {
     std::string medicineID; // 药品ID（若无可留空）
     std::string name;       // 药品名（冗余以便展示）
+    int quantity;           // 药品数量
     std::string dosage;     // 用量，例如 "500 mg"
     std::string frequency;  // 频次，例如 "每日3次"
     std::string duration;   // 疗程，例如 "7 天"
@@ -54,7 +55,7 @@ struct Consultation
     std::string preliminaryDiagnosis;         // 初步诊断
     std::vector<std::string> examinationlist; // 计划检查项目列表
     std::vector<Prescription> prescriptions;  // 处方列表（可包含多条医嘱）
-    bool isPrecriptionReviewed = false; // 处方是否已审核（由药师或医生审核后设置为 true）
+    bool isPrecriptionReviewed = false;       // 处方是否已审核（由药师或医生审核后设置为 true）
 
     bool isHospitalizationRecommended = false; // 是否建议住院（根据病情严重程度等因素评估得出）
 

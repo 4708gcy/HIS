@@ -37,21 +37,26 @@ enum class bedStatus
 
 struct bedInfo
 {
-    std::string bedID = "";  // 生成的床位ID（格式：科室-区域-类型-病房-床位）
+    std::string bedID = ""; // 生成的床位ID（格式：科室-区域-类型-病房-床位）
 
     bedStatus status = bedStatus::AVAILABLE; // 床位状态
-    std::string wardType;          // 病房类型（如普通病房/隔离病房/VIP病房/ICU等）
-    std::string department;         // 所属科室
-    int areaNumber;                // 区域号（如1-10）
-    int wardNumber;                // 病房号（如1-999）
-    int bedNumber;                 // 床位号（如1-10）
+    std::string wardType;                    // 病房类型（如普通病房/隔离病房/VIP病房/ICU等）
+    std::string department;                  // 所属科室
+    int areaNumber;                          // 区域号（如1-10）
+    int wardNumber;                          // 病房号（如1-999）
+    int bedNumber;                           // 床位号（如1-10）
 
     std::string note = ""; // 备注信息（如特殊护理需求等）
 
     VitalSigns vitalSigns; // 病人的生命体征
 
-    int patientID; // 占用该床位的患者ID
-    int nurseID;   // 看护该床位的护士ID
+    std::string patientID; // 占用该床位的患者ID
+    std::string nurseID;   // 看护该床位的护士ID
+
+    bool isDeleted = false; // 逻辑删除标志
+
+    int useTimes = 0; // 床位使用次数统计（可选）
+    int daysOccupied = 0; // 床位占用天数统计（可选）
 
     bedInfo *prev = nullptr;
     bedInfo *next = nullptr; // 链表指针

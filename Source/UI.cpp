@@ -179,7 +179,7 @@ std::string inputPwdCheck(const std::string &prompt)
 // 6. 安全床位号输入
 std::string inputBedNumberCheck(const std::string &prompt, std::string department, std::string wardType)
 {
-    std::string bedNumber, dpt, area,type, ward, num;
+    std::string bedNumber, dpt, area, type, ward, num;
     if (department.empty() || wardType.empty())
     {
         std::cout << "部门和病房类型不能为空！" << std::endl;
@@ -273,6 +273,144 @@ std::string inputBedNumberCheck(const std::string &prompt, std::string departmen
         return bedNumber;
     }
 }
+
+// 7. 根据输入信息自动生成床位ID
+std::string autoGenerateBedID(const std::string &department, const std::string &wardType, int areaNumber, int wardNumber, int bedNumber)
+{
+    std::string dpt, type;
+
+    if (department == "内科")
+    {
+        dpt = "N";
+    }
+    else if (department == "外科")
+    {
+        dpt = "W";
+    }
+    else if (department == "妇产科")
+    {
+        dpt = "F";
+    }
+    else if (department == "急诊科")
+    {
+        dpt = "J";
+    }
+    else if (department == "儿科")
+    {
+        dpt = "E";
+    }
+    else
+    {
+        return "";
+    }
+
+    if (wardType == "普通病房")
+    {
+        type = "P";
+    }
+    else if (wardType == "隔离病房")
+    {
+        type = "G";
+    }
+    else if (wardType == "VIP病房")
+    {
+        type = "V";
+    }
+    else if (wardType == "ICU病房")
+    {
+        type = "I";
+    }
+    else
+    {
+        return "";
+    }
+
+    // 拼接床位ID
+    char buffer[20];
+    snprintf(buffer, sizeof(buffer), "%s-%02d-%s-%03d-%02d", dpt.c_str(), areaNumber, type.c_str(), wardNumber, bedNumber);
+    return std::string(buffer);
+}
+
+// 8. 安全性别输入
+std::string inputGenderCheck(const std::string &prompt)
+{
+    std::string gender;
+
+    while (true)
+    {
+        std::cout << prompt << "（男/女）：";
+        std::getline(std::cin, gender);
+        gender = trim(gender);
+
+        if (gender == "男" || gender == "女")
+        {
+            break;
+        }
+        else
+        {
+            std::cout << "输入无效，请重新输入！" << std::endl;
+        }
+    }
+
+    return gender;
+}
+
+// 9. 安全电话号码输入
+std::string inputTelephoneCheck(const std::string &prompt)
+{
+    std::string telephone;
+
+    while (true)
+    {
+        std::cout << prompt << "（11位数字）：";
+        std::getline(std::cin, telephone);
+        telephone = trim(telephone);
+
+        if (telephone.length() == 11 && std::all_of(telephone.begin(), telephone.end(), ::isdigit))
+        {
+            break;
+        }
+        else
+        {
+            std::cout << "输入无效，请重新输入！" << std::endl;
+        }
+    }
+
+    return telephone;
+}
+
+// 10. 安全邮箱地址输入
+std::string inputEmailCheck(const std::string &prompt)
+{
+    std::string email;
+
+    while (true)
+    {
+        std::cout << prompt << "（必须包含@和.）：";
+        std::getline(std::cin, email);
+        email = trim(email);
+
+        if (email.find('@') != std::string::npos && email.find('.') != std::string::npos)
+        {
+            break;
+        }
+        else
+        {
+            std::cout << "输入无效，请重新输入！" << std::endl;
+        }
+    }
+
+    return email;
+}
+
+// 11 . 安全年龄输入
+int inputAgeCheck(const std::string &prompt)
+{
+    std::cout << prompt;
+    int age = selectIntCheck(0, 150); // 年龄合理范围为0-150
+    return age;
+}
+
 //============================= 菜单显示函数区域 =======================================
 
 // 登录和注册选择界面
@@ -346,9 +484,10 @@ int adminMenu()
     std::cout << "1. 账户管理" << std::endl;
     std::cout << "2. 医疗记录管理" << std::endl;
     std::cout << "3. 药品管理" << std::endl;
+    std::cout << "4. 床位管理" << std::endl;
     std::cout << "0. 退出登录" << std::endl;
 
-    int choice = selectIntCheck(0, 3);
+    int choice = selectIntCheck(0, 4);
     return choice;
 }
 
@@ -563,7 +702,7 @@ int adminHospitalizationViewMenu()
     std::cout << "2. 根据患者ID查看" << std::endl;
     std::cout << "3. 根据医生ID查看" << std::endl;
     std::cout << "4. 根据护士ID查看" << std::endl;
-    std::cout << "5.根据住院记录ID查看" << std::endl;
+    std::cout << "5. 根据住院记录ID查看" << std::endl;
     std::cout << "6. 根据状态查看" << std::endl;
     std::cout << "7. 根据病房类型查看" << std::endl;
     std::cout << "0. 返回上级菜单" << std::endl;
@@ -598,3 +737,97 @@ std::string HospitalizationWardTypeMenu()
         return "";
     }
 }
+
+// 管理员床位管理菜单
+int bedManagementMenu()
+{
+    std::cout << "床位管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看床位信息" << std::endl;
+    std::cout << "2. 修改床位状态" << std::endl;
+    std::cout << "3. 删除床位信息" << std::endl;
+    std::cout << "4. 添加床位信息" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员床位查看方式选择菜单
+int bedViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看该科室的所有床位信息" << std::endl;
+    std::cout << "2. 根据床位状态查看" << std::endl;
+    std::cout << "3. 根据病房类型查看" << std::endl;
+    std::cout << "4. 根据床位号查看" << std::endl;
+    std::cout << "5. 根据患者ID查看" << std::endl;
+    std::cout << "6. 根据住院记录ID查看" << std::endl;
+    std::cout << "7. 根据护士ID查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 7);
+    return viewChoice;
+}
+
+// 管理员用药记录管理菜单
+int adminMedicationRecordManagementMenu()
+{
+    std::cout << "用药记录管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看用药记录" << std::endl;
+    std::cout << "2. 修改用药记录状态" << std::endl;
+    std::cout << "3. 删除用药记录" << std::endl;
+    std::cout << "4. 添加用药记录" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员用药记录查看方式选择菜单
+int adminMedicationRecordViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看该科室的所有用药记录" << std::endl;
+    std::cout << "2. 根据患者ID查看" << std::endl;
+    std::cout << "3. 根据医生ID查看" << std::endl;
+    std::cout << "4. 根据药师ID查看" << std::endl;
+    std::cout << "5. 根据用药记录ID查看" << std::endl;
+    std::cout << "6. 根据药品ID查看" << std::endl;
+    std::cout << "7. 根据看诊记录ID查看" << std::endl;
+    std::cout << "8. 根据审核状态查看" << std::endl;
+    std::cout << "9. 根据发药状态查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 9);
+    return viewChoice;
+}
+
+// 用药记录审核状态设置菜单
+int MedicationReviewResultMenu()
+{
+    std::cout << "请选择用药记录审核状态:" << std::endl;
+    std::cout << "1. 待审核" << std::endl;
+    std::cout << "2. 审核通过" << std::endl;
+    std::cout << "3. 审核未通过" << std::endl;
+    std::cout << "4. 医生撤销" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 用药记录状态设置菜单
+int MedicationStatusMenu(){
+    std::cout << "请选择用药记录状态:" << std::endl;
+    std::cout << "1. 未缴费" << std::endl;
+    std::cout << "2. 待发药" << std::endl;
+    std::cout << "3. 已发药" << std::endl;
+    std::cout << "4. 发药撤销" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+

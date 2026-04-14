@@ -73,6 +73,10 @@ protected:
     bool isAccountActive = false; // 账户是否被激活/未锁定
     UserRole role;                // 角色类型
     std::string createTime;       // 账户创建时间字符串
+    std::string gender;           // 性别
+    int age;                      // 年龄
+    std::string telephone;        // 联系方式
+    std::string email;            // 电子邮箱
 
     bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
 
@@ -96,6 +100,10 @@ public:
     int getKHashIterations() const;
     std::string getSalt() const;
     bool getIsDeleted() const;
+    std::string getGender() const;
+    int getAge() const;
+    std::string getTelephone() const;
+    std::string getEmail() const;
 
     void setUserID(const std::string &uid);
     void setUsername(const std::string &uname);
@@ -105,6 +113,11 @@ public:
     void setRole(UserRole r);
     void setCreateTime(const std::string &time);
     void setIsDeleted(bool deleted);
+    void setGender(const std::string &gender);
+    void setAge(int age);
+    void setTelephone(const std::string &telephone);
+    void setEmail(const std::string &email);
+
 
     std::string regStatusToString(RegistrationStatus status);                  // 将挂号状态枚举转换为字符串表示
     std::string conStatusToString(ConsultationStatus status);                  // 将看诊状态枚举转换为字符串表示
@@ -113,8 +126,9 @@ public:
     std::string medicationStatusToString(MedicationStatus status);             // 将用药状态枚举转换为字符串表示
     std::string medicationReviewStatusToString(MedicationReviewStatus status); // 将用药审核状态枚举转换为字符串表示
     std::string medicineStatusToString(MedicineStatus status);                 // 将药品状态枚举转换为字符串表示
-    std::string findVitalSignToString(Examination* exa); // 将体征信息转换为字符串表示
-    std::string bedStatusToString(bedStatus status); // 将床位状态枚举转换为字符串表示
+    std::string findVitalSignToString(Examination *exa);                       // 将体征信息转换为字符串表示
+    std::string bedStatusToString(bedStatus status);                           // 将床位状态枚举转换为字符串表示
+
 };
 
 #endif // USER_H

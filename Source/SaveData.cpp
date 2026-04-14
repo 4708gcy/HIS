@@ -15,6 +15,10 @@ void saveAdminData(Admin *adminHead, int count)
     {
         outFile << current->getUserID() << ","
                 << current->getUsername() << ","
+                << current->getGender() << ","
+                << current->getAge() << ","
+                << current->getTelephone() << ","
+                << current->getEmail() << ","
                 << current->getStoredHash() << ","
                 << current->getSalt() << ","
                 << (current->getIsAccountActive() ? "1" : "0") << ","
@@ -170,21 +174,21 @@ void saveExaminations(Examination *examHead, int count)
         // 保存生命体征
         const VitalSigns &vs = current->vitalSigns;
         outFile << "VITAL_SIGNS:"
-                << (vs.temperatureC ? std::to_string(*vs.temperatureC) : "") << ";"
-                << (vs.systolicBP ? std::to_string(*vs.systolicBP) : "") << ";"
-                << (vs.diastolicBP ? std::to_string(*vs.diastolicBP) : "") << ";"
-                << (vs.heartRate ? std::to_string(*vs.heartRate) : "") << ";"
-                << (vs.respiratoryRate ? std::to_string(*vs.respiratoryRate) : "") << ";"
-                << (vs.spo2 ? std::to_string(*vs.spo2) : "") << ";"
-                << (vs.height ? std::to_string(*vs.height) : "") << ";"
-                << (vs.weight ? std::to_string(*vs.weight) : "") << ";"
-                << (vs.bmi ? std::to_string(*vs.bmi) : "") << ";"
-                << (vs.painScore ? std::to_string(*vs.painScore) : "") << ";"
-                << (vs.waistCircumference ? std::to_string(*vs.waistCircumference) : "") << ";"
-                << (vs.bloodSugar ? std::to_string(*vs.bloodSugar) : "") << ";"
-                << (vs.bodyFat ? std::to_string(*vs.bodyFat) : "") << ";"
-                << (vs.uricAcid ? std::to_string(*vs.uricAcid) : "") << ";"
-                << (vs.cholesterol ? std::to_string(*vs.cholesterol) : "")
+                << std::to_string(vs.temperatureC) << ";"
+                << std::to_string(vs.systolicBP) << ";"
+                << std::to_string(vs.diastolicBP) << ";"
+                << std::to_string(vs.heartRate) << ";"
+                << std::to_string(vs.respiratoryRate) << ";"
+                << std::to_string(vs.spo2) << ";"
+                << std::to_string(vs.height) << ";"
+                << std::to_string(vs.weight) << ";"
+                << std::to_string(vs.bmi) << ";"
+                << std::to_string(vs.painScore) << ";"
+                << std::to_string(vs.waistCircumference) << ";"
+                << std::to_string(vs.bloodSugar) << ";"
+                << std::to_string(vs.bodyFat) << ";"
+                << std::to_string(vs.uricAcid) << ";"
+                << std::to_string(vs.cholesterol)
                 << std::endl;
 
         // 保存附件
@@ -263,30 +267,80 @@ void saveBedInfos(bedInfo *bedHead, int count)
                 << current->bedNumber << ","
                 << current->note << ","
                 << current->patientID << ","
-                << current->nurseID << std::endl;
+                << current->nurseID << ","
+                << (current->isDeleted ? "1" : "0") << ","
+                << current->useTimes << ","
+                << current->daysOccupied
+                << std::endl;
 
         // 保存体征信息
         const VitalSigns &vs = current->vitalSigns;
         outFile << "VITAL_SIGNS:"
-                << (vs.temperatureC ? std::to_string(*vs.temperatureC) : "") << ";"
-                << (vs.systolicBP ? std::to_string(*vs.systolicBP) : "") << ";"
-                << (vs.diastolicBP ? std::to_string(*vs.diastolicBP) : "") << ";"
-                << (vs.heartRate ? std::to_string(*vs.heartRate) : "") << ";"
-                << (vs.respiratoryRate ? std::to_string(*vs.respiratoryRate) : "") << ";"
-                << (vs.spo2 ? std::to_string(*vs.spo2) : "") << ";"
-                << (vs.height ? std::to_string(*vs.height) : "") << ";"
-                << (vs.weight ? std::to_string(*vs.weight) : "") << ";"
-                << (vs.bmi ? std::to_string(*vs.bmi) : "") << ";"
-                << (vs.painScore ? std::to_string(*vs.painScore) : "") << ";"
-                << (vs.waistCircumference ? std::to_string(*vs.waistCircumference) : "") << ";"
-                << (vs.bloodSugar ? std::to_string(*vs.bloodSugar) : "") << ";"
-                << (vs.bodyFat ? std::to_string(*vs.bodyFat) : "") << ";"
-                << (vs.uricAcid ? std::to_string(*vs.uricAcid) : "") << ";"
-                << (vs.cholesterol ? std::to_string(*vs.cholesterol) : "")
+                << std::to_string(vs.temperatureC) << ";"
+                << std::to_string(vs.systolicBP) << ";"
+                << std::to_string(vs.diastolicBP) << ";"
+                << std::to_string(vs.heartRate) << ";"
+                << std::to_string(vs.respiratoryRate) << ";"
+                << std::to_string(vs.spo2) << ";"
+                << std::to_string(vs.height) << ";"
+                << std::to_string(vs.weight) << ";"
+                << std::to_string(vs.bmi) << ";"
+                << std::to_string(vs.painScore) << ";"
+                << std::to_string(vs.waistCircumference) << ";"
+                << std::to_string(vs.bloodSugar) << ";"
+                << std::to_string(vs.bodyFat) << ";"
+                << std::to_string(vs.uricAcid) << ";"
+                << std::to_string(vs.cholesterol)
                 << std::endl;
 
         current = current->next;
     }
+    outFile << "count:" << count << std::endl;
+    outFile.close();
+}
+
+void saveMedicationRecords(MedicationRecord *medRecHead, int count)
+{
+    std::ofstream outFile(MEDICATION_RECORD_FILE);
+    if (!outFile)
+    {
+        std::cerr << "无法打开用药记录文件进行保存！" << std::endl;
+        return;
+    }
+
+    MedicationRecord *current = medRecHead;
+    while (current != nullptr)
+    {
+        outFile << current->medRecordID << ","
+                << current->consultationID << ","
+                << current->doctorID << ","
+                << current->pharmacistID << ","
+                << current->patientID << ","
+                << current->department << ","
+                << current->createTime << ","
+                << current->totalCost << ","
+                << static_cast<int>(current->reviewStatus) << ","
+                << static_cast<int>(current->status) << ","
+                << current->paymentTime << ","
+                << current->dispenseTime << ","
+                << (current->note.empty() ? "无备注" : current->note) << ","
+                << (current->isDeleted ? "1" : "0")
+                << std::endl; // 注意：最后一项后不加逗号
+
+        // 保存用药明细
+        for (const auto &line : current->lines)
+        {
+            outFile << "MEDICATION_LINE:"
+                    << line.medicineID << ","
+                    << line.medicineName << ","
+                    << line.quantity << ","
+                    << line.unitPrice << ","
+                    << (line.note.empty() ? "无备注" : line.note)
+                    << std::endl;
+        }
+        current = current->next;
+    }
+
     outFile << "count:" << count << std::endl;
     outFile.close();
 }

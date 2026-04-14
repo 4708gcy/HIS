@@ -25,6 +25,14 @@ bool User::signUp(int choice, int &idCounter)
 
             username = inputStringCheck("请输入管理员姓名: ");
 
+            gender = inputGenderCheck("请输入性别: ");
+
+            age = inputAgeCheck("请输入年龄: ");
+
+            telephone = inputTelephoneCheck("请输入电话号码: ");
+
+            email = inputEmailCheck("请输入邮箱地址: ");
+
             std::string password = inputPwdCheck("请输入密码: ");
 
             storedHash = SHA256Encrypt(password, salt, kHashIterations);
@@ -47,6 +55,11 @@ bool User::signUp(int choice, int &idCounter)
         isAccountActive = true; // 医生账户默认激活
 
         username = inputStringCheck("请输入医生姓名: ");
+        gender = inputGenderCheck("请输入性别: ");
+        age = inputAgeCheck("请输入年龄: ");
+        telephone = inputTelephoneCheck("请输入电话号码: ");
+        email = inputEmailCheck("请输入邮箱地址: ");
+
         std::string password = inputPwdCheck("请输入密码: ");
         storedHash = SHA256Encrypt(password, salt, kHashIterations);
         std::cout << "医生注册成功! 您的用户ID是: " << userID << std::endl;
@@ -61,6 +74,10 @@ bool User::signUp(int choice, int &idCounter)
         createTime = myTime.getTime();
         isAccountActive = true; // 护士账户默认激活
         username = inputStringCheck("请输入护士姓名: ");
+        gender = inputGenderCheck("请输入性别: ");
+        age = inputAgeCheck("请输入年龄: ");
+        telephone = inputTelephoneCheck("请输入电话号码: ");
+        email = inputEmailCheck("请输入邮箱地址: ");
         std::string password = inputPwdCheck("请输入密码: ");
         storedHash = SHA256Encrypt(password, salt, kHashIterations);
 
@@ -77,6 +94,10 @@ bool User::signUp(int choice, int &idCounter)
         createTime = myTime.getTime();
         isAccountActive = true; // 药剂师账户默认激活
         username = inputStringCheck("请输入药剂师姓名: ");
+        gender = inputGenderCheck("请输入性别: ");
+        age = inputAgeCheck("请输入年龄: ");
+        telephone = inputTelephoneCheck("请输入电话号码: ");
+        email = inputEmailCheck("请输入邮箱地址: ");
         std::string password = inputPwdCheck("请输入密码: ");
         storedHash = SHA256Encrypt(password, salt, kHashIterations);
 
@@ -93,6 +114,10 @@ bool User::signUp(int choice, int &idCounter)
         createTime = myTime.getTime();
         isAccountActive = true; // 患者账户默认激活
         username = inputStringCheck("请输入患者姓名: ");
+        gender = inputGenderCheck("请输入性别: ");
+        age = inputAgeCheck("请输入年龄: ");
+        telephone = inputTelephoneCheck("请输入电话号码: ");
+        email = inputEmailCheck("请输入邮箱地址: ");
         std::string password = inputPwdCheck("请输入密码: ");
         storedHash = SHA256Encrypt(password, salt, kHashIterations);
         std::cout << "患者注册成功! 您的用户ID是: " << userID << std::endl;
@@ -130,6 +155,14 @@ std::string User::getSalt() const { return salt; }
 const std::string &User::getStoredHash() const { return storedHash; }
 // 返回逻辑删除标志
 bool User::getIsDeleted() const { return isDeleted; }
+// 返回性别
+std::string User::getGender() const { return gender; }
+// 返回年龄
+int User::getAge() const { return age; }
+// 返回联系方式
+std::string User::getTelephone() const { return telephone; }
+// 返回电子邮箱
+std::string User::getEmail() const { return email; }
 
 // 设置姓名
 void User::setUsername(const std::string &uname) { username = uname; }
@@ -147,6 +180,14 @@ void User::setRole(UserRole r) { role = r; }
 void User::setCreateTime(const std::string &time) { createTime = time; }
 // 设置逻辑删除标志
 void User::setIsDeleted(bool deleted) { isDeleted = deleted; }
+// 设置性别
+void User::setGender(const std::string &gender) { this->gender = gender; }
+// 设置年龄
+void User::setAge(int age) { this->age = age; }
+// 设置联系方式 
+void User::setTelephone(const std::string &telephone) { this->telephone = telephone; }
+// 设置电子邮箱
+void User::setEmail(const std::string &email) { this->email = email; }
 
 // 将挂号状态枚举转换为字符串表示
 std::string User::regStatusToString(RegistrationStatus status)
@@ -277,39 +318,39 @@ std::string User::medicineStatusToString(MedicineStatus status)
 }
 
 // 将体征信息转换为字符串表示
-std::string User::findVitalSignToString(Examination* exa)
+std::string User::findVitalSignToString(Examination *exa)
 {
-    const auto& vs = exa->vitalSigns;
-    const auto& itemName = exa->itemName;
+    const auto &vs = exa->vitalSigns;
+    const auto &itemName = exa->itemName;
 
-    if (itemName == "体温测量" && vs.temperatureC)
-        return "体温(" + std::to_string(*vs.temperatureC) + "°C)";
-    if (itemName == "血压测量" && vs.systolicBP && vs.diastolicBP)
-        return "血压(" + std::to_string(*vs.systolicBP) + "/" + std::to_string(*vs.diastolicBP) + " mmHg)";
-    if (itemName == "心率测量" && vs.heartRate)
-        return "心率(" + std::to_string(*vs.heartRate) + "次/分钟)";
-    if (itemName == "呼吸频率测量" && vs.respiratoryRate)
-        return "呼吸频率(" + std::to_string(*vs.respiratoryRate) + "次/分钟)";
-    if (itemName == "脉搏血氧测量" && vs.spo2)
-        return "血氧饱和度(" + std::to_string(*vs.spo2) + "%)";
-    if (itemName == "身高测量" && vs.height)
-        return "身高(" + std::to_string(*vs.height) + "cm)";
-    if (itemName == "体重测量" && vs.weight)
-        return "体重(" + std::to_string(*vs.weight) + "kg)";
-    if (itemName == "BMI计算" && vs.bmi)
-        return "BMI(" + std::to_string(*vs.bmi) + ")";
-    if (itemName == "疼痛评估" && vs.painScore)
-        return "疼痛评分(" + std::to_string(*vs.painScore) + ")";
-    if (itemName == "腰围测量" && vs.waistCircumference)
-        return "腰围(" + std::to_string(*vs.waistCircumference) + "cm)";
-    if (itemName == "血糖测量" && vs.bloodSugar)
-        return "血糖(" + std::to_string(*vs.bloodSugar) + "mmol/L)";
-    if (itemName == "体脂测量" && vs.bodyFat)
-        return "体脂率(" + std::to_string(*vs.bodyFat) + "%)";
-    if (itemName == "尿酸测定" && vs.uricAcid)
-        return "尿酸(" + std::to_string(*vs.uricAcid) + "μmol/L)";
-    if (itemName == "血脂测定" && vs.cholesterol)
-        return "总胆固醇(" + std::to_string(*vs.cholesterol) + "mmol/L)";
+    if (itemName == "体温测量")
+        return "体温(" + std::to_string(vs.temperatureC) + "°C)";
+    if (itemName == "血压测量")
+        return "血压(" + std::to_string(vs.systolicBP) + "/" + std::to_string(vs.diastolicBP) + " mmHg)";
+    if (itemName == "心率测量")
+        return "心率(" + std::to_string(vs.heartRate) + "次/分钟)";
+    if (itemName == "呼吸频率测量")
+        return "呼吸频率(" + std::to_string(vs.respiratoryRate) + "次/分钟)";
+    if (itemName == "脉搏血氧测量")
+        return "血氧饱和度(" + std::to_string(vs.spo2) + "%)";
+    if (itemName == "身高测量")
+        return "身高(" + std::to_string(vs.height) + "cm)";
+    if (itemName == "体重测量")
+        return "体重(" + std::to_string(vs.weight) + "kg)";
+    if (itemName == "BMI计算")
+        return "BMI(" + std::to_string(vs.bmi) + ")";
+    if (itemName == "疼痛评估")
+        return "疼痛评分(" + std::to_string(vs.painScore) + ")";
+    if (itemName == "腰围测量")
+        return "腰围(" + std::to_string(vs.waistCircumference) + "cm)";
+    if (itemName == "血糖测量")
+        return "血糖(" + std::to_string(vs.bloodSugar) + "mmol/L)";
+    if (itemName == "体脂测量")
+        return "体脂率(" + std::to_string(vs.bodyFat) + "%)";
+    if (itemName == "尿酸测定")
+        return "尿酸(" + std::to_string(vs.uricAcid) + "μmol/L)";
+    if (itemName == "血脂测定")
+        return "总胆固醇(" + std::to_string(vs.cholesterol) + "mmol/L)";
 
     return "无体征信息";
 }

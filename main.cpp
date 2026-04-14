@@ -49,6 +49,8 @@ int main()
     }
 
     Doctor *docHead = loadDoctorData(doctorIDCount); // 加载医生数据
+    Nurse *nurseHead = loadNurseData(nurseIDCount); // 加载护士数据
+    Pharmacist *phaHead = loadPharmacistData(pharmacistIDCount); // 加载药师数据
 
     Registration *regHead = loadRegistrations(registrationCount);                // 加载挂号记录数据
     Consultation *conHead = loadConsultations(consultationCount);                // 加载看诊记录数据
@@ -56,7 +58,7 @@ int main()
     Hospitalization *hosHead = loadHospitalizations(hospitalizationCount);       // 加载住院记录数据
     MedicationRecord *medRecHead = loadMedicationRecords(medicationRecordCount); // 加载用药记录数据
     Medicine *medHead = loadMedicines(medicineCount);                            // 加载药品信息数据
-    bedInfo *bedHead = loadBedInfos(bedCount);                                    // 加载床位信息数据
+    bedInfo *bedHead = loadBedInfos(bedCount);                                   // 加载床位信息数据
 
     while (true) // 系统主循环，处理登录和注册逻辑
     {
@@ -102,11 +104,11 @@ int main()
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead, department, conHead, bedHead, hospitalizationCount);
+                                                client->manageHospitalizations(hosHead,nurseHead, department, conHead, bedHead, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, department, medicationRecordCount);
+                                                client->manageMedicationRecords(medRecHead, conHead,phaHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -137,11 +139,11 @@ int main()
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead, department, conHead, bedHead, hospitalizationCount);
+                                                client->manageHospitalizations(hosHead,nurseHead, department, conHead, bedHead, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, department, medicationRecordCount);
+                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -172,11 +174,11 @@ int main()
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead, department, conHead, bedHead, hospitalizationCount);
+                                                client->manageHospitalizations(hosHead,nurseHead, department, conHead, bedHead, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, department, medicationRecordCount);
+                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -207,11 +209,11 @@ int main()
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead, department, conHead, bedHead, hospitalizationCount);
+                                                client->manageHospitalizations(hosHead,nurseHead, department, conHead, bedHead, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, department, medicationRecordCount);
+                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -242,11 +244,11 @@ int main()
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead, department, conHead, bedHead, hospitalizationCount);
+                                                client->manageHospitalizations(hosHead,nurseHead, department, conHead, bedHead, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, department, medicationRecordCount);
+                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -270,6 +272,41 @@ int main()
                             }
                             else if (adminChoice == 3) // 药品管理
                             {
+                            }
+                            else if (adminChoice == 4) // 床位管理
+                            {
+                                while (true) // 科室选择循环，直到用户选择返回上级菜单
+                                {
+                                    std::string department = adminDepartmentMenu();
+                                    if (department == "内科")
+                                    {
+                                        client->manageBedInfo(bedHead, hosHead, department);
+                                    }
+                                    else if (department == "外科")
+                                    {
+                                        client->manageBedInfo(bedHead, hosHead, department);
+                                    }
+                                    else if (department == "妇产科")
+                                    {
+                                        client->manageBedInfo(bedHead, hosHead, department);
+                                    }
+                                    else if (department == "急诊科")
+                                    {
+                                        client->manageBedInfo(bedHead, hosHead, department);
+                                    }
+                                    else if (department == "儿科")
+                                    {
+                                        client->manageBedInfo(bedHead, hosHead, department);
+                                    }
+                                    else if (department == "0")
+                                    {
+                                        break; // 返回上级菜单
+                                    }
+                                    else
+                                    {
+                                        std::cout << "无效的选择! 请重新选择。" << std::endl;
+                                    }
+                                }
                             }
                             else if (adminChoice == 0) // 退出登录
                             {
