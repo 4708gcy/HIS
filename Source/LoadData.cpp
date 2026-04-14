@@ -976,9 +976,107 @@ MedicationRecord *loadMedicationRecords(int &count)
     return head;
 }
 
-
 Medicine *loadMedicines(int &count)
 {
+    Medicine *medHead = nullptr;
+    std::ifstream inFile(MEDICINE_FILE);
+    if (!inFile)
+    {
+        std::cerr << "无法打开药品信息文件！" << std::endl;
+        count = 0;
+        return nullptr;
+    }
 
-    return nullptr;
+    std::string line;
+    count = 0;
+    while (std::getline(inFile, line))
+    {
+        if (line.rfind("count:", 0) == 0)
+        {
+            try
+            {
+                count = std::stoi(line.substr(6));
+            }
+            catch (...)
+            {
+                count = 0;
+            }
+            break;
+        }
+        if (line.empty())
+            continue;
+
+        std::istringstream iss(line);
+        Medicine *newMed = new Medicine();
+        std::string purchasePriceStr, salePriceStr, stockStr, safetyStockStr, isSpecialStr, isDeletedStr, noteStr, statusStr;
+
+        std::getline(iss, newMed->medicineID, ',');
+        std::getline(iss, newMed->name, ',');
+        std::getline(iss, newMed->specification, ',');
+        std::getline(iss, newMed->manufacturer, ',');
+        std::getline(iss, purchasePriceStr, ',');
+        std::getline(iss, salePriceStr, ',');
+        std::getline(iss, stockStr, ',');
+        std::getline(iss, safetyStockStr, ',');
+        std::getline(iss, newMed->productionDate, ',');
+        std::getline(iss, newMed->expiryDate, ',');
+        std::getline(iss, newMed->department, ',');
+        std::getline(iss, isSpecialStr, ',');
+        std::getline(iss, isDeletedStr, ',');
+        std::getline(iss, noteStr, ',');
+        std::getline(iss, statusStr);
+
+        try
+        {
+            newMed->purchasePrice = std::stod(purchasePriceStr);
+        }
+        catch (...)
+        {
+            newMed->purchasePrice = 0.0;
+        }
+        try
+        {
+            newMed->salePrice = std::stod(salePriceStr);
+        }
+        catch (...)
+        {
+            newMed->salePrice = 0.0;
+        }
+        try
+        {
+            newMed->stock = std::stoi(stockStr);
+        }
+        catch (...)
+        {
+            newMed->stock = 0;
+        }
+        try
+        {
+            newMed->safetyStock = std::stoi(safetyStockStr);
+        }
+        catch (...)
+        {
+            newMed->safetyStock = 0;
+        }
+        newMed->isSpecial = (isSpecialStr == "1");
+        newMed->isDeleted = (isDeletedStr == "1");
+        newMed->note = (noteStr == "无备注" ? "" : noteStr);
+        try
+        {
+            newMed->status = static_cast<MedicineStatus>(std::stoi(statusStr));
+        }
+        catch (...)
+        {
+            newMed->status = MedicineStatus::NORMAL;
+        }
+
+        // 链表头插
+        newMed->prev = nullptr;
+        newMed->next = medHead;
+        if (medHead)
+            medHead->prev = newMed;
+        medHead = newMed;
+    }
+    inFile.close();
+    return medHead;
 }

@@ -48,8 +48,8 @@ int main()
         }
     }
 
-    Doctor *docHead = loadDoctorData(doctorIDCount); // 加载医生数据
-    Nurse *nurseHead = loadNurseData(nurseIDCount); // 加载护士数据
+    Doctor *docHead = loadDoctorData(doctorIDCount);             // 加载医生数据
+    Nurse *nurseHead = loadNurseData(nurseIDCount);              // 加载护士数据
     Pharmacist *phaHead = loadPharmacistData(pharmacistIDCount); // 加载药师数据
 
     Registration *regHead = loadRegistrations(registrationCount);                // 加载挂号记录数据
@@ -104,11 +104,11 @@ int main()
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead,nurseHead, department, conHead, bedHead, hospitalizationCount);
+                                                client->manageHospitalizations(hosHead, nurseHead, department, conHead, bedHead, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, conHead,phaHead, department, medicationRecordCount);
+                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, medHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -139,11 +139,11 @@ int main()
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead,nurseHead, department, conHead, bedHead, hospitalizationCount);
+                                                client->manageHospitalizations(hosHead, nurseHead, department, conHead, bedHead, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, department, medicationRecordCount);
+                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, medHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -174,11 +174,11 @@ int main()
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead,nurseHead, department, conHead, bedHead, hospitalizationCount);
+                                                client->manageHospitalizations(hosHead, nurseHead, department, conHead, bedHead, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, department, medicationRecordCount);
+                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, medHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -209,11 +209,11 @@ int main()
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead,nurseHead, department, conHead, bedHead, hospitalizationCount);
+                                                client->manageHospitalizations(hosHead, nurseHead, department, conHead, bedHead, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, department, medicationRecordCount);
+                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, medHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -244,11 +244,11 @@ int main()
                                             }
                                             else if (recordChoice == 4)
                                             {
-                                                client->manageHospitalizations(hosHead,nurseHead, department, conHead, bedHead, hospitalizationCount);
+                                                client->manageHospitalizations(hosHead, nurseHead, department, conHead, bedHead, hospitalizationCount);
                                             }
                                             else if (recordChoice == 5)
                                             {
-                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, department, medicationRecordCount);
+                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, medHead, department, medicationRecordCount);
                                             }
                                             else if (recordChoice == 0)
                                             {
@@ -356,4 +356,10 @@ int main()
     }
 
     saveAdminData(adminHead, adminIDCount); // 保存管理员数据
+
+    saveRegistrations(regHead, registrationCount);            // 保存挂号记录数据
+    saveConsultations(conHead, consultationCount);            // 保存看诊记录数据
+    saveMedicationRecords(medRecHead, medicationRecordCount); // 保存用药记录数据
+    saveMedicines(medHead, medicineCount);                    // 保存药品信息数据
+    saveBedInfos(bedHead, bedCount);                          // 保存床位信息数据
 }

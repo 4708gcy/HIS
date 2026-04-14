@@ -35,10 +35,11 @@ std::string inputGenderCheck(const std::string &prompt); // 检查输入的性�
 std::string inputTelephoneCheck(const std::string &prompt); // 检查输入的电话号码是否符合格式要求（如长度、数字等）
 std::string inputEmailCheck(const std::string &prompt); // 检查输入的邮箱地址是否符合格式要求（如包含@和.等）
 int inputAgeCheck(const std::string &prompt); // 检查输入的年龄是否为有效的正整数
+std::string inputDateCheck(const std::string &prompt); // 检查输入的日期是否符合格式要求（如YYYY-MM-DD等）
 
-// ======================================== 菜单显示函数区域 =======================================
+    // ======================================== 菜单显示函数区域 =======================================
 
-int loginRegisterUI(); // 登录和注册选择界面
+    int loginRegisterUI(); // 登录和注册选择界面
 
 int beginUI(); // 启动界面，显示欢迎信息和主菜单
 
@@ -76,9 +77,18 @@ int adminMedicationRecordManagementMenu(); // 管理员药物记录管理菜单
 
 int adminMedicationRecordViewMenu(); // 管理员药物记录查看方式选择菜单
 
-int MedicationReviewResultMenu(); // 用药审核结果选择菜单
+int MedicationRecordReviewResultMenu(); // 用药审核结果选择菜单
 
-int MedicationStatusMenu(); // 用药状态选择菜单
+int MedicationRecordStatusMenu(); // 用药状态选择菜单
+
+int adminMedicineManagementMenu(); // 管理员药品信息管理菜单
+
+int adminMedicineViewMenu(); // 管理员药品信息查看方式选择菜单
+
+int MedicineStatusMenu(); // 药品状态选择菜单
+
+int MedicineModificationMenu(); // 药品信息修改菜单
+
 
 
 #endif

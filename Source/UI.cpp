@@ -25,7 +25,7 @@ int selectIntCheck(const int min, const int max)
     std::string line;
     while (true)
     {
-        std::cout << "请输入你的选择: ";
+        std::cout << "请输入整数: ";
         std::getline(std::cin, line);
         line = trim(line); // 去除首尾空格
         std::stringstream ss(line);
@@ -71,13 +71,17 @@ std::string inputStringCheck(const std::string &prompt)
         std::cout << prompt;
         std::getline(std::cin, input);
         input = trim(input); // 去除首尾空格
-        if (!input.empty())
+        if (input.empty())
         {
-            return input;
+            std::cout << "输入不能为空，请重新输入!" << std::endl;
+        }
+        else if (input.find(',') != std::string::npos)
+        {
+            std::cout << "输入不能包含英文逗号(,)！请重新输入!" << std::endl;
         }
         else
         {
-            std::cout << "输入不能为空，请重新输入!" << std::endl;
+            return input;
         }
     }
 }
@@ -409,6 +413,29 @@ int inputAgeCheck(const std::string &prompt)
     std::cout << prompt;
     int age = selectIntCheck(0, 150); // 年龄合理范围为0-150
     return age;
+}
+
+// 12. 安全日期输入
+std::string inputDateCheck(const std::string &prompt)
+{
+    std::string date;
+    while (true)
+    {
+        std::cout << prompt << "（格式 YYYY-MM-DD）: ";
+        std::getline(std::cin, date);
+        date = trim(date);
+
+        if (date.length() == 10 && date[4] == '-' && date[7] == '-' &&
+            std::all_of(date.begin(), date.end(), [](char c) { return std::isdigit(c) || c == '-'; }))
+        {
+            break;
+        }
+        else
+        {
+            std::cout << "输入无效，请重新输入！" << std::endl;
+        }
+    }
+    return date;
 }
 
 //============================= 菜单显示函数区域 =======================================
@@ -805,7 +832,7 @@ int adminMedicationRecordViewMenu()
 }
 
 // 用药记录审核状态设置菜单
-int MedicationReviewResultMenu()
+int MedicationRecordReviewResultMenu()
 {
     std::cout << "请选择用药记录审核状态:" << std::endl;
     std::cout << "1. 待审核" << std::endl;
@@ -819,15 +846,81 @@ int MedicationReviewResultMenu()
 }
 
 // 用药记录状态设置菜单
-int MedicationStatusMenu(){
+int MedicationRecordStatusMenu()
+{
     std::cout << "请选择用药记录状态:" << std::endl;
     std::cout << "1. 未缴费" << std::endl;
     std::cout << "2. 待发药" << std::endl;
     std::cout << "3. 已发药" << std::endl;
-    std::cout << "4. 发药撤销" << std::endl;
+    std::cout << "4. 已退药" << std::endl;
     std::cout << "0. 返回上级菜单" << std::endl;
 
     int choice = selectIntCheck(0, 4);
     return choice;
 }
 
+// 管理员药品管理菜单
+int adminMedicineManagementMenu()
+{
+    std::cout << "药品管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看药品信息" << std::endl;
+    std::cout << "2. 修改药品信息" << std::endl;
+    std::cout << "3. 删除药品信息" << std::endl;
+    std::cout << "4. 添加药品信息" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员药品查看方式选择菜单
+int adminMedicineViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看所有药品信息" << std::endl;
+    std::cout << "2. 根据药品ID查看" << std::endl;
+    std::cout << "3. 根据药品名称查看" << std::endl;
+    std::cout << "4. 根据药品状态查看" << std::endl;
+    std::cout << "5. 根据生产厂家查看" << std::endl;
+    std::cout << "6. 查看低于安全库存量的药品" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 6);
+    return viewChoice;
+}
+
+// 管理员药品状态设置菜单
+int MedicineStatusMenu()
+{
+    std::cout << "请选择药品状态:" << std::endl;
+    std::cout << "1. 正常可用" << std::endl;
+    std::cout << "2. 库存低于安全阈值" << std::endl;
+    std::cout << "3. 已过期" << std::endl;
+    std::cout << "4. 已停用" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 修改药品信息菜单
+int MedicineModificationMenu()
+{
+    std::cout << "请选择你要修改的药品信息:" << std::endl;
+    std::cout << "1. 药品名称" << std::endl;
+    std::cout << "2. 药品规格描述" << std::endl;
+    std::cout << "3. 药品进价" << std::endl;
+    std::cout << "4. 药品售价" << std::endl;
+    std::cout << "5. 药品库存量" << std::endl;
+    std::cout << "6. 药品安全库存阈值" << std::endl;
+    std::cout << "7. 药品状态" << std::endl;
+    std::cout << "8. 药品生产日期" << std::endl;
+    std::cout << "9. 药品有效期限" << std::endl;
+    std::cout << "10. 药品备注" << std::endl; // (储存条件/用法等)
+    std::cout << "11. 生产厂家" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 11);
+    return choice;
+}

@@ -125,23 +125,41 @@ public:
     void deleteBedInfo(bedInfo *&bed, const std::string &department);                                      // 删除床位信息（逻辑删除，设置 isDeleted 标志）
     void addBedInfo(bedInfo *&bed, const std::string &department);                                         // 添加床位信息（根据输入信息创建新的 bedInfo 对象，并插入到链表中）
 
-    void manageMedicationRecords(MedicationRecord *&medRec, Consultation *con, Pharmacist *pha, const std::string &department, int &idCounter); // 管理用药记录（查看、修改用药详情等）
-    void viewAllMedicationRecords(MedicationRecord *&medRec, const std::string &department);                                                    // 查看所有用药记录（可按患者ID、医生ID、状态过滤）
-    void viewMedicationRecordByID(MedicationRecord *&medRec, const std::string &department);                                                    // 根据用药记录ID查看用药记录
-    void viewMedicationRecordsByDoctor(MedicationRecord *&medRec, const std::string &department);                                               // 根据医生ID查看用药记录
-    void viewMedicationRecordsByPatient(MedicationRecord *&medRec, const std::string &department);                                              // 根据患者ID查看用药记录
-    void viewMedicationRecordsByPharmacist(MedicationRecord *&medRec, const std::string &department);                                           // 根据审核药师ID查看用药记录
-    void viewMedicationRecordsByStatus(MedicationRecord *&medRec, const std::string &department);                                               // 查看指定状态的用药记录
-    void viewMedicationRecordsByReviewStatus(MedicationRecord *&medRec, const std::string &department);                                         // 根据审核状态查看用药记录
-    void viewMedicationRecordsByMedicationID(MedicationRecord *&medRec, const std::string &department);                                         // 根据药品ID查看用药记录
-    void viewMedicationRecordsByConsultationID(MedicationRecord *&medRec, const std::string &department);                                       // 根据看诊记录ID查看用药记录
-    void modifyMedicationRecordReviewStatus(MedicationRecord *&medRec, const std::string &department);                                          // 修改用药记录审核状态（如审核通过、驳回等）
-    void deleteMedicationRecord(MedicationRecord *&medRec, const std::string &department);                                                      // 删除用药记录（逻辑删除，设置 isDeleted 标志）
-    void addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Pharmacist *pha, const std::string &department, int &idCounter);                      // 添加用药记录（根据输入信息创建新的 MedicationRecord 对象，并插入到链表中）
+    void manageMedicationRecords(MedicationRecord *&medRec, Consultation *con, Pharmacist *pha, Medicine *med, const std::string &department, int &idCounter); // 管理用药记录（查看、修改用药详情等）
+    void viewAllMedicationRecords(MedicationRecord *&medRec, const std::string &department);                                                                   // 查看所有用药记录（可按患者ID、医生ID、状态过滤）
+    void viewMedicationRecordByID(MedicationRecord *&medRec, const std::string &department);                                                                   // 根据用药记录ID查看用药记录
+    void viewMedicationRecordsByDoctor(MedicationRecord *&medRec, const std::string &department);                                                              // 根据医生ID查看用药记录
+    void viewMedicationRecordsByPatient(MedicationRecord *&medRec, const std::string &department);                                                             // 根据患者ID查看用药记录
+    void viewMedicationRecordsByPharmacist(MedicationRecord *&medRec, const std::string &department);                                                          // 根据审核药师ID查看用药记录
+    void viewMedicationRecordsByStatus(MedicationRecord *&medRec, const std::string &department);                                                              // 查看指定状态的用药记录
+    void viewMedicationRecordsByReviewStatus(MedicationRecord *&medRec, const std::string &department);                                                        // 根据审核状态查看用药记录
+    void viewMedicationRecordsByMedicationID(MedicationRecord *&medRec, const std::string &department);                                                        // 根据药品ID查看用药记录
+    void viewMedicationRecordsByConsultationID(MedicationRecord *&medRec, const std::string &department);                                                      // 根据看诊记录ID查看用药记录
+    void modifyMedicationRecordReviewStatus(MedicationRecord *&medRec, const std::string &department);                                                         // 修改用药记录审核状态（如审核通过、驳回等）
+    void deleteMedicationRecord(MedicationRecord *&medRec, const std::string &department);                                                                     // 删除用药记录（逻辑删除，设置 isDeleted 标志）
+    void addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Pharmacist *pha, Medicine *med, const std::string &department, int &idCounter);     // 添加用药记录（根据输入信息创建新的 MedicationRecord 对象，并插入到链表中）
 
-
-    
     void manageMedicines(Medicine *&med, const std::string &department, int &idCounter); // 管理药品信息（查看、修改库存等）
+    void viewAllMedicines(Medicine *&med, const std::string &department);                // 查看所有药品信息（可按科室、状态过滤）
+    void viewMedicineByID(Medicine *&med, const std::string &department);
+    void viewMedicinesByName(Medicine *&med, const std::string &department);          // 根据药品名称查看药品信息
+    void viewMedicinesByStatus(Medicine *&med, const std::string &department);        // 根据药品状态查看药品信息
+    void viewMedicinesBySafetyStock(Medicine *&med, const std::string &department);   // 查看库存低于安全库存的药品信息
+    void viewMedicinesByManufacturer(Medicine *&med, const std::string &department);  // 根据生产厂家查看药品信息
+    void modifyMedicine(Medicine *&med, const std::string &department);               // 修改药品信息（如修改库存、价格等）
+    void modifyMedicineName(Medicine *&med, const std::string &department);           // 修改药品名称
+    void modifyMedicineSpecification(Medicine *&med, const std::string &department);  // 修改药品规格
+    void modifyMedicinePurchasePrice(Medicine *&med, const std::string &department);  // 修改药品进价
+    void modifyMedicineSalePrice(Medicine *&med, const std::string &department);      // 修改药品售价
+    void modifyMedicineStock(Medicine *&med, const std::string &department);          // 修改药品库存
+    void modifyMedicineSafetyStock(Medicine *&med, const std::string &department);    // 修改药品安全库存阈值
+    void modifyMedicineStatus(Medicine *&med, const std::string &department);         // 修改药品状态（如修改为停用等）
+    void modifyMedicineProductionDate(Medicine *&med, const std::string &department); // 修改药品生产日期
+    void modifyMedicineExpiryDate(Medicine *&med, const std::string &department);
+    void modifyMedicineNote(Medicine *&med, const std::string &department);          // 修改药品备注
+    void modifyMedicineManufacturer(Medicine *&med, const std::string &department);  // 修改药品生产厂家
+    void deleteMedicine(Medicine *&med, const std::string &department);              // 删除
+    void addMedicine(Medicine *&med, const std::string &department, int &idCounter); // 添加药品信息（根据输入信息创建新的 Medicine 对象，并插入到链表中）
 };
 
 #endif // ADMIN_H

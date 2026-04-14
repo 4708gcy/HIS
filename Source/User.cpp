@@ -184,7 +184,7 @@ void User::setIsDeleted(bool deleted) { isDeleted = deleted; }
 void User::setGender(const std::string &gender) { this->gender = gender; }
 // 设置年龄
 void User::setAge(int age) { this->age = age; }
-// 设置联系方式 
+// 设置联系方式
 void User::setTelephone(const std::string &telephone) { this->telephone = telephone; }
 // 设置电子邮箱
 void User::setEmail(const std::string &email) { this->email = email; }
@@ -273,7 +273,7 @@ std::string User::medicationStatusToString(MedicationStatus status)
     case MedicationStatus::UNPAID:
         return "未支付";
     case MedicationStatus::PAID:
-        return "已支付未发药";
+        return "待发药";
     case MedicationStatus::DISPENSED:
         return "已发药";
     case MedicationStatus::RETURNED:

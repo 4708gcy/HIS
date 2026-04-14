@@ -68,10 +68,9 @@ void saveRegistrations(Registration *regHead, int count)
         {
             outFile << "RELATED_REGISTRATION_ID:" << relatedID << std::endl;
         }
-        
+
         current = current->next;
     }
-
 
     outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
 
@@ -107,7 +106,7 @@ void saveConsultations(Consultation *conHead, int count)
                 << static_cast<int>(current->status) << ","
                 << (current->note.empty() ? "无备注" : current->note) << ","
                 << (current->isDeleted ? "1" : "0") << std::endl;
-            
+
         // 保存处方列表
         for (const auto &pres : current->prescriptions)
         {
@@ -136,7 +135,6 @@ void saveConsultations(Consultation *conHead, int count)
         {
             outFile << "RELATED_CONSULTATION_ID:" << relatedID << std::endl;
         }
-
 
         current = current->next;
     }
@@ -338,6 +336,41 @@ void saveMedicationRecords(MedicationRecord *medRecHead, int count)
                     << (line.note.empty() ? "无备注" : line.note)
                     << std::endl;
         }
+        current = current->next;
+    }
+
+    outFile << "count:" << count << std::endl;
+    outFile.close();
+}
+
+void saveMedicines(Medicine *medHead, int count)
+{
+    std::ofstream outFile(MEDICINE_FILE);
+    if (!outFile)
+    {
+        std::cerr << "无法打开药品信息文件进行保存！" << std::endl;
+        return;
+    }
+
+    Medicine *current = medHead;
+    while (current != nullptr)
+    {
+        outFile << current->medicineID << ","
+                << current->name << ","
+                << current->specification << ","
+                << current->manufacturer << ","
+                << current->purchasePrice << ","
+                << current->salePrice << ","
+                << current->stock << ","
+                << current->safetyStock << ","
+                << current->productionDate << ","
+                << current->expiryDate << ","
+                << current->department << ","
+                << (current->isSpecial ? "1" : "0") << ","
+                << (current->isDeleted ? "1" : "0") << ","
+                << (current->note.empty() ? "无备注" : current->note) << ","
+                << static_cast<int>(current->status)
+                << std::endl;
         current = current->next;
     }
 

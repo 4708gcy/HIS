@@ -11,22 +11,15 @@
 #define MEDICINE_H
 
 #include <string>
-#include <sstream>
-#include <vector>
 
-/**
- * @file Medicine.h
- * @brief 药品信息结构体（简化版：仅一栏名称）
- * @details 适用于课设的药品库存管理：包含唯一ID、名称、规格、价格、库存、有效期、所属科室等基本字段，
- *          并提供少量内联方法用于状态更新与简单序列化/反序列化（文本行格式）。
- */
+
 
 enum class MedicineStatus
 {
-    NORMAL,      // 正常可用
-    LOW_STOCK,   // 库存低于安全阈值
-    EXPIRED,     // 已过期
-    DISCONTINUED // 已停用
+    NORMAL = 1,      // 正常可用
+    LOW_STOCK = 2,   // 库存低于安全阈值
+    EXPIRED = 3,     // 已过期
+    DISCONTINUED = 4 // 已停用
 };
 
 struct Medicine
@@ -40,6 +33,9 @@ struct Medicine
     // 规格描述（例如 "0.5g*10片"）
     std::string specification;
 
+    // 生产厂家
+    std::string manufacturer;
+
     // 进价（采购价）
     double purchasePrice = 0.0;
 
@@ -52,6 +48,9 @@ struct Medicine
     // 安全库存阈值（低于此值应提醒补货）
     int safetyStock = 0;
 
+    // 生产日期（建议格式 "YYYY-MM-DD"）
+    std::string productionDate;
+
     // 有效期（建议格式 "YYYY-MM-DD"）
     std::string expiryDate;
 
@@ -60,6 +59,8 @@ struct Medicine
 
     // 是否为专科受限用药（需二次审批）
     bool isSpecial = false;
+
+    bool isDeleted = false; // 逻辑删除标志
 
     // 备注（储存条件、用法等）
     std::string note;
