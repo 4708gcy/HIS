@@ -373,6 +373,80 @@ std::string User::bedStatusToString(bedStatus status)
     }
 }
 
+// 将医生职称枚举转换为字符串表示
+std::string User::doctorTitleToString(DoctorTitle title)
+{
+    switch (title)
+    {
+    case DoctorTitle::INTERN:
+        return "实习医生";
+    case DoctorTitle::RESIDENT:
+        return "住院医生";
+    case DoctorTitle::ATTENDING:
+        return "主治医生";
+    case DoctorTitle::ASSOCIATE_CHIEF:
+        return "副主任医生";
+    case DoctorTitle::CHIEF:
+        return "主任医生";
+    default:
+        return "未知职称";
+    }
+}
+
+// 将护士等级枚举转换为字符串表示
+std::string User::nurseLevelToString(NurseLevel level)
+{
+    switch (level)
+    {
+    case NurseLevel::INTERN:
+        return "实习护士";
+    case NurseLevel::JUNIOR:
+        return "初级护士";
+    case NurseLevel::SENIOR:
+        return "高级护士";
+    case NurseLevel::HEAD_NURSE:
+        return "护士长";
+    default:
+        return "未知等级";
+    }
+}
+
+// 将患者婚姻状态枚举转换为字符串表示
+std::string User::patientMaritalStatusToString(MaritalStatus status)
+{
+    switch (status)
+    {
+    case MaritalStatus::SINGLE:
+        return "单身";
+    case MaritalStatus::MARRIED:
+        return "已婚";
+    case MaritalStatus::DIVORCED:
+        return "离异";
+    case MaritalStatus::WIDOWED:
+        return "丧偶";
+    default:
+        return "未知状态";
+    }
+}
+
+// 将药剂师等级枚举转换为字符串表示
+std::string User::pharmacistLevelToString(PharmacistLevel level)
+{
+    switch (level)
+    {
+    case PharmacistLevel::INTERN:
+        return "实习药剂师";
+    case PharmacistLevel::JUNIOR:
+        return "初级药剂师";
+    case PharmacistLevel::SENIOR:
+        return "高级药剂师";
+    case PharmacistLevel::CHIEF_PHARMACIST:
+        return "主管药剂师";
+    default:
+        return "未知等级";
+    }
+}
+
 User::~User()
 {
 }

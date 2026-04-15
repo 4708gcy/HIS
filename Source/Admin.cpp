@@ -273,7 +273,7 @@ void Admin::addRegistration(Registration *&reg, Doctor *&doc, const std::string 
     {
         if (currentDoc->department == department)
         {
-            std::cout << "医生ID: " << currentDoc->getUserID() << ", 姓名: " << currentDoc->getUsername() << ", 擅长领域：" << currentDoc->specialization << ", 职称：" << currentDoc->title << ", 联系方式：" << currentDoc->getTelephone() << " / " << currentDoc->getEmail()
+            std::cout << "医生ID: " << currentDoc->getUserID() << ", 姓名: " << currentDoc->getUsername() << ", 擅长领域：" << currentDoc->specialty << ", 职称：" << doctorTitleToString(currentDoc->title) << ", 联系方式：" << currentDoc->getTelephone() << " / " << currentDoc->getEmail()
                       << std::endl;
         }
         currentDoc = currentDoc->next;

@@ -10,12 +10,11 @@
 #ifndef ADMIN_H
 #define ADMIN_H
 
-#include <string>
-#include <vector>
 #include "User.h"
 #include "Doctor.h"
 #include "Nurse.h"
 #include "Pharmacist.h"
+#include "Patient.h"
 
 class Admin : public User
 {

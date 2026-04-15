@@ -23,6 +23,7 @@
 #include "Medicine.h"
 #include "UI.h"
 
+
 // 定义存储人物信息文件的路径
 #define ADMIN_FILE "../Data/UserData/AdminChainData/admin_users.txt"
 #define DOCTOR_FILE "../Data/UserData/DoctorChainData/doctor_users.txt"
@@ -49,6 +50,51 @@
  * @details User 负责初始化/释放四类记录链表（挂号/看诊/检查/住院）。
  *          子类在构造时会调用 loadFromFile() 加载角色特有字段。
  */
+
+/**
+ * @brief 患者婚姻状态枚举
+ */
+enum class MaritalStatus
+{
+    SINGLE,   // 未婚
+    MARRIED,  // 已婚
+    DIVORCED, // 离异
+    WIDOWED   // 丧偶
+};
+
+/**
+ * @brief 药剂师等级枚举
+ */
+enum class PharmacistLevel
+{
+    INTERN,          // 实习药剂师
+    JUNIOR,          // 初级药剂师
+    SENIOR,          // 高级药剂师
+    CHIEF_PHARMACIST // 主管药剂师
+};
+
+/**
+ * @brief 护士等级枚举
+ */
+enum class NurseLevel
+{
+    INTERN,    // 实习护士
+    JUNIOR,    // 初级护士
+    SENIOR,    // 高级护士
+    HEAD_NURSE // 护士长
+};
+
+/**
+ * @brief 医生职称枚举
+ */
+enum class DoctorTitle
+{
+    INTERN,          // 实习医生
+    RESIDENT,        // 住院医师
+    ATTENDING,       // 主治医师
+    ASSOCIATE_CHIEF, // 副主任医师
+    CHIEF            // 主任医师
+};
 
 enum class UserRole
 {
@@ -118,7 +164,6 @@ public:
     void setTelephone(const std::string &telephone);
     void setEmail(const std::string &email);
 
-
     std::string regStatusToString(RegistrationStatus status);                  // 将挂号状态枚举转换为字符串表示
     std::string conStatusToString(ConsultationStatus status);                  // 将看诊状态枚举转换为字符串表示
     std::string examStatusToString(ExaminationStatus status);                  // 将检查状态枚举转换为字符串表示
@@ -128,7 +173,10 @@ public:
     std::string medicineStatusToString(MedicineStatus status);                 // 将药品状态枚举转换为字符串表示
     std::string findVitalSignToString(Examination *exa);                       // 将体征信息转换为字符串表示
     std::string bedStatusToString(bedStatus status);                           // 将床位状态枚举转换为字符串表示
-
+    std::string doctorTitleToString(DoctorTitle title);                        // 将医生职称枚举转换为字符串表示
+    std::string nurseLevelToString(NurseLevel level);                          // 将护士等级枚举转换为字符串表示
+    std::string patientMaritalStatusToString(MaritalStatus status);            // 将患者婚姻状态枚举转换为字符串表示
+    std::string pharmacistLevelToString(PharmacistLevel level);                // 将药剂师等级枚举转换为字符串表示
 };
 
 #endif // USER_H
