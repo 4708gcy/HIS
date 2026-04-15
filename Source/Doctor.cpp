@@ -9,6 +9,16 @@
 
 #include "Doctor.h"
 
+Doctor::Doctor()
+{
+    // 构造函数实现（如有需要）
+}
+
+Doctor::~Doctor()
+{
+    // 析构函数实现（如有需要）
+}
+
 void Doctor::doctorSignUp(int &idCounter){
     signUp(2, idCounter); // 调用基类的注册方法，传入角色类型 2（医生）
     this->doctorID = this->userID; // 医生ID与用户ID保持一致
