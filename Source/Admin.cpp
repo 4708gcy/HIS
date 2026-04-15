@@ -279,6 +279,13 @@ void Admin::addRegistration(Registration *&reg, Doctor *&doc, const std::string 
         currentDoc = currentDoc->next;
     }
 
+    if (doc == nullptr)
+    {
+        std::cout << "该科室暂无医生可选！" << std::endl;
+        delete newReg;
+        return;
+    }
+
     newReg->doctorID = inputIDCheck("请输入医生ID: ");
 
     currentDoc = doc;
@@ -300,7 +307,7 @@ void Admin::addRegistration(Registration *&reg, Doctor *&doc, const std::string 
         return;
     }
 
-    newReg->fee = inputFeeCheck("请输入挂号费用: "); // 输入费用并检查有效性
+    newReg->fee = calculateRegistrationFee(currentDoc->title);
 
     // 生成唯一的挂号ID（可以根据实际需求改为更复杂的生成方式）
     newReg->registrationID = "reg" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0');
@@ -337,6 +344,68 @@ void Admin::viewRegistrationsByID(Registration *&reg, const std::string &departm
                       << ", 状态: " << statusStr
                       << ", 备注: " << current->note
                       << std::endl;
+            found = true;
+            break;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到指定的挂号记录！" << std::endl;
+    }
+}
+// 根据挂号记录修改医生信息（如重新分配医生等）
+void Admin::modifyRegistrationDoctor(Registration *&reg, Doctor *&doc, const std::string &department)
+{
+    std::string regID = inputRecordIDCheck("请输入要修改医生信息的挂号记录ID: ", {"reg"});
+    bool found = false;
+
+    Registration *current = reg;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->registrationID == regID && current->department == department)
+        {
+            std::cout << "可用医生列表:" << std::endl;
+            Doctor *currentDoc = doc;
+            while (currentDoc != nullptr)
+            {
+                if (currentDoc->department == department)
+                {
+                    std::cout << "医生ID: " << currentDoc->getUserID() << ", 姓名: " << currentDoc->getUsername() << ", 擅长领域：" << currentDoc->specialty << ", 职称：" << doctorTitleToString(currentDoc->title) << ", 联系方式：" << currentDoc->getTelephone() << " / " << currentDoc->getEmail()
+                              << std::endl;
+                }
+                currentDoc = currentDoc->next;
+            }
+
+            if (doc == nullptr)
+            {
+                std::cout << "该科室暂无医生可选！" << std::endl;
+                return;
+            }
+
+            std::string newDoctorID = inputIDCheck("请输入新的医生ID: ");
+
+            currentDoc = doc;
+            bool doctorExists = false;
+            while (currentDoc != nullptr)
+            {
+                if (currentDoc->getUserID() == newDoctorID && currentDoc->department == department)
+                {
+                    doctorExists = true;
+                    break;
+                }
+                currentDoc = currentDoc->next;
+            }
+
+            if (!doctorExists)
+            {
+                std::cout << "未找到指定的医生！" << std::endl;
+                return;
+            }
+
+            current->doctorID = newDoctorID; // 更新医生ID
+            std::cout << "挂号记录的医生信息已更新！" << std::endl;
             found = true;
             break;
         }
@@ -669,7 +738,6 @@ void Admin::viewConsultationsByStatus(Consultation *&con, const std::string &dep
 
             if (statusStr == "正在处理")
             {
-                std::string statusStr = conStatusToString(current->status);
                 std::cout << "ID: " << current->consultationID
                           << ", 患者ID: " << current->patientID
                           << ", 医生ID: " << current->doctorID
@@ -928,6 +996,8 @@ void Admin::viewConsultationByID(Consultation *&con, const std::string &departme
 
     Consultation *current = con;
     std::cout << "正在查找看诊记录ID: " << conID << " 的看诊记录..." << std::endl;
+
+    std::vector<Consultation *> temp; // 用于存储正在处理状态的看诊记录，方便后续详细信息展示
     while (current != nullptr)
     {
         if (!current->isDeleted && current->consultationID == conID && current->department == department)
@@ -935,38 +1005,7 @@ void Admin::viewConsultationByID(Consultation *&con, const std::string &departme
             std::string statusStr = conStatusToString(current->status);
             if (statusStr == "正在处理")
             {
-                std::string statusStr = conStatusToString(current->status);
-                std::cout << "ID: " << current->consultationID
-                          << ", 患者ID: " << current->patientID
-                          << ", 医生ID: " << current->doctorID
-                          << ", 时间: " << current->consultationTime
-                          << ", 科室: " << current->department
-                          << ", 状态: " << statusStr
-                          << std::endl;
-
-                std::cout << "  主诉: " << current->chiefComplaint << std::endl;
-                std::cout << "  现病史: " << current->historyOfPresentIllness << std::endl;
-                std::cout << "  既往史: " << current->pastMedicalHistory << std::endl;
-                std::cout << "  家族史: " << current->familyHistory << std::endl;
-
-                std::cout << "  初步诊断: " << current->preliminaryDiagnosis << std::endl;
-                std::cout << "  计划检查项目: ";
-                for (const auto &exam : current->examinationlist)
-                {
-                    std::cout << exam << " ";
-                }
-                std::cout << std::endl;
-                std::cout << "  计划用药" << (current->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
-                for (const auto &med : current->prescriptions)
-                {
-                    std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
-                              << ", 频次: " << med.frequency << ", 疗程: " << med.duration
-                              << ", 备注: " << med.note << std::endl;
-                }
-
-                std::cout << "是否建议住院: " << (current->isHospitalizationRecommended ? "是" : "否") << std::endl;
-
-                std::cout << "  医生备注: " << current->note << std::endl;
+                temp.push_back(current);
             }
             else
             {
@@ -987,6 +1026,43 @@ void Admin::viewConsultationByID(Consultation *&con, const std::string &departme
     if (!found)
     {
         std::cout << "未找到指定的看诊记录！" << std::endl;
+    }
+
+    std::cout << "正在处理的看诊记录详细信息:" << std::endl;
+    for (Consultation *c : temp)
+    {
+        std::string statusStr = conStatusToString(c->status);
+        std::cout << "ID: " << c->consultationID
+                  << ", 患者ID: " << c->patientID
+                  << ", 医生ID: " << c->doctorID
+                  << ", 时间: " << c->consultationTime
+                  << ", 科室: " << c->department
+                  << ", 状态: " << statusStr
+                  << std::endl;
+
+        std::cout << "  主诉: " << c->chiefComplaint << std::endl;
+        std::cout << "  现病史: " << c->historyOfPresentIllness << std::endl;
+        std::cout << "  既往史: " << c->pastMedicalHistory << std::endl;
+        std::cout << "  家族史: " << c->familyHistory << std::endl;
+
+        std::cout << "  初步诊断: " << c->preliminaryDiagnosis << std::endl;
+        std::cout << "  计划检查项目: ";
+        for (const auto &exam : c->examinationlist)
+        {
+            std::cout << exam << " ";
+        }
+        std::cout << std::endl;
+        std::cout << "  计划用药" << (c->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+        for (const auto &med : c->prescriptions)
+        {
+            std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
+                      << ", 频次: " << med.frequency << ", 疗程: " << med.duration
+                      << ", 备注: " << med.note << std::endl;
+        }
+
+        std::cout << "是否建议住院: " << (c->isHospitalizationRecommended ? "是" : "否") << std::endl;
+
+        std::cout << "  医生备注: " << c->note << std::endl;
     }
 }
 
@@ -4027,6 +4103,652 @@ void Admin::manageMedicines(Medicine *&med, const std::string &department, int &
         else if (choice == 4) // 添加药品
         {
             addMedicine(med, department, idCounter);
+            pause();
+        }
+        else if (choice == 0) // 返回上一级菜单
+        {
+            break;
+        }
+    }
+}
+
+// 查看所有的医生信息
+void Admin::viewAllDoctors(Doctor *&doc, const std::string &department)
+{
+    Doctor *current = doc;
+    bool found = false;
+    std::cout << "正在查找科室 " << department << " 的医生信息..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department)
+        {
+            std::string titleStr = doctorTitleToString(current->title);
+            std::cout << "医生ID: " << current->getUserID()
+                      << ", 姓名: " << current->getUsername()
+                      << ",性别: " << current->getGender()
+                      << ", 职称: " << titleStr
+                      << ", 科室: " << current->department
+                      << ", 联系方式: " << current->getTelephone() << " / " << current->getEmail()
+                      << ", 擅长领域: " << current->specialty
+                      << ", 在岗状态: " << (current->isOnDuty ? "在岗" : "不在岗")
+                      << ", 排班信息：" << current->scheduleInfo
+                      << ", 累计看诊人数: " << current->consultationCount
+                      << ", 累计开具检查次数: " << current->examinationCount
+                      << ", 累计开具住院证次数: " << current->hospitalizationApplyCount
+                      << std::endl;
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "该科室暂无医生信息！" << std::endl;
+    }
+}
+// 根据医生ID查看医生信息
+void Admin::viewDoctorByID(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要查找的医生ID: ");
+
+    Doctor *current = doc;
+    bool found = false;
+    std::cout << "正在查找ID: " << doctorID << " 的医生信息..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::string titleStr = doctorTitleToString(current->title);
+            std::cout << "医生ID: " << current->getUserID()
+                      << ", 姓名: " << current->getUsername()
+                      << ",性别: " << current->getGender()
+                      << ", 职称: " << titleStr
+                      << ", 科室: " << current->department
+                      << ", 联系方式: " << current->getTelephone() << " / " << current->getEmail()
+                      << ", 擅长领域: " << current->specialty
+                      << ", 在岗状态: " << (current->isOnDuty ? "在岗" : "不在岗")
+                      << ", 排班信息：" << current->scheduleInfo
+                      << ", 累计看诊人数: " << current->consultationCount
+                      << ", 累计开具检查次数: " << current->examinationCount
+                      << ", 累计开具住院证次数: " << current->hospitalizationApplyCount
+                      << std::endl;
+            found = true;
+            break;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到ID为 " << doctorID << " 的医生信息！" << std::endl;
+    }
+}
+// 根据医生姓名查看医生信息
+void Admin::viewDoctorsByName(Doctor *&doc, const std::string &department)
+{
+    std::string name = inputStringCheck("请输入医生姓名（支持模糊查询）: ");
+
+    Doctor *current = doc;
+    bool found = false;
+    std::cout << "正在查找姓名包含 \"" << name << "\" 的医生信息..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUsername().find(name) != std::string::npos && current->department == department)
+        {
+            std::string titleStr = doctorTitleToString(current->title);
+            std::cout << "医生ID: " << current->getUserID()
+                      << ", 姓名: " << current->getUsername()
+                      << ",性别: " << current->getGender()
+                      << ", 职称: " << titleStr
+                      << ", 科室: " << current->department
+                      << ", 联系方式: " << current->getTelephone() << " / " << current->getEmail()
+                      << ", 擅长领域: " << current->specialty
+                      << ", 在岗状态: " << (current->isOnDuty ? "在岗" : "不在岗")
+                      << ", 排班信息：" << current->scheduleInfo
+                      << ", 累计看诊人数: " << current->consultationCount
+                      << ", 累计开具检查次数: " << current->examinationCount
+                      << ", 累计开具住院证次数: " << current->hospitalizationApplyCount
+                      << std::endl;
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到姓名包含 \"" << name << "\" 的医生信息！" << std::endl;
+    }
+}
+// 根据医生职称查看医生信息
+void Admin::viewDoctorByTitle(Doctor *&doc, const std::string &department)
+{
+    int titleFilter = DoctorTitleMenu(); // 选择医生职称过滤条件
+
+    if (titleFilter == 0)
+    {
+        return; // 返回上一级菜单
+    }
+
+    bool found = false;
+
+    DoctorTitle filterTitle = static_cast<DoctorTitle>(titleFilter);
+
+    Doctor *current = doc;
+    std::cout << "正在查找职称为: " << doctorTitleToString(filterTitle) << " 的医生信息..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department && current->title == filterTitle)
+        {
+            std::string titleStr = doctorTitleToString(current->title);
+            std::cout << "医生ID: " << current->getUserID()
+                      << ", 姓名: " << current->getUsername()
+                      << ",性别: " << current->getGender()
+                      << ", 职称: " << titleStr
+                      << ", 科室: " << current->department
+                      << ", 联系方式: " << current->getTelephone() << " / " << current->getEmail()
+                      << ", 擅长领域: " << current->specialty
+                      << ", 在岗状态: " << (current->isOnDuty ? "在岗" : "不在岗")
+                      << ", 排班信息：" << current->scheduleInfo
+                      << ", 累计看诊人数: " << current->consultationCount
+                      << ", 累计开具检查次数: " << current->examinationCount
+                      << ", 累计开具住院证次数: " << current->hospitalizationApplyCount
+                      << std::endl;
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到职称为 " << doctorTitleToString(filterTitle) << " 的医生信息！" << std::endl;
+    }
+}
+// 根据医生在岗状态查看医生信息
+void Admin::viewDoctorsByOnDutyStatus(Doctor *&doc, const std::string &department)
+{
+
+    bool found = false;
+
+    std::cout << "请选择医生在岗状态过滤条件: " << std::endl;
+    std::cout << "1. 在岗" << std::endl;
+    std::cout << "2. 不在岗" << std::endl;
+    std::cout << "0. 返回上一级菜单" << std::endl;
+    int onDutyFilter = selectIntCheck(0, 2);
+
+    if (onDutyFilter == 0)
+    {
+        return; // 返回上一级菜单
+    }
+
+    bool filterOnDutyStatus = (onDutyFilter == 1); // 1表示在岗，2表示不在岗
+
+    Doctor *current = doc;
+    std::cout << "正在查找在岗状态为: " << (filterOnDutyStatus ? "在岗" : "不在岗") << " 的医生信息..." << std::endl;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == department && current->isOnDuty == filterOnDutyStatus)
+        {
+            std::string titleStr = doctorTitleToString(current->title);
+            std::cout << "医生ID: " << current->getUserID()
+                      << ", 姓名: " << current->getUsername()
+                      << ",性别: " << current->getGender()
+                      << ", 职称: " << titleStr
+                      << ", 科室: " << current->department
+                      << ", 联系方式: " << current->getTelephone() << " / " << current->getEmail()
+                      << ", 擅长领域: " << current->specialty
+                      << ", 在岗状态: " << (current->isOnDuty ? "在岗" : "不在岗")
+                      << ", 排班信息：" << current->scheduleInfo
+                      << ", 累计看诊人数: " << current->consultationCount
+                      << ", 累计开具检查次数: " << current->examinationCount
+                      << ", 累计开具住院证次数: " << current->hospitalizationApplyCount
+                      << std::endl;
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到在岗状态为 " << (filterOnDutyStatus ? "在岗" : "不在岗") << " 的医生信息！" << std::endl;
+    }
+}
+// 修改医生姓名
+void Admin::modifyDoctorName(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改姓名的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生姓名: " << current->getUsername() << std::endl;
+            std::string newName = inputStringCheck("请输入新的医生姓名: ");
+            current->setUsername(newName);
+            std::cout << "医生姓名已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 修改医生性别
+void Admin::modifyDoctorGender(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改性别的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生性别: " << current->getGender() << std::endl;
+            std::string newGender = inputGenderCheck("请输入新的医生性别: ");
+            current->setGender(newGender);
+            std::cout << "医生性别已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 修改医生的年龄
+void Admin::modifyDoctorAge(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改年龄的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生年龄: " << current->getAge() << std::endl;
+            int newAge = inputAgeCheck("请输入新的医生年龄: ");
+            current->setAge(newAge);
+            std::cout << "医生年龄已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 修改医生所属科室
+void Admin::modifyDoctorDepartment(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改所属科室的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生所属科室: " << current->department << std::endl;
+            std::string newDepartment = adminDepartmentMenu();
+
+            if (newDepartment == "0")
+            {
+                std::cout << "科室修改已取消！" << std::endl;
+                return; // 取消修改，返回上一级菜单
+            }
+            else if (newDepartment.empty())
+            {
+                std::cout << "输入无效，科室修改已取消！" << std::endl;
+                return; // 输入无效，取消修改，返回上一级菜单
+            }
+
+            current->department = newDepartment;
+            std::cout << "医生所属科室已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 修改医生职称
+void Admin::modifyDoctorTitle(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改职称的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生职称: " << doctorTitleToString(current->title) << std::endl;
+            int newTitle = DoctorTitleMenu(); // 选择新的医生职称
+
+            if (newTitle == 0)
+            {
+                std::cout << "职称修改已取消！" << std::endl;
+                return; // 取消修改，返回上一级菜单
+            }
+
+            current->title = static_cast<DoctorTitle>(newTitle);
+            std::cout << "医生职称已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 修改医生电话
+void Admin::modifyDoctorTelephone(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改电话的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生电话: " << current->getTelephone() << std::endl;
+            std::string newTelephone = inputTelephoneCheck("请输入新的医生电话: ");
+            current->setTelephone(newTelephone);
+            std::cout << "医生电话已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 修改医生邮箱
+void Admin::modifyDoctorEmail(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改邮箱的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生邮箱: " << current->getEmail() << std::endl;
+            std::string newEmail = inputEmailCheck("请输入新的医生邮箱: ");
+            current->setEmail(newEmail);
+            std::cout << "医生邮箱已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 修改医生在岗状态
+void Admin::modifyDoctorOnDutyStatus(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改在岗状态的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生在岗状态: " << (current->isOnDuty ? "在岗" : "不在岗") << std::endl;
+            std::cout << "请选择新的在岗状态: " << std::endl;
+            std::cout << "1. 在岗" << std::endl;
+            std::cout << "2. 不在岗" << std::endl;
+            std::cout << "0. 返回上一级菜单" << std::endl;
+
+            int onDutyChoice = selectIntCheck(0, 2);
+            if (onDutyChoice == 0)
+            {
+                std::cout << "在岗状态修改已取消！" << std::endl;
+                return;
+            }
+            current->isOnDuty = (onDutyChoice == 1); // 1表示在岗，2表示不在岗
+            std::cout << "医生在岗状态已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 修改医生擅长领域
+void Admin::modifyDoctorSpecialty(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改擅长领域的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生擅长领域: " << current->specialty << std::endl;
+            std::string newSpecialty = inputStringCheck("请输入新的医生擅长领域: ");
+            current->specialty = newSpecialty;
+            std::cout << "医生擅长领域已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 修改医生排班信息
+void Admin::modifyDoctorScheduleInfo(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改排班信息的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生排班信息: " << current->scheduleInfo << std::endl;
+            std::string newScheduleInfo = inputStringCheck("请输入新的医生排班信息: ");
+            current->scheduleInfo = newScheduleInfo;
+            std::cout << "医生排班信息已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 修改医生累计看诊人数
+void Admin::modifyDoctorConsultationCount(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改累计看诊人数的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生累计看诊人数: " << current->consultationCount << std::endl;
+            std::cout << "输入新的累计看诊人数 ";
+            int newConsultationCount = selectIntCheck(0, INT_MAX);
+            current->consultationCount = newConsultationCount;
+            std::cout << "医生累计看诊人数已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 修改医生累计开具检查次数
+void Admin::modifyDoctorExaminationCount(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改累计开具检查次数的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生累计开具检查次数: " << current->examinationCount << std::endl;
+            std::cout << "输入新的累计开具检查次数 ";
+            int newExaminationCount = selectIntCheck(0, INT_MAX);
+            current->examinationCount = newExaminationCount;
+            std::cout << "医生累计开具检查次数已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 修改医生累计开具住院证次数
+void Admin::modifyDoctorHospitalizationApplyCount(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要修改累计开具住院证次数的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        {
+            std::cout << "当前医生累计开具住院证次数: " << current->hospitalizationApplyCount << std::endl;
+            std::cout << "输入新的累计开具住院证次数 ";
+            int newHospitalizationApplyCount = selectIntCheck(0, INT_MAX);
+            current->hospitalizationApplyCount = newHospitalizationApplyCount;
+            std::cout << "医生累计开具住院证次数已更新！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 删除医生（逻辑删除，设置 isDeleted 标志）
+void Admin::deleteDoctor(Doctor *&doc, const std::string &department)
+{
+    std::string doctorID = inputIDCheck("请输入要删除的医生ID: ");
+    Doctor *current = doc;
+    while (current != nullptr)
+    {
+        if (current->getUserID() == doctorID && current->department == department)
+        {
+            current->isDeleted = true; // 逻辑删除
+            std::cout << "医生ID: " << current->getUserID() << " 已删除！" << std::endl;
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "未找到指定的医生！" << std::endl;
+}
+// 添加医生（根据输入信息创建新的 Doctor 对象，并插入到链表中）
+void Admin::addDoctor(Doctor *&doc, int &idCounter)
+{
+    Doctor *newDoc = new Doctor();
+    newDoc->doctorSignUp(idCounter);
+    // 插入到链表头部
+    newDoc->next = doc;
+    if (doc != nullptr)
+    {
+        doc->prev = newDoc;
+    }
+    doc = newDoc;
+}
+
+void Admin::manageDoctors(Doctor *&doc, const std::string &department, int &idCounter)
+{
+    while (true)
+    {
+        int choice = adminDoctorManagementMenu();
+
+        if (choice == 1) // 查看医生信息
+        {
+            while (true)
+            {
+                int viewChoice = adminDoctorViewMenu();
+                if (viewChoice == 0) // 返回上一级菜单
+                {
+                    break;
+                }
+                else if (viewChoice == 1) // 查看所有医生信息
+                {
+                    viewAllDoctors(doc, department);
+                    pause();
+                }
+                else if (viewChoice == 2) // 根据医生ID查看医生信息
+                {
+                    viewDoctorByID(doc, department);
+                    pause();
+                }
+                else if (viewChoice == 3) // 根据医生姓名查看医生信息
+                {
+                    viewDoctorsByName(doc, department);
+                    pause();
+                }
+                else if (viewChoice == 4) // 根据医生在岗状态查看医生信息
+                {
+                    viewDoctorsByOnDutyStatus(doc, department);
+                    pause();
+                }
+                else if (viewChoice == 5) // 根据医生职称查看医生信息
+                {
+                    viewDoctorByTitle(doc, department);
+                    pause();
+                }
+            }
+        }
+        else if (choice == 2) // 修改医生信息
+        {
+            while (true)
+            {
+                int modifyChoice = adminDoctorModificationMenu();
+
+                if (modifyChoice == 0) // 返回上一级菜单
+                {
+                    break;
+                }
+                else if (modifyChoice == 1) // 修改医生姓名
+                {
+                    modifyDoctorName(doc, department);
+                    pause();
+                }
+                else if (modifyChoice == 2) // 修改医生性别
+                {
+                    modifyDoctorGender(doc, department);
+                    pause();
+                }
+                else if (modifyChoice == 3) // 修改医生年龄
+                {
+                    modifyDoctorAge(doc, department);
+                    pause();
+                }
+                else if (modifyChoice == 4) // 修改医生所属科室
+                {
+                    modifyDoctorDepartment(doc, department);
+                    pause();
+                }
+                else if (modifyChoice == 5) // 修改医生职称
+                {
+                    modifyDoctorTitle(doc, department);
+                    pause();
+                }
+                else if (modifyChoice == 6) // 修改医生电话
+                {
+                    modifyDoctorTelephone(doc, department);
+                    pause();
+                }
+                else if (modifyChoice == 7) // 修改医生邮箱
+                {
+                    modifyDoctorEmail(doc, department);
+                    pause();
+                }
+                else if (modifyChoice == 8) // 修改医生在岗状态
+                {
+                    modifyDoctorOnDutyStatus(doc, department);
+                    pause();
+                }
+                else if (modifyChoice == 9) // 修改医生擅长领域
+                {
+                    modifyDoctorSpecialty(doc, department);
+                    pause();
+                }
+                else if (modifyChoice == 10) // 修改医生排班信息
+                {
+                    modifyDoctorScheduleInfo(doc, department);
+                    pause();
+                }
+                else if (modifyChoice == 11) // 修改医生累计看诊人数
+                {
+                    modifyDoctorConsultationCount(doc, department);
+                    pause();
+                }
+                else if (modifyChoice == 12) // 修改医生累计开具检查次数
+                {
+                    modifyDoctorExaminationCount(doc, department);
+                    pause();
+                }
+                else if (modifyChoice == 13) // 修改医生累计开具住院证次数
+                {
+                    modifyDoctorHospitalizationApplyCount(doc, department);
+                    pause();
+                }
+            }
+        }
+        else if (choice == 3) // 删除医生
+        {
+            deleteDoctor(doc, department);
+            pause();
+        }
+        else if (choice == 4) // 添加医生
+        {
+            addDoctor(doc, idCounter);
             pause();
         }
         else if (choice == 0) // 返回上一级菜单

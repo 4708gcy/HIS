@@ -36,10 +36,13 @@ public:
 
 
     Doctor *next = nullptr; // 链表指针
+    Doctor *prev = nullptr; // 双向链表前向指针
 
     // ==================== 构造 / 析构 ====================
     Doctor();
     virtual ~Doctor();
+    void doctorSignUp(int &idCounter); // 医生注册，调用基类的 signUp(2) 方法，并将医生信息保存到文件中
+    bool doctorSignIn();               // 医生登录，验证用户ID和密码，并设置登录状态
 
     // ==================== Getter ====================
     const std::string &getDoctorID() const;

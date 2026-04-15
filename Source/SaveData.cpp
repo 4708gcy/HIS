@@ -38,6 +38,48 @@ void saveAdminData(Admin *adminHead, int count)
     outFile.close();
 }
 
+void saveDoctorData(Doctor *doctorHead, int count)
+{
+    std::ofstream outFile(DOCTOR_FILE);
+    if (!outFile)
+    {
+        std::cerr << "无法打开医生数据文件进行保存！" << std::endl;
+        return;
+    }
+
+    Doctor *current = doctorHead;
+    while (current != nullptr)
+    {
+        outFile << current->getUserID() << ","                        // 基类ID
+                << current->getUsername() << ","                      // 姓名
+                << current->getGender() << ","                        // 性别
+                << current->getAge() << ","                           // 年龄
+                << current->getTelephone() << ","                     // 电话
+                << current->getEmail() << ","                         // 邮箱
+                << current->getStoredHash() << ","                    // 密码哈希
+                << current->getSalt() << ","                          // 盐值
+                << (current->getIsAccountActive() ? "1" : "0") << "," // 激活
+                << current->getCreateTime() << ","                    // 创建时间
+                << current->doctorID << ","                           // 医生ID
+                << current->department << ","                         // 科室
+                << static_cast<int>(current->title) << ","            // 职称（枚举转int）
+                << current->specialty << ","                          // 擅长方向
+                << current->scheduleInfo << ","                       // 排班
+                << current->consultationCount << ","                  // 接诊数
+                << current->examinationCount << ","                   // 检查数
+                << current->hospitalizationApplyCount << ","          // 住院申请数
+                << (current->isOnDuty ? "1" : "0") << ","             // 在岗
+                << (current->isDeleted ? "1" : "0")                   // 逻辑删除
+                << std::endl;
+
+        current = current->next;
+    }
+
+    outFile << "count:" << count << std::endl;
+    std::cout << "医生数据保存成功！" << std::endl;
+    outFile.close();
+}
+
 // =====================医疗记录数据保存函数=====================
 
 void saveRegistrations(Registration *regHead, int count)

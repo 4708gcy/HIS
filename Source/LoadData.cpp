@@ -86,8 +86,120 @@ Admin *loadAdminData(int &count)
 
 Doctor *loadDoctorData(int &count)
 {
-    return nullptr;
+    Doctor *doctorHead = nullptr;
+    std::ifstream inFile(DOCTOR_FILE);
+    if (!inFile)
+    {
+        std::cerr << "无法打开医生数据文件！" << std::endl;
+        count = 0;
+        return nullptr;
+    }
+
+    std::string line;
+    count = 0;
+    while (std::getline(inFile, line))
+    {
+        if (line.rfind("count:", 0) == 0)
+            continue;
+        if (line.empty())
+            continue;
+
+        std::istringstream iss(line);
+        Doctor *newDoctor = new Doctor();
+        std::string isActiveStr, isOnDutyStr, isDeletedStr;
+        std::string userID, username, gender, ageStr, telephone, email, storedHash, salt, createTime;
+        std::string doctorID, department, titleStr, specialty, scheduleInfo, consultationCountStr, examinationCountStr, hospitalizationApplyCountStr;
+
+        // 按保存顺序读取
+        std::getline(iss, userID, ',');
+        std::getline(iss, username, ',');
+        std::getline(iss, gender, ',');
+        std::getline(iss, ageStr, ',');
+        std::getline(iss, telephone, ',');
+        std::getline(iss, email, ',');
+        std::getline(iss, storedHash, ',');
+        std::getline(iss, salt, ',');
+        std::getline(iss, isActiveStr, ',');
+        std::getline(iss, createTime, ',');
+        std::getline(iss, doctorID, ',');
+        std::getline(iss, department, ',');
+        std::getline(iss, titleStr, ',');
+        std::getline(iss, specialty, ',');
+        std::getline(iss, scheduleInfo, ',');
+        std::getline(iss, consultationCountStr, ',');
+        std::getline(iss, examinationCountStr, ',');
+        std::getline(iss, hospitalizationApplyCountStr, ',');
+        std::getline(iss, isOnDutyStr, ',');
+        std::getline(iss, isDeletedStr);
+
+        // 设置属性
+        newDoctor->setUserID(userID);
+        newDoctor->setUsername(username);
+        newDoctor->setGender(gender);
+        try
+        {
+            newDoctor->setAge(std::stoi(ageStr));
+        }
+        catch (...)
+        {
+            newDoctor->setAge(0);
+        }
+        newDoctor->setTelephone(telephone);
+        newDoctor->setEmail(email);
+        newDoctor->setStoredHash(storedHash);
+        newDoctor->setSalt(salt);
+        newDoctor->setIsAccountActive(isActiveStr == "1");
+        newDoctor->setCreateTime(createTime);
+
+        newDoctor->doctorID = doctorID;
+        newDoctor->department = department;
+        try
+        {
+            newDoctor->title = static_cast<DoctorTitle>(std::stoi(titleStr));
+        }
+        catch (...)
+        {
+            newDoctor->title = DoctorTitle::INTERN;
+        }
+        newDoctor->specialty = specialty;
+        newDoctor->scheduleInfo = scheduleInfo;
+        try
+        {
+            newDoctor->consultationCount = std::stoi(consultationCountStr);
+        }
+        catch (...)
+        {
+            newDoctor->consultationCount = 0;
+        }
+        try
+        {
+            newDoctor->examinationCount = std::stoi(examinationCountStr);
+        }
+        catch (...)
+        {
+            newDoctor->examinationCount = 0;
+        }
+        try
+        {
+            newDoctor->hospitalizationApplyCount = std::stoi(hospitalizationApplyCountStr);
+        }
+        catch (...)
+        {
+            newDoctor->hospitalizationApplyCount = 0;
+        }
+        newDoctor->isOnDuty = (isOnDutyStr == "1");
+        newDoctor->isDeleted = (isDeletedStr == "1");
+        newDoctor->setRole(UserRole::DOCTOR);
+
+        // 插入链表头部
+        newDoctor->next = doctorHead;
+        doctorHead = newDoctor;
+        count++;
+    }
+    inFile.close();
+    return doctorHead;
 }
+
 
 Nurse *loadNurseData(int &count)
 {

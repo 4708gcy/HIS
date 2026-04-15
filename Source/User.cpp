@@ -62,8 +62,8 @@ bool User::signUp(int choice, int &idCounter)
 
         std::string password = inputPwdCheck("请输入密码: ");
         storedHash = SHA256Encrypt(password, salt, kHashIterations);
-        std::cout << "医生注册成功! 您的用户ID是: " << userID << std::endl;
-        return true; // 医生注册成功
+
+        return true; // 医生基础信息填写成功
     }
     case 3:
     {
@@ -316,7 +316,6 @@ std::string User::medicineStatusToString(MedicineStatus status)
         return "未知状态";
     }
 }
-
 // 将体征信息转换为字符串表示
 std::string User::findVitalSignToString(Examination *exa)
 {
@@ -354,7 +353,6 @@ std::string User::findVitalSignToString(Examination *exa)
 
     return "无体征信息";
 }
-
 // 将床位状态枚举转换为字符串表示
 std::string User::bedStatusToString(bedStatus status)
 {
@@ -372,7 +370,6 @@ std::string User::bedStatusToString(bedStatus status)
         return "未知状态";
     }
 }
-
 // 将医生职称枚举转换为字符串表示
 std::string User::doctorTitleToString(DoctorTitle title)
 {
@@ -392,7 +389,6 @@ std::string User::doctorTitleToString(DoctorTitle title)
         return "未知职称";
     }
 }
-
 // 将护士等级枚举转换为字符串表示
 std::string User::nurseLevelToString(NurseLevel level)
 {
@@ -410,7 +406,6 @@ std::string User::nurseLevelToString(NurseLevel level)
         return "未知等级";
     }
 }
-
 // 将患者婚姻状态枚举转换为字符串表示
 std::string User::patientMaritalStatusToString(MaritalStatus status)
 {
@@ -428,7 +423,6 @@ std::string User::patientMaritalStatusToString(MaritalStatus status)
         return "未知状态";
     }
 }
-
 // 将药剂师等级枚举转换为字符串表示
 std::string User::pharmacistLevelToString(PharmacistLevel level)
 {
@@ -445,6 +439,76 @@ std::string User::pharmacistLevelToString(PharmacistLevel level)
     default:
         return "未知等级";
     }
+}
+
+// 根据医生职称计算挂号费用
+double User::calculateRegistrationFee(DoctorTitle title)
+{
+    switch (title)
+    {
+    case DoctorTitle::INTERN: // 实习医生挂号费用：10元
+        return 10.0;
+    case DoctorTitle::RESIDENT: // 住院医师挂号费用：20元
+        return 20.0;
+    case DoctorTitle::ATTENDING: // 主治医师挂号费用：30元
+        return 30.0;
+    case DoctorTitle::ASSOCIATE_CHIEF: // 副主任医师挂号费用：40元
+        return 40.0;
+    case DoctorTitle::CHIEF: // 主任医师挂号费用：50元
+        return 50.0;
+    default:
+        return 0.0; // 默认费用
+    }
+}
+// 根据床位类型和住院天数计算住院费用
+double User::calculateHospitalizationFee(std::string wardType, int days)
+{
+    double dailyRate = 0.0;
+    if (wardType == "普通病房")
+        dailyRate = 50.0;
+    else if (wardType == "隔离病房")
+        dailyRate = 100.0;
+    else if (wardType == "VIP病房")
+        dailyRate = 200.0;
+    else if (wardType == "ICU病房")
+        dailyRate = 500.0;
+
+    return dailyRate * days;
+}
+// 根据检查项目名称计算检查费用
+// 计算检查项目价格
+double User::calculateExaminationFee(std::string itemName)
+{
+    if (itemName == "体温测量")
+        return 5;
+    if (itemName == "血压测量")
+        return 8;
+    if (itemName == "心率测量" || itemName == "脉搏")
+        return 5;
+    if (itemName == "呼吸频率测量")
+        return 5;
+    if (itemName == "血氧饱和度" || itemName == "脉搏血氧测量")
+        return 10;
+    if (itemName == "身高测量")
+        return 5;
+    if (itemName == "体重测量")
+        return 5;
+    if (itemName == "BMI计算")
+        return 5;
+    if (itemName == "疼痛评分")
+        return 2;
+    if (itemName == "腰围测量")
+        return 5;
+    if (itemName == "血糖测量")
+        return 20;
+    if (itemName == "体脂率测量")
+        return 30;
+    if (itemName == "尿酸测定")
+        return 25;
+    if (itemName == "总胆固醇" || itemName == "血脂测定")
+        return 25;
+    // 默认价格
+    return 5;
 }
 
 User::~User()

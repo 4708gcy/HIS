@@ -23,7 +23,6 @@
 #include "Medicine.h"
 #include "UI.h"
 
-
 // 定义存储人物信息文件的路径
 #define ADMIN_FILE "../Data/UserData/AdminChainData/admin_users.txt"
 #define DOCTOR_FILE "../Data/UserData/DoctorChainData/doctor_users.txt"
@@ -56,10 +55,10 @@
  */
 enum class MaritalStatus
 {
-    SINGLE,   // 未婚
-    MARRIED,  // 已婚
-    DIVORCED, // 离异
-    WIDOWED   // 丧偶
+    SINGLE = 1, // 未婚
+    MARRIED,    // 已婚
+    DIVORCED,   // 离异
+    WIDOWED     // 丧偶
 };
 
 /**
@@ -67,7 +66,7 @@ enum class MaritalStatus
  */
 enum class PharmacistLevel
 {
-    INTERN,          // 实习药剂师
+    INTERN = 1,      // 实习药剂师
     JUNIOR,          // 初级药剂师
     SENIOR,          // 高级药剂师
     CHIEF_PHARMACIST // 主管药剂师
@@ -78,10 +77,10 @@ enum class PharmacistLevel
  */
 enum class NurseLevel
 {
-    INTERN,    // 实习护士
-    JUNIOR,    // 初级护士
-    SENIOR,    // 高级护士
-    HEAD_NURSE // 护士长
+    INTERN = 1, // 实习护士
+    JUNIOR,     // 初级护士
+    SENIOR,     // 高级护士
+    HEAD_NURSE  // 护士长
 };
 
 /**
@@ -89,16 +88,16 @@ enum class NurseLevel
  */
 enum class DoctorTitle
 {
-    INTERN,          // 实习医生
-    RESIDENT,        // 住院医师
-    ATTENDING,       // 主治医师
-    ASSOCIATE_CHIEF, // 副主任医师
-    CHIEF            // 主任医师
+    INTERN = 1,      // 实习医生  挂号费用：10元
+    RESIDENT,        // 住院医师  挂号费用：20元
+    ATTENDING,       // 主治医师  挂号费用：30元
+    ASSOCIATE_CHIEF, // 副主任医师 挂号费用：40元
+    CHIEF            // 主任医师   挂号费用：50元
 };
 
 enum class UserRole
 {
-    ADMIN,
+    ADMIN = 1,
     DOCTOR,
     NURSE,
     PHARMACIST,
@@ -177,6 +176,11 @@ public:
     std::string nurseLevelToString(NurseLevel level);                          // 将护士等级枚举转换为字符串表示
     std::string patientMaritalStatusToString(MaritalStatus status);            // 将患者婚姻状态枚举转换为字符串表示
     std::string pharmacistLevelToString(PharmacistLevel level);                // 将药剂师等级枚举转换为字符串表示
+
+    double calculateRegistrationFee(DoctorTitle title);                 // 根据医生职称计算挂号费用
+    double calculateHospitalizationFee(std::string wardType, int days); // 根据床位类型和住院天数计算住院费用
+    double calculateExaminationFee(std::string itemName);               // 根据检查项目名称计算检查费用
+
 };
 
 #endif // USER_H

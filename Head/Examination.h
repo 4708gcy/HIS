@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-
 /**
  * @file Examination.h
  * @brief 检查/检验记录结构体
@@ -31,19 +30,38 @@ enum class ExaminationStatus
 };
 
 // 生命体征：记录检查时的瞬时体征（如测量时采集）
-// 生命体征：记录检查时的瞬时体征（如测量时采集）
+
+/*
+检查项目价格参考表（单位：元）
+
+| 体温测量         | temperatureC               |   5     
+| 血压测量         | systolicBP/diastolicBP     |   8             
+| 心率测量/脉搏    | heartRate                  |   5               
+| 呼吸频率测量     | respiratoryRate            |   5              
+| 血氧饱和度       | spo2                       |  10            
+| 身高测量         | height                     |   5               
+| 体重测量         | weight                     |   5               
+| BMI计算          | bmi                        |   5     
+| 疼痛评分         | painScore                  |   2      
+| 腰围测量         | waistCircumference         |   5               
+| 血糖测量         | bloodSugar                 |  20     
+| 体脂率测量       | bodyFat                    |  30     
+| 尿酸测定         | uricAcid                   |  25             
+| 总胆固醇         | cholesterol                |  25              
+*/
+
 struct VitalSigns
 {
     double temperatureC;       // 体温（摄氏度）——体温测量
-    double systolicBP;            // 收缩压（mmHg）——血压测量
-    double diastolicBP;           // 舒张压（mmHg）——血压测量
-    double heartRate;             // 心率（次/分钟）——心率测量/脉搏
+    double systolicBP;         // 收缩压（mmHg）——血压测量
+    double diastolicBP;        // 舒张压（mmHg）——血压测量
+    double heartRate;          // 心率（次/分钟）——心率测量/脉搏
     double respiratoryRate;    // 呼吸频率（次/分钟）——呼吸频率测量
-    double spo2;                  // 血氧饱和度（%）——脉搏血氧测量
+    double spo2;               // 血氧饱和度（%）——脉搏血氧测量
     double height;             // 身高（cm）——身高测量
     double weight;             // 体重（kg）——体重测量
     double bmi;                // 体质指数——BMI计算
-    double painScore;             // 疼痛评分（0-10）——疼痛评估
+    double painScore;          // 疼痛评分（0-10）——疼痛评估
     double waistCircumference; // 腰围（cm）——腰围测量
     double bloodSugar;         // 血糖（mmol/L）——血糖测量
     double bodyFat;            // 体脂率（%）——体脂测量

@@ -62,6 +62,8 @@ struct bedInfo
     bedInfo *next = nullptr; // 链表指针
 };
 
+// 普通病房 50元/天，隔离病房 100元/天，VIP病房 200元/天，ICU病房 500元/天
+
 struct Hospitalization
 {
     std::string consultationID;    // 关联看诊记录ID

@@ -272,6 +272,38 @@ int main()
                             }
                             else if (adminChoice == 3) // 药品管理
                             {
+                                while (true) // 科室选择循环，直到用户选择返回上级菜单
+                                {
+                                    std::string department = adminDepartmentMenu();
+                                    if (department == "内科")
+                                    {
+                                        client->manageMedicines(medHead, department, medicineCount);
+                                    }
+                                    else if (department == "外科")
+                                    {
+                                        client->manageMedicines(medHead, department, medicineCount);
+                                    }
+                                    else if (department == "妇产科")
+                                    {
+                                        client->manageMedicines(medHead, department, medicineCount);
+                                    }
+                                    else if (department == "急诊科")
+                                    {
+                                        client->manageMedicines(medHead, department, medicineCount);
+                                    }
+                                    else if (department == "儿科")
+                                    {
+                                        client->manageMedicines(medHead, department, medicineCount);
+                                    }
+                                    else if (department == "0")
+                                    {
+                                        // 返回上级菜单
+                                    }
+                                    else
+                                    {
+                                        std::cout << "无效的选择! 请重新选择。" << std::endl;
+                                    }
+                                }
                             }
                             else if (adminChoice == 4) // 床位管理
                             {
