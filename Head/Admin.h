@@ -175,7 +175,6 @@ public:
     void modifyDoctorTitle(Doctor *&doc, const std::string &department);                     // 修改医生职称
     void modifyDoctorTelephone(Doctor *&doc, const std::string &department);                 // 修改医生联系电话
     void modifyDoctorEmail(Doctor *&doc, const std::string &department);                     // 修改医生邮箱地址
-    void modifyDoctorAddress(Doctor *&doc, const std::string &department);                   // 修改医生住址
     void modifyDoctorOnDutyStatus(Doctor *&doc, const std::string &department);              // 修改医生在岗状态
     void modifyDoctorSpecialty(Doctor *&doc, const std::string &department);                 // 修改医生擅长方向
     void modifyDoctorScheduleInfo(Doctor *&doc, const std::string &department);              // 修改医生排班信息
@@ -184,6 +183,76 @@ public:
     void modifyDoctorHospitalizationApplyCount(Doctor *&doc, const std::string &department); // 修改医生累计开具住院证的数量
     void deleteDoctor(Doctor *&doc, const std::string &department);                          // 删除医生信息（逻辑删除，设置 isDeleted 标志）
     void addDoctor(Doctor *&doc, int &idCounter);                                            // 添加医生信息（根据输入信息创建新的 Doctor 对象，并插入到链表中）
+
+    void manageNurses(Nurse *&nurse, const std::string &department, int &idCounter); // 管理护士信息（查看、修改职称等）
+    void viewAllNurses(Nurse *&nurse, const std::string &department);                // 查看所有护士信息（可按科室、职称过滤）
+    void viewNurseByID(Nurse *&nurse, const std::string &department);                // 根据护士ID查看护士信息
+    void viewNursesByOnDutyStatus(Nurse *&nurse, const std::string &department);     // 根据在岗状态查看护士信息
+    void viewNursesByName(Nurse *&nurse, const std::string &department);             // 根据护士姓名查看护士信息
+    void viewNurseByLevel(Nurse *&nurse, const std::string &department);             // 根据护士等级查看护士信息
+    void modifyNurseName(Nurse *&nurse, const std::string &department);              // 修改护士姓名
+    void modifyNurseDepartment(Nurse *&nurse, const std::string &department);        // 修改护士科室
+    void modifyNurseGender(Nurse *&nurse, const std::string &department);            // 修改护士性别
+    void modifyNurseAge(Nurse *&nurse, const std::string &department);               // 修改护士年龄
+    void modifyNurseLevel(Nurse *&nurse, const std::string &department);             // 修改护士等级
+    void modifyNurseTelephone(Nurse *&nurse, const std::string &department);         // 修改护士联系电话
+    void modifyNurseEmail(Nurse *&nurse, const std::string &department);             // 修改护士邮箱地址
+    void modifyNurseOnDutyStatus(Nurse *&nurse, const std::string &department);      // 修改护士在岗状态
+    void modifyNurseScheduleInfo(Nurse *&nurse, const std::string &department);      // 修改护士排班信息
+    void modifyNursePatientCareCount(Nurse *&nurse, const std::string &department);  // 修改护士累计护理患者数量
+    void modifyNurseBedManageCount(Nurse *&nurse, const std::string &department);    // 修改护士累计床位管理次数
+    void deleteNurse(Nurse *&nurse, const std::string &department);                  // 删除护士信息（逻辑删除，设置 isDeleted 标志）
+    void addNurse(Nurse *&nurse, int &idCounter);                                    // 添加护士信息（根据输入信息创建新的 Nurse 对象，并插入到链表中）
+
+    void managePharmacists(Pharmacist *&pha, const std::string &department, int &idCounter);     // 管理药师信息（查看、修改职称等）
+    void viewAllPharmacists(Pharmacist *&pha, const std::string &department);                    // 查看所有药师信息（可按科室、职称过滤）
+    void viewPharmacistByID(Pharmacist *&pha, const std::string &department);                    // 根据药师ID查看药师信息
+    void viewPharmacistsByOnDutyStatus(Pharmacist *&pha, const std::string &department);         // 根据在岗状态查看药师信息
+    void viewPharmacistsByName(Pharmacist *&pha, const std::string &department);                 // 根据药师姓名查看药师信息
+    void viewPharmacistByLevel(Pharmacist *&pha, const std::string &department);                 // 根据药师等级查看药师信息
+    void modifyPharmacistName(Pharmacist *&pha, const std::string &department);                  // 修改药师姓名
+    void modifyPharmacistDepartment(Pharmacist *&pha, const std::string &department);            // 修改药师科室
+    void modifyPharmacistGender(Pharmacist *&pha, const std::string &department);                // 修改药师性别
+    void modifyPharmacistAge(Pharmacist *&pha, const std::string &department);                   // 修改药师年龄
+    void modifyPharmacistLevel(Pharmacist *&pha, const std::string &department);                 // 修改药师等级
+    void modifyPharmacistTelephone(Pharmacist *&pha, const std::string &department);             // 修改药师联系电话
+    void modifyPharmacistEmail(Pharmacist *&pha, const std::string &department);                 // 修改药师邮箱地址
+    void modifyPharmacistOnDutyStatus(Pharmacist *&pha, const std::string &department);          // 修改药师在岗状态
+    void modifyPharmacistScheduleInfo(Pharmacist *&pha, const std::string &department);          // 修改药师排班信息
+    void modifyPharmacistMedicationReviewCount(Pharmacist *&pha, const std::string &department); // 修改药师累计审核用药记录数量
+    void modifyPharmacistDispenseCount(Pharmacist *&pha, const std::string &department);         // 修改药师累计配药数量
+    void modifyPharmacistInventoryManageCount(Pharmacist *&pha, const std::string &department);  // 修改药师累计库存管理次数
+    void deletePharmacist(Pharmacist *&pha, const std::string &department);                      // 删除药师信息（逻辑删除，设置 isDeleted 标志）
+    void addPharmacist(Pharmacist *&pha, int &idCounter);                                        // 添加药师信息（根据输入信息创建新的 Pharmacist 对象，并插入到链表中）
+
+    void managePatients(Patient *&patient, const std::string &department, int &idCounter);      // 管理患者信息（查看、修改联系方式等）
+    void viewAllPatients(Patient *&patient, const std::string &department);                     // 查看所有患者信息（可按科室、年龄过滤）
+    void viewPatientByID(Patient *&patient, const std::string &department);                     // 根据患者ID查看患者信息
+    void viewPatientsByName(Patient *&patient, const std::string &department);                  // 根据患者姓名查看患者信息
+    void viewPatientsByGender(Patient *&patient, const std::string &department);                // 根据患者性别查看患者信息
+    void viewPatientsByIDCard(Patient *&patient, const std::string &department);                // 根据患者身份证号查看患者信息
+    void viewPatientsByAgeGroup(Patient *&patient, const std::string &department);              // 根据患者年龄段查看患者信息
+    void viewPatientsByContactInfo(Patient *&patient, const std::string &department);           // 根据患者联系方式查看患者信息
+    void viewPatientsByHospitalizationStatus(Patient *&patient, const std::string &department); // 根据患者住院状态查看患者信息
+    void viewPatientsByAddress(Patient *&patient, const std::string &department);               // 根据患者地址查看患者信息
+    void viewPatientsByMaritalStatus(Patient *&patient, const std::string &department);         // 根据患者婚姻状况查看患者信息
+    void modifyPatientName(Patient *&patient, const std::string &department);                   // 修改患者姓名
+    void modifyPatientGender(Patient *&patient, const std::string &department);                 // 修改患者性别
+    void modifyPatientAge(Patient *&patient, const std::string &department);                    // 修改患者年龄
+    void modifyPatientDepartment(Patient *&patient, const std::string &department);             // 修改患者所属科室
+    void modifyPatientIDCard(Patient *&patient, const std::string &department);                 // 修改患者身份证号
+    void modifyPatientTelephone(Patient *&patient, const std::string &department);              // 修改患者联系电话
+    void modifyPatientEmail(Patient *&patient, const std::string &department);                  // 修改患者邮箱地址
+    void modifyPatientAddress(Patient *&patient, const std::string &department);                // 修改患者地址
+    void modifyPatientMaritalStatus(Patient *&patient, const std::string &department);          // 修改患者婚姻状况
+    void modifyPatientEmergencyContact(Patient *&patient, const std::string &department);       // 修改患者紧急联系人信息
+    void modifyPatientRegistrationCount(Patient *&patient, const std::string &department);      // 修改患者累计挂号次数
+    void modifyPatientConsultationCount(Patient *&patient, const std::string &department);      // 修改患者累计就诊次数
+    void modifyPatientHospitalizationCount(Patient *&patient, const std::string &department);   // 修改患者累计住院次数
+    void modifyPatientMedicationCount(Patient *&patient, const std::string &department);        // 修改患者累计用药次数
+    void deletePatient(Patient *&patient, const std::string &department);                       // 删除患者信息（逻辑删除，设置 isDeleted 标志）
+    void addPatient(Patient *&patient, int &idCounter);                                         // 添加患者信息（根据输入信息创建新的 Patient 对象，并插入到链表中）
+
 };
 
 #endif // ADMIN_H

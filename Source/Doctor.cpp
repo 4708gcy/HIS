@@ -7,7 +7,7 @@
  * @version 1.0
  */
 
-#include "Doctor.h"
+#include "../Head/Doctor.h"
 
 Doctor::Doctor()
 {
@@ -20,7 +20,12 @@ Doctor::~Doctor()
 }
 
 void Doctor::doctorSignUp(int &idCounter){
-    signUp(2, idCounter); // 调用基类的注册方法，传入角色类型 2（医生）
+    bool success = signUp(2, idCounter); // 调用基类的注册方法，传入角色类型 2（医生）
+    if (!success)
+    {
+        std::cout << "医生注册失败！" << std::endl;
+        return;
+    }
     this->doctorID = this->userID; // 医生ID与用户ID保持一致
     
     // 其他医生特有信息的初始化在这里进行
@@ -85,4 +90,60 @@ bool Doctor::doctorSignIn()
     }
 
     return false; // 登录失败
+}
+
+const std::string &Doctor::getDoctorID() const{
+    return doctorID;
+}
+const std::string &Doctor::getDepartment() const{
+    return department;
+}
+DoctorTitle Doctor::getTitle() const{
+    return title;
+}
+const std::string &Doctor::getSpecialty() const{
+    return specialty;
+}
+const std::string &Doctor::getScheduleInfo() const{
+    return scheduleInfo;
+}
+int Doctor::getConsultationCount() const{
+    return consultationCount;
+}
+int Doctor::getExaminationCount() const{
+    return examinationCount;
+}
+int Doctor::getHospitalizationApplyCount() const{
+    return hospitalizationApplyCount;
+}
+bool Doctor::getIsOnDuty() const{
+    return isOnDuty;
+}
+
+void Doctor::setDoctorID(const std::string &id){
+    doctorID = id;
+}
+void Doctor::setDepartment(const std::string &dept){
+    department = dept;
+}
+void Doctor::setTitle(DoctorTitle doctorTitle){
+    title = doctorTitle;
+}
+void Doctor::setSpecialty(const std::string &spec){
+    specialty = spec;
+}
+void Doctor::setScheduleInfo(const std::string &schedule){
+    scheduleInfo = schedule;
+}
+void Doctor::setConsultationCount(int count){
+    consultationCount = count;
+}
+void Doctor::setExaminationCount(int count){
+    examinationCount = count;
+}
+void Doctor::setHospitalizationApplyCount(int count){
+    hospitalizationApplyCount = count;
+}
+void Doctor::setIsOnDuty(bool onDuty){
+    isOnDuty = onDuty;
 }

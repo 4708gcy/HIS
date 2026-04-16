@@ -81,8 +81,6 @@ bool User::signUp(int choice, int &idCounter)
         std::string password = inputPwdCheck("请输入密码: ");
         storedHash = SHA256Encrypt(password, salt, kHashIterations);
 
-        std::cout << "护士注册成功! 您的用户ID是: " << userID << std::endl;
-
         return true; // 护士注册成功
     }
     case 4:
@@ -101,8 +99,6 @@ bool User::signUp(int choice, int &idCounter)
         std::string password = inputPwdCheck("请输入密码: ");
         storedHash = SHA256Encrypt(password, salt, kHashIterations);
 
-        std::cout << "药剂师注册成功! 您的用户ID是: " << userID << std::endl;
-
         return true; // 药剂师注册成功
     }
     case 5:
@@ -120,7 +116,7 @@ bool User::signUp(int choice, int &idCounter)
         email = inputEmailCheck("请输入邮箱地址: ");
         std::string password = inputPwdCheck("请输入密码: ");
         storedHash = SHA256Encrypt(password, salt, kHashIterations);
-        std::cout << "患者注册成功! 您的用户ID是: " << userID << std::endl;
+        
         return true; // 患者注册成功
     }
     default:

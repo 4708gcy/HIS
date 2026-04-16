@@ -14,8 +14,11 @@
 #include <fstream>
 
 // =====================人物数据保存函数=====================
-void saveAdminData(Admin *adminHead, int count); // 将管理员数据保存到文件中
-void saveDoctorData(Doctor *doctorHead, int count); // 将医生数据保存到文件中
+void saveAdminData(Admin *adminHead, int count);                // 将管理员数据保存到文件中
+void saveDoctorData(Doctor *doctorHead, int count);             // 将医生数据保存到文件中
+void saveNurseData(Nurse *nurseHead, int count);                // 将护士数据保存到文件中
+void savePharmacistData(Pharmacist *pharmacistHead, int count); // 将药剂师数据保存到文件中
+void savePatientData(Patient *patientHead, int count);          // 将患者数据保存到文件中
 
 // =====================医疗记录数据保存函数=====================
 void saveRegistrations(Registration *regHead, int count);            // 将挂号记录保存到文件中

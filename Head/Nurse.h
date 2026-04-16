@@ -13,7 +13,6 @@
 
 #include "User.h"
 
-
 /**
  * @brief 护士类
  * @details 继承自 User，包含护士特有的等级、科室、护理任务等信息，
@@ -32,12 +31,14 @@ public:
 
     bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
 
-
     Nurse *next = nullptr; // 链表指针
+    Nurse *prev = nullptr; // 双向链表前一个节点指针
 
     // ==================== 构造 / 析构 ====================
     Nurse();
     virtual ~Nurse();
+    void nurseSignUp(int &idCounter); // 护士注册接口
+    bool nurseSignIn();               // 护士登录接口
 
     // ==================== Getter ====================
     const std::string &getNurseID() const;
@@ -57,69 +58,67 @@ public:
     void setBedManageCount(int count);
     void setIsOnDuty(bool onDuty);
 
-    // ==================== 统计辅助 ====================
-    void increasePatientCareCount();
-    void increaseBedManageCount();
+    // // ==================== 统计辅助 ====================
+    // void increasePatientCareCount();
+    // void increaseBedManageCount();
 
-    // ==================== 文件操作 ====================
-    bool loadFromFile(const std::string &nurseID);
-    bool saveToFile() const;
-    bool updateToFile() const;
-    bool deleteFromFile();
+    // // ==================== 文件操作 ====================
+    // bool loadFromFile(const std::string &nurseID);
+    // bool saveToFile() const;
+    // bool updateToFile() const;
+    // bool deleteFromFile();
 
-    // ==================== 护士业务接口 ====================
+    // // ==================== 护士业务接口 ====================
 
-    /**
-     * @brief 记录患者生命体征
-     * @param patientID 患者ID
-     * @param examinationID 检查记录ID
-     * @return 成功返回 true，否则返回 false
-     */
-    bool recordVitalSigns(const std::string &patientID, const std::string &examinationID);
+    // /**
+    //  * @brief 记录患者生命体征
+    //  * @param patientID 患者ID
+    //  * @param examinationID 检查记录ID
+    //  * @return 成功返回 true，否则返回 false
+    //  */
+    // bool recordVitalSigns(const std::string &patientID, const std::string &examinationID);
 
-    /**
-     * @brief 分配床位
-     * @param patientID 患者ID
-     * @param bedID 床位ID
-     * @return 成功返回 true，否则返回 false
-     */
-    bool assignBed(const std::string &patientID, const std::string &bedID);
+    // /**
+    //  * @brief 分配床位
+    //  * @param patientID 患者ID
+    //  * @param bedID 床位ID
+    //  * @return 成功返回 true，否则返回 false
+    //  */
+    // bool assignBed(const std::string &patientID, const std::string &bedID);
 
-    /**
-     * @brief 调整床位（转床）
-     * @param patientID 患者ID
-     * @param oldBedID 原床位ID
-     * @param newBedID 新床位ID
-     * @return 成功返回 true，否则返回 false
-     */
-    bool transferBed(const std::string &patientID,
-                     const std::string &oldBedID,
-                     const std::string &newBedID);
+    // /**
+    //  * @brief 调整床位（转床）
+    //  * @param patientID 患者ID
+    //  * @param oldBedID 原床位ID
+    //  * @param newBedID 新床位ID
+    //  * @return 成功返回 true，否则返回 false
+    //  */
+    // bool transferBed(const std::string &patientID,
+    //                  const std::string &oldBedID,
+    //                  const std::string &newBedID);
 
-    /**
-     * @brief 释放床位（患者出院）
-     * @param bedID 床位ID
-     * @return 成功返回 true，否则返回 false
-     */
-    bool releaseBed(const std::string &bedID);
+    // /**
+    //  * @brief 释放床位（患者出院）
+    //  * @param bedID 床位ID
+    //  * @return 成功返回 true，否则返回 false
+    //  */
+    // bool releaseBed(const std::string &bedID);
 
-    /**
-     * @brief 查看护理工作量
-     */
-    void showWorkload() const;
+    // /**
+    //  * @brief 查看护理工作量
+    //  */
+    // void showWorkload() const;
 
-    /**
-     * @brief 查看排班信息
-     */
-    void showSchedule() const;
+    // /**
+    //  * @brief 查看排班信息
+    //  */
+    // void showSchedule() const;
 
-
-    /**
-     * @brief 获取角色名称
-     * @return 返回字符串 "Nurse"
-     */
-    std::string getRoleName() const;
+    // /**
+    //  * @brief 获取角色名称
+    //  * @return 返回字符串 "Nurse"
+    //  */
+    // std::string getRoleName() const;
 };
-
 
 #endif // NURSE_H

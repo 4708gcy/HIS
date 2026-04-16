@@ -33,10 +33,13 @@ public:
 
 
     Pharmacist *next = nullptr; // 链表指针
+    Pharmacist *prev = nullptr; // 双向链表前一个节点指针
 
     // ==================== 构造 / 析构 ====================
     Pharmacist();
     virtual ~Pharmacist();
+    void pharmacistSignUp(int &idCounter); // 药剂师注册接口
+    bool pharmacistSignIn();               // 药剂师登录接口
 
     // ==================== Getter ====================
     const std::string &getPharmacistID() const;
@@ -58,59 +61,59 @@ public:
     void setInventoryManageCount(int count);
     void setIsOnDuty(bool onDuty);
 
-    // ==================== 统计辅助 ====================
-    void increaseReviewCount();
-    void increaseDispenseCount();
-    void increaseInventoryManageCount();
+    // // ==================== 统计辅助 ====================
+    // void increaseReviewCount();
+    // void increaseDispenseCount();
+    // void increaseInventoryManageCount();
 
-    // ==================== 文件操作 ====================
-    bool loadFromFile(const std::string &pharmacistID);
-    bool saveToFile() const;
-    bool updateToFile() const;
-    bool deleteFromFile();
+    // // ==================== 文件操作 ====================
+    // bool loadFromFile(const std::string &pharmacistID);
+    // bool saveToFile() const;
+    // bool updateToFile() const;
+    // bool deleteFromFile();
 
-    // ==================== 药房业务接口 ====================
-    /**
-     * @brief 审核用药记录
-     * @param recordID 用药记录ID
-     * @return 审核成功返回 true，否则返回 false
-     */
-    bool reviewMedicationRecord(const std::string &recordID);
+    // // ==================== 药房业务接口 ====================
+    // /**
+    //  * @brief 审核用药记录
+    //  * @param recordID 用药记录ID
+    //  * @return 审核成功返回 true，否则返回 false
+    //  */
+    // bool reviewMedicationRecord(const std::string &recordID);
 
-    /**
-     * @brief 发放药品
-     * @param prescriptionID 处方ID
-     * @return 发药成功返回 true，否则返回 false
-     */
-    bool dispenseMedicine(const std::string &prescriptionID);
+    // /**
+    //  * @brief 发放药品
+    //  * @param prescriptionID 处方ID
+    //  * @return 发药成功返回 true，否则返回 false
+    //  */
+    // bool dispenseMedicine(const std::string &prescriptionID);
 
-    /**
-     * @brief 增加药品库存
-     * @param medicineID 药品ID
-     * @param amount 增加数量
-     * @return 操作成功返回 true，否则返回 false
-     */
-    bool addMedicineStock(const std::string &medicineID, int amount);
+    // /**
+    //  * @brief 增加药品库存
+    //  * @param medicineID 药品ID
+    //  * @param amount 增加数量
+    //  * @return 操作成功返回 true，否则返回 false
+    //  */
+    // bool addMedicineStock(const std::string &medicineID, int amount);
 
-    /**
-     * @brief 减少药品库存
-     * @param medicineID 药品ID
-     * @param amount 减少数量
-     * @return 操作成功返回 true，否则返回 false
-     */
-    bool reduceMedicineStock(const std::string &medicineID, int amount);
+    // /**
+    //  * @brief 减少药品库存
+    //  * @param medicineID 药品ID
+    //  * @param amount 减少数量
+    //  * @return 操作成功返回 true，否则返回 false
+    //  */
+    // bool reduceMedicineStock(const std::string &medicineID, int amount);
 
-    /**
-     * @brief 查看药剂师工作量
-     */
-    void showWorkload() const;
+    // /**
+    //  * @brief 查看药剂师工作量
+    //  */
+    // void showWorkload() const;
 
-    /**
-     * @brief 查看排班信息
-     */
-    void showSchedule() const;
+    // /**
+    //  * @brief 查看排班信息
+    //  */
+    // void showSchedule() const;
 
-    std::string getRoleName() const;
+    // std::string getRoleName() const;
 };
 
 #endif // PHARMACIST_H

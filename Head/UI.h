@@ -36,6 +36,7 @@ std::string inputEmailCheck(const std::string &prompt);                         
 int inputAgeCheck(const std::string &prompt);                                                                                             // 检查输入的年龄是否为有效的正整数
 std::string inputDateCheck(const std::string &prompt);                                                                                    // 检查输入的日期是否符合格式要求（如YYYY-MM-DD等）
 std::string inputDepartmentCheck(const std::string &prompt);                                                                              // 检查输入的科室是否为有效选项（如内科、外科等）
+std::string inputIDcardCheck(const std::string &prompt);                                                                                  // 检查输入的身份证号是否符合格式要求（如长度、数字等）
 
 // ======================================== 菜单显示函数区域 =======================================
 
@@ -84,5 +85,24 @@ int adminDoctorManagementMenu();   // 管理员医生信息管理菜单
 int adminDoctorViewMenu();         // 管理员医生信息查看方式选择菜单
 int DoctorTitleMenu();             // 医生职称选择菜单
 int adminDoctorModificationMenu(); // 管理员医生信息修改菜单
+
+int adminNurseManagementMenu();   // 管理员护士信息管理菜单
+int adminNurseViewMenu();         // 管理员护士信息查看方式选择菜单
+int NurseTitleMenu();             // 护士职称选择菜单
+int adminNurseModificationMenu(); // 管理员护士信息修改菜单
+
+int adminPharmacistManagementMenu();   // 管理员药师信息管理菜单
+int adminPharmacistViewMenu();         // 管理员药师信息查看方式选择菜单
+int PharmacistTitleMenu();             // 药师职称选择菜单
+int adminPharmacistModificationMenu(); // 管理员药师信息修改菜单
+
+int adminPatientManagementMenu();   // 管理员患者信息管理菜单
+int adminPatientViewMenu();         // 管理员患者信息查看方式选择菜单
+int PatientMaritalStatusMenu();     // 患者婚姻状态选择菜单
+int adminPatientModificationMenu(); // 管理员患者信息修改菜单
+
+int adminAdminManagementMenu();   // 管理员信息管理菜单
+int adminAdminViewMenu();         // 管理员信息查看方式选择菜单
+int adminAdminModificationMenu(); // 管理员信息修改菜单
 
 #endif

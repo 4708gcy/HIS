@@ -342,7 +342,7 @@ std::string inputGenderCheck(const std::string &prompt)
 
     while (true)
     {
-        std::cout << prompt << "（男/女）：";
+        std::cout << prompt << "（男/女）" << std::endl;
         std::getline(std::cin, gender);
         gender = trim(gender);
 
@@ -461,6 +461,30 @@ std::string inputDepartmentCheck(const std::string &prompt)
     return department;
 }
 
+// 14. 安全身份证号输入
+std::string inputIDcardCheck(const std::string &prompt)
+{
+    std::string idCard;
+    while (true)
+    {
+        std::cout << prompt << "（18位数字或最后一位可以是X）: ";
+        std::getline(std::cin, idCard);
+        idCard = trim(idCard);
+
+        if ((idCard.length() == 18 && std::all_of(idCard.begin(), idCard.end() - 1, ::isdigit) &&
+             (std::isdigit(idCard.back()) || idCard.back() == 'X' || idCard.back() == 'x')))
+        {
+            break;
+        }
+        else
+        {
+            std::cout << "输入无效，请重新输入！" << std::endl;
+        }
+    }
+    return idCard;
+}
+
+
 //============================= 菜单显示函数区域 =======================================
 
 // 登录和注册选择界面
@@ -496,13 +520,13 @@ int beginUI()
 std::string adminDepartmentMenu()
 {
     std::cout << "科室选择界面" << std::endl;
+    std::cout << "请选择科室:" << std::endl;
     std::cout << "1. 内科" << std::endl;
     std::cout << "2. 外科" << std::endl;
     std::cout << "3. 妇产科" << std::endl;
     std::cout << "4. 急诊科" << std::endl;
     std::cout << "5. 儿科" << std::endl;
     std::cout << "0. 返回上级菜单" << std::endl;
-    std::cout << "请选择科室:" << std::endl;
 
     int choice = selectIntCheck(0, 5);
 
@@ -535,9 +559,10 @@ int adminMenu()
     std::cout << "2. 医疗记录管理" << std::endl;
     std::cout << "3. 药品管理" << std::endl;
     std::cout << "4. 床位管理" << std::endl;
+    std::cout << "5. 管理员信息管理" << std::endl;
     std::cout << "0. 退出登录" << std::endl;
 
-    int choice = selectIntCheck(0, 4);
+    int choice = selectIntCheck(0, 5);
     return choice;
 }
 
@@ -953,14 +978,13 @@ int adminUserManagementMenu()
 {
     std::cout << "账户管理界面" << std::endl;
     std::cout << "请选择你要操作的用户类型:" << std::endl;
-    std::cout << "1. 管理员账户管理" << std::endl;
-    std::cout << "2. 医生账户管理" << std::endl;
-    std::cout << "3. 护士账户管理" << std::endl;
-    std::cout << "4. 药剂师账户管理" << std::endl;
-    std::cout << "5. 患者账户管理" << std::endl;
+    std::cout << "1. 医生账户管理" << std::endl;
+    std::cout << "2. 护士账户管理" << std::endl;
+    std::cout << "3. 药剂师账户管理" << std::endl;
+    std::cout << "4. 患者账户管理" << std::endl;
     std::cout << "0. 返回上级菜单" << std::endl;
 
-    int choice = selectIntCheck(0, 5);
+    int choice = selectIntCheck(0, 4);
     return choice;
 }
 
@@ -1029,5 +1053,255 @@ int adminDoctorModificationMenu()
     std::cout << "0. 返回上级菜单" << std::endl;
 
     int choice = selectIntCheck(0, 13);
+    return choice;
+}
+
+// 管理员护士信息管理菜单
+int adminNurseManagementMenu()
+{
+    std::cout << "护士账户管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看护士信息" << std::endl;
+    std::cout << "2. 修改护士信息" << std::endl;
+    std::cout << "3. 删除护士账户" << std::endl;
+    std::cout << "4. 添加护士账户" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员护士信息查看方式选择菜单
+int adminNurseViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看所有护士信息" << std::endl;
+    std::cout << "2. 根据护士ID查看" << std::endl;
+    std::cout << "3. 根据护士姓名查看" << std::endl;
+    std::cout << "4. 根据在岗状态查看" << std::endl;
+    std::cout << "5. 根据职称查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 5);
+    return viewChoice;
+}
+
+// 护士职称选择菜单
+int NurseTitleMenu()
+{
+    std::cout << "请选择护士职称:" << std::endl;
+    std::cout << "1. 实习护士" << std::endl;
+    std::cout << "2. 初级护士" << std::endl;
+    std::cout << "3. 高级护士" << std::endl;
+    std::cout << "4. 护士长" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员护士信息修改菜单
+int adminNurseModificationMenu()
+{
+    std::cout << "请选择你要修改的护士信息:" << std::endl;
+    std::cout << "1. 护士姓名" << std::endl;
+    std::cout << "2. 护士性别" << std::endl;
+    std::cout << "3. 护士年龄" << std::endl;
+    std::cout << "4. 护士所属科室" << std::endl;
+    std::cout << "5. 护士职称" << std::endl;
+    std::cout << "6. 护士联系电话" << std::endl;
+    std::cout << "7. 护士邮箱地址" << std::endl;
+    std::cout << "8. 护士在岗状态" << std::endl;
+    std::cout << "9. 护士排班信息" << std::endl;
+    std::cout << "10. 累计护理患者数量" << std::endl;
+    std::cout << "11. 床位管理次数" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 11);
+    return choice;
+}
+
+// 管理员药剂师信息管理菜单
+int adminPharmacistManagementMenu()
+{
+    std::cout << "药剂师账户管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看药剂师信息" << std::endl;
+    std::cout << "2. 修改药剂师信息" << std::endl;
+    std::cout << "3. 删除药剂师账户" << std::endl;
+    std::cout << "4. 添加药剂师账户" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员药剂师信息查看方式选择菜单
+int adminPharmacistViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看所有药剂师信息" << std::endl;
+    std::cout << "2. 根据药剂师ID查看" << std::endl;
+    std::cout << "3. 根据药剂师姓名查看" << std::endl;
+    std::cout << "4. 根据在岗状态查看" << std::endl;
+    std::cout << "5. 根据职称查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 5);
+    return viewChoice;
+}
+
+// 药剂师职称选择菜单
+int PharmacistTitleMenu()
+{
+    std::cout << "请选择药剂师职称:" << std::endl;
+    std::cout << "1. 实习药剂师" << std::endl;
+    std::cout << "2. 初级药剂师" << std::endl;
+    std::cout << "3. 高级药剂师" << std::endl;
+    std::cout << "4. 主管药剂师" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员药剂师信息修改菜单
+int adminPharmacistModificationMenu()
+{
+    std::cout << "请选择你要修改的药剂师信息:" << std::endl;
+    std::cout << "1. 药剂师姓名" << std::endl;
+    std::cout << "2. 药剂师性别" << std::endl;
+    std::cout << "3. 药剂师年龄" << std::endl;
+    std::cout << "4. 药剂师所属科室" << std::endl;
+    std::cout << "5. 药剂师职称" << std::endl;
+    std::cout << "6. 药剂师联系电话" << std::endl;
+    std::cout << "7. 药剂师邮箱地址" << std::endl;
+    std::cout << "8. 药剂师在岗状态" << std::endl;
+    std::cout << "9. 药剂师排班信息" << std::endl;
+    std::cout << "10. 累计审核用药记录数量" << std::endl;
+    std::cout << "11. 累计发药记录数量" << std::endl;
+    std::cout << "12. 库存管理次数" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 12);
+    return choice;
+}
+
+// 管理员患者信息管理菜单
+int adminPatientManagementMenu()
+{
+    std::cout << "患者账户管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看患者信息" << std::endl;
+    std::cout << "2. 修改患者信息" << std::endl;
+    std::cout << "3. 删除患者账户" << std::endl;
+    std::cout << "4. 添加患者账户" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员患者信息查看方式选择菜单
+int adminPatientViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看所有患者信息" << std::endl;
+    std::cout << "2. 根据患者ID查看" << std::endl;
+    std::cout << "3. 根据患者姓名查看" << std::endl;
+    std::cout << "4. 根据患者身份证号查看" << std::endl;
+    std::cout << "5. 根据患者性别查看" << std::endl;
+    std::cout << "6. 根据患者年龄段查看" << std::endl;
+    std::cout << "7. 根据联系方式查看" << std::endl;
+    std::cout << "8. 根据住院状态查看" << std::endl;
+    std::cout << "9. 根据家庭住址查看" << std::endl;
+    std::cout << "10. 根据婚姻状况查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 10);
+    return viewChoice;
+}
+
+// 患者婚姻状况选择菜单
+int PatientMaritalStatusMenu()
+{
+    std::cout << "请选择患者婚姻状况:" << std::endl;
+    std::cout << "1. 未婚" << std::endl;
+    std::cout << "2. 已婚" << std::endl;
+    std::cout << "3. 离异" << std::endl;
+    std::cout << "4. 丧偶" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员患者信息修改菜单
+int adminPatientModificationMenu()
+{
+    std::cout << "请选择你要修改的患者信息:" << std::endl;
+    std::cout << "1. 患者姓名" << std::endl;
+    std::cout << "2. 患者性别" << std::endl;
+    std::cout << "3. 患者年龄" << std::endl;
+    std::cout << "4. 就诊科室" << std::endl;
+    std::cout << "5. 患者身份证号" << std::endl;
+    std::cout << "6. 患者联系电话" << std::endl;
+    std::cout << "7. 患者邮箱地址" << std::endl;
+    std::cout << "8. 患者家庭住址" << std::endl;
+    std::cout << "9. 患者婚姻状况" << std::endl;
+    std::cout << "10. 紧急联系人信息" << std::endl;
+    std::cout << "11. 累计挂号次数" << std::endl;
+    std::cout << "12. 累计看诊次数" << std::endl;
+    std::cout << "13. 累计住院次数" << std::endl;
+    std::cout << "14. 累计用药次数" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 14);
+    return choice;
+}
+
+// 管理员信息管理菜单
+int adminAdminManagementMenu()
+{
+    std::cout << "管理员账户管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看管理员信息" << std::endl;
+    std::cout << "2. 修改管理员信息" << std::endl;
+    std::cout << "3. 删除管理员账户" << std::endl;
+    std::cout << "4. 添加管理员账户" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 管理员信息查看方式选择菜单
+int adminAdminViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看所有管理员信息" << std::endl;
+    std::cout << "2. 根据管理员ID查看" << std::endl;
+    std::cout << "3. 根据管理员姓名查看" << std::endl;
+    std::cout << "4. 根据性别查看" << std::endl;
+    std::cout << "5. 根据年龄段查看" << std::endl;
+    std::cout << "6. 根据联系方式查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 6);
+    return viewChoice;
+}
+
+// 管理员信息修改菜单
+int adminAdminModificationMenu()
+{
+    std::cout << "请选择你要修改的管理员信息:" << std::endl;
+    std::cout << "1. 管理员姓名" << std::endl;
+    std::cout << "2. 管理员性别" << std::endl;
+    std::cout << "3. 管理员年龄" << std::endl;
+    std::cout << "4. 管理员联系电话" << std::endl;
+    std::cout << "5. 管理员邮箱地址" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 5);
     return choice;
 }

@@ -66,67 +66,67 @@ public:
     void setHospitalizationApplyCount(int count);
     void setIsOnDuty(bool onDuty);
 
-    // ==================== 业务计数辅助 ====================
-    void increaseConsultationCount();
-    void increaseExaminationCount();
-    void increaseHospitalizationApplyCount();
+    // // ==================== 业务计数辅助 ====================
+    // void increaseConsultationCount();
+    // void increaseExaminationCount();
+    // void increaseHospitalizationApplyCount();
 
-    // ==================== 文件读写 ====================
-    bool loadFromFile(const std::string &doctorID);
-    bool saveToFile() const;
-    bool updateToFile() const;
-    bool deleteFromFile();
+    // // ==================== 文件读写 ====================
+    // bool loadFromFile(const std::string &doctorID);
+    // bool saveToFile() const;
+    // bool updateToFile() const;
+    // bool deleteFromFile();
 
-    // ==================== 医生业务接口 ====================
+    // // ==================== 医生业务接口 ====================
 
-    /**
-     * @brief 接诊患者
-     * @param patientID 患者ID
-     * @param registrationID 挂号记录ID
-     * @return 接诊成功返回 true，否则返回 false
-     */
-    bool receivePatient(const std::string &patientID, const std::string &registrationID);
+    // /**
+    //  * @brief 接诊患者
+    //  * @param patientID 患者ID
+    //  * @param registrationID 挂号记录ID
+    //  * @return 接诊成功返回 true，否则返回 false
+    //  */
+    // bool receivePatient(const std::string &patientID, const std::string &registrationID);
 
-    /**
-     * @brief 开具检查单
-     * @param patientID 患者ID
-     * @param consultationID 看诊记录ID
-     * @return 开具成功返回 true，否则返回 false
-     */
-    bool createExamination(const std::string &patientID, const std::string &consultationID);
+    // /**
+    //  * @brief 开具检查单
+    //  * @param patientID 患者ID
+    //  * @param consultationID 看诊记录ID
+    //  * @return 开具成功返回 true，否则返回 false
+    //  */
+    // bool createExamination(const std::string &patientID, const std::string &consultationID);
 
-    /**
-     * @brief 开具处方
-     * @param patientID 患者ID
-     * @param consultationID 看诊记录ID
-     * @return 开具成功返回 true，否则返回 false
-     */
-    bool createMedicationRecord(const std::string &patientID, const std::string &consultationID);
+    // /**
+    //  * @brief 开具处方
+    //  * @param patientID 患者ID
+    //  * @param consultationID 看诊记录ID
+    //  * @return 开具成功返回 true，否则返回 false
+    //  */
+    // bool createMedicationRecord(const std::string &patientID, const std::string &consultationID);
 
-    /**
-     * @brief 发起住院申请
-     * @param patientID 患者ID
-     * @param consultationID 看诊记录ID
-     * @return 发起成功返回 true，否则返回 false
-     */
-    bool applyHospitalization(const std::string &patientID, const std::string &consultationID);
+    // /**
+    //  * @brief 发起住院申请
+    //  * @param patientID 患者ID
+    //  * @param consultationID 看诊记录ID
+    //  * @return 发起成功返回 true，否则返回 false
+    //  */
+    // bool applyHospitalization(const std::string &patientID, const std::string &consultationID);
 
-    /**
-     * @brief 查看个人接诊工作量
-     */
-    void showWorkload() const;
+    // /**
+    //  * @brief 查看个人接诊工作量
+    //  */
+    // void showWorkload() const;
 
-    /**
-     * @brief 查看个人排班信息
-     */
-    void showSchedule() const;
+    // /**
+    //  * @brief 查看个人排班信息
+    //  */
+    // void showSchedule() const;
 
 
-    /**
-     * @brief 获取角色名称
-     * @return 返回字符串 "Doctor"
-     */
-    std::string getRoleName() const;
+    // /**
+    //  * @brief 获取角色名称
+    //  * @return 返回字符串 "Doctor"
+    //  */
+    // std::string getRoleName() const;
 };
 
 
