@@ -449,22 +449,27 @@ void Doctor::manageRegistrations(Registration *&regHead, Doctor *&doctor, Patien
                 else if (viewChoice == 1)
                 {
                     getAllRegistrations(regHead);
+                    pause();
                 }
                 else if (viewChoice == 2)
                 {
                     getRegistrationsByID(regHead);
+                    pause();
                 }
                 else if (viewChoice == 3)
                 {
                     getRegistrationsByPatientID(regHead);
+                    pause();
                 }
                 else if (viewChoice == 4)
                 {
                     getRegistrationsByTimeRange(regHead);
+                    pause();
                 }
                 else if (viewChoice == 5)
                 {
                     getRegistrationsByStatus(regHead);
+                    pause();
                 }
             }
         }
@@ -486,10 +491,12 @@ void Doctor::manageRegistrations(Registration *&regHead, Doctor *&doctor, Patien
                 if (target)
                 {
                     setRegistrationStatus(target);
+                    pause();
                 }
                 else
                 {
                     std::cout << "未找到挂号ID为 " << regID << " 的挂号记录，无法修改状态！" << std::endl;
+                    pause();
                 }
             }
         }
@@ -511,16 +518,19 @@ void Doctor::manageRegistrations(Registration *&regHead, Doctor *&doctor, Patien
                 if (target)
                 {
                     deleteRegistration(target);
+                    pause();
                 }
                 else
                 {
                     std::cout << "未找到挂号ID为 " << regID << " 的挂号记录，无法删除！" << std::endl;
+                    pause();
                 }
             }
         }
         else if (choice == 4)
         {
             createRegistrationByPatient(regHead, doctor, patientHead, idCounter); // 这里传入 nullptr，因为在 createRegistrationByPatient 内部会再次输入患者ID并查找患者信息
+            pause();
         }
     }
 }
@@ -1175,22 +1185,27 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                 else if (viewChoice == 1)
                 {
                     getAllConsultations(conHead);
+                    pause();
                 }
                 else if (viewChoice == 2)
                 {
                     getConsultationsByPatientID(conHead);
+                    pause();
                 }
                 else if (viewChoice == 3)
                 {
                     getConsultationsByID(conHead);
+                    pause();
                 }
                 else if (viewChoice == 4)
                 {
                     getConsultationsByTimeRange(conHead);
+                    pause();
                 }
                 else if (viewChoice == 5)
                 {
                     getConsultationsByStatus(conHead);
+                    pause();
                 }
             }
         }
@@ -1221,44 +1236,54 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                         else if (modifyChoice == 1)
                         {
                             setConsultationStatus(target);
+                            pause();
                         }
                         else if (modifyChoice == 2)
                         {
                             setConsultationChiefComplaint(target);
+                            pause();
                         }
                         else if (modifyChoice == 3)
                         {
                             setConsultationHistoryOfPresentIllness(target);
+                            pause();
                         }
                         else if (modifyChoice == 4)
                         {
                             setConsultationPastMedicalHistory(target);
+                            pause();
                         }
                         else if (modifyChoice == 5)
                         {
                             setConsultationFamilyHistory(target);
+                            pause();
                         }
                         else if (modifyChoice == 6)
                         {
                             setConsultationPreliminaryDiagnosis(target);
+                            pause();
                         }
                         else if (modifyChoice == 7)
                         {
                             addConsultationExamination(target);
+                            pause();
                         }
                         else if (modifyChoice == 8)
                         {
                             addConsultationPrescription(target, medHead);
+                            pause();
                         }
                         else if (modifyChoice == 9)
                         {
                             setHospitalizationRecommendation(target);
+                            pause();
                         }
                     }
                 }
                 else
                 {
                     std::cout << "未找到看诊ID为 " << conID << " 的看诊记录，无法进行修改操作！" << std::endl;
+                    pause();
                 }
             }
         }
@@ -1280,16 +1305,19 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                 if (target)
                 {
                     deleteConsultation(target);
+                    pause();
                 }
                 else
                 {
                     std::cout << "未找到看诊ID为 " << conID << " 的看诊记录，无法删除！" << std::endl;
+                    pause();
                 }
             }
         }
         else if (choice == 4)
         {
             createConsultationByRegistration(regHead, conHead, medHead, idCounter);
+            pause();
         }
     }
 }

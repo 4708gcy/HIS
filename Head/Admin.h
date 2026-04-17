@@ -70,26 +70,26 @@ public:
 
     // === 管理医疗记录 ===
     void manageRegistrations(Registration *&reg, Doctor *&doc, const std::string &department, int &idCounter); // 管理挂号记录（查看、修改状态等）
-    void viewAllRegistrations(Registration *&reg, const std::string &department);                              // 查看所有挂号记录（可按患者ID、医生ID、状态过滤）
-    void viewRegistrationsByID(Registration *&reg, const std::string &department);                             // 根据挂号ID查看挂号记录
-    void viewRegistrationsByDoctor(Registration *&reg, const std::string &department);                         // 查看指定医生的挂号记录
-    void viewRegistrationsByPatient(Registration *&reg, const std::string &department);                        // 查看指定患者的挂号记录
-    void viewRegistrationsByStatus(Registration *&reg, const std::string &department);                         // 查看指定状态的挂号记录
-    void modifyRegistrationDoctor(Registration *&reg, Doctor *&doc, const std::string &department);            // 修改挂号记录的医生信息（如重新分配医生等）
-    void modifyRegistrationStatus(Registration *&reg, const std::string &department);                          // 修改挂号记录状态（如支付、取消等）
-    void deleteRegistration(Registration *&reg, const std::string &department);                                // 删除挂号记录（逻辑删除，设置 isDeleted 标志）
-    void addRegistration(Registration *&reg, Doctor *&doc, const std::string &department, int &idCounter);     // 添加挂号记录（根据输入信息创建新的 Registration 对象，并插入到链表中）
+    bool viewAllRegistrations(Registration *&reg, const std::string &department);                              // 查看所有挂号记录（可按患者ID、医生ID、状态过滤）
+    bool viewRegistrationsByID(Registration *&reg, const std::string &department);                             // 根据挂号ID查看挂号记录
+    bool viewRegistrationsByDoctor(Registration *&reg, const std::string &department);                         // 查看指定医生的挂号记录
+    bool viewRegistrationsByPatient(Registration *&reg, const std::string &department);                        // 查看指定患者的挂号记录
+    bool viewRegistrationsByStatus(Registration *&reg, const std::string &department);                         // 查看指定状态的挂号记录
+    void modifyRegistrationDoctor(Registration *&target, Doctor *&doc, const std::string &department);         // 修改挂号记录的医生信息（如重新分配医生等）
+    void modifyRegistrationStatus(Registration *&target, const std::string &department);                       // 修改挂号记录状态（如支付、取消等）
+    void deleteRegistration(Registration *&target, const std::string &department);                             // 删除挂号记录（逻辑删除，设置 isDeleted 标志）
+    bool addRegistration(Registration *&reg, Doctor *&doc, const std::string &department, int &idCounter);     // 添加挂号记录（根据输入信息创建新的 Registration 对象，并插入到链表中）
 
     void manageConsultations(Consultation *&con, const std::string &department, Registration *reg, int &conCounter); // 管理看诊记录（查看、修改诊断结果等）
-    void viewAllConsultations(Consultation *&con, const std::string &department);                                    // 查看所有看诊记录（可按患者ID、医生ID、状态过滤）
-    void viewConsultationByID(Consultation *&con, const std::string &department);                                    // 根据看诊ID查看看诊记录
-    void viewConsultationsByDoctor(Consultation *&con, const std::string &department);                               // 查看指定医生的看诊记录
-    void viewConsultationsByPatient(Consultation *&con, const std::string &department);                              // 查看指定患者的看诊记录
-    void viewConsultationsByStatus(Consultation *&con, const std::string &department);                               // 查看指定状态的看诊记录
-    void viewConsultationByRegistrationID(Consultation *&con, const std::string &department);                        // 根据挂号ID查看看诊记录
-    void modifyConsultation(Consultation *&con, const std::string &department);                                      // 修改看诊记录（如修改诊断结果、添加医生备注等）
-    void deleteConsultation(Consultation *&con, const std::string &department);                                      // 删除看诊记录（逻辑删除，设置 isDeleted 标志）
-    void addConsultation(Consultation *&con, const std::string &department, Registration *reg, int &conCounter);     // 添加看诊记录（根据输入信息创建新的 Consultation 对象，并插入到链表中）
+    bool viewAllConsultations(Consultation *&con, const std::string &department);                                    // 查看所有看诊记录（可按患者ID、医生ID、状态过滤）
+    bool viewConsultationByID(Consultation *&con, const std::string &department);                                    // 根据看诊ID查看看诊记录
+    bool viewConsultationsByDoctor(Consultation *&con, const std::string &department);                               // 查看指定医生的看诊记录
+    bool viewConsultationsByPatient(Consultation *&con, const std::string &department);                              // 查看指定患者的看诊记录
+    bool viewConsultationsByStatus(Consultation *&con, const std::string &department);                               // 查看指定状态的看诊记录
+    bool viewConsultationByRegistrationID(Consultation *&con, const std::string &department);                        // 根据挂号ID查看看诊记录
+    void modifyConsultationStatus(Consultation *&target, const std::string &department);                                // 修改看诊记录状态（如修改为已完成、取消等）
+    void deleteConsultation(Consultation *&target, const std::string &department);                                      // 删除看诊记录（逻辑删除，设置 isDeleted 标志）
+    bool addConsultation(Consultation *&con, const std::string &department, Registration *reg, int &conCounter);     // 添加看诊记录（根据输入信息创建新的 Consultation 对象，并插入到链表中）
 
     void manageExaminations(Examination *&exam, const std::string &department, Consultation *con, int &idCounter); // 管理检查记录（查看、修改报告摘要等）
     void viewAllExaminations(Examination *&exam, const std::string &department);                                   // 查看所有检查记录（可按患者ID、医生ID、状态过滤）
@@ -252,7 +252,6 @@ public:
     void modifyPatientMedicationCount(Patient *&patient, const std::string &department);        // 修改患者累计用药次数
     void deletePatient(Patient *&patient, const std::string &department);                       // 删除患者信息（逻辑删除，设置 isDeleted 标志）
     void addPatient(Patient *&patient, int &idCounter);                                         // 添加患者信息（根据输入信息创建新的 Patient 对象，并插入到链表中）
-
 };
 
 #endif // ADMIN_H
