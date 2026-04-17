@@ -412,26 +412,32 @@ void manageAdmins(Admin *&admin, int &idCounter)
                 else if (viewChoice == 1)
                 {
                     viewAllAdmins(admin);
+                    pause();
                 }
                 else if (viewChoice == 2)
                 {
                     viewAdminByID(admin);
+                    pause();
                 }
                 else if (viewChoice == 3)
                 {
                     viewAdminsByName(admin);
+                    pause();
                 }
                 else if (viewChoice == 4)
                 {
                     viewAdminsByGender(admin);
+                    pause();
                 }
                 else if (viewChoice == 5)
                 {
                     viewAdminsByAgeGroup(admin);
+                    pause();
                 }
                 else if (viewChoice == 6)
                 {
                     viewAdminsByContactInfo(admin);
+                    pause();
                 }
             }
         }
@@ -447,32 +453,39 @@ void manageAdmins(Admin *&admin, int &idCounter)
                 else if (modifyChoice == 1)
                 {
                     modifyAdminName(admin);
+                    pause();
                 }
                 else if (modifyChoice == 2)
                 {
                     modifyAdminGender(admin);
+                    pause();
                 }
                 else if (modifyChoice == 3)
                 {
                     modifyAdminAge(admin);
+                    pause();
                 }
                 else if (modifyChoice == 4)
                 {
                     modifyAdminTelephone(admin);
+                    pause();
                 }
                 else if (modifyChoice == 5)
                 {
                     modifyAdminEmail(admin);
+                    pause();
                 }
             }
         }
         else if (choice == 3)
         {
             deleteAdmin(admin);
+            pause();
         }
         else if (choice == 4)
         {
             addAdmin(admin, idCounter);
+            pause();
         }
     }
 }

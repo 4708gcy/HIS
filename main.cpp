@@ -504,8 +504,9 @@ int main()
                                     }
                                 }
                             }
-                            else if(adminChoice == 5){
-                               manageAdmins(adminHead, adminIDCount); // 管理管理员信息
+                            else if (adminChoice == 5)
+                            {
+                                manageAdmins(adminHead, adminIDCount); // 管理管理员信息
                             }
                             else if (adminChoice == 0) // 退出登录
                             {
@@ -554,10 +555,16 @@ int main()
         }
     }
 
-    saveAdminData(adminHead, adminIDCount); // 保存管理员数据
+    saveAdminData(adminHead, adminIDCount);         // 保存管理员数据
+    saveDoctorData(docHead, doctorIDCount);         // 保存医生数据
+    saveNurseData(nurseHead, nurseIDCount);         // 保存护士数据
+    savePharmacistData(phaHead, pharmacistIDCount); // 保存药剂师数据
+    savePatientData(patientHead, patientIDCount);   // 保存患者数据
 
     saveRegistrations(regHead, registrationCount);            // 保存挂号记录数据
     saveConsultations(conHead, consultationCount);            // 保存看诊记录数据
+    saveExaminations(examHead, examinationCount);             // 保存检查记录数据
+    saveHospitalizations(hosHead, hospitalizationCount);      // 保存住院记录数据
     saveMedicationRecords(medRecHead, medicationRecordCount); // 保存用药记录数据
     saveMedicines(medHead, medicineCount);                    // 保存药品信息数据
     saveBedInfos(bedHead, bedCount);                          // 保存床位信息数据

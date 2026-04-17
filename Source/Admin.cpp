@@ -6796,45 +6796,56 @@ void Admin::managePatients(Patient *&patient, const std::string &department, int
                 else if (viewChoice == 1)
                 {
                     viewAllPatients(patient, department);
+                    pause();
                 }
                 else if (viewChoice == 2)
                 {
                     viewPatientByID(patient, department);
+                    pause();
                 }
                 else if (viewChoice == 3)
                 {
                     viewPatientsByName(patient, department);
+                    pause();
                 }
                 else if (viewChoice == 4)
                 {
                     viewPatientsByIDCard(patient, department);
+                    pause();
                 }
                 else if (viewChoice == 5)
                 {
                     viewPatientsByGender(patient, department);
+                    pause();
                 }
                 else if (viewChoice == 6)
                 {
                     viewPatientsByAgeGroup(patient, department);
+                    pause();
                 }
                 else if (viewChoice == 7)
                 {
                     viewPatientsByContactInfo(patient, department);
+                    pause();
                 }
                 else if (viewChoice == 8)
                 {
                     viewPatientsByHospitalizationStatus(patient, department);
+                    pause();
                 }
                 else if (viewChoice == 9)
                 {
                     viewPatientsByAddress(patient, department);
+                    pause();
                 }
                 else if (viewChoice == 10)
                 {
                     viewPatientsByMaritalStatus(patient, department);
+                    pause();
                 }
             }
-        }else if (choice == 2)
+        }
+        else if (choice == 2)
         {
             while (true)
             {
@@ -6847,108 +6858,84 @@ void Admin::managePatients(Patient *&patient, const std::string &department, int
                 else if (modifyChoice == 1)
                 {
                     modifyPatientName(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 2)
                 {
                     modifyPatientGender(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 3)
                 {
                     modifyPatientAge(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 4)
                 {
                     modifyPatientDepartment(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 5)
                 {
                     modifyPatientIDCard(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 6)
                 {
                     modifyPatientTelephone(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 7)
                 {
                     modifyPatientEmail(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 8)
                 {
                     modifyPatientAddress(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 9)
                 {
                     modifyPatientMaritalStatus(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 10)
                 {
                     modifyPatientEmergencyContact(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 11)
                 {
                     modifyPatientRegistrationCount(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 12)
                 {
                     modifyPatientConsultationCount(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 13)
                 {
                     modifyPatientHospitalizationCount(patient, department);
+                    pause();
                 }
                 else if (modifyChoice == 14)
                 {
                     modifyPatientMedicationCount(patient, department);
+                    pause();
                 }
             }
         }
         else if (choice == 3)
         {
             deletePatient(patient, department);
+            pause();
         }
         else if (choice == 4)
         {
             addPatient(patient, idCounter);
+            pause();
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -244,6 +244,8 @@ void saveRegistrations(Registration *regHead, int count)
 
     outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
 
+    std::cout << "挂号记录数据保存成功！" << std::endl;
+
     outFile.close();
 }
 
@@ -311,6 +313,8 @@ void saveConsultations(Consultation *conHead, int count)
 
     outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
 
+    std::cout << "看诊记录数据保存成功！" << std::endl;
+
     outFile.close();
 }
 
@@ -371,6 +375,9 @@ void saveExaminations(Examination *examHead, int count)
     }
 
     outFile << "count:" << count << std::endl;
+
+    std::cout << "检查记录数据保存成功！" << std::endl;
+
     outFile.close();
 }
 
@@ -411,6 +418,9 @@ void saveHospitalizations(Hospitalization *hosHead, int count)
     }
 
     outFile << "count:" << count << std::endl; // 保存记录总数，便于加载时分配内存
+
+    std::cout << "住院记录数据保存成功！" << std::endl;
+
     outFile.close();
 }
 
@@ -464,6 +474,9 @@ void saveBedInfos(bedInfo *bedHead, int count)
         current = current->next;
     }
     outFile << "count:" << count << std::endl;
+
+    std::cout << "床位信息数据保存成功！" << std::endl;
+
     outFile.close();
 }
 
@@ -511,6 +524,7 @@ void saveMedicationRecords(MedicationRecord *medRecHead, int count)
 
     outFile << "count:" << count << std::endl;
     outFile.close();
+    std::cout << "用药记录数据保存成功！" << std::endl;
 }
 
 void saveMedicines(Medicine *medHead, int count)
@@ -546,4 +560,5 @@ void saveMedicines(Medicine *medHead, int count)
 
     outFile << "count:" << count << std::endl;
     outFile.close();
+    std::cout << "药品信息数据保存成功！" << std::endl;
 }

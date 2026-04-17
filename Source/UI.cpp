@@ -410,11 +410,24 @@ std::string inputEmailCheck(const std::string &prompt)
 // 11 . 安全年龄输入
 int inputAgeCheck(const std::string &prompt)
 {
-    std::cout << prompt;
-    int age = selectIntCheck(0, 150); // 年龄合理范围为0-150
-    return age;
+    int age;
+    std::string line;
+    while (true)
+    {
+        std::cout << prompt << "（0-150）: ";
+        std::getline(std::cin, line);
+        line = trim(line); // 去除首尾空格
+        std::stringstream ss(line);
+        if (ss >> age && !(ss >> line) && age >= 0 && age <= 150)
+        {
+            return age;
+        }
+        else
+        {
+            std::cout << "无效输入，请输入0-150之间的整数！" << std::endl;
+        }
+    }
 }
-
 // 12. 安全日期输入
 std::string inputDateCheck(const std::string &prompt)
 {
