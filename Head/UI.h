@@ -105,4 +105,14 @@ int adminAdminManagementMenu();   // 管理员信息管理菜单
 int adminAdminViewMenu();         // 管理员信息查看方式选择菜单
 int adminAdminModificationMenu(); // 管理员信息修改菜单
 
+// ========================================= 医生功能菜单区域 =======================================
+int doctorMenu(); // 医生菜单，提供看诊记录管理、挂号记录管理等选项
+
+int doctorRegistrationManagementMenu();   // 医生挂号记录管理菜单
+int doctorRegistrationViewMenu();         // 医生挂号记录查看方式选择菜单
+
+int doctorConsultationManagementMenu();   // 医生看诊记录管理菜单
+int doctorConsultationViewMenu();         // 医生看诊记录查看方式选择菜单
+int doctorConsultationModificationMenu();   // 医生看诊记录修改菜单
+
 #endif

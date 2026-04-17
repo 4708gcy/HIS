@@ -1318,3 +1318,98 @@ int adminAdminModificationMenu()
     int choice = selectIntCheck(0, 5);
     return choice;
 }
+
+// 医生管理菜单
+int doctorMenu()
+{
+    std::cout << "医生功能界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 管理挂号记录" << std::endl;
+    std::cout << "2. 管理看诊记录" << std::endl;
+    std::cout << "3. 管理检查记录" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 3);
+    return choice;
+}
+
+// 医生挂号记录管理菜单
+int doctorRegistrationManagementMenu()
+{
+    std::cout << "挂号记录管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看挂号记录" << std::endl;
+    std::cout << "2. 修改挂号记录状态" << std::endl;
+    std::cout << "3. 删除挂号记录" << std::endl;
+    std::cout << "4. 添加挂号记录" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 医生挂号记录查看方式选择菜单
+int doctorRegistrationViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看该医生的所有挂号记录" << std::endl;
+    std::cout << "2. 根据患者ID查看" << std::endl;
+    std::cout << "3. 根据挂号记录ID查看" << std::endl;
+    std::cout << "4. 根据时间范围查看" << std::endl;
+    std::cout << "5. 根据挂号状态查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 5);
+    return viewChoice;
+}
+
+// 医生看诊记录管理菜单
+int doctorConsultationManagementMenu()
+{
+    std::cout << "看诊记录管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看看诊记录" << std::endl;
+    std::cout << "2. 修改看诊记录" << std::endl;
+    std::cout << "3. 删除看诊记录" << std::endl;
+    std::cout << "4. 添加看诊记录" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 医生看诊记录查看方式选择菜单
+int doctorConsultationViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看该医生的所有看诊记录" << std::endl;
+    std::cout << "2. 根据患者ID查看" << std::endl;
+    std::cout << "3. 根据看诊记录ID查看" << std::endl;
+    std::cout << "4. 根据时间范围查看" << std::endl;
+    std::cout << "5. 根据看诊状态查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 5);
+    return viewChoice;
+}
+
+// 医生看诊记录修改菜单
+int doctorConsultationModificationMenu()
+{
+    std::cout << "请选择你要修改的看诊记录信息:" << std::endl;
+    std::cout << "1. 看诊状态" << std::endl;
+    std::cout << "2. 主诉" << std::endl;
+    std::cout << "3. 现病史" << std::endl;
+    std::cout << "4. 既往史" << std::endl;
+    std::cout << "5. 家族史" << std::endl;
+    std::cout << "6. 初步诊断" << std::endl;
+    std::cout << "7. 添加检查项目" << std::endl;
+    std::cout << "8. 添加处方信息" << std::endl;
+    std::cout << "9. 开具住院证" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 9);
+    return choice;
+}
+
+

@@ -12,7 +12,7 @@
 #define DOCTOR_H
 
 #include "User.h"
-
+#include "Patient.h"
 
 /**
  * @brief 医生类
@@ -33,7 +33,6 @@ public:
     bool isOnDuty = false;             // 当前是否在岗
 
     bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
-
 
     Doctor *next = nullptr; // 链表指针
     Doctor *prev = nullptr; // 双向链表前向指针
@@ -66,68 +65,87 @@ public:
     void setHospitalizationApplyCount(int count);
     void setIsOnDuty(bool onDuty);
 
-    // // ==================== 业务计数辅助 ====================
-    // void increaseConsultationCount();
-    // void increaseExaminationCount();
-    // void increaseHospitalizationApplyCount();
+    // ==================== 医生业务接口 ====================
 
-    // // ==================== 文件读写 ====================
-    // bool loadFromFile(const std::string &doctorID);
-    // bool saveToFile() const;
-    // bool updateToFile() const;
-    // bool deleteFromFile();
+    bool getAllRegistrations(Registration *&regHead);                                                             // 获取医生的是所有挂号记录
+    bool getRegistrationsByStatus(Registration *&regHead);                                                        // 根据挂号状态获取挂号记录
+    bool getRegistrationsByPatientID(Registration *&regHead);                                                     // 根据患者ID获取挂号记录
+    bool getRegistrationsByTimeRange(Registration *&regHead);                                                     // 根据挂号时间范围获取挂号记录
+    bool getRegistrationsByID(Registration *&regHead);                                                            // 根据挂号ID获取挂号记录
+    void setRegistrationStatus(Registration *&target);                                                           // 修改挂号记录状态
+    void deleteRegistration(Registration *&target);                                                              // 删除挂号记录（逻辑删除）
+    bool createRegistrationByPatient(Registration *&regHead, Doctor *&doctor, Patient *&patient, int &idCounter); // 为患者创建新的挂号记录
+    void manageRegistrations(Registration *&regHead, Doctor *&doctor, Patient *&patientHead, int &idCounter);     // 管理挂号记录（查看、修改状态等）
 
-    // // ==================== 医生业务接口 ====================
-
-    // /**
-    //  * @brief 接诊患者
-    //  * @param patientID 患者ID
-    //  * @param registrationID 挂号记录ID
-    //  * @return 接诊成功返回 true，否则返回 false
-    //  */
-    // bool receivePatient(const std::string &patientID, const std::string &registrationID);
-
-    // /**
-    //  * @brief 开具检查单
-    //  * @param patientID 患者ID
-    //  * @param consultationID 看诊记录ID
-    //  * @return 开具成功返回 true，否则返回 false
-    //  */
-    // bool createExamination(const std::string &patientID, const std::string &consultationID);
-
-    // /**
-    //  * @brief 开具处方
-    //  * @param patientID 患者ID
-    //  * @param consultationID 看诊记录ID
-    //  * @return 开具成功返回 true，否则返回 false
-    //  */
-    // bool createMedicationRecord(const std::string &patientID, const std::string &consultationID);
-
-    // /**
-    //  * @brief 发起住院申请
-    //  * @param patientID 患者ID
-    //  * @param consultationID 看诊记录ID
-    //  * @return 发起成功返回 true，否则返回 false
-    //  */
-    // bool applyHospitalization(const std::string &patientID, const std::string &consultationID);
-
-    // /**
-    //  * @brief 查看个人接诊工作量
-    //  */
-    // void showWorkload() const;
-
-    // /**
-    //  * @brief 查看个人排班信息
-    //  */
-    // void showSchedule() const;
+    bool getAllConsultations(Consultation *&conHead);                                                                          // 获取医生的所有看诊记录
+    bool getConsultationsByStatus(Consultation *&conHead);                                                                     // 根据看诊状态获取看诊记录
+    bool getConsultationsByPatientID(Consultation *&conHead);                                                                  // 根据患者ID获取看诊记录
+    bool getConsultationsByTimeRange(Consultation *&conHead);                                                                  // 根据看诊时间范围获取看诊记录
+    bool getConsultationsByID(Consultation *&conHead);                                                                         // 根据看诊ID获取看诊记录
+    void setConsultationStatus(Consultation *&target);                                                                        // 修改看诊记录状态
+    void setConsultationChiefComplaint(Consultation *&target);                                                                // 修改看诊记录的主诉信息
+    void setConsultationHistoryOfPresentIllness(Consultation *&target);                                                       // 修改看诊记录的现病史信息
+    void setConsultationPastMedicalHistory(Consultation *&target);                                                            // 修改看诊记录的既往史信息
+    void setConsultationFamilyHistory(Consultation *&target);                                                                 // 修改看诊记录的家族史信息
+    void setConsultationPreliminaryDiagnosis(Consultation *&target);                                                          // 修改看诊记录的初步诊断信息
+    void addConsultationExamination(Consultation *&target);                                                                   // 向看诊记录添加检查项目
+    void addConsultationPrescription(Consultation *&target, Medicine *&medHead);                                              // 向看诊记录添加处方信息
+    void initConsultationExamination(Consultation *&target);                                                                      // 初始化看诊记录的检查项目列表
+    void initConsultationPrescription(Consultation *&target, Medicine *&medHead);                                                 // 初始化看诊记录的处方列表
+    void setHospitalizationRecommendation(Consultation *&target);                                                             // 设置看诊记录的住院建议
+    void deleteConsultation(Consultation *&target);                                                                           // 删除看诊记录（逻辑删除）
+    bool createConsultationByRegistration(Registration *&regHead, Consultation *&conHead, Medicine *&medHead, int &idCounter); // 从挂号记录创建看诊记录
+    void manageConsultations(Consultation *&conHead, Registration *&regHead, Medicine *&medHead, int &idCounter);              // 管理看诊记录（查看、修改状态等）
 
 
-    // /**
-    //  * @brief 获取角色名称
-    //  * @return 返回字符串 "Doctor"
-    //  */
-    // std::string getRoleName() const;
+    /**
+     * @brief 接诊患者
+     * @param patientID 患者ID
+     * @param registrationID 挂号记录ID
+     * @return 接诊成功返回 true，否则返回 false
+     */
+    bool
+    receivePatient(const std::string &patientID, const std::string &registrationID);
+
+    /**
+     * @brief 开具检查单
+     * @param patientID 患者ID
+     * @param consultationID 看诊记录ID
+     * @return 开具成功返回 true，否则返回 false
+     */
+    bool createExamination(const std::string &patientID, const std::string &consultationID);
+
+    /**
+     * @brief 开具处方
+     * @param patientID 患者ID
+     * @param consultationID 看诊记录ID
+     * @return 开具成功返回 true，否则返回 false
+     */
+    bool createMedicationRecord(const std::string &patientID, const std::string &consultationID);
+
+    /**
+     * @brief 发起住院申请
+     * @param patientID 患者ID
+     * @param consultationID 看诊记录ID
+     * @return 发起成功返回 true，否则返回 false
+     */
+    bool applyHospitalization(const std::string &patientID, const std::string &consultationID);
+
+    /**
+     * @brief 查看个人接诊工作量
+     */
+    void showWorkload() const;
+
+    /**
+     * @brief 查看个人排班信息
+     */
+    void showSchedule() const;
+
+    /**
+     * @brief 获取角色名称
+     * @return 返回字符串 "Doctor"
+     */
+    std::string getRoleName() const;
 };
-
 
 #endif // DOCTOR_H
