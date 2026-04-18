@@ -497,6 +497,49 @@ std::string inputIDcardCheck(const std::string &prompt)
     return idCard;
 }
 
+// 15. 安全整数输入（带提示信息）
+int inputIntCheck(const std::string &prompt,int min, int max)
+{
+    int value;
+    std::string line;
+    while (true)
+    {
+        std::cout << prompt;
+        std::getline(std::cin, line);
+        line = trim(line); // 去除首尾空格
+        std::stringstream ss(line);
+        if (ss >> value && !(ss >> line) && value >= min && value <= max)
+        {
+            return value;
+        }
+        else
+        {
+            std::cout << "无效输入，请输入一个在 " << min << " 和 " << max << " 之间的整数！" << std::endl;
+        }
+    }
+}
+
+// 16. 安全浮点数输入（带提示信息）
+double inputDoubleCheck(const std::string &prompt, double min, double max)
+{
+    double value;
+    std::string line;
+    while (true)
+    {
+        std::cout << prompt;
+        std::getline(std::cin, line);
+        line = trim(line); // 去除首尾空格
+        std::stringstream ss(line);
+        if (ss >> value && !(ss >> line) && value >= min && value <= max)
+        {
+            return value;
+        }
+        else
+        {
+            std::cout << "无效输入，请输入一个在 " << min << " 和 " << max << " 之间的数值！" << std::endl;
+        }
+    }
+}
 
 //============================= 菜单显示函数区域 =======================================
 
@@ -1412,4 +1455,49 @@ int doctorConsultationModificationMenu()
     return choice;
 }
 
+// 医生检查记录管理菜单
+int doctorExaminationManagementMenu()
+{
+    std::cout << "检查记录管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看检查记录" << std::endl;
+    std::cout << "2. 修改检查记录" << std::endl;
+    std::cout << "3. 删除检查记录" << std::endl;
+    std::cout << "4. 添加检查记录" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
 
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+
+// 医生检查记录查看方式选择菜单
+int doctorExaminationViewMenu(){
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看该医生的所有检查记录" << std::endl;
+    std::cout << "2. 根据患者ID查看" << std::endl;
+    std::cout << "3. 根据看诊记录ID查看" << std::endl;
+    std::cout << "4. 根据检查记录ID查看" << std::endl;
+    std::cout << "5. 根据时间范围查看" << std::endl;
+    std::cout << "6. 根据检查项目查看" << std::endl;
+    std::cout << "7. 根据检查记录状态查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 7);
+    return viewChoice;
+}
+
+// 医生检查记录修改菜单
+int doctorExaminationModificationMenu(){
+    std::cout << "请选择你要修改的检查记录信息:" << std::endl;
+    std::cout << "1. 检查记录状态" << std::endl;
+    std::cout << "2. 检查项目" << std::endl;
+    std::cout << "3. 检查结果报告" << std::endl;
+    std::cout << "4. 检查结果报告摘要" << std::endl;
+    std::cout << "5. 修改检查报告附件文件" << std::endl;
+    std::cout << "6. 添加检查记录备注信息" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 6);
+    return choice;
+}

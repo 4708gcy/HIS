@@ -37,6 +37,8 @@ int inputAgeCheck(const std::string &prompt);                                   
 std::string inputDateCheck(const std::string &prompt);                                                                                    // 检查输入的日期是否符合格式要求（如YYYY-MM-DD等）
 std::string inputDepartmentCheck(const std::string &prompt);                                                                              // 检查输入的科室是否为有效选项（如内科、外科等）
 std::string inputIDcardCheck(const std::string &prompt);                                                                                  // 检查输入的身份证号是否符合格式要求（如长度、数字等）
+int inputIntCheck(const std::string &prompt, int min, int max);                                                                           // 检查输入的整数是否为有效的整数
+double inputDoubleCheck(const std::string &prompt, double min, double max);                                                               // 检查输入的浮点数是否为有效的浮点数
 
 // ======================================== 菜单显示函数区域 =======================================
 
@@ -108,11 +110,15 @@ int adminAdminModificationMenu(); // 管理员信息修改菜单
 // ========================================= 医生功能菜单区域 =======================================
 int doctorMenu(); // 医生菜单，提供看诊记录管理、挂号记录管理等选项
 
-int doctorRegistrationManagementMenu();   // 医生挂号记录管理菜单
-int doctorRegistrationViewMenu();         // 医生挂号记录查看方式选择菜单
+int doctorRegistrationManagementMenu(); // 医生挂号记录管理菜单
+int doctorRegistrationViewMenu();       // 医生挂号记录查看方式选择菜单
 
 int doctorConsultationManagementMenu();   // 医生看诊记录管理菜单
 int doctorConsultationViewMenu();         // 医生看诊记录查看方式选择菜单
-int doctorConsultationModificationMenu();   // 医生看诊记录修改菜单
+int doctorConsultationModificationMenu(); // 医生看诊记录修改菜单
+
+int doctorExaminationManagementMenu();   // 医生检查记录管理菜单
+int doctorExaminationViewMenu();         // 医生检查记录查看方式选择菜单
+int doctorExaminationModificationMenu(); // 医生检查记录修改菜单
 
 #endif

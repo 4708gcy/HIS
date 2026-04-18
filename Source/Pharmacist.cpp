@@ -19,12 +19,12 @@ Pharmacist::~Pharmacist()
     // 析构函数实现（如有需要）
 }
 
-void Pharmacist::pharmacistSignUp(int &idCounter){
+bool Pharmacist::pharmacistSignUp(int &idCounter){
     bool success = signUp(4, idCounter); // 调用基类的注册方法，传入角色类型 4（药剂师）
     if (!success)
     {
         std::cout << "药剂师注册失败！" << std::endl;
-        return;
+        return false;
     }
     this->pharmacistID = this->userID; // 药剂师ID与用户ID保持一致
     
@@ -46,6 +46,7 @@ void Pharmacist::pharmacistSignUp(int &idCounter){
     this->isOnDuty = (onDutyChoice == 1);
 
     std::cout << "药剂师注册成功! 您的用户ID是: " << this->userID << std::endl;
+    return true;
 }
 
 bool Pharmacist::pharmacistSignIn()

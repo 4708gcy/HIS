@@ -162,6 +162,7 @@ public:
     void setAge(int age);
     void setTelephone(const std::string &telephone);
     void setEmail(const std::string &email);
+    void setVitalSigns(VitalSigns &vs, const std::string &itemName); // 根据检查项目名称设置对应的体征信息
 
     std::string regStatusToString(RegistrationStatus status);                  // 将挂号状态枚举转换为字符串表示
     std::string conStatusToString(ConsultationStatus status);                  // 将看诊状态枚举转换为字符串表示
@@ -180,7 +181,6 @@ public:
     double calculateRegistrationFee(DoctorTitle title);                 // 根据医生职称计算挂号费用
     double calculateHospitalizationFee(std::string wardType, int days); // 根据床位类型和住院天数计算住院费用
     double calculateExaminationFee(std::string itemName);               // 根据检查项目名称计算检查费用
-
 };
 
 #endif // USER_H

@@ -116,7 +116,7 @@ bool User::signUp(int choice, int &idCounter)
         email = inputEmailCheck("请输入邮箱地址: ");
         std::string password = inputPwdCheck("请输入密码: ");
         storedHash = SHA256Encrypt(password, salt, kHashIterations);
-        
+
         return true; // 患者注册成功
     }
     default:
@@ -184,6 +184,67 @@ void User::setAge(int age) { this->age = age; }
 void User::setTelephone(const std::string &telephone) { this->telephone = telephone; }
 // 设置电子邮箱
 void User::setEmail(const std::string &email) { this->email = email; }
+// 根据检查项目名称设置对应的体征信息
+void User::setVitalSigns(VitalSigns &vs, const std::string &itemName)
+{
+    if (itemName == "体温测量")
+    {
+        vs.temperatureC = inputDoubleCheck("请输入体温(°C): ", 30.0, 45.0);
+    }
+    else if (itemName == "血压测量")
+    {
+        vs.systolicBP = inputDoubleCheck("请输入收缩压(mmHg): ", 50.0, 250.0);
+        vs.diastolicBP = inputDoubleCheck("请输入舒张压(mmHg): ", 30.0, 150.0);
+    }
+    else if (itemName == "心率测量")
+    {
+        vs.heartRate = inputDoubleCheck("请输入心率(次/分钟): ", 30.0, 200.0);
+    }
+    else if (itemName == "呼吸频率测量")
+    {
+        vs.respiratoryRate = inputDoubleCheck("请输入呼吸频率(次/分钟): ", 5.0, 60.0);
+    }
+    else if (itemName == "脉搏血氧测量")
+    {
+        vs.spo2 = inputDoubleCheck("请输入血氧饱和度(%): ", 70.0, 100.0);
+    }
+    else if (itemName == "身高测量")
+    {
+        vs.height = inputDoubleCheck("请输入身高(cm): ", 50.0, 250.0);
+    }
+    else if (itemName == "体重测量")
+    {
+        vs.weight = inputDoubleCheck("请输入体重(kg): ", 2.0, 500.0);
+    }
+    else if (itemName == "BMI计算")
+    {
+        vs.bmi = inputDoubleCheck("请输入BMI: ", 10.0, 80.0);
+    }
+    else if (itemName == "疼痛评分")
+    {
+        vs.painScore = inputDoubleCheck("请输入疼痛评分(0-10): ", 0.0, 10.0);
+    }
+    else if (itemName == "腰围测量")
+    {
+        vs.waistCircumference = inputDoubleCheck("请输入腰围(cm): ", 30.0, 200.0);
+    }
+    else if (itemName == "血糖测量")
+    {
+        vs.bloodSugar = inputDoubleCheck("请输入血糖(mmol/L): ", 0.0, 30.0);
+    }
+    else if (itemName == "体脂测量")
+    {
+        vs.bodyFat = inputDoubleCheck("请输入体脂率(%): ", 1.0, 70.0);
+    }
+    else if (itemName == "尿酸测定")
+    {
+        vs.uricAcid = inputDoubleCheck("请输入尿酸(μmol/L): ", 100.0, 800.0);
+    }
+    else if (itemName == "血脂测定")
+    {
+        vs.cholesterol = inputDoubleCheck("请输入总胆固醇(mmol/L): ", 0.0, 20.0);
+    }
+}
 
 // 将挂号状态枚举转换为字符串表示
 std::string User::regStatusToString(RegistrationStatus status)

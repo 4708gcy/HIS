@@ -45,7 +45,7 @@ public:
     // ==================== 构造 / 析构 ====================
     Patient();
     virtual ~Patient();
-    void patientSignUp(int &idCounter); // 患者注册接口
+    bool patientSignUp(int &idCounter); // 患者注册接口
     bool patientSignIn();               // 患者登录接口
 
     // ==================== Getter ====================

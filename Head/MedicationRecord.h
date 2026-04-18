@@ -40,11 +40,11 @@ enum class MedicationStatus
  */
 struct MedicationLine
 {
-    std::string medicineID; // 药品ID
-    std::string medicineName;       // 药品名称（冗余以便展示）
-    int quantity;       // 药品数量
+    std::string medicineID = "#"; // 药品ID
+    std::string medicineName = "#";       // 药品名称（冗余以便展示）
+    int quantity = 0;       // 药品数量
     double unitPrice = 0.0; // 下单时单价
-    std::string note;       // 用法备注
+    std::string note = "#";       // 用法备注
 };
 
 /**
@@ -52,23 +52,23 @@ struct MedicationLine
  */
 struct MedicationRecord
 {
-    std::string consultationID; // 对应的看诊记录ID
-    std::string medRecordID;    // 用药记录ID
-    std::string doctorID;       // 医生ID
-    std::string pharmacistID;   // 药师ID
-    std::string patientID;      // 患者ID
-    std::string department;     // 科室
-    std::string createTime;     // 创建时间
+    std::string consultationID = "#"; // 对应的看诊记录ID
+    std::string medRecordID = "#";    // 用药记录ID
+    std::string doctorID = "#";       // 医生ID
+    std::string pharmacistID = "#";   // 药师ID
+    std::string patientID = "#";      // 患者ID
+    std::string department = "#";     // 科室
+    std::string createTime = "#";     // 创建时间
 
-    std::vector<MedicationLine> lines; // 用药明细
+    std::vector<MedicationLine> lines = {}; // 用药明细
     double totalCost = 0.0;            // 总费用
 
     MedicationReviewStatus reviewStatus = MedicationReviewStatus::PENDING_REVIEW; // 审核状态
     MedicationStatus status = MedicationStatus::UNPAID;                           // 支付/发药状态
 
-    std::string paymentTime;  // 支付时间
-    std::string dispenseTime; // 发药时间
-    std::string note;         // 备注
+    std::string paymentTime = "#";  // 支付时间
+    std::string dispenseTime = "#"; // 发药时间
+    std::string note = "#";         // 备注
 
     bool isDeleted = false; // 逻辑删除标志
 

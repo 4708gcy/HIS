@@ -38,7 +38,7 @@ public:
     // ==================== 构造 / 析构 ====================
     Pharmacist();
     virtual ~Pharmacist();
-    void pharmacistSignUp(int &idCounter); // 药剂师注册接口
+    bool pharmacistSignUp(int &idCounter); // 药剂师注册接口
     bool pharmacistSignIn();               // 药剂师登录接口
 
     // ==================== Getter ====================

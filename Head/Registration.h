@@ -28,17 +28,17 @@ enum class RegistrationStatus
 
 struct Registration
 {
-    std::string registrationID;                             // 挂号唯一ID
-    std::string patientID;                                  // 患者ID（关联Patient）
-    std::string department;                                 // 科室名称
-    std::string doctorID;                                   // 医生ID（可为空表示未指定）
-    std::string registerTime;                               // 挂号时间戳（字符串格式）
+    std::string registrationID = "#";                             // 挂号唯一ID
+    std::string patientID = "#";                                  // 患者ID（关联Patient）
+    std::string department = "#";                                 // 科室名称
+    std::string doctorID = "#";                                   // 医生ID（可为空表示未指定）
+    std::string registerTime = "#";                               // 挂号时间戳（字符串格式）
     double fee = 0.0;                                       // 挂号费用
     RegistrationStatus status = RegistrationStatus::BOOKED; // 挂号状态
-    std::string note;                                       // 备注信息
+    std::string note = "#";                                       // 备注信息
 
     // 关联之前的挂号记录（如同一患者多次挂号）
-    std::vector<std::string> relatedRegistrationIDs; // 相关挂号记录ID列表
+    std::vector<std::string> relatedRegistrationIDs = {}; // 相关挂号记录ID列表
 
     bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
 

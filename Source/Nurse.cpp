@@ -19,12 +19,12 @@ Nurse::~Nurse()
     // 析构函数实现（如有需要）
 }
 
-void Nurse::nurseSignUp(int &idCounter){
+bool Nurse::nurseSignUp(int &idCounter){
     bool success = signUp(3, idCounter); // 调用基类的注册方法，传入角色类型 3（护士）
     if (!success)
     {
         std::cout << "护士注册失败！" << std::endl;
-        return;
+        return false;
     }
 
     this->nurseID = this->userID; // 护士ID与用户ID保持一致
@@ -47,6 +47,7 @@ void Nurse::nurseSignUp(int &idCounter){
     this->isOnDuty = (onDutyChoice == 1);
 
     std::cout << "护士注册成功! 您的用户ID是: " << this->userID << std::endl;
+    return true;
 }
 
 bool Nurse::nurseSignIn()

@@ -37,7 +37,7 @@ public:
     // ==================== 构造 / 析构 ====================
     Nurse();
     virtual ~Nurse();
-    void nurseSignUp(int &idCounter); // 护士注册接口
+    bool nurseSignUp(int &idCounter); // 护士注册接口
     bool nurseSignIn();               // 护士登录接口
 
     // ==================== Getter ====================

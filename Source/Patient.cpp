@@ -19,12 +19,12 @@ Patient::~Patient()
     // 析构函数实现（如有需要）
 }
 
-void Patient::patientSignUp(int &idCounter){
+bool Patient::patientSignUp(int &idCounter){
     bool success = signUp(5, idCounter); // 调用基类的注册方法，传入角色类型 5（患者）
     if (!success)
     {
         std::cout << "患者注册失败！" << std::endl;
-        return;
+        return false;
     }
     this->patientID = this->userID; // 患者ID与用户ID保持一致
     
@@ -45,6 +45,8 @@ void Patient::patientSignUp(int &idCounter){
     this->maritalStatus = static_cast<MaritalStatus>(maritalChoice);
 
     std::cout << "患者注册成功! 您的用户ID是: " << this->userID << std::endl;
+    return true;
+
 }
 
 bool Patient::patientSignIn()

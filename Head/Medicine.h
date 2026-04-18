@@ -25,16 +25,16 @@ enum class MedicineStatus
 struct Medicine
 {
     // 唯一标识（可用条码或自定义ID）
-    std::string medicineID;
+    std::string medicineID = "#";
 
     // 药品名称
-    std::string name;
+    std::string name = "#";
 
     // 规格描述（例如 "0.5g*10片"）
-    std::string specification;
+    std::string specification = "#";
 
     // 生产厂家
-    std::string manufacturer;
+    std::string manufacturer = "#";
 
     // 进价（采购价）
     double purchasePrice = 0.0;
@@ -49,13 +49,13 @@ struct Medicine
     int safetyStock = 0;
 
     // 生产日期（建议格式 "YYYY-MM-DD"）
-    std::string productionDate;
+    std::string productionDate = "#";
 
     // 有效期（建议格式 "YYYY-MM-DD"）
-    std::string expiryDate;
+    std::string expiryDate = "#";
 
     // 所属科室标签（可为空表示通用药）
-    std::string department;
+    std::string department = "#";
 
     // 是否为专科受限用药（需二次审批）
     bool isSpecial = false;
@@ -63,7 +63,7 @@ struct Medicine
     bool isDeleted = false; // 逻辑删除标志
 
     // 备注（储存条件、用法等）
-    std::string note;
+    std::string note = "#";
 
     // 当前状态
     MedicineStatus status = MedicineStatus::NORMAL;
