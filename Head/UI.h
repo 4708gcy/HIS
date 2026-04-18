@@ -50,7 +50,9 @@ int adminMenu(); // 管理员菜单，提供账户管理和医疗记录管理选
 
 std::string adminDepartmentMenu(); // 管理员科室管理菜单
 
-// ======================================== 医疗记录管理菜单区域 =======================================
+int identitySelectionMenu(); // 身份选择菜单，提供管理员、医生、护士、药师、患者等选项
+
+// ======================================== 管理员医疗记录管理菜单区域 =======================================
 
 int adminMedicalRecordMenu(); // 管理员医疗记录管理菜单
 
@@ -107,6 +109,10 @@ int adminAdminManagementMenu();   // 管理员信息管理菜单
 int adminAdminViewMenu();         // 管理员信息查看方式选择菜单
 int adminAdminModificationMenu(); // 管理员信息修改菜单
 
+int adminPersonalInfoManagementMenu(); // 管理员个人信息管理菜单
+int adminPersonalInfoViewMenu();       // 管理员个人信息查看选择菜单
+int adminPersonalInfoModificationMenu(); // 管理员个人信息修改选择菜单
+
 // ========================================= 医生功能菜单区域 =======================================
 int doctorMenu(); // 医生菜单，提供看诊记录管理、挂号记录管理等选项
 
@@ -120,5 +126,9 @@ int doctorConsultationModificationMenu(); // 医生看诊记录修改菜单
 int doctorExaminationManagementMenu();   // 医生检查记录管理菜单
 int doctorExaminationViewMenu();         // 医生检查记录查看方式选择菜单
 int doctorExaminationModificationMenu(); // 医生检查记录修改菜单
+
+int doctorPersonalInfoManagementMenu(); // 医生个人信息管理菜单
+int doctorPersonalInfoViewMenu();       // 医生个人信息查看选择菜单
+int doctorPersonalInfoModificationMenu(); // 医生个人信息修改选择菜单
 
 #endif

@@ -508,6 +508,14 @@ int main()
                             {
                                 manageAdmins(adminHead, adminIDCount); // 管理管理员信息
                             }
+                            else if (adminChoice == 6) // 个人信息管理
+                            {
+                                client->AdminPersionalInfo(); // 调用管理员个人信息管理函数
+                            }
+                            else if (adminChoice == 7) // 账号封锁管理
+                            {
+                                AccountManagement(adminHead, docHead, nurseHead, phaHead, patientHead); // 调用账号激活/封锁管理函数
+                            }
                             else if (adminChoice == 0) // 退出登录
                             {
                                 std::cout << "成功退出登录" << std::endl;
@@ -519,7 +527,34 @@ int main()
                 }
                 else if (roleChoice == 2) // 医生登录
                 {
-                    std::cout << "医生登录功能尚未实现，敬请期待！" << std::endl;
+                    Doctor *client = doctorLogin(docHead);
+                    if (client)
+                    {
+                        while (true)
+                        {
+                            int doctorChoice = doctorMenu();
+                            if (doctorChoice == 0)
+                            {
+                                break; // 退出登录
+                            }
+                            else if (doctorChoice == 1)
+                            {
+                                client->manageRegistrations(regHead, docHead, patientHead, registrationCount); // 管理挂号记录
+                            }
+                            else if (doctorChoice == 2)
+                            {
+                                client->manageConsultations(conHead, regHead, medHead, consultationCount); // 管理看诊记录
+                            }
+                            else if (doctorChoice == 3)
+                            {
+                                client->manageExaminations(examHead, conHead, examinationCount); // 管理检查记录
+                            }
+                            else if (doctorChoice == 4)
+                            {
+                                client->managePersonalInfo(); // 个人信息管理
+                            }
+                        }
+                    }
                 }
                 else if (roleChoice == 3) // 护士登录
                 {

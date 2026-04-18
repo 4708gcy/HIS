@@ -10,9 +10,11 @@
 #define LOGIN_H
 
 #include "Admin.h"
+#include "Doctor.h"
 #include "UI.h"
 
-Admin* adminLogin(Admin *&adminHead); // 管理员登录函数，验证管理员身份并返回登录结果
+Admin *adminLogin(Admin *&adminHead);     // 管理员登录函数，验证管理员身份并返回登录结果
+Doctor *doctorLogin(Doctor *&doctorHead); // 医生登录函数，验证医生身份并返回登录结果
 
 void manageAdmins(Admin *&admin, int &idCounter); // 管理管理员信息
 void viewAllAdmins(Admin *&admin);                // 查看所有管理员信息
@@ -28,5 +30,61 @@ void modifyAdminTelephone(Admin *&admin);         // 修改管理员联系电话
 void modifyAdminEmail(Admin *&admin);             // 修改管理员邮箱地址
 void deleteAdmin(Admin *&admin);                  // 删除管理员信息（真实删除）
 void addAdmin(Admin *&admin, int &idCounter);     // 添加管理员信息（根据输入信息创建新的 Admin 对象，并插入到链表中）
+
+void AccountManagement(Admin *&adminHead, Doctor *&doctorHead, Nurse *&nurseHead, Pharmacist *&pharmacistHead, Patient *&patientHead); // 账号激活/封锁管理函数，允许管理员激活或封锁其他用户的账户
+
+template <typename UserType>
+void AccountManageGeneric(UserType *&userHead, const std::string &roleName, const std::string &idPrompt)
+{
+    if (userHead == nullptr)
+    {
+        std::cout << "当前没有" << roleName << "账户可供管理。" << std::endl;
+        return;
+    }
+    UserType *current = userHead;
+    std::cout << "正在查询" << roleName << "账户列表..." << std::endl;
+    while (current != nullptr)
+    {
+        std::cout << roleName << "ID: " << current->getUserID()
+                  << ", 姓名: " << current->getUsername()
+                  << ", 账户状态: " << (current->getIsAccountActive() ? "激活" : "锁定") << std::endl;
+        current = current->next;
+    }
+    std::string targetID = inputIDCheck(idPrompt);
+    current = userHead;
+    bool found = false;
+    while (current != nullptr)
+    {
+        if (current->getUserID() == targetID)
+        {
+            std::cout << "当前" << roleName << "账户状态: " << (current->getIsAccountActive() ? "激活" : "锁定") << std::endl;
+            std::cout << "请选择操作: " << std::endl;
+            std::cout << "1. 激活账户" << std::endl;
+            std::cout << "2. 封锁账户" << std::endl;
+            std::cout << "0. 返回上一级菜单" << std::endl;
+            int actionChoice = selectIntCheck(0, 2);
+            if (actionChoice == 1)
+            {
+                current->setIsAccountActive(true);
+                current->setLoginAttempts(0);
+                std::cout << roleName << "账户已激活！" << std::endl;
+            }
+            else if (actionChoice == 2)
+            {
+                current->setIsAccountActive(false);
+                current->setLoginAttempts(failedLoginLimit);
+                std::cout << roleName << "账户已封锁！" << std::endl;
+            }
+            pause();
+            found = true;
+            break;
+        }
+        current = current->next;
+    }
+    if (!found)
+    {
+        std::cout << "未找到指定ID的" << roleName << "账户。" << std::endl;
+    }
+} // 管理患者账户状态（激活/封锁）
 
 #endif // LOGIN_H

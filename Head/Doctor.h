@@ -114,6 +114,7 @@ public:
     bool createExaminationByConsultation(Consultation *&conHead, Examination *&exaHead, int &idCounter); // 从看诊记录创建检查记录
     void manageExaminations(Examination *&exaHead, Consultation *&conHead, int &idCounter);              // 管理检查记录（查看、修改状态等）
 
+    void managePersonalInfo(); // 管理个人信息（查看、修改基本信息等）
 };
 
 #endif // DOCTOR_H

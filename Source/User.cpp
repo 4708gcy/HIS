@@ -160,6 +160,12 @@ std::string User::getTelephone() const { return telephone; }
 // 返回电子邮箱
 std::string User::getEmail() const { return email; }
 
+// 设置登录状态
+void User::setIsLoggedIn(bool loggedIn) { isLoggedIn = loggedIn; }
+// 设置连续登录失败次数
+void User::setLoginAttempts(int attempts){
+    loginAttempts = attempts;
+}
 // 设置姓名
 void User::setUsername(const std::string &uname) { username = uname; }
 // 设置用户ID

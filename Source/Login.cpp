@@ -32,6 +32,32 @@ Admin *adminLogin(Admin *&adminHead)
     return nullptr;
 }
 
+// 医生登录函数，验证医生身份并返回登录结果
+Doctor *doctorLogin(Doctor *&doctorHead)
+{
+    Doctor *currentDoctor = doctorHead;
+    std::string id = inputIDCheck("请输入医生用户ID: ");
+
+    while (currentDoctor != nullptr)
+    {
+        if (currentDoctor->getUserID() == id)
+        {
+            if (currentDoctor->doctorSignIn()) // 调用医生登录方法验证密码并设置登录状态
+            {
+                return currentDoctor;
+            }
+            else
+            {
+                return nullptr; // 登录失败（如密码错误或账户锁定）
+            }
+        }
+        currentDoctor = currentDoctor->next;
+    }
+
+    std::cout << "未找到医生账号" << std::endl;
+    return nullptr; // 未找到匹配的医生用户ID
+}
+
 // 查看所有管理员信息
 void viewAllAdmins(Admin *&adminHead)
 {
@@ -487,5 +513,34 @@ void manageAdmins(Admin *&admin, int &idCounter)
             addAdmin(admin, idCounter);
             pause();
         }
+    }
+}
+
+// 账号激活/封锁管理函数，允许管理员激活或封锁其他用户的账户
+void AccountManagement(Admin *&adminHead, Doctor *&doctorHead, Nurse *&nurseHead, Pharmacist *&pharmacistHead, Patient *&patientHead)
+{
+    int identityChoice = identitySelectionMenu(); // 选择要管理的用户身份
+
+    UserRole role = static_cast<UserRole>(identityChoice); // 将选择转换为 UserRole 枚举类型
+
+    if (role == UserRole::ADMIN)
+    {
+        AccountManageGeneric<Admin>(adminHead, "管理员", "请输入要管理的管理员用户ID: ");
+    }
+    else if (role == UserRole::DOCTOR)
+    {
+        AccountManageGeneric<Doctor>(doctorHead, "医生", "请输入要管理的医生用户ID: ");
+    }
+    else if (role == UserRole::NURSE)
+    {
+        AccountManageGeneric<Nurse>(nurseHead, "护士", "请输入要管理的护士用户ID: ");
+    }
+    else if (role == UserRole::PHARMACIST)
+    {
+        AccountManageGeneric<Pharmacist>(pharmacistHead, "药剂师", "请输入要管理的药剂师用户ID: ");
+    }
+    else if (role == UserRole::PATIENT)
+    {
+        AccountManageGeneric<Patient>(patientHead, "患者", "请输入要管理的患者用户ID: ");
     }
 }

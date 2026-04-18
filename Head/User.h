@@ -150,6 +150,8 @@ public:
     std::string getTelephone() const;
     std::string getEmail() const;
 
+    void setIsLoggedIn(bool loggedIn);
+    void setLoginAttempts(int attempts);
     void setUserID(const std::string &uid);
     void setUsername(const std::string &uname);
     void setSalt(const std::string &s);

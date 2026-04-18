@@ -7553,3 +7553,134 @@ void Admin::managePatients(Patient *&patient, const std::string &department, int
         }
     }
 }
+
+// ========================== 管理员个人信息管理 ========================
+
+// 管理员个人信息管理
+void Admin::AdminPersionalInfo()
+{
+    while (true)
+    {
+        int choice = adminPersonalInfoManagementMenu();
+        if (choice == 0)
+        {
+            break; // 返回上一级菜单
+        }
+        else if (choice == 1)
+        {
+            while (true)
+            {
+                int viewChoice = adminPersonalInfoViewMenu();
+                if (viewChoice == 0)
+                {
+                    break;
+                }
+                else if (viewChoice == 1)
+                {
+                    std::cout << "ID: " << this->userID << std::endl;
+                }
+                else if (viewChoice == 2)
+                {
+                    std::cout << "姓名: " << this->username << std::endl;
+                }
+                else if (viewChoice == 3)
+                {
+                    std::cout << "性别: " << this->gender << std::endl;
+                }
+                else if (viewChoice == 4)
+                {
+                    std::cout << "年龄: " << this->age << std::endl;
+                }
+                else if (viewChoice == 5)
+                {
+                    std::cout << "联系电话: " << this->telephone << std::endl;
+                }
+                else if (viewChoice == 6)
+                {
+                    std::cout << "电子邮箱: " << this->email << std::endl;
+                }
+                else if (viewChoice == 7)
+                {
+                    std::cout << "账号创建时间: " << this->createTime << std::endl;
+                }
+                pause();
+            }
+        }
+        else if (choice == 2)
+        {
+            while (true)
+            {
+                int modifyChoice = adminPersonalInfoModificationMenu();
+                if (modifyChoice == 0)
+                {
+                    break; // 返回个人信息修改菜单
+                }
+                else if (modifyChoice == 1)
+                {
+                    std::cout << "当前姓名: " << this->username << std::endl;
+                    std::string newName = inputStringCheck("请输入新的姓名: ");
+                    this->username = newName;
+                    std::cout << "姓名已更新！" << std::endl;
+                }
+                else if (modifyChoice == 2)
+                {
+                    std::cout << "当前性别: " << this->gender << std::endl;
+                    std::string newGender = inputGenderCheck("请输入新的性别: ");
+                    this->gender = newGender;
+                    std::cout << "性别已更新！" << std::endl;
+                }
+                else if (modifyChoice == 3)
+                {
+                    std::cout << "当前年龄: " << this->age << std::endl;
+                    int newAge = inputAgeCheck("请输入新的年龄: ");
+                    this->age = newAge;
+                    std::cout << "年龄已更新！" << std::endl;
+                }
+                else if (modifyChoice == 4)
+                {
+                    std::cout << "当前联系电话: " << this->telephone << std::endl;
+                    std::string newTelephone = inputTelephoneCheck("请输入新的联系电话: ");
+                    this->telephone = newTelephone;
+                    std::cout << "联系电话已更新！" << std::endl;
+                }
+                else if (modifyChoice == 5)
+                {
+                    std::cout << "当前电子邮箱: " << this->email << std::endl;
+                    std::string newEmail = inputEmailCheck("请输入新的电子邮箱: ");
+                    this->email = newEmail;
+                    std::cout << "电子邮箱已更新！" << std::endl;
+                }
+                else if (modifyChoice == 6)
+                {
+                    std::string oldpwd = inputStringCheck("请输入当前密码以验证身份: ");
+
+                    if (SHA256Verify(oldpwd, this->salt, this->kHashIterations))
+                    {
+                        std::string newpwd = inputStringCheck("请输入新的密码: ");
+                        std::string newSalt = generateSalt();
+                        std::string newHash = SHA256Encrypt(newpwd, newSalt, this->kHashIterations);
+
+                        newpwd = inputStringCheck("请再次输入新的密码以确认: ");
+
+                        if (SHA256Verify(newpwd, newHash, this->kHashIterations))
+                        {
+                            this->salt = newSalt;
+                            this->storedHash = newHash;
+
+                            std::cout << "密码更新成功！" << std::endl;
+                        }
+                        else
+                        {
+                            std::cout << "两次输入的新密码不一致，密码更新失败！" << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        std::cout << "密码验证失败，无法修改密码！" << std::endl;
+                    }
+                }
+                pause();
+            }
+        }
+    }
+}

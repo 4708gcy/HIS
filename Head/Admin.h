@@ -34,40 +34,6 @@ public:
     double &getTotalExpenses();         // 获取医院总支出
     double &getNetProfit();             // 获取医院净利润
 
-    template <typename T>
-    void setAccountActive(T *&head)
-    {
-        std::string targetID;
-        std::cout << "请输入要操作的用户ID: ";
-        std::cin >> targetID;
-
-        T *current = head;
-        while (current != nullptr)
-        {
-            if (current->getUserID() == targetID)
-            {
-                bool newStatus;
-                std::cout << "请输入新的账户状态 (1 - 激活, 0 - 锁定): ";
-                std::cin >> newStatus;
-                if (newStatus)
-                {
-                    current->isAccountActive = true;
-                    current->loginAttempts = 0; // 重置登录失败次数
-                    std::cout << "账户已激活！" << std::endl;
-                }
-                else
-                {
-                    current->isAccountActive = false;
-                    std::cout << "账户已锁定！" << std::endl;
-                }
-                return;
-            }
-            current = current->next; // 假设 T 中有 next 指针
-        }
-
-        std::cout << "未找到指定用户！" << std::endl;
-    }
-
     // === 管理医疗记录 ===
     void manageRegistrations(Registration *&reg, Doctor *&doc, const std::string &department, int &idCounter); // 管理挂号记录（查看、修改状态等）
     bool viewAllRegistrations(Registration *&reg, const std::string &department);                              // 查看所有挂号记录（可按患者ID、医生ID、状态过滤）
@@ -252,6 +218,8 @@ public:
     void modifyPatientMedicationCount(Patient *&target, const std::string &department);         // 修改患者累计用药次数
     void deletePatient(Patient *&target, const std::string &department);                        // 删除患者信息（逻辑删除，设置 isDeleted 标志）
     bool addPatient(Patient *&patient, int &idCounter);                                         // 添加患者信息（根据输入信息创建新的 Patient 对象，并插入到链表中）
+
+    void AdminPersionalInfo(); // 管理员个人信息管理（查看、修改密码等）
 };
 
 #endif // ADMIN_H

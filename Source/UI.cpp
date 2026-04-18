@@ -498,7 +498,7 @@ std::string inputIDcardCheck(const std::string &prompt)
 }
 
 // 15. 安全整数输入（带提示信息）
-int inputIntCheck(const std::string &prompt,int min, int max)
+int inputIntCheck(const std::string &prompt, int min, int max)
 {
     int value;
     std::string line;
@@ -542,6 +542,21 @@ double inputDoubleCheck(const std::string &prompt, double min, double max)
 }
 
 //============================= 菜单显示函数区域 =======================================
+
+// 身份选择界面
+int identitySelectionMenu()
+{
+    std::cout << "请选择身份" << std::endl;
+    std::cout << "1. 管理员" << std::endl;
+    std::cout << "2. 医生" << std::endl;
+    std::cout << "3. 护士" << std::endl;
+    std::cout << "4. 药剂师" << std::endl;
+    std::cout << "5. 患者" << std::endl;
+    std::cout << "0. 退出系统" << std::endl;
+
+    int choice = selectIntCheck(0, 5);
+    return choice;
+}
 
 // 登录和注册选择界面
 int loginRegisterUI()
@@ -616,9 +631,11 @@ int adminMenu()
     std::cout << "3. 药品管理" << std::endl;
     std::cout << "4. 床位管理" << std::endl;
     std::cout << "5. 管理员信息管理" << std::endl;
+    std::cout << "6. 个人信息管理" << std::endl;
+    std::cout << "7. 账号封锁管理" << std::endl;
     std::cout << "0. 退出登录" << std::endl;
 
-    int choice = selectIntCheck(0, 5);
+    int choice = selectIntCheck(0, 7);
     return choice;
 }
 
@@ -1362,6 +1379,52 @@ int adminAdminModificationMenu()
     return choice;
 }
 
+// 管理员个人信息管理菜单
+int adminPersonalInfoManagementMenu()
+{
+    std::cout << "管理员个人信息管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看个人信息" << std::endl;
+    std::cout << "2. 修改个人信息" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 2);
+    return choice;
+}
+
+// 管理员个人信息查看菜单
+int adminPersonalInfoViewMenu()
+{
+    std::cout << "请选择你要查看的个人信息项:" << std::endl;
+    std::cout << "1.ID" << std::endl;
+    std::cout << "2. 姓名" << std::endl;
+    std::cout << "3. 性别" << std::endl;
+    std::cout << "4. 年龄" << std::endl;
+    std::cout << "5. 联系电话" << std::endl;
+    std::cout << "6. 邮箱地址" << std::endl;
+    std::cout << "7. 账号创建时间" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 7);
+    return viewChoice;
+}
+
+// 管理员个人信息修改菜单
+int adminPersonalInfoModificationMenu()
+{
+    std::cout << "请选择你要修改的个人信息项:" << std::endl;
+    std::cout << "1. 姓名" << std::endl;
+    std::cout << "2. 性别" << std::endl;
+    std::cout << "3. 年龄" << std::endl;
+    std::cout << "4. 联系电话" << std::endl;
+    std::cout << "5. 邮箱地址" << std::endl;
+    std::cout << "6. 账号密码" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int modificationChoice = selectIntCheck(0, 6);
+    return modificationChoice;
+}
+
 // 医生管理菜单
 int doctorMenu()
 {
@@ -1370,9 +1433,10 @@ int doctorMenu()
     std::cout << "1. 管理挂号记录" << std::endl;
     std::cout << "2. 管理看诊记录" << std::endl;
     std::cout << "3. 管理检查记录" << std::endl;
-    std::cout << "0. 返回上级菜单" << std::endl;
+    std::cout << "4. 个人信息管理" << std::endl;
+    std::cout << "0. 退出登录" << std::endl;
 
-    int choice = selectIntCheck(0, 3);
+    int choice = selectIntCheck(0, 4);
     return choice;
 }
 
@@ -1470,9 +1534,9 @@ int doctorExaminationManagementMenu()
     return choice;
 }
 
-
 // 医生检查记录查看方式选择菜单
-int doctorExaminationViewMenu(){
+int doctorExaminationViewMenu()
+{
     std::cout << "请选择你要查看的方式:" << std::endl;
     std::cout << "1. 查看该医生的所有检查记录" << std::endl;
     std::cout << "2. 根据患者ID查看" << std::endl;
@@ -1488,7 +1552,8 @@ int doctorExaminationViewMenu(){
 }
 
 // 医生检查记录修改菜单
-int doctorExaminationModificationMenu(){
+int doctorExaminationModificationMenu()
+{
     std::cout << "请选择你要修改的检查记录信息:" << std::endl;
     std::cout << "1. 检查记录状态" << std::endl;
     std::cout << "2. 检查项目" << std::endl;
@@ -1499,5 +1564,64 @@ int doctorExaminationModificationMenu(){
     std::cout << "0. 返回上级菜单" << std::endl;
 
     int choice = selectIntCheck(0, 6);
+    return choice;
+}
+
+// 医生个人信息管理菜单
+int doctorPersonalInfoManagementMenu()
+{
+    std::cout << "个人信息管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看个人信息" << std::endl;
+    std::cout << "2. 修改个人信息" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 2);
+    return choice;
+}
+
+// 医生个人信息查看选择菜单
+int doctorPersonalInfoViewMenu()
+{
+    std::cout << "请选择你要查看的个人信息内容:" << std::endl;
+    std::cout << "1. ID" << std::endl;
+    std::cout << "2. 姓名" << std::endl;
+    std::cout << "3. 性别" << std::endl;
+    std::cout << "4. 年龄" << std::endl;
+    std::cout << "5. 所属科室" << std::endl;
+    std::cout << "6. 职称" << std::endl;
+    std::cout << "7. 联系电话" << std::endl;
+    std::cout << "8. 邮箱地址" << std::endl;
+    std::cout << "9. 在岗状态" << std::endl;
+    std::cout << "10. 擅长方向" << std::endl;
+    std::cout << "11. 排班信息" << std::endl;
+    std::cout << "12. 累计接诊患者数量" << std::endl;
+    std::cout << "13. 累计完成的检查数量" << std::endl;
+    std::cout << "14. 累计开具住院证的数量" << std::endl;
+    std::cout << "15. 账户创建时间" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 15);
+    return viewChoice;
+}
+
+// 医生个人信息修改菜单
+int doctorPersonalInfoModificationMenu()
+{
+    std::cout << "请选择你要修改的个人信息内容:" << std::endl;
+    std::cout << "1. 姓名" << std::endl;
+    std::cout << "2. 性别" << std::endl;
+    std::cout << "3. 年龄" << std::endl;
+    std::cout << "4. 所属科室" << std::endl;
+    std::cout << "5. 职称" << std::endl;
+    std::cout << "6. 联系电话" << std::endl;
+    std::cout << "7. 邮箱地址" << std::endl;
+    std::cout << "8. 在岗状态" << std::endl;
+    std::cout << "9. 擅长方向" << std::endl;
+    std::cout << "10. 排班信息" << std::endl;
+    std::cout << "11. 账号密码" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 11);
     return choice;
 }

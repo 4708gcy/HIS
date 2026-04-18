@@ -1018,7 +1018,7 @@ void Doctor::deleteConsultation(Consultation *&target)
     std::cout << "看诊记录已删除！" << std::endl;
 }
 // 初始化看诊记录的检查项目列表
-void initConsultationExamination(Consultation *&target)
+void Doctor::initConsultationExamination(Consultation *&target)
 {
     while (true)
     {
@@ -1063,7 +1063,7 @@ void initConsultationExamination(Consultation *&target)
     return;
 }
 // 初始化看诊记录的处方列表
-void initConsultationPrescription(Consultation *&target, Medicine *&medHead)
+void Doctor::initConsultationPrescription(Consultation *&target, Medicine *&medHead)
 {
     while (true)
     {
@@ -2241,6 +2241,230 @@ void Doctor::manageExaminations(Examination *&exaHead, Consultation *&conHead, i
         {
             createExaminationByConsultation(conHead, exaHead, idCounter);
             pause();
+        }
+    }
+}
+
+// ------------------------以下是医生个人信息管理相关函数实现-----------------------
+
+void Doctor::managePersonalInfo()
+{
+    while (true)
+    {
+        int choice = doctorPersonalInfoManagementMenu();
+        if (choice == 0)
+        {
+            break;
+        }
+        else if (choice == 1)
+        {
+            while (true)
+            {
+                int viewChoice = doctorPersonalInfoViewMenu();
+                if (viewChoice == 0)
+                {
+                    break;
+                }
+                else if (viewChoice == 1)
+                {
+                    std::cout << "医生ID: " << this->doctorID << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 2)
+                {
+                    std::cout << "姓名: " << this->username << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 3)
+                {
+                    std::cout << "性别: " << this->gender << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 4)
+                {
+                    std::cout << "年龄: " << this->age << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 5)
+                {
+                    std::cout << "科室: " << this->department << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 6)
+                {
+                    std::cout << "职称: " << doctorTitleToString(this->title) << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 7)
+                {
+                    std::cout << "联系电话: " << this->telephone << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 8)
+                {
+                    std::cout << "邮箱: " << this->email << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 9)
+                {
+                    std::cout << "在岗状态: " << (this->isOnDuty ? "在岗" : "不在岗") << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 10)
+                {
+                    std::cout << "擅长方向: " << this->specialty << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 11)
+                {
+                    std::cout << "排班信息: " << this->scheduleInfo << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 12)
+                {
+                    std::cout << "累计接诊患者人数: " << this->consultationCount << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 13)
+                {
+                    std::cout << "累计完成的检查数量: " << this->examinationCount << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 14)
+                {
+                    std::cout << "累计开具住院证数量: " << this->hospitalizationApplyCount << std::endl;
+                    pause();
+                }
+                else if (viewChoice == 15)
+                {
+                    std::cout << "账户创建时间: " << this->createTime << std::endl;
+                    pause();
+                }
+                pause();
+            }
+        }
+        else if (choice == 2)
+        {
+            while (true)
+            {
+                int modifyChoice = doctorPersonalInfoModificationMenu();
+
+                if (modifyChoice == 0)
+                {
+                    break;
+                }
+                else if (modifyChoice == 1)
+                {
+                    std::cout << "当前的姓名: " << this->username << std::endl;
+                    this->username = inputStringCheck("请输入新的姓名: ");
+                    std::cout << "姓名已更新！" << std::endl;
+                }
+                else if (modifyChoice == 2)
+                {
+                    std::cout << "当前的性别: " << this->gender << std::endl;
+                    this->gender = inputGenderCheck("请输入新的性别: ");
+                    std::cout << "性别已更新！" << std::endl;
+                }
+                else if (modifyChoice == 3)
+                {
+                    std::cout << "当前的年龄: " << this->age << std::endl;
+                    this->age = inputAgeCheck("请输入新的年龄: ");
+                    std::cout << "年龄已更新！" << std::endl;
+                }
+                else if (modifyChoice == 4)
+                {
+                    std::cout << "当前的科室: " << this->department << std::endl;
+                    this->department = inputDepartmentCheck("请输入新的科室: ");
+                    std::cout << "科室已更新！" << std::endl;
+                }
+                else if (modifyChoice == 5)
+                {
+                    std::cout << "当前的职称: " << doctorTitleToString(this->title) << std::endl;
+
+                    int titleChoice = DoctorTitleMenu();
+
+                    if (titleChoice == 0)
+                    {
+                        std::cout << "已取消修改操作！" << std::endl;
+                        continue;
+                    }
+
+                    this->title = static_cast<DoctorTitle>(titleChoice);
+                    std::cout << "职称已更新！" << std::endl;
+                }
+                else if (modifyChoice == 6)
+                {
+                    std::cout << "当前的联系电话: " << this->telephone << std::endl;
+                    this->telephone = inputTelephoneCheck("请输入新的联系电话: ");
+                    std::cout << "联系电话已更新！" << std::endl;
+                }
+                else if (modifyChoice == 7)
+                {
+                    std::cout << "当前的邮箱: " << this->email << std::endl;
+                    this->email = inputEmailCheck("请输入新的邮箱: ");
+                    std::cout << "邮箱已更新！" << std::endl;
+                }
+                else if (modifyChoice == 8)
+                {
+                    std::cout << "当前的在岗状态: " << (this->isOnDuty ? "在岗" : "不在岗") << std::endl;
+                    std::cout << "请选择新的在岗状态: " << std::endl;
+                    std::cout << "1. 在岗" << std::endl;
+                    std::cout << "2. 不在岗" << std::endl;
+                    std::cout << "0. 取消修改" << std::endl;
+
+                    if (modifyChoice == 0)
+                    {
+                        std::cout << "已取消修改操作！" << std::endl;
+                        continue;
+                    }
+
+                    int dutyChoice = selectIntCheck(1, 2);
+                    this->isOnDuty = (dutyChoice == 1);
+                    std::cout << "在岗状态已更新！" << std::endl;
+                }
+                else if (modifyChoice == 9)
+                {
+                    std::cout << "当前的擅长方向: " << this->specialty << std::endl;
+                    this->specialty = inputStringCheck("请输入新的擅长方向: ");
+                    std::cout << "擅长方向已更新！" << std::endl;
+                }
+                else if (modifyChoice == 10)
+                {
+                    std::cout << "当前的排班信息: " << this->scheduleInfo << std::endl;
+                    this->scheduleInfo = inputStringCheck("请输入新的排班信息: ");
+                    std::cout << "排班信息已更新！" << std::endl;
+                }
+                else if (modifyChoice == 11)
+                {
+                    std::string oldpwd = inputStringCheck("请输入当前密码以验证身份: ");
+
+                    if (SHA256Verify(oldpwd, this->salt, this->kHashIterations))
+                    {
+                        std::string newpwd = inputStringCheck("请输入新的密码: ");
+                        std::string newSalt = generateSalt();
+                        std::string newHash = SHA256Encrypt(newpwd, newSalt, this->kHashIterations);
+
+                        newpwd = inputStringCheck("请再次输入新的密码以确认: ");
+
+                        if (SHA256Verify(newpwd, newHash, this->kHashIterations))
+                        {
+                            this->salt = newSalt;
+                            this->storedHash = newHash;
+
+                            std::cout << "密码更新成功！" << std::endl;
+                        }
+                        else
+                        {
+                            std::cout << "两次输入的新密码不一致，密码更新失败！" << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        std::cout << "密码验证失败，无法修改密码！" << std::endl;
+                    }
+                }
+                pause();
+            }
         }
     }
 }
