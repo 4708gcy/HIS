@@ -165,7 +165,7 @@ public:
     void setTelephone(const std::string &telephone);
     void setEmail(const std::string &email);
 
-    void setVitalSigns(VitalSigns &vs, const std::string &itemName); // 根据检查项目名称设置对应的体征信息
+    void setVitalSigns(VitalSigns &vs, const std::string &itemName);           // 根据检查项目名称设置对应的体征信息
     std::string regStatusToString(RegistrationStatus status);                  // 将挂号状态枚举转换为字符串表示
     std::string conStatusToString(ConsultationStatus status);                  // 将看诊状态枚举转换为字符串表示
     std::string examStatusToString(ExaminationStatus status);                  // 将检查状态枚举转换为字符串表示
