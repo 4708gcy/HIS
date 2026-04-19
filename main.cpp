@@ -555,6 +555,7 @@ int main()
                             }
                         }
                     }
+                    pause();
                 }
                 else if (roleChoice == 3) // 护士登录
                 {

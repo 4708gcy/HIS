@@ -2268,77 +2268,62 @@ void Doctor::managePersonalInfo()
                 else if (viewChoice == 1)
                 {
                     std::cout << "医生ID: " << this->doctorID << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 2)
                 {
                     std::cout << "姓名: " << this->username << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 3)
                 {
                     std::cout << "性别: " << this->gender << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 4)
                 {
                     std::cout << "年龄: " << this->age << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 5)
                 {
                     std::cout << "科室: " << this->department << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 6)
                 {
                     std::cout << "职称: " << doctorTitleToString(this->title) << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 7)
                 {
                     std::cout << "联系电话: " << this->telephone << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 8)
                 {
                     std::cout << "邮箱: " << this->email << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 9)
                 {
                     std::cout << "在岗状态: " << (this->isOnDuty ? "在岗" : "不在岗") << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 10)
                 {
                     std::cout << "擅长方向: " << this->specialty << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 11)
                 {
                     std::cout << "排班信息: " << this->scheduleInfo << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 12)
                 {
                     std::cout << "累计接诊患者人数: " << this->consultationCount << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 13)
                 {
                     std::cout << "累计完成的检查数量: " << this->examinationCount << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 14)
                 {
                     std::cout << "累计开具住院证数量: " << this->hospitalizationApplyCount << std::endl;
-                    pause();
                 }
                 else if (viewChoice == 15)
                 {
                     std::cout << "账户创建时间: " << this->createTime << std::endl;
-                    pause();
                 }
                 pause();
             }
