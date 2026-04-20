@@ -40,11 +40,11 @@ enum class MedicationStatus
  */
 struct MedicationLine
 {
-    std::string medicineID = "#"; // 药品ID
-    std::string medicineName = "#";       // 药品名称（冗余以便展示）
-    int quantity = 0;       // 药品数量
-    double unitPrice = 0.0; // 下单时单价
-    std::string note = "#";       // 用法备注
+    std::string medicineID = "#";   // 药品ID
+    std::string medicineName = "#"; // 药品名称（冗余以便展示）
+    int quantity = 0;               // 药品数量
+    double unitPrice = 0.0;         // 下单时单价
+    std::string note = "#";         // 用法备注
 };
 
 /**
@@ -61,7 +61,7 @@ struct MedicationRecord
     std::string createTime = "#";     // 创建时间
 
     std::vector<MedicationLine> lines = {}; // 用药明细
-    double totalCost = 0.0;            // 总费用
+    double totalCost = 0.0;                 // 总费用
 
     MedicationReviewStatus reviewStatus = MedicationReviewStatus::PENDING_REVIEW; // 审核状态
     MedicationStatus status = MedicationStatus::UNPAID;                           // 支付/发药状态

@@ -196,6 +196,7 @@ void savePatientData(Patient *patientHead, int count)
                 << current->consultationCount << ","                  // 就诊次数
                 << current->hospitalizationCount << ","               // 住院次数
                 << current->medicationCount << ","                    // 用药记录次数
+                << current->balance << ","                            // 账户余额
                 << (current->isHospitalized ? "1" : "0") << ","       // 是否住院中
                 << (current->isDeleted ? "1" : "0")                   // 逻辑删除
                 << std::endl;

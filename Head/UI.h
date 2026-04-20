@@ -109,8 +109,8 @@ int adminAdminManagementMenu();   // 管理员信息管理菜单
 int adminAdminViewMenu();         // 管理员信息查看方式选择菜单
 int adminAdminModificationMenu(); // 管理员信息修改菜单
 
-int adminPersonalInfoManagementMenu(); // 管理员个人信息管理菜单
-int adminPersonalInfoViewMenu();       // 管理员个人信息查看选择菜单
+int adminPersonalInfoManagementMenu();   // 管理员个人信息管理菜单
+int adminPersonalInfoViewMenu();         // 管理员个人信息查看选择菜单
 int adminPersonalInfoModificationMenu(); // 管理员个人信息修改选择菜单
 
 // ========================================= 医生功能菜单区域 =======================================
@@ -127,38 +127,38 @@ int doctorExaminationManagementMenu();   // 医生检查记录管理菜单
 int doctorExaminationViewMenu();         // 医生检查记录查看方式选择菜单
 int doctorExaminationModificationMenu(); // 医生检查记录修改菜单
 
-int doctorPersonalInfoManagementMenu(); // 医生个人信息管理菜单
-int doctorPersonalInfoViewMenu();       // 医生个人信息查看选择菜单
+int doctorPersonalInfoManagementMenu();   // 医生个人信息管理菜单
+int doctorPersonalInfoViewMenu();         // 医生个人信息查看选择菜单
 int doctorPersonalInfoModificationMenu(); // 医生个人信息修改选择菜单
 
 // ========================================= 护士功能菜单区域 =======================================
 int nurseMenu(); // 护士菜单，提供住院记录管理、床位管理等选项
 
-int nurseHospitalizationManagementMenu();  // 护士住院记录管理菜单
-int nurseHospitalizationViewMenu();        // 护士住院记录查看方式选择菜单
+int nurseHospitalizationManagementMenu();   // 护士住院记录管理菜单
+int nurseHospitalizationViewMenu();         // 护士住院记录查看方式选择菜单
 int nurseHospitalizationModificationMenu(); // 护士住院记录修改菜单
 
-int nurseBedManagementMenu(); // 护士床位管理菜单
-int nurseBedViewMenu();       // 护士床位查看方式选择菜单
+int nurseBedManagementMenu();   // 护士床位管理菜单
+int nurseBedViewMenu();         // 护士床位查看方式选择菜单
 int nurseBedModificationMenu(); // 护士床位修改菜单
 
-int nursePersonalInfoManagementMenu(); // 护士个人信息管理菜单
-int nursePersonalInfoViewMenu();       // 护士个人信息查看选择菜单
+int nursePersonalInfoManagementMenu();   // 护士个人信息管理菜单
+int nursePersonalInfoViewMenu();         // 护士个人信息查看选择菜单
 int nursePersonalInfoModificationMenu(); // 护士个人信息修改选择菜单
 
 // ========================================= 药师功能菜单区域 =======================================
 int pharmacistMenu(); // 药师菜单，提供药物记录管理、药品信息管理等选项
 
-int pharmacistMedicationRecordManagementMenu(); // 药师用药记录管理菜单
-int pharmacistMedicationRecordViewMenu();       // 药师用药记录查看方式选择菜单
+int pharmacistMedicationRecordManagementMenu();   // 药师用药记录管理菜单
+int pharmacistMedicationRecordViewMenu();         // 药师用药记录查看方式选择菜单
 int pharmacistMedicationRecordModificationMenu(); // 药师用药记录修改菜单
 
-int pharmacistMedicineManagementMenu(); // 药师药品信息管理菜单
-int pharmacistMedicineViewMenu();       // 药师药品信息查看方式选择菜单
+int pharmacistMedicineManagementMenu();   // 药师药品信息管理菜单
+int pharmacistMedicineViewMenu();         // 药师药品信息查看方式选择菜单
 int pharmacistMedicineModificationMenu(); // 药师药品信息修改菜单
 
-int pharmacistPersonalInfoManagementMenu(); // 药师个人信息管理菜单
-int pharmacistPersonalInfoViewMenu();       // 药师个人信息查看选择菜单
+int pharmacistPersonalInfoManagementMenu();   // 药师个人信息管理菜单
+int pharmacistPersonalInfoViewMenu();         // 药师个人信息查看选择菜单
 int pharmacistPersonalInfoModificationMenu(); // 药师个人信息修改选择菜单
 
 // ========================================= 患者功能菜单区域 =======================================
@@ -173,12 +173,14 @@ int patientConsultationViewMenu();       // 患者看诊记录查看方式选择
 int patientExaminationManagementMenu(); // 患者检查记录管理菜单
 int patientExaminationViewMenu();       // 患者检查记录查看方式选择菜单
 
+int patientMedicationManagementMenu(); // 患者用药记录管理菜单
+int patientMedicationViewMenu();       // 患者用药记录查看方式选择菜单
+
 int patientHospitalizationManagementMenu(); // 患者住院记录管理菜单
 int patientHospitalizationViewMenu();       // 患者住院记录查看方式选择菜单
 
-int patientPersonalInfoManagementMenu(); // 患者个人信息管理菜单
-int patientPersonalInfoViewMenu();       // 患者个人信息查看选择菜单
+int patientPersonalInfoManagementMenu();   // 患者个人信息管理菜单
+int patientPersonalInfoViewMenu();         // 患者个人信息查看选择菜单
 int patientPersonalInfoModificationMenu(); // 患者个人信息修改选择菜单
-
 
 #endif

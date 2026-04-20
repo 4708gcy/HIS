@@ -18,6 +18,8 @@
  * @details 继承自 User，包含患者特有的个人信息、联系人信息、
  *          病史摘要及就医相关操作接口。
  */
+class Doctor;
+
 class Patient : public User
 {
 public:
@@ -34,6 +36,8 @@ public:
     int consultationCount = 0;         // 就诊次数
     int hospitalizationCount = 0;      // 住院次数
     int medicationCount = 0;           // 用药记录次数
+
+    double balance = 0.0; // 账户余额
 
     bool isHospitalized = false; // 是否住院中
 
@@ -76,71 +80,64 @@ public:
     void setHospitalizationCount(int count);
     void setMedicationCount(int count);
 
-    // // ==================== 统计辅助 ====================
-    // void increaseRegistrationCount();
-    // void increaseConsultationCount();
-    // void increaseHospitalizationCount();
-    // void increaseMedicationCount();
+    // ==================== 患者业务接口 ====================
 
-    // // ==================== 文件操作 ====================
-    // bool loadFromFile(const std::string &patientID);
-    // bool saveToFile() const;
-    // bool updateToFile() const;
-    // bool deleteFromFile();
+    bool getAllRegistrations(Registration *&regHead);                                      // 获取患者的所有挂号记录
+    bool getRegistrationsByStatus(Registration *&regHead, int select = -1);                // 根据挂号状态获取挂号记录
+    bool getRegistrationsByDepartment(Registration *&regHead);                             // 根据挂号科室获取挂号记录
+    bool getRegistrationsByDoctorID(Registration *&regHead);                               // 根据医生ID获取挂号记录
+    bool getRegistrationsByTimeRange(Registration *&regHead);                              // 根据挂号时间范围获取挂号记录
+    bool getRegistrationsByID(Registration *&regHead);                                     // 根据挂号记录ID获取挂号记录
+    bool appointRegistration(Registration *&regHead, Doctor *&doctorHead, int &idCounter); // 预约挂号接口，创建新的挂号记录
+    void cancelRegistration(Registration *&target);                                        // 取消挂号接口，更新挂号记录状态为已取消
+    void payRegistrationFee(Registration *&target);                                        // 支付挂号费用接口，更新挂号记录状态为已支付
+    void manageRegistrations(Registration *&regHead, Doctor *&doctorHead, int &idCounter); // 挂号信息管理入口
 
-    // // ==================== 患者业务接口 ====================
+    bool getAllConsultations(Consultation *&conHead);              // 查看看诊记录：所有
+    bool getConsultationsByID(Consultation *&conHead);             // 查看看诊记录：根据看诊记录ID
+    bool getConsultationsByDoctorID(Consultation *&conHead);       // 查看看诊记录：根据医生ID
+    bool getConsultationsByStatus(Consultation *&conHead);         // 查看看诊记录：根据看诊状态
+    bool getConsultationsByTimeRange(Consultation *&conHead);      // 查看看诊记录：根据看诊时间范围
+    bool getConsultationsByChiefComplaint(Consultation *&conHead); // 查看看诊记录：根据主诉内容关键词
+    bool getConsultationsByDepartment(Consultation *&conHead);     // 查看看诊记录：根据看诊科室查看
+    void manageConsultations(Consultation *&conHead);              // 看诊信息管理入口
 
-    // /**
-    //  * @brief 挂号
-    //  * @param department 科室名称
-    //  * @param doctorID 医生ID
-    //  * @return 挂号成功返回 true，否则返回 false
-    //  */
-    // bool registerForConsultation(const std::string &department, const std::string &doctorID);
+    bool getAllExaminations(Examination *&examHead);                       // 1. 查看所有检查信息
+    bool getExaminationsByID(Examination *&examHead);                      // 2. 根据检查记录ID查看
+    bool getExaminationsByConsultationID(Examination *&examHead);          // 3. 根据看诊记录ID查看
+    bool getExaminationsByItemName(Examination *&examHead);                // 4. 根据检查项目查看
+    bool getExaminationsByStatus(Examination *&examHead, int select = -1); // 5. 根据检查状态查看
+    bool getExaminationsByTimeRange(Examination *&examHead);               // 6. 根据检查时间范围查看
+    bool getExaminationsByDepartment(Examination *&examHead);              // 7. 根据检查科室查看
+    void payExaminationFee(Examination *&target);                          // 缴纳检查费用
+    void manageExaminations(Examination *&examHead);                       // 检查信息管理入口
 
-    // /**
-    //  * @brief 缴纳挂号/住院/治疗相关费用
-    //  * @param recordID 业务记录ID
-    //  * @param amount 缴费金额
-    //  * @return 缴费成功返回 true，否则返回 false
-    //  */
-    // bool payFee(const std::string &recordID, double amount);
+    void printMedicationRecord(MedicationRecord *current);                    // 打印用药记录信息
+    bool getAllMedications(MedicationRecord *&medHead);                       // 1. 查看所有用药信息
+    bool getMedicationsByID(MedicationRecord *&medHead);                      // 2. 根据用药记录ID查看
+    bool getMedicationsByConsultationID(MedicationRecord *&medHead);          // 3. 根据看诊记录ID查看
+    bool getMedicationsByMedicineName(MedicationRecord *&medHead);            // 4. 根据药品名称查看
+    bool getMedicationsByStatus(MedicationRecord *&medHead, int select = -1); // 5. 根据用药状态查看
+    bool getMedicationsByTimeRange(MedicationRecord *&medHead);               // 6. 根据用药时间范围查看
+    bool getMedicationsByDepartment(MedicationRecord *&medHead);              // 7. 根据用药科室查看
+    void payMedicationFee(MedicationRecord *&target);                         // 缴纳药品费用
+    void manageMedications(MedicationRecord *&medHead);                       // 用药信息管理入口
 
-    // /**
-    //  * @brief 查看个人挂号记录
-    //  */
-    // void showRegistrationRecords() const;
+    // ---------------- 住院信息管理功能 ----------------
+    void manageHospitalizations(Hospitalization *&hosHead, bedInfo *&bedHead);
+    bool getAllHospitalizations(Hospitalization *&hosHead);
+    bool getHospitalizationByID(Hospitalization *&hosHead);
+    bool getHospitalizationsByAdmitTimeRange(Hospitalization *&hosHead);
+    bool getHospitalizationsByDischargeTimeRange(Hospitalization *&hosHead);
+    bool getHospitalizationsByStatus(Hospitalization *&hosHead, int select = -1);
+    bool getHospitalizationsByDepartment(Hospitalization *&hosHead);
+    bool getHospitalizationsByWardType(Hospitalization *&hosHead);
+    bool getHospitalizationsByBedNumber(Hospitalization *&hosHead);
+    bool getHospitalizationsByDoctorID(Hospitalization *&hosHead);
+    bool getHospitalizationsByConsultationID(Hospitalization *&hosHead);
 
-    // /**
-    //  * @brief 查看个人看诊记录
-    //  */
-    // void showConsultationRecords() const;
-
-    // /**
-    //  * @brief 查看个人检查记录
-    //  */
-    // void showExaminationRecords() const;
-
-    // /**
-    //  * @brief 查看个人住院记录
-    //  */
-    // void showHospitalizationRecords() const;
-
-    // /**
-    //  * @brief 查看个人用药记录
-    //  */
-    // void showMedicationRecords() const;
-
-    // /**
-    //  * @brief 查看个人基本信息
-    //  */
-    // void showPersonalInfo() const;
-
-    // /**
-    //  * @brief 获取角色名称
-    //  * @return 返回字符串 "Patient"
-    //  */
-    // std::string getRoleName() const;
+    void applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead);
+    void payHospitalizationDeposit(Hospitalization *&hosHead);
 };
 
 #endif // PATIENT_H

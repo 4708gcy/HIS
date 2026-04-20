@@ -485,7 +485,7 @@ Patient *loadPatientData(int &count)
         std::string isActiveStr, maritalStatusStr, isHospitalizedStr, isDeletedStr;
         std::string userID, username, gender, ageStr, telephone, email, storedHash, salt, createTime;
         std::string patientID, department, address, idCardNumber, emergencyContactName, emergencyContactPhone, allergyHistory, pastMedicalHistory;
-        std::string registrationCountStr, consultationCountStr, hospitalizationCountStr, medicationCountStr;
+        std::string registrationCountStr, consultationCountStr, hospitalizationCountStr, medicationCountStr, balanceStr;
 
         // 按保存顺序读取
         std::getline(iss, userID, ',');
@@ -511,6 +511,7 @@ Patient *loadPatientData(int &count)
         std::getline(iss, consultationCountStr, ',');
         std::getline(iss, hospitalizationCountStr, ',');
         std::getline(iss, medicationCountStr, ',');
+        std::getline(iss, balanceStr, ',');
         std::getline(iss, isHospitalizedStr, ',');
         std::getline(iss, isDeletedStr);
 
@@ -580,6 +581,14 @@ Patient *loadPatientData(int &count)
         catch (...)
         {
             newPatient->medicationCount = 0;
+        }
+        try
+        {
+            newPatient->balance = std::stod(balanceStr);
+        }
+        catch (...)
+        {
+            newPatient->balance = 0.0;
         }
         newPatient->isHospitalized = (isHospitalizedStr == "1");
         newPatient->isDeleted = (isDeletedStr == "1");

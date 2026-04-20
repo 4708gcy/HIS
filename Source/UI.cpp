@@ -1625,3 +1625,174 @@ int doctorPersonalInfoModificationMenu()
     int choice = selectIntCheck(0, 11);
     return choice;
 }
+
+// 患者管理菜单
+int patientMenu()
+{
+    std::cout << "患者功能界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 挂号信息管理" << std::endl;
+    std::cout << "2. 看诊信息管理" << std::endl;
+    std::cout << "3. 检查信息管理" << std::endl;
+    std::cout << "4. 用药信息管理" << std::endl;
+    std::cout << "5. 住院信息管理" << std::endl;
+    std::cout << "6. 个人信息管理" << std::endl;
+    std::cout << "0. 退出登录" << std::endl;
+
+    int choice = selectIntCheck(0, 6);
+    return choice;
+}
+
+// 患者挂号信息管理菜单
+int patientRegistrationManagementMenu()
+{
+    std::cout << "挂号信息管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看挂号信息" << std::endl;
+    std::cout << "2. 添加挂号信息" << std::endl;
+    std::cout << "3. 撤回挂号申请" << std::endl;
+    std::cout << "4. 缴纳挂号费用" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 4);
+    return choice;
+}
+
+// 患者挂号信息查看方式选择菜单
+int patientRegistrationViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看所有挂号信息" << std::endl;
+    std::cout << "2. 根据挂号记录ID查看" << std::endl;
+    std::cout << "3. 根据医生ID查看" << std::endl;
+    std::cout << "4. 根据挂号状态查看" << std::endl;
+    std::cout << "5. 根据挂号时间范围查看" << std::endl;
+    std::cout << "6. 根据挂号科室查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 6);
+    return viewChoice;
+}
+
+// 患者看诊信息管理菜单
+int patientConsultationManagementMenu()
+{
+    std::cout << "看诊信息管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看看诊信息" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 1);
+    return choice;
+}
+
+// 患者看诊信息查看方式选择菜单
+int patientConsultationViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看所有看诊信息" << std::endl;
+    std::cout << "2. 根据看诊记录ID查看" << std::endl;
+    std::cout << "3. 根据医生ID查看" << std::endl;
+    std::cout << "4. 根据看诊状态查看" << std::endl;
+    std::cout << "5. 根据看诊时间范围查看" << std::endl;
+    std::cout << "6. 根据主诉内容关键词查看" << std::endl;
+    std::cout << "7. 根据看诊科室查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 7);
+    return viewChoice;
+}
+
+// 患者检查信息管理菜单
+int patientExaminationManagementMenu()
+{
+    std::cout << "检查信息管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看检查信息" << std::endl;
+    std::cout << "2. 缴纳检查费用" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 2);
+    return choice;
+}
+
+// 患者检查信息查看方式选择菜单
+int patientExaminationViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看所有检查信息" << std::endl;
+    std::cout << "2. 根据检查记录ID查看" << std::endl;
+    std::cout << "3. 根据看诊记录ID查看" << std::endl;
+    std::cout << "4. 根据检查项目查看" << std::endl;
+    std::cout << "5. 根据检查状态查看" << std::endl;
+    std::cout << "6. 根据检查时间范围查看" << std::endl;
+    std::cout << "7. 根据检查科室查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 7);
+    return viewChoice;
+}
+
+// 患者用药信息管理菜单
+int patientMedicationManagementMenu()
+{
+    std::cout << "用药信息管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看用药信息" << std::endl;
+    std::cout << "2. 缴纳药品费用" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 2);
+    return choice;
+}
+
+// 患者用药信息查看方式选择菜单
+int patientMedicationViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看所有用药信息" << std::endl;
+    std::cout << "2. 根据用药记录ID查看" << std::endl;
+    std::cout << "3. 根据看诊记录ID查看" << std::endl;
+    std::cout << "4. 根据药品名称查看" << std::endl;
+    std::cout << "5. 根据用药状态查看" << std::endl;
+    std::cout << "6. 根据用药时间范围查看" << std::endl;
+    std::cout << "7. 根据用药科室查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 7);
+    return viewChoice;
+}
+
+// 患者住院信息管理菜单
+int patientHospitalizationManagementMenu()
+{
+    std::cout << "住院信息管理界面" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看住院信息" << std::endl;
+    std::cout << "2. 申请出院" << std::endl;
+    std::cout << "3. 缴纳住院费用" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 3);
+    return choice;
+}
+
+// 患者住院信息查看方式选择菜单
+int patientHospitalizationViewMenu()
+{
+    std::cout << "请选择你要查看的方式:" << std::endl;
+    std::cout << "1. 查看所有住院信息" << std::endl;
+    std::cout << "2. 根据住院记录ID查看" << std::endl;
+    std::cout << "3. 根据入院时间范围查看" << std::endl;
+    std::cout << "4. 根据出院时间范围查看" << std::endl;
+    std::cout << "5. 根据住院状态查看" << std::endl;
+    std::cout << "6. 根据住院科室查看" << std::endl;
+    std::cout << "7. 根据病房类型查看" << std::endl;
+    std::cout << "8. 根据床位号查看" << std::endl;
+    std::cout << "9. 根据主治医生ID查看" << std::endl;
+    std::cout << "10. 根据看诊记录ID查看" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 10);
+    return viewChoice;
+}
