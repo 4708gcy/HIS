@@ -66,44 +66,51 @@ public:
     void increaseInventoryManageCount();
 
     // ==================== 用药记录管理 ====================
+    void printMedicationRecord(MedicationRecord *current);
+
     bool getAllMedicationRecords(MedicationRecord *&medRecHead);
     bool getMedicationRecordsByPatientID(MedicationRecord *&medRecHead);
     bool getMedicationRecordsByConsultationID(MedicationRecord *&medRecHead);
     bool getMedicationRecordsByID(MedicationRecord *&medRecHead);
-    bool getMedicationRecordsByStatus(MedicationRecord *&medRecHead);
+    bool getMedicationRecordsByStatus(MedicationRecord *&medRecHead, int select = -1);
     bool getMedicationRecordsByReviewStatus(MedicationRecord *&medRecHead);
     bool getMedicationRecordsByTimeRange(MedicationRecord *&medRecHead);
+    bool getMedicationRecordsByMedicineName(MedicationRecord *&medRecHead);
 
     void setMedicationRecordStatus(MedicationRecord *&target);
-    void setMedicationRecordReviewStatus(MedicationRecord *&target);
+    void setMedicationRecordReviewStatus(MedicationRecord *&target, Consultation *&conHead);
+    void setMedicationRecordMedicineIncrease(MedicationRecord *&target, Medicine *&medHead);
+    void setMedicationRecordMedicineDecrease(MedicationRecord *&target, Medicine *&medHead);
     void setMedicationRecordNote(MedicationRecord *&target);
     void assignPharmacistToMedicationRecord(MedicationRecord *&target);
     bool dispenseMedicine(MedicationRecord *&target, Medicine *&medHead);
     void deleteMedicationRecord(MedicationRecord *&target);
-    void manageMedicationRecords(MedicationRecord *&medRecHead, Medicine *&medHead);
+    void addMedicationRecord(MedicationRecord *&medRecHead, Consultation *conHead, Medicine *&medHead, int &idCounter);
+    void manageMedicationRecords(MedicationRecord *&medRecHead, Medicine *&medHead, Consultation *conHead, int &idCounter);
 
     // ==================== 药品信息管理 ====================
     bool getAllMedicines(Medicine *&medHead);
     bool getMedicinesByID(Medicine *&medHead);
     bool getMedicinesByName(Medicine *&medHead);
-    bool getMedicinesByStatus(Medicine *&medHead);
+    bool getMedicinesByStatus(Medicine *&medHead, int select = -1);
+    bool getMedicinesByDepartment(Medicine *&medHead);
 
-    void setMedicineStatus(Medicine *&target);
-    void setMedicineName(Medicine *&target);
-    void setMedicineSpecification(Medicine *&target);
-    void setMedicineManufacturer(Medicine *&target);
-    void setMedicinePurchasePrice(Medicine *&target);
-    void setMedicineSalePrice(Medicine *&target);
-    void setMedicineSafetyStock(Medicine *&target);
-    void setMedicineProductionDate(Medicine *&target);
-    void setMedicineExpiryDate(Medicine *&target);
-    void setMedicineDepartment(Medicine *&target);
-    void setMedicineSpecialFlag(Medicine *&target);
-    void setMedicineNote(Medicine *&target);
-    void deleteMedicine(Medicine *&target);
-    void addMedicineStock(Medicine *&target);
-    void reduceMedicineStock(Medicine *&target);
-    void manageMedicines(Medicine *&medHead);
+    void setMedicineStatus(Medicine *&target);         // 修改药品状态（正常、库存低、过期、停用）
+    void setMedicineName(Medicine *&target);           // 修改药品名称
+    void setMedicineSpecification(Medicine *&target);  // 修改药品规格
+    void setMedicineManufacturer(Medicine *&target);   // 修改药品生产厂家
+    void setMedicinePurchasePrice(Medicine *&target);  // 修改药品进价
+    void setMedicineSalePrice(Medicine *&target);      // 修改药品售价
+    void setMedicineSafetyStock(Medicine *&target);    // 修改药品安全库存阈值
+    void setMedicineProductionDate(Medicine *&target); // 修改药品生产日期
+    void setMedicineExpiryDate(Medicine *&target);     // 修改药品有效期
+    void setMedicineDepartment(Medicine *&target);     // 修改药品科室
+    void setMedicineNote(Medicine *&target);           // 修改药品备注信息
+    void deleteMedicine(Medicine *&target);            // 删除药品（逻辑删除，实际删除时设置 isDeleted = true）
+    void addMedicineStock(Medicine *&target);          // 增加药品库存
+    void reduceMedicineStock(Medicine *&target);       // 减少药品库存
+    void addNewMedicine(Medicine *&medHead, int &idCounter); // 添加新药品信息
+    void manageMedicines(Medicine *&medHead, int &idCounter);          // 药品信息管理主界面
 
     // ==================== 个人信息管理 ====================
     void managePersonalInfo();

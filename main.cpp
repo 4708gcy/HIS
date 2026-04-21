@@ -563,7 +563,30 @@ int main()
                 }
                 else if (roleChoice == 4) // 药剂师登录
                 {
-                    std::cout << "药剂师登录功能尚未实现，敬请期待！" << std::endl;
+                    Pharmacist *client = pharmacistLogin(phaHead);
+                    if (client)
+                    {
+                        while (true)
+                        {
+                            int pharmacistChoice = pharmacistMenu();
+                            if (pharmacistChoice == 0)
+                            {
+                                break; // 退出登录
+                            }
+                            else if (pharmacistChoice == 1)
+                            {
+                                client->manageMedicationRecords(medRecHead, medHead, conHead, medicationRecordCount);
+                            }
+                            else if (pharmacistChoice == 2)
+                            {
+                                client->manageMedicines(medHead, medicineCount);
+                            }
+                            else if (pharmacistChoice == 3)
+                            {
+                                client->managePersonalInfo(); // 个人信息管理
+                            }
+                        }
+                    }
                 }
                 else if (roleChoice == 5) // 患者登录
                 {

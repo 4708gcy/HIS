@@ -1555,8 +1555,20 @@ bool Admin::viewExaminationsByPatient(Examination *&exam, const std::string &dep
 // 查看指定状态的检查记录
 bool Admin::viewExaminationsByStatus(Examination *&exam, const std::string &department)
 {
-    std::cout << "请输入要过滤的检查状态 (0 - 已下单, 1 - 已支付, 2 - 检查中, 3 - 检查完成, 4 - 报告已出, 5 - 已作废): ";
-    int statusFilter = selectIntCheck(0, 5);
+    std::cout << "请输入要过滤的检查状态: ";
+    std::cout << "1. 已下单" << std::endl;
+    std::cout << "2. 已支付" << std::endl;
+    std::cout << "3. 检查中" << std::endl;
+    std::cout << "4. 检查完成" << std::endl;
+    std::cout << "5. 报告已出" << std::endl;
+    std::cout << "6. 已作废" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int statusFilter = selectIntCheck(0, 6);
+
+    if(statusFilter == 0){
+        return false;
+    }
 
     bool found = false;
 
@@ -1615,8 +1627,23 @@ bool Admin::viewExaminationsByStatus(Examination *&exam, const std::string &depa
 // 修改检查记录的状态
 void Admin::modifyExaminationStatus(Examination *&target, const std::string &department)
 {
-    std::cout << "请输入新的检查状态 (0 - 已下单, 1 - 已支付, 2 - 检查中, 3 - 检查完成, 4 - 报告已出, 5 - 已作废): ";
-    int newStatus = selectIntCheck(0, 5);
+    std::cout << "请输入新的检查状态: ";
+    std::cout << "1. 已下单" << std::endl;
+    std::cout << "2. 已支付" << std::endl;
+    std::cout << "3. 检查中" << std::endl;
+    std::cout << "4. 检查完成" << std::endl;
+    std::cout << "5. 报告已出" << std::endl;
+    std::cout << "6. 已作废" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int newStatus = selectIntCheck(0, 6);
+
+    if (newStatus == 0)
+    {
+        std::cout << "已取消修改状态操作。" << std::endl;
+        return;
+    }
+
     target->status = static_cast<ExaminationStatus>(newStatus);
     std::cout << "检查记录状态已更新！" << std::endl;
 }
@@ -2202,8 +2229,21 @@ bool Admin::viewHospitalizationByID(Hospitalization *&hos, const std::string &de
 // 根据住院状态查看住院记录
 bool Admin::viewHospitalizationsByStatus(Hospitalization *&hos, const std::string &department)
 {
-    std::cout << "请输入要过滤的住院记录状态 (0 - 申请中, 1 - 已缴费待分床, 2 - 已入院, 3 - 已出院, 4 - 已作废): ";
-    int statusFilter = selectIntCheck(0, 4);
+    std::cout << "请输入要过滤的住院记录状态: ";
+    std::cout << "1. 申请中" << std::endl;
+    std::cout << "2. 已缴费待分床" << std::endl;
+    std::cout << "3. 已入院" << std::endl;
+    std::cout << "4. 已出院" << std::endl;
+    std::cout << "5. 已作废" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int statusFilter = selectIntCheck(0, 5);
+
+    if(statusFilter == 0)
+    {
+        std::cout << "已取消查看操作。" << std::endl;
+        return false;
+    }
 
     bool found = false;
 
@@ -2298,8 +2338,22 @@ void Admin::modifyHospitalizationStatus(Hospitalization *&hos, const std::string
         if (!current->isDeleted && current->hospitalizationID == hosID && current->department == department)
         {
 
-            std::cout << "请输入新的住院记录状态 (0 - 申请中, 1 - 已缴费待分床, 2 - 已入院, 3 - 已出院, 4 - 已作废): ";
-            int newStatus = selectIntCheck(0, 4);
+            std::cout << "请输入新的住院记录状态: ";
+            std::cout << "1. 申请中" << std::endl;
+            std::cout << "2. 已缴费待分床" << std::endl;
+            std::cout << "3. 已入院" << std::endl;
+            std::cout << "4. 已出院" << std::endl;
+            std::cout << "5. 已作废" << std::endl;
+            std::cout << "0. 返回上级菜单" << std::endl;
+
+            int newStatus = selectIntCheck(0, 5);
+
+            if (newStatus == 0)
+            {
+                std::cout << "已取消修改操作。" << std::endl;
+                return;
+            }
+
             current->status = static_cast<HospitalizationStatus>(newStatus);
             std::cout << "住院记录状态已更新！" << std::endl;
             found = true;
@@ -2428,7 +2482,7 @@ bool Admin::addHospitalization(Hospitalization *&hos, Nurse *nurse, const std::s
 
     bedFound = false; // 重置标志，准备检查用户输入的床位号
 
-    newHos->bedNumber = inputBedNumberCheck("请输入床位号: ", department, newHos->wardType); // 输入床位号并检查格式
+    newHos->bedNumber = inputBedNumberCheck("请填写床位信息: ", department, newHos->wardType); // 输入床位号并检查格式
 
     b = bed;
     while (b != nullptr)
@@ -2808,8 +2862,19 @@ bool Admin::viewBedsByWardType(bedInfo *&bed, const std::string &department)
 // 根据床位状态查看床位信息
 bool Admin::viewBedsByStatus(bedInfo *&bed, const std::string &department)
 {
-    std::cout << "请输入要过滤的床位状态 (0 - 可用, 1 - 占用, 2 - 清洁中, 3 - 不可用): ";
-    int statusFilter = selectIntCheck(0, 3);
+    std::cout << "请输入要过滤的床位状态: ";
+    std::cout << "1. 可用" << std::endl;
+    std::cout << "2. 占用" << std::endl;
+    std::cout << "3. 清洁中" << std::endl;
+    std::cout << "4. 不可用" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int statusFilter = selectIntCheck(0, 4);
+
+    if(statusFilter == 0){
+        std::cout << "已取消查看操作" << std::endl;
+        return false;
+    }
 
     bool found = false;
 
@@ -3024,8 +3089,20 @@ bool Admin::viewBedsByHospitalizationID(bedInfo *&bed, Hospitalization *&hos, co
 // 修改床位状态
 void Admin::modifyBedStatus(bedInfo *&target, const std::string &department)
 {
-    std::cout << "请输入新的床位状态 (0 - 可用, 1 - 占用, 2 - 清洁中, 3 - 不可用): ";
-    int newStatus = selectIntCheck(0, 3);
+    std::cout << "请输入新的床位状态: ";
+    std::cout << "1. 可用" << std::endl;
+    std::cout << "2. 占用" << std::endl;
+    std::cout << "3. 清洁中" << std::endl;
+    std::cout << "4. 不可用" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int newStatus = selectIntCheck(0, 4);
+
+    if (newStatus == 0)
+    {
+        std::cout << "已取消查看操作" << std::endl;
+        return;
+    }
     target->status = static_cast<bedStatus>(newStatus);
     std::cout << "床位状态已更新！" << std::endl;
 }

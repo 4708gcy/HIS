@@ -2421,15 +2421,15 @@ void Doctor::managePersonalInfo()
                 }
                 else if (modifyChoice == 11)
                 {
-                    std::string oldpwd = inputStringCheck("请输入当前密码以验证身份: ");
+                    std::string oldpwd = inputPwdCheck("请输入当前密码以验证身份: ");
 
                     if (SHA256Verify(oldpwd, this->salt, this->kHashIterations))
                     {
-                        std::string newpwd = inputStringCheck("请输入新的密码: ");
+                        std::string newpwd = inputPwdCheck("请输入新的密码: ");
                         std::string newSalt = generateSalt();
                         std::string newHash = SHA256Encrypt(newpwd, newSalt, this->kHashIterations);
 
-                        newpwd = inputStringCheck("请再次输入新的密码以确认: ");
+                        newpwd = inputPwdCheck("请再次输入新的密码以确认: ");
 
                         if (SHA256Verify(newpwd, newHash, this->kHashIterations))
                         {

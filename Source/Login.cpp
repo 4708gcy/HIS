@@ -58,6 +58,36 @@ Doctor *doctorLogin(Doctor *&doctorHead)
     return nullptr; // 未找到匹配的医生用户ID
 }
 
+
+
+// 药剂师登录函数，验证药剂师身份并返回登录结果
+Pharmacist *pharmacistLogin(Pharmacist *&pharmacistHead)
+{
+    Pharmacist *currentPharmacist = pharmacistHead;
+    std::string id = inputIDCheck("请输入药剂师用户ID: ");
+
+    if (id == "0") return nullptr;
+
+    while (currentPharmacist != nullptr)
+    {
+        if (currentPharmacist->getUserID() == id)
+        {
+            if (currentPharmacist->pharmacistSignIn()) // 调用药剂师登录方法验证密码并设置登录状态
+            {
+                return currentPharmacist;
+            }
+            else
+            {
+                return nullptr; // 登录失败（如密码错误或账户锁定）
+            }
+        }
+        currentPharmacist = currentPharmacist->next;
+    }
+    
+    std::cout << "未找到该用户ID！" << std::endl;
+    return nullptr;
+}
+
 // 患者登录函数，验证患者身份并返回登录结果
 Patient *patientLogin(Patient *&patientHead)
 {

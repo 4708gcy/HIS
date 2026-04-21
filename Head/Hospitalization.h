@@ -20,7 +20,7 @@
 
 enum class HospitalizationStatus
 {
-    APPLIED,    // 申请中/待处理
+    APPLIED = 1,    // 申请中/待处理
     PAID,       // 已缴费,待分床
     ADMITTED,   // 已入院
     DISCHARGED, // 已出院
@@ -29,7 +29,7 @@ enum class HospitalizationStatus
 
 enum class bedStatus
 {
-    OCCUPIED,   // 已占用
+    OCCUPIED = 1,   // 已占用
     ClEANING,   // 清洁中
     AVAILABLE,  // 可分配
     UNAVAILABLE // 不可用（如维修中等）

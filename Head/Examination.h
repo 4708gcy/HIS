@@ -21,7 +21,7 @@
 
 enum class ExaminationStatus
 {
-    ORDERED,     // 已下单
+    ORDERED = 1,     // 已下单
     PAID,        // 已支付
     IN_PROGRESS, // 检查中
     COMPLETED,   // 检查完成

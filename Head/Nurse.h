@@ -63,6 +63,8 @@ public:
     void increaseBedManageCount();
 
     // ==================== 检查记录管理 ====================
+    void printExaminationDetails(Examination *&exa); // 辅助函数：打印检查记录详情
+
     bool getAllExaminations(Examination *&exaHead);
     bool getExaminationsByPatientID(Examination *&exaHead);
     bool getExaminationsByConsultationID(Examination *&exaHead);
@@ -80,20 +82,30 @@ public:
     void manageExaminations(Examination *&exaHead);
 
     // ==================== 住院/床位管理 ====================
+    void printHospitalizationDetails(Hospitalization *&hos); // 辅助函数：打印住院记录详情
+    void printBedDetails(bedInfo *&bed); // 辅助函数：打印床位信息详情
+
     bool getAllHospitalizations(Hospitalization *&hosHead);
     bool getHospitalizationsByPatientID(Hospitalization *&hosHead);
     bool getHospitalizationsByConsultationID(Hospitalization *&hosHead);
     bool getHospitalizationsByID(Hospitalization *&hosHead);
     bool getHospitalizationsByStatus(Hospitalization *&hosHead);
-    bool getHospitalizationsByTimeRange(Hospitalization *&hosHead);
+    bool getHospitalizationsByWardType(Hospitalization *&hosHead);
+    bool getHospitalizationsByDoctorID(Hospitalization *&hosHead);
+    bool getHospitalizationsByBedNumber(Hospitalization *&hosHead);
+    bool getHospitalizationsByAdmitTimeRange(Hospitalization *&hosHead);
+    bool getHospitalizationsByDischargeTimeRange(Hospitalization *&hosHead);
 
     void setHospitalizationStatus(Hospitalization *&target);
+    void setHospitalizationDeposit(Hospitalization *&target);
+    void setHospitalizationWardType(Hospitalization *&target);
     void assignNurseToHospitalization(Hospitalization *&target);
     void assignBed(Hospitalization *&target, bedInfo *&bedHead);
     void transferBed(Hospitalization *&target, bedInfo *&bedHead);
     void dischargePatient(Hospitalization *&target, bedInfo *&bedHead);
     void deleteHospitalization(Hospitalization *&target);
-    void manageHospitalizations(Hospitalization *&hosHead, bedInfo *&bedHead);
+    void createHospitalization(Hospitalization *&hosHead,Consultation *&conHead, int &idCounter);
+    void manageHospitalizations(Hospitalization *&hosHead,Consultation *&conHead, bedInfo *&bedHead, int &idCounter);
 
     // ==================== 床位信息管理 ====================
     bool getAllBeds(bedInfo *&bedHead);

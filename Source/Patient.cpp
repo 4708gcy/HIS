@@ -1276,8 +1276,22 @@ bool Patient::getExaminationsByStatus(Examination *&examHead, int select)
     int choice = select;
     if (choice == -1)
     {
-        std::cout << "请输入查询的检查状态 (0-已下单, 1-已支付, 2-检查中, 3-检查完成, 4-报告已出, 5-已作废): ";
-        choice = selectIntCheck(0, 5);
+        std::cout << "请输入查询的检查状态: ";
+        std::cout << "1. 待支付" << std::endl;
+        std::cout << "2. 已支付" << std::endl;
+        std::cout << "3. 检查中" << std::endl;
+        std::cout << "4. 检查完成" << std::endl;
+        std::cout << "5. 报告已出" << std::endl;
+        std::cout << "6. 已作废" << std::endl;
+        std::cout << "0. 取消查询" << std::endl;
+
+        choice = selectIntCheck(0, 6);
+
+        if (choice == 0)
+        {
+            std::cout << "已取消查询。" << std::endl;
+            return false;
+        }
     }
     ExaminationStatus targetStatus = static_cast<ExaminationStatus>(choice);
     Examination *current = examHead;
@@ -2498,15 +2512,15 @@ void Patient::managePersonalInfo()
                 }
                 else if (modifyChoice == 13)
                 {
-                    std::string oldpwd = inputStringCheck("请输入当前密码以验证身份: ");
+                    std::string oldpwd = inputPwdCheck("请输入当前密码以验证身份: ");
 
                     if (SHA256Verify(oldpwd, this->salt, this->kHashIterations))
                     {
-                        std::string newpwd = inputStringCheck("请输入新的密码: ");
+                        std::string newpwd = inputPwdCheck("请输入新的密码: ");
                         std::string newSalt = generateSalt();
                         std::string newHash = SHA256Encrypt(newpwd, newSalt, this->kHashIterations);
 
-                        newpwd = inputStringCheck("请再次输入新的密码以确认: ");
+                        newpwd = inputPwdCheck("请再次输入新的密码以确认: ");
 
                         if (SHA256Verify(newpwd, newHash, this->kHashIterations))
                         {

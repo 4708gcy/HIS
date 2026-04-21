@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file Nurse.cpp
  * @brief 医疗管理系统中的护士类实现
  * @details 该源文件实现了 Nurse 类的构造、析构、注册登录、
@@ -178,6 +178,38 @@ void Nurse::increaseBedManageCount()
 
 // ==================== 检查记录管理 ====================
 
+// 辅助函数：打印检查记录详情
+void Nurse::printExaminationDetails(Examination *&exa)
+{
+    if (exa == nullptr)
+    {
+        std::cout << "检查记录不存在。" << std::endl;
+        return;
+    }
+
+    std::cout << "检查ID: " << exa->examinationID
+              << ", 看诊ID: " << exa->consultationID
+              << ", 患者ID: " << exa->patientID
+              << ", 医生ID: " << exa->doctorID
+              << ", 科室: " << exa->department
+              << ", 开单时间: " << exa->orderTime
+              << ", 检查项目: " << exa->itemName
+              << ", 检查结果: " << findVitalSignToString(exa)
+              << ", 报告摘要: " << exa->reportSummary
+              << ", 检查费用: " << exa->fee
+              << ", 出报告时间: " << exa->reportTime
+              << ", 状态: " << examStatusToString(exa->status)
+              << ", 备注: " << exa->note;
+
+    std::cout << ", 相关附件: ";
+    for (size_t i = 0; i < exa->attachments.size(); ++i)
+    {
+        std::cout << "[" << (i + 1) << "] " << exa->attachments[i] << "  ";
+    }
+    std::cout << std::endl;
+}
+
+// 查询本科室的所有检查记录
 bool Nurse::getAllExaminations(Examination *&exaHead)
 {
     std::cout << "正在获取本科室的所有检查记录..." << std::endl;
@@ -188,26 +220,7 @@ bool Nurse::getAllExaminations(Examination *&exaHead)
     {
         if (!current->isDeleted && current->department == this->department)
         {
-            std::cout << "检查ID: " << current->examinationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 开单时间: " << current->orderTime
-                      << ", 检查项目: " << current->itemName
-                      << ", 检查结果: " << findVitalSignToString(current)
-                      << ", 报告摘要: " << current->reportSummary
-                      << ", 检查费用: " << current->fee
-                      << ", 出报告时间: " << current->reportTime
-                      << ", 状态: " << examStatusToString(current->status)
-                      << ", 备注: " << current->note;
-
-            std::cout << ", 相关附件: ";
-            for (size_t i = 0; i < current->attachments.size(); ++i)
-            {
-                std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
-            }
-            std::cout << std::endl;
+            printExaminationDetails(current);
             found = true;
         }
         current = current->next;
@@ -219,10 +232,10 @@ bool Nurse::getAllExaminations(Examination *&exaHead)
     }
     return found;
 }
-
+// 根据患者ID查询检查记录
 bool Nurse::getExaminationsByPatientID(Examination *&exaHead)
 {
-    std::string patientID = inputRecordIDCheck("请输入要查询的患者ID: ", {"pat"});
+    std::string patientID = inputIDCheck("请输入要查询的患者ID: ");
 
     Examination *current = exaHead;
     bool found = false;
@@ -230,20 +243,7 @@ bool Nurse::getExaminationsByPatientID(Examination *&exaHead)
     {
         if (!current->isDeleted && current->department == this->department && current->patientID == patientID)
         {
-            std::cout << "检查ID: " << current->examinationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 开单时间: " << current->orderTime
-                      << ", 检查项目: " << current->itemName
-                      << ", 检查结果: " << findVitalSignToString(current)
-                      << ", 报告摘要: " << current->reportSummary
-                      << ", 检查费用: " << current->fee
-                      << ", 出报告时间: " << current->reportTime
-                      << ", 状态: " << examStatusToString(current->status)
-                      << ", 备注: " << current->note
-                      << std::endl;
+            printExaminationDetails(current);
             found = true;
         }
         current = current->next;
@@ -255,7 +255,7 @@ bool Nurse::getExaminationsByPatientID(Examination *&exaHead)
     }
     return found;
 }
-
+// 根据看诊ID查询检查记录
 bool Nurse::getExaminationsByConsultationID(Examination *&exaHead)
 {
     std::string conID = inputRecordIDCheck("请输入要查询的看诊ID: ", {"con"});
@@ -266,20 +266,7 @@ bool Nurse::getExaminationsByConsultationID(Examination *&exaHead)
     {
         if (!current->isDeleted && current->department == this->department && current->consultationID == conID)
         {
-            std::cout << "检查ID: " << current->examinationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 开单时间: " << current->orderTime
-                      << ", 检查项目: " << current->itemName
-                      << ", 检查结果: " << findVitalSignToString(current)
-                      << ", 报告摘要: " << current->reportSummary
-                      << ", 检查费用: " << current->fee
-                      << ", 出报告时间: " << current->reportTime
-                      << ", 状态: " << examStatusToString(current->status)
-                      << ", 备注: " << current->note
-                      << std::endl;
+            printExaminationDetails(current);
             found = true;
         }
         current = current->next;
@@ -291,7 +278,7 @@ bool Nurse::getExaminationsByConsultationID(Examination *&exaHead)
     }
     return found;
 }
-
+// 根据检查ID查询检查记录
 bool Nurse::getExaminationsByID(Examination *&exaHead)
 {
     std::string examID = inputRecordIDCheck("请输入要查询的检查ID: ", {"exa"});
@@ -301,20 +288,7 @@ bool Nurse::getExaminationsByID(Examination *&exaHead)
     {
         if (!current->isDeleted && current->department == this->department && current->examinationID == examID)
         {
-            std::cout << "检查ID: " << current->examinationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 开单时间: " << current->orderTime
-                      << ", 检查项目: " << current->itemName
-                      << ", 检查结果: " << findVitalSignToString(current)
-                      << ", 报告摘要: " << current->reportSummary
-                      << ", 检查费用: " << current->fee
-                      << ", 出报告时间: " << current->reportTime
-                      << ", 状态: " << examStatusToString(current->status)
-                      << ", 备注: " << current->note
-                      << std::endl;
+            printExaminationDetails(current);
             return true;
         }
         current = current->next;
@@ -323,11 +297,11 @@ bool Nurse::getExaminationsByID(Examination *&exaHead)
     std::cout << "未找到检查ID为 " << examID << " 的检查记录。" << std::endl;
     return false;
 }
-
+// 根据检查时间范围查询检查记录
 bool Nurse::getExaminationsByTimeRange(Examination *&exaHead)
 {
-    std::string startDate = inputDateCheck("请输入查询的开始日期 (格式 YYYY-MM-DD): ");
-    std::string endDate = inputDateCheck("请输入查询的结束日期 (格式 YYYY-MM-DD): ");
+    std::string startDate = inputDateCheck("请输入查询的开始日期: ");
+    std::string endDate = inputDateCheck("请输入查询的结束日期: ");
 
     Examination *current = exaHead;
     bool found = false;
@@ -338,20 +312,7 @@ bool Nurse::getExaminationsByTimeRange(Examination *&exaHead)
             std::string examDate = current->orderTime.substr(0, 10);
             if (examDate >= startDate && examDate <= endDate)
             {
-                std::cout << "检查ID: " << current->examinationID
-                          << ", 看诊ID: " << current->consultationID
-                          << ", 患者ID: " << current->patientID
-                          << ", 医生ID: " << current->doctorID
-                          << ", 科室: " << current->department
-                          << ", 开单时间: " << current->orderTime
-                          << ", 检查项目: " << current->itemName
-                          << ", 检查结果: " << findVitalSignToString(current)
-                          << ", 报告摘要: " << current->reportSummary
-                          << ", 检查费用: " << current->fee
-                          << ", 出报告时间: " << current->reportTime
-                          << ", 状态: " << examStatusToString(current->status)
-                          << ", 备注: " << current->note
-                          << std::endl;
+                printExaminationDetails(current);
                 found = true;
             }
         }
@@ -364,7 +325,7 @@ bool Nurse::getExaminationsByTimeRange(Examination *&exaHead)
     }
     return found;
 }
-
+// 根据检查项目名称查询检查记录
 bool Nurse::getExaminationsByItemName(Examination *&exaHead)
 {
     std::string itemName = ExaminationItemMenu();
@@ -380,20 +341,7 @@ bool Nurse::getExaminationsByItemName(Examination *&exaHead)
     {
         if (!current->isDeleted && current->department == this->department && current->itemName == itemName)
         {
-            std::cout << "检查ID: " << current->examinationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 开单时间: " << current->orderTime
-                      << ", 检查项目: " << current->itemName
-                      << ", 检查结果: " << findVitalSignToString(current)
-                      << ", 报告摘要: " << current->reportSummary
-                      << ", 检查费用: " << current->fee
-                      << ", 出报告时间: " << current->reportTime
-                      << ", 状态: " << examStatusToString(current->status)
-                      << ", 备注: " << current->note
-                      << std::endl;
+            printExaminationDetails(current);
             found = true;
         }
         current = current->next;
@@ -405,7 +353,7 @@ bool Nurse::getExaminationsByItemName(Examination *&exaHead)
     }
     return found;
 }
-
+// 根据检查状态查询检查记录
 bool Nurse::getExaminationsByStatus(Examination *&exaHead)
 {
     std::cout << "请选择要查询的检查状态：" << std::endl;
@@ -431,20 +379,7 @@ bool Nurse::getExaminationsByStatus(Examination *&exaHead)
     {
         if (!current->isDeleted && current->department == this->department && current->status == targetStatus)
         {
-            std::cout << "检查ID: " << current->examinationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 开单时间: " << current->orderTime
-                      << ", 检查项目: " << current->itemName
-                      << ", 检查结果: " << findVitalSignToString(current)
-                      << ", 报告摘要: " << current->reportSummary
-                      << ", 检查费用: " << current->fee
-                      << ", 出报告时间: " << current->reportTime
-                      << ", 状态: " << examStatusToString(current->status)
-                      << ", 备注: " << current->note
-                      << std::endl;
+            printExaminationDetails(current);
             found = true;
         }
         current = current->next;
@@ -457,6 +392,7 @@ bool Nurse::getExaminationsByStatus(Examination *&exaHead)
     return found;
 }
 
+// 护士修改检查记录状态
 void Nurse::setExaminationStatus(Examination *&target)
 {
     std::cout << "当前检查状态: " << examStatusToString(target->status) << std::endl;
@@ -479,32 +415,56 @@ void Nurse::setExaminationStatus(Examination *&target)
     target->status = static_cast<ExaminationStatus>(statusChoice);
     std::cout << "检查状态已更新为: " << examStatusToString(target->status) << std::endl;
 }
-
+// 护士录入/更新检查结果（体征信息）
 void Nurse::setExaminationReport(Examination *&target)
 {
-    std::cout << "当前检查项目: " << target->itemName << std::endl;
-    std::cout << "当前检查结果: " << findVitalSignToString(target) << std::endl;
+    if (target->status == ExaminationStatus::ORDERED)
+    {
+        std::cout << "检查尚未支付，无法录入检查结果！" << std::endl;
+        return;
+    }
+
+    std::cout << "检查项目: " << target->itemName << std::endl;
+    std::cout << "之前的检查结果: " << findVitalSignToString(target) << std::endl;
+
+    std::cout << "正在进行检查..." << std::endl;
+
+    target->status = ExaminationStatus::IN_PROGRESS; // 更新状态为检查中
+
+    std::cout << "检查完成，正在录入检查结果..." << std::endl;
 
     setVitalSigns(target->vitalSigns, target->itemName);
 
-    if (target->status == ExaminationStatus::PAID)
-    {
-        target->status = ExaminationStatus::IN_PROGRESS;
-    }
+    target->status = ExaminationStatus::COMPLETED; // 更新状态为检查完成
+
+    target->reportTime = MyTime::getInstance().getTime();
 
     std::cout << "检查结果已更新！" << std::endl;
 }
-
+// 护士录入/更新检查报告摘要
 void Nurse::setExaminationReportSummary(Examination *&target)
 {
+    if (target->status == ExaminationStatus::ORDERED)
+    {
+        std::cout << "检查尚未支付，无法录入检查报告摘要！" << std::endl;
+        return;
+    }
+
+    if (target->status == ExaminationStatus::IN_PROGRESS)
+    {
+        std::cout << "检查尚未完成，无法录入检查报告摘要！" << std::endl;
+        return;
+    }
+
     std::cout << "当前检查报告摘要: " << target->reportSummary << std::endl;
     std::string newSummary = inputStringCheck("请输入新的检查报告摘要: ");
     target->reportSummary = newSummary;
     std::cout << "检查报告摘要已更新！" << std::endl;
 }
-
+// 护士管理检查记录相关附件
 void Nurse::setExaminationAttachments(Examination *&target)
 {
+
     while (true)
     {
         std::cout << "当前相关附件: ";
@@ -560,20 +520,23 @@ void Nurse::setExaminationAttachments(Examination *&target)
                 std::cout << "当前没有附件可删除！" << std::endl;
                 continue;
             }
+
+            std::cout << "请输入要删除的附件编号: ";
+
             int idx = selectIntCheck(1, static_cast<int>(target->attachments.size()));
             target->attachments.erase(target->attachments.begin() + idx - 1);
             std::cout << "附件已删除！" << std::endl;
         }
     }
 }
-
+// 护士修改检查记录备注信息
 void Nurse::setExaminationNote(Examination *&target)
 {
     std::cout << "当前备注信息: " << target->note << std::endl;
     target->note = inputStringCheck("请输入新的备注信息: ");
     std::cout << "备注信息已更新！" << std::endl;
 }
-
+// 护士删除检查记录（逻辑删除）
 void Nurse::deleteExamination(Examination *&target)
 {
     target->isDeleted = true;
@@ -584,13 +547,7 @@ void Nurse::manageExaminations(Examination *&exaHead)
 {
     while (true)
     {
-        std::cout << "\n========== 护士-检查记录管理 ==========" << std::endl;
-        std::cout << "1. 查看检查记录" << std::endl;
-        std::cout << "2. 修改检查记录" << std::endl;
-        std::cout << "3. 删除检查记录" << std::endl;
-        std::cout << "0. 返回上一级" << std::endl;
-
-        int choice = selectIntCheck(0, 3);
+        int choice = nurseExaminationManagementMenu();
 
         if (choice == 0)
         {
@@ -600,17 +557,7 @@ void Nurse::manageExaminations(Examination *&exaHead)
         {
             while (true)
             {
-                std::cout << "\n------ 查看检查记录 ------" << std::endl;
-                std::cout << "1. 查看本科室全部检查记录" << std::endl;
-                std::cout << "2. 按患者ID查询" << std::endl;
-                std::cout << "3. 按看诊ID查询" << std::endl;
-                std::cout << "4. 按检查ID查询" << std::endl;
-                std::cout << "5. 按时间范围查询" << std::endl;
-                std::cout << "6. 按检查项目查询" << std::endl;
-                std::cout << "7. 按状态查询" << std::endl;
-                std::cout << "0. 返回上一级" << std::endl;
-
-                int viewChoice = selectIntCheck(0, 7);
+                int viewChoice = nurseExaminationViewMenu();
 
                 if (viewChoice == 0)
                     break;
@@ -645,7 +592,7 @@ void Nurse::manageExaminations(Examination *&exaHead)
             Examination *target = exaHead;
             while (target)
             {
-                if (!target->isDeleted && target->department == this->department && target->examinationID == examID)
+                if (!target->isDeleted && target->status != ExaminationStatus::VOIDED && target->department == this->department && target->examinationID == examID)
                 {
                     break;
                 }
@@ -661,15 +608,10 @@ void Nurse::manageExaminations(Examination *&exaHead)
 
             while (true)
             {
-                std::cout << "\n------ 修改检查记录 ------" << std::endl;
-                std::cout << "1. 修改检查状态" << std::endl;
-                std::cout << "2. 录入/修改检查结果" << std::endl;
-                std::cout << "3. 修改报告摘要" << std::endl;
-                std::cout << "4. 管理附件" << std::endl;
-                std::cout << "5. 修改备注" << std::endl;
-                std::cout << "0. 返回上一级" << std::endl;
+                std::cout << "正在修改的检查记录详情：" << std::endl;
+                printExaminationDetails(target);
 
-                int modifyChoice = selectIntCheck(0, 5);
+                int modifyChoice = nurseExaminationModificationMenu();
 
                 if (modifyChoice == 0)
                     break;
@@ -714,6 +656,9 @@ void Nurse::manageExaminations(Examination *&exaHead)
                 continue;
             }
 
+            std::cout << "正在删除的检查记录详情：" << std::endl;
+            printExaminationDetails(target);
+
             std::cout << "确认删除该检查记录吗？\n1. 确认\n0. 取消" << std::endl;
             int confirmChoice = selectIntCheck(0, 1);
             if (confirmChoice == 1)
@@ -731,6 +676,56 @@ void Nurse::manageExaminations(Examination *&exaHead)
 
 // ==================== 住院记录管理 ====================
 
+// 辅助函数：打印住院记录详情
+void Nurse::printHospitalizationDetails(Hospitalization *&hos)
+{
+    if (hos == nullptr)
+    {
+        std::cout << "住院记录不存在。" << std::endl;
+        return;
+    }
+
+    std::cout << "住院ID: " << hos->hospitalizationID
+              << ", 看诊ID: " << hos->consultationID
+              << ", 患者ID: " << hos->patientID
+              << ", 医生ID: " << hos->doctorID
+              << ", 护士ID: " << hos->nurseID
+              << ", 科室: " << hos->department
+              << ", 病房类型: " << hos->wardType
+              << ", 床位号: " << hos->bedNumber
+              << ", 申请时间: " << hos->applyTime
+              << ", 允许入院时间: " << hos->availableAdmitTime
+              << ", 实际入院时间: " << hos->admitTime
+              << ", 出院时间: " << hos->dischargeTime
+              << ", 押金: " << hos->deposit
+              << ", 总费用: " << hos->totalCost
+              << ", 状态: " << hosStatusToString(hos->status)
+              << std::endl;
+}
+// 辅助函数：打印床位信息
+void Nurse::printBedDetails(bedInfo *&bed)
+{
+    if (bed == nullptr)
+    {
+        std::cout << "床位信息不存在。" << std::endl;
+        return;
+    }
+
+    std::cout << "床位ID: " << bed->bedID
+              << ", 科室: " << bed->department
+              << ", 病房类型: " << bed->wardType
+              << ", 区域号: " << bed->areaNumber
+              << ", 病房号: " << bed->wardNumber
+              << ", 床位号: " << bed->bedNumber
+              << ", 患者ID:" << bed->patientID
+              << ", 看护护士ID: " << bed->nurseID
+              << ", 床位使用次数: " << bed->useTimes
+              << ", 占用天数: " << bed->daysOccupied
+              << ", 当前状态: " << bedStatusToString(bed->status)
+              << std::endl;
+}
+
+// 查询本科室的所有住院记录
 bool Nurse::getAllHospitalizations(Hospitalization *&hosHead)
 {
     std::cout << "正在获取本科室住院记录..." << std::endl;
@@ -741,22 +736,7 @@ bool Nurse::getAllHospitalizations(Hospitalization *&hosHead)
     {
         if (!current->isDeleted && current->department == this->department)
         {
-            std::cout << "住院ID: " << current->hospitalizationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 护士ID: " << current->nurseID
-                      << ", 科室: " << current->department
-                      << ", 病房类型: " << current->wardType
-                      << ", 床位号: " << current->bedNumber
-                      << ", 申请时间: " << current->applyTime
-                      << ", 可入院时间: " << current->availableAdmitTime
-                      << ", 入院时间: " << current->admitTime
-                      << ", 出院时间: " << current->dischargeTime
-                      << ", 押金: " << current->deposit
-                      << ", 总费用: " << current->totalCost
-                      << ", 状态: " << hosStatusToString(current->status)
-                      << std::endl;
+            printHospitalizationDetails(current);
             found = true;
         }
         current = current->next;
@@ -768,10 +748,10 @@ bool Nurse::getAllHospitalizations(Hospitalization *&hosHead)
     }
     return found;
 }
-
+// 根据患者ID查询住院记录
 bool Nurse::getHospitalizationsByPatientID(Hospitalization *&hosHead)
 {
-    std::string patientID = inputRecordIDCheck("请输入要查询的患者ID: ", {"pat"});
+    std::string patientID = inputIDCheck("请输入要查询的患者ID: ");
     Hospitalization *current = hosHead;
     bool found = false;
 
@@ -779,12 +759,7 @@ bool Nurse::getHospitalizationsByPatientID(Hospitalization *&hosHead)
     {
         if (!current->isDeleted && current->department == this->department && current->patientID == patientID)
         {
-            std::cout << "住院ID: " << current->hospitalizationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 病房类型: " << current->wardType
-                      << ", 床位号: " << current->bedNumber
-                      << ", 状态: " << hosStatusToString(current->status)
-                      << std::endl;
+            printHospitalizationDetails(current);
             found = true;
         }
         current = current->next;
@@ -796,7 +771,7 @@ bool Nurse::getHospitalizationsByPatientID(Hospitalization *&hosHead)
     }
     return found;
 }
-
+// 根据看诊ID查询住院记录
 bool Nurse::getHospitalizationsByConsultationID(Hospitalization *&hosHead)
 {
     std::string conID = inputRecordIDCheck("请输入要查询的看诊ID: ", {"con"});
@@ -807,11 +782,7 @@ bool Nurse::getHospitalizationsByConsultationID(Hospitalization *&hosHead)
     {
         if (!current->isDeleted && current->department == this->department && current->consultationID == conID)
         {
-            std::cout << "住院ID: " << current->hospitalizationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 状态: " << hosStatusToString(current->status)
-                      << std::endl;
+            printHospitalizationDetails(current);
             found = true;
         }
         current = current->next;
@@ -823,7 +794,6 @@ bool Nurse::getHospitalizationsByConsultationID(Hospitalization *&hosHead)
     }
     return found;
 }
-
 bool Nurse::getHospitalizationsByID(Hospitalization *&hosHead)
 {
     std::string hosID = inputRecordIDCheck("请输入要查询的住院ID: ", {"hos"});
@@ -833,13 +803,7 @@ bool Nurse::getHospitalizationsByID(Hospitalization *&hosHead)
     {
         if (!current->isDeleted && current->department == this->department && current->hospitalizationID == hosID)
         {
-            std::cout << "住院ID: " << current->hospitalizationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 护士ID: " << current->nurseID
-                      << ", 病房类型: " << current->wardType
-                      << ", 床位号: " << current->bedNumber
-                      << ", 状态: " << hosStatusToString(current->status)
-                      << std::endl;
+            printHospitalizationDetails(current);
             return true;
         }
         current = current->next;
@@ -848,7 +812,7 @@ bool Nurse::getHospitalizationsByID(Hospitalization *&hosHead)
     std::cout << "未找到该住院记录。" << std::endl;
     return false;
 }
-
+// 根据住院状态查询住院记录
 bool Nurse::getHospitalizationsByStatus(Hospitalization *&hosHead)
 {
     std::cout << "请选择住院状态：" << std::endl;
@@ -873,12 +837,7 @@ bool Nurse::getHospitalizationsByStatus(Hospitalization *&hosHead)
     {
         if (!current->isDeleted && current->department == this->department && current->status == targetStatus)
         {
-            std::cout << "住院ID: " << current->hospitalizationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 病房类型: " << current->wardType
-                      << ", 床位号: " << current->bedNumber
-                      << ", 状态: " << hosStatusToString(current->status)
-                      << std::endl;
+            printHospitalizationDetails(current);
             found = true;
         }
         current = current->next;
@@ -890,11 +849,11 @@ bool Nurse::getHospitalizationsByStatus(Hospitalization *&hosHead)
     }
     return found;
 }
-
-bool Nurse::getHospitalizationsByTimeRange(Hospitalization *&hosHead)
+// 根据入院时间范围查询住院记录
+bool Nurse::getHospitalizationsByAdmitTimeRange(Hospitalization *&hosHead)
 {
-    std::string startDate = inputDateCheck("请输入查询的开始日期 (格式 YYYY-MM-DD): ");
-    std::string endDate = inputDateCheck("请输入查询的结束日期 (格式 YYYY-MM-DD): ");
+    std::string startDate = inputDateCheck("请输入要查询的入院开始日期: ");
+    std::string endDate = inputDateCheck("请输入要查询的入院结束日期: ");
 
     Hospitalization *current = hosHead;
     bool found = false;
@@ -903,14 +862,10 @@ bool Nurse::getHospitalizationsByTimeRange(Hospitalization *&hosHead)
     {
         if (!current->isDeleted && current->department == this->department)
         {
-            std::string applyDate = current->applyTime.substr(0, 10);
-            if (applyDate >= startDate && applyDate <= endDate)
+            std::string admitDate = current->admitTime.substr(0, 10);
+            if (admitDate >= startDate && admitDate <= endDate)
             {
-                std::cout << "住院ID: " << current->hospitalizationID
-                          << ", 患者ID: " << current->patientID
-                          << ", 申请时间: " << current->applyTime
-                          << ", 状态: " << hosStatusToString(current->status)
-                          << std::endl;
+                printHospitalizationDetails(current);
                 found = true;
             }
         }
@@ -923,7 +878,120 @@ bool Nurse::getHospitalizationsByTimeRange(Hospitalization *&hosHead)
     }
     return found;
 }
+// 根据出院时间范围查询住院记录
+bool Nurse::getHospitalizationsByDischargeTimeRange(Hospitalization *&hosHead)
+{
+    std::string startDate = inputDateCheck("请输入要查询的出院开始日期: ");
+    std::string endDate = inputDateCheck("请输入要查询的出院结束日期: ");
 
+    Hospitalization *current = hosHead;
+    bool found = false;
+
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == this->department)
+        {
+            std::string dischargeDate = current->dischargeTime.substr(0, 10);
+            if (dischargeDate >= startDate && dischargeDate <= endDate)
+            {
+                printHospitalizationDetails(current);
+                found = true;
+            }
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到指定时间范围内住院记录。" << std::endl;
+    }
+    return found;
+}
+// 根据病房类型查询住院记录
+bool Nurse::getHospitalizationsByWardType(Hospitalization *&hosHead)
+{
+    std::string wardType = HospitalizationWardTypeMenu();
+
+    if (wardType == "0")
+    {
+        std::cout << "已取消查询操作！" << std::endl;
+        return false;
+    }
+
+    Hospitalization *current = hosHead;
+    bool found = false;
+
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == this->department && current->wardType == wardType)
+        {
+            printHospitalizationDetails(current);
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到该病房类型的住院记录。" << std::endl;
+    }
+    return found;
+}
+// 根据医生ID查询住院记录
+bool Nurse::getHospitalizationsByDoctorID(Hospitalization *&hosHead)
+{
+    std::string doctorID = inputIDCheck("请输入要查询的医生ID: ");
+    Hospitalization *current = hosHead;
+    bool found = false;
+
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == this->department && current->doctorID == doctorID)
+        {
+            printHospitalizationDetails(current);
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到该医生关联的住院记录。" << std::endl;
+    }
+    return found;
+}
+// 根据床位号查询住院记录
+bool Nurse::getHospitalizationsByBedNumber(Hospitalization *&hosHead)
+{
+    std::string wardtype = HospitalizationWardTypeMenu();
+    if (wardtype == "0")
+    {
+        std::cout << "已取消查询操作！" << std::endl;
+        return false;
+    }
+
+    std::string bedNumber = inputBedNumberCheck("请填写要查询的床位信息: ", this->department, wardtype);
+    Hospitalization *current = hosHead;
+    bool found = false;
+
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == this->department && current->bedNumber == bedNumber)
+        {
+            printHospitalizationDetails(current);
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到该床位号的住院记录。" << std::endl;
+    }
+    return found;
+}
+
+// 护士修改住院记录状态
 void Nurse::setHospitalizationStatus(Hospitalization *&target)
 {
     std::cout << "当前状态: " << hosStatusToString(target->status) << std::endl;
@@ -945,13 +1013,13 @@ void Nurse::setHospitalizationStatus(Hospitalization *&target)
     target->status = static_cast<HospitalizationStatus>(choice);
     std::cout << "住院状态已更新！" << std::endl;
 }
-
+// 护士分配自己负责的住院记录
 void Nurse::assignNurseToHospitalization(Hospitalization *&target)
 {
     target->nurseID = this->nurseID;
     std::cout << "已将当前护士分配到该住院记录。" << std::endl;
 }
-
+// 护士分配床位给住院患者
 void Nurse::assignBed(Hospitalization *&target, bedInfo *&bedHead)
 {
     if (target->status != HospitalizationStatus::PAID)
@@ -970,12 +1038,7 @@ void Nurse::assignBed(Hospitalization *&target, bedInfo *&bedHead)
             current->wardType == target->wardType &&
             current->status == bedStatus::AVAILABLE)
         {
-            std::cout << "床位ID: " << current->bedID
-                      << ", 区域号: " << current->areaNumber
-                      << ", 病房号: " << current->wardNumber
-                      << ", 床号: " << current->bedNumber
-                      << ", 备注: " << current->note
-                      << std::endl;
+            printBedDetails(current);
             found = true;
         }
         current = current->next;
@@ -987,7 +1050,7 @@ void Nurse::assignBed(Hospitalization *&target, bedInfo *&bedHead)
         return;
     }
 
-    std::string bedID = inputStringCheck("请输入要分配的床位ID: ");
+    std::string bedID = inputBedNumberCheck("请填写要分配的床位信息: ", this->department, target->wardType);
 
     current = bedHead;
     while (current != nullptr)
@@ -1020,7 +1083,7 @@ void Nurse::assignBed(Hospitalization *&target, bedInfo *&bedHead)
 
     std::cout << "指定床位不可用，分配失败！" << std::endl;
 }
-
+// 护士转床操作
 void Nurse::transferBed(Hospitalization *&target, bedInfo *&bedHead)
 {
     if (target->status != HospitalizationStatus::ADMITTED)
@@ -1059,11 +1122,7 @@ void Nurse::transferBed(Hospitalization *&target, bedInfo *&bedHead)
             current->wardType == target->wardType &&
             current->status == bedStatus::AVAILABLE)
         {
-            std::cout << "床位ID: " << current->bedID
-                      << ", 区域号: " << current->areaNumber
-                      << ", 病房号: " << current->wardNumber
-                      << ", 床号: " << current->bedNumber
-                      << std::endl;
+            printBedDetails(current);
             found = true;
         }
         current = current->next;
@@ -1075,7 +1134,7 @@ void Nurse::transferBed(Hospitalization *&target, bedInfo *&bedHead)
         return;
     }
 
-    std::string newBedID = inputStringCheck("请输入新床位ID: ");
+    std::string newBedID = inputBedNumberCheck("请填写要转入的新床位信息: ", this->department, target->wardType);
 
     current = bedHead;
     while (current != nullptr)
@@ -1107,7 +1166,7 @@ void Nurse::transferBed(Hospitalization *&target, bedInfo *&bedHead)
 
     std::cout << "新床位无效，转床失败！" << std::endl;
 }
-
+// 护士办理患者出院
 void Nurse::dischargePatient(Hospitalization *&target, bedInfo *&bedHead)
 {
     if (target->status != HospitalizationStatus::ADMITTED)
@@ -1136,24 +1195,117 @@ void Nurse::dischargePatient(Hospitalization *&target, bedInfo *&bedHead)
 
     std::cout << "患者已办理出院，床位已释放为清洁中状态！" << std::endl;
 }
+// 修改病房类型
+void Nurse::setHospitalizationWardType(Hospitalization *&target)
+{
+    std::cout << "当前病房类型: " << target->wardType << std::endl;
 
+    std::string newWardType = HospitalizationWardTypeMenu();
+    if (newWardType == "0")
+    {
+        std::cout << "已取消修改操作！" << std::endl;
+        return;
+    }
+
+    target->wardType = newWardType;
+    std::cout << "病房类型已更新！" << std::endl;
+}
+// 护士逻辑删除住院记录
 void Nurse::deleteHospitalization(Hospitalization *&target)
 {
     target->isDeleted = true;
     std::cout << "住院记录已逻辑删除！" << std::endl;
 }
+// 根据开具住院证的看诊信息创建住院记录
+void Nurse::createHospitalization(Hospitalization *&hosHead, Consultation *&conHead, int &idCounter)
+{
 
-void Nurse::manageHospitalizations(Hospitalization *&hosHead, bedInfo *&bedHead)
+    std::cout << "正在查询当前科室中开具住院证的看诊记录..." << std::endl;
+    Consultation *current = conHead;
+    bool found = false;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == this->department && current->isHospitalizationRecommended)
+        {
+            std::cout << "看诊ID: " << current->consultationID
+                      << ", 挂号ID: " << current->registrationID
+                      << ", 患者ID: " << current->patientID
+                      << ", 看诊时间: " << current->consultationTime
+                      << ", 科室: " << current->department
+                      << ", 主诉: " << current->chiefComplaint
+                      << ", 现病史: " << current->historyOfPresentIllness
+                      << ", 既往史: " << current->pastMedicalHistory
+                      << ", 家族史: " << current->familyHistory
+                      << ", 初步诊断: " << current->preliminaryDiagnosis
+                      << ", 检查项目数: " << current->examinationlist.size()
+                      << ", 处方数: " << current->prescriptions.size()
+                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
+                      << ", 备注: " << current->note
+                      << std::endl;
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到开具住院证的看诊记录！无法创建住院记录" << std::endl;
+        return;
+    }
+
+    std::string conID = inputRecordIDCheck("请输入要创建住院记录的看诊ID: ", {"con"});
+    current = conHead;
+
+    while (current)
+    {
+        if (!current->isDeleted && current->department == this->department && current->isHospitalizationRecommended && current->consultationID == conID)
+        {
+            break;
+        }
+        current = current->next;
+    }
+
+    if (!current)
+    {
+        std::cout << "未找到指定看诊记录！无法创建住院记录" << std::endl;
+        return;
+    }
+
+    Hospitalization *newHos = new Hospitalization();
+    newHos->doctorID = current->doctorID;
+    newHos->nurseID = this->nurseID;
+    newHos->patientID = current->patientID;
+    newHos->consultationID = current->consultationID;
+    newHos->department = current->department;
+    newHos->applyTime = MyTime::getInstance().getTime();
+    newHos->hospitalizationID = "hos" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0');
+
+    // 将新住院记录插入链表头部
+    newHos->next = hosHead;
+    if (hosHead)
+    {
+        hosHead->prev = newHos;
+    }
+    hosHead = newHos;
+    std::cout << "住院记录创建成功！住院ID: " << newHos->hospitalizationID << std::endl;
+}
+// 护士修改住院记录押金
+void Nurse::setHospitalizationDeposit(Hospitalization *&target)
+{
+    std::cout << "当前押金: " << target->deposit << std::endl;
+    double newDeposit = inputFeeCheck("请输入新的押金金额: ");
+    target->deposit = newDeposit;
+    std::cout << "押金已更新！当前押金: " << target->deposit << std::endl;
+}
+
+// 护士管理住院记录主函数
+void Nurse::manageHospitalizations(Hospitalization *&hosHead, Consultation *&conHead, bedInfo *&bedHead, int &idCounter)
 {
     while (true)
     {
-        std::cout << "\n========== 护士-住院记录管理 ==========" << std::endl;
-        std::cout << "1. 查看住院记录" << std::endl;
-        std::cout << "2. 修改住院记录" << std::endl;
-        std::cout << "3. 删除住院记录" << std::endl;
-        std::cout << "0. 返回上一级" << std::endl;
 
-        int choice = selectIntCheck(0, 3);
+        int choice = nurseHospitalizationManagementMenu();
 
         if (choice == 0)
         {
@@ -1163,31 +1315,50 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, bedInfo *&bedHead)
         {
             while (true)
             {
-                std::cout << "\n------ 查看住院记录 ------" << std::endl;
-                std::cout << "1. 查看本科室全部住院记录" << std::endl;
-                std::cout << "2. 按患者ID查询" << std::endl;
-                std::cout << "3. 按看诊ID查询" << std::endl;
-                std::cout << "4. 按住院ID查询" << std::endl;
-                std::cout << "5. 按状态查询" << std::endl;
-                std::cout << "6. 按时间范围查询" << std::endl;
-                std::cout << "0. 返回上一级" << std::endl;
-
-                int viewChoice = selectIntCheck(0, 6);
+                int viewChoice = nurseHospitalizationViewMenu();
 
                 if (viewChoice == 0)
                     break;
                 else if (viewChoice == 1)
+                {
                     getAllHospitalizations(hosHead);
+                }
                 else if (viewChoice == 2)
-                    getHospitalizationsByPatientID(hosHead);
-                else if (viewChoice == 3)
-                    getHospitalizationsByConsultationID(hosHead);
-                else if (viewChoice == 4)
+                {
                     getHospitalizationsByID(hosHead);
+                }
+                else if (viewChoice == 3)
+                {
+                    getHospitalizationsByPatientID(hosHead);
+                }
+                else if (viewChoice == 4)
+                {
+                    getHospitalizationsByAdmitTimeRange(hosHead);
+                }
                 else if (viewChoice == 5)
-                    getHospitalizationsByStatus(hosHead);
+                {
+                    getHospitalizationsByDischargeTimeRange(hosHead);
+                }
                 else if (viewChoice == 6)
-                    getHospitalizationsByTimeRange(hosHead);
+                {
+                    getHospitalizationsByStatus(hosHead);
+                }
+                else if (viewChoice == 7)
+                {
+                    getHospitalizationsByWardType(hosHead);
+                }
+                else if (viewChoice == 8)
+                {
+                    getHospitalizationsByBedNumber(hosHead);
+                }
+                else if (viewChoice == 9)
+                {
+                    getHospitalizationsByDoctorID(hosHead);
+                }
+                else if (viewChoice == 10)
+                {
+                    getHospitalizationsByConsultationID(hosHead);
+                }
 
                 pause();
             }
@@ -1221,28 +1392,27 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, bedInfo *&bedHead)
 
             while (true)
             {
-                std::cout << "\n------ 修改住院记录 ------" << std::endl;
-                std::cout << "1. 修改住院状态" << std::endl;
-                std::cout << "2. 分配当前护士" << std::endl;
-                std::cout << "3. 分配床位" << std::endl;
-                std::cout << "4. 调整床位" << std::endl;
-                std::cout << "5. 办理出院" << std::endl;
-                std::cout << "0. 返回上一级" << std::endl;
+                std::cout << "正在修改的住院记录详情：" << std::endl;
+                printHospitalizationDetails(target);
 
-                int modifyChoice = selectIntCheck(0, 5);
+                int modifyChoice = nurseHospitalizationModificationMenu();
 
                 if (modifyChoice == 0)
                     break;
                 else if (modifyChoice == 1)
                     setHospitalizationStatus(target);
                 else if (modifyChoice == 2)
-                    assignNurseToHospitalization(target);
+                    setHospitalizationWardType(target);
                 else if (modifyChoice == 3)
-                    assignBed(target, bedHead);
+                    assignNurseToHospitalization(target);
                 else if (modifyChoice == 4)
-                    transferBed(target, bedHead);
+                    assignBed(target, bedHead);
                 else if (modifyChoice == 5)
+                    transferBed(target, bedHead);
+                else if (modifyChoice == 6)
                     dischargePatient(target, bedHead);
+                else if (modifyChoice == 7)
+                    setHospitalizationDeposit(target);
 
                 pause();
             }
@@ -1274,6 +1444,9 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, bedInfo *&bedHead)
                 continue;
             }
 
+            std::cout << "正在删除的住院记录详情：" << std::endl;
+            printHospitalizationDetails(target);
+
             std::cout << "确认删除该住院记录吗？\n1. 确认\n0. 取消" << std::endl;
             int confirmChoice = selectIntCheck(0, 1);
             if (confirmChoice == 1)
@@ -1284,6 +1457,10 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, bedInfo *&bedHead)
             {
                 std::cout << "已取消删除操作！" << std::endl;
             }
+            pause();
+        }else if (choice == 4)
+        {
+            createHospitalization(hosHead, conHead, idCounter);
             pause();
         }
     }
