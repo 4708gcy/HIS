@@ -31,7 +31,6 @@ public:
 
     bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
 
-
     Pharmacist *next = nullptr; // 链表指针
     Pharmacist *prev = nullptr; // 双向链表前一个节点指针
 
@@ -61,59 +60,53 @@ public:
     void setInventoryManageCount(int count);
     void setIsOnDuty(bool onDuty);
 
-    // // ==================== 统计辅助 ====================
-    // void increaseReviewCount();
-    // void increaseDispenseCount();
-    // void increaseInventoryManageCount();
+    // ==================== 统计辅助 ====================
+    void increaseReviewCount();
+    void increaseDispenseCount();
+    void increaseInventoryManageCount();
 
-    // // ==================== 文件操作 ====================
-    // bool loadFromFile(const std::string &pharmacistID);
-    // bool saveToFile() const;
-    // bool updateToFile() const;
-    // bool deleteFromFile();
+    // ==================== 用药记录管理 ====================
+    bool getAllMedicationRecords(MedicationRecord *&medRecHead);
+    bool getMedicationRecordsByPatientID(MedicationRecord *&medRecHead);
+    bool getMedicationRecordsByConsultationID(MedicationRecord *&medRecHead);
+    bool getMedicationRecordsByID(MedicationRecord *&medRecHead);
+    bool getMedicationRecordsByStatus(MedicationRecord *&medRecHead);
+    bool getMedicationRecordsByReviewStatus(MedicationRecord *&medRecHead);
+    bool getMedicationRecordsByTimeRange(MedicationRecord *&medRecHead);
 
-    // // ==================== 药房业务接口 ====================
-    // /**
-    //  * @brief 审核用药记录
-    //  * @param recordID 用药记录ID
-    //  * @return 审核成功返回 true，否则返回 false
-    //  */
-    // bool reviewMedicationRecord(const std::string &recordID);
+    void setMedicationRecordStatus(MedicationRecord *&target);
+    void setMedicationRecordReviewStatus(MedicationRecord *&target);
+    void setMedicationRecordNote(MedicationRecord *&target);
+    void assignPharmacistToMedicationRecord(MedicationRecord *&target);
+    bool dispenseMedicine(MedicationRecord *&target, Medicine *&medHead);
+    void deleteMedicationRecord(MedicationRecord *&target);
+    void manageMedicationRecords(MedicationRecord *&medRecHead, Medicine *&medHead);
 
-    // /**
-    //  * @brief 发放药品
-    //  * @param prescriptionID 处方ID
-    //  * @return 发药成功返回 true，否则返回 false
-    //  */
-    // bool dispenseMedicine(const std::string &prescriptionID);
+    // ==================== 药品信息管理 ====================
+    bool getAllMedicines(Medicine *&medHead);
+    bool getMedicinesByID(Medicine *&medHead);
+    bool getMedicinesByName(Medicine *&medHead);
+    bool getMedicinesByStatus(Medicine *&medHead);
 
-    // /**
-    //  * @brief 增加药品库存
-    //  * @param medicineID 药品ID
-    //  * @param amount 增加数量
-    //  * @return 操作成功返回 true，否则返回 false
-    //  */
-    // bool addMedicineStock(const std::string &medicineID, int amount);
+    void setMedicineStatus(Medicine *&target);
+    void setMedicineName(Medicine *&target);
+    void setMedicineSpecification(Medicine *&target);
+    void setMedicineManufacturer(Medicine *&target);
+    void setMedicinePurchasePrice(Medicine *&target);
+    void setMedicineSalePrice(Medicine *&target);
+    void setMedicineSafetyStock(Medicine *&target);
+    void setMedicineProductionDate(Medicine *&target);
+    void setMedicineExpiryDate(Medicine *&target);
+    void setMedicineDepartment(Medicine *&target);
+    void setMedicineSpecialFlag(Medicine *&target);
+    void setMedicineNote(Medicine *&target);
+    void deleteMedicine(Medicine *&target);
+    void addMedicineStock(Medicine *&target);
+    void reduceMedicineStock(Medicine *&target);
+    void manageMedicines(Medicine *&medHead);
 
-    // /**
-    //  * @brief 减少药品库存
-    //  * @param medicineID 药品ID
-    //  * @param amount 减少数量
-    //  * @return 操作成功返回 true，否则返回 false
-    //  */
-    // bool reduceMedicineStock(const std::string &medicineID, int amount);
-
-    // /**
-    //  * @brief 查看药剂师工作量
-    //  */
-    // void showWorkload() const;
-
-    // /**
-    //  * @brief 查看排班信息
-    //  */
-    // void showSchedule() const;
-
-    // std::string getRoleName() const;
+    // ==================== 个人信息管理 ====================
+    void managePersonalInfo();
 };
 
 #endif // PHARMACIST_H

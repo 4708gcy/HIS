@@ -138,6 +138,8 @@ public:
 
     void applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead);
     void payHospitalizationDeposit(Hospitalization *&hosHead);
+
+    void managePersonalInfo();
 };
 
 #endif // PATIENT_H

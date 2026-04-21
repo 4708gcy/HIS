@@ -58,6 +58,32 @@ Doctor *doctorLogin(Doctor *&doctorHead)
     return nullptr; // 未找到匹配的医生用户ID
 }
 
+// 患者登录函数，验证患者身份并返回登录结果
+Patient *patientLogin(Patient *&patientHead)
+{
+    Patient *currentPatient = patientHead;
+    std::string id = inputIDCheck("请输入患者用户ID: ");
+
+    while (currentPatient != nullptr)
+    {
+        if (currentPatient->getUserID() == id)
+        {
+            if (currentPatient->patientSignIn()) // 调用患者登录方法验证密码并设置登录状态
+            {
+                return currentPatient;
+            }
+            else
+            {
+                return nullptr; // 登录失败（如密码错误或账户锁定）
+            }
+        }
+        currentPatient = currentPatient->next;
+    }
+
+    std::cout << "未找到患者账号" << std::endl;
+    return nullptr; // 未找到匹配的患者用户ID
+}
+
 // 查看所有管理员信息
 void viewAllAdmins(Admin *&adminHead)
 {

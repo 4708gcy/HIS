@@ -16,7 +16,7 @@
 /**
  * @brief 护士类
  * @details 继承自 User，包含护士特有的等级、科室、护理任务等信息，
- *          并提供护理操作、床位管理及菜单接口。
+ *          并提供护理操作、床位管理、检查记录管理及个人信息管理接口。
  */
 class Nurse : public User
 {
@@ -58,67 +58,60 @@ public:
     void setBedManageCount(int count);
     void setIsOnDuty(bool onDuty);
 
-    // // ==================== 统计辅助 ====================
-    // void increasePatientCareCount();
-    // void increaseBedManageCount();
+    // ==================== 统计辅助 ====================
+    void increasePatientCareCount();
+    void increaseBedManageCount();
 
-    // // ==================== 文件操作 ====================
-    // bool loadFromFile(const std::string &nurseID);
-    // bool saveToFile() const;
-    // bool updateToFile() const;
-    // bool deleteFromFile();
+    // ==================== 检查记录管理 ====================
+    bool getAllExaminations(Examination *&exaHead);
+    bool getExaminationsByPatientID(Examination *&exaHead);
+    bool getExaminationsByConsultationID(Examination *&exaHead);
+    bool getExaminationsByID(Examination *&exaHead);
+    bool getExaminationsByTimeRange(Examination *&exaHead);
+    bool getExaminationsByItemName(Examination *&exaHead);
+    bool getExaminationsByStatus(Examination *&exaHead);
 
-    // // ==================== 护士业务接口 ====================
+    void setExaminationStatus(Examination *&target);
+    void setExaminationReport(Examination *&target); // 护士录入/更新体征
+    void setExaminationReportSummary(Examination *&target);
+    void setExaminationAttachments(Examination *&target);
+    void setExaminationNote(Examination *&target);
+    void deleteExamination(Examination *&target);
+    void manageExaminations(Examination *&exaHead);
 
-    // /**
-    //  * @brief 记录患者生命体征
-    //  * @param patientID 患者ID
-    //  * @param examinationID 检查记录ID
-    //  * @return 成功返回 true，否则返回 false
-    //  */
-    // bool recordVitalSigns(const std::string &patientID, const std::string &examinationID);
+    // ==================== 住院/床位管理 ====================
+    bool getAllHospitalizations(Hospitalization *&hosHead);
+    bool getHospitalizationsByPatientID(Hospitalization *&hosHead);
+    bool getHospitalizationsByConsultationID(Hospitalization *&hosHead);
+    bool getHospitalizationsByID(Hospitalization *&hosHead);
+    bool getHospitalizationsByStatus(Hospitalization *&hosHead);
+    bool getHospitalizationsByTimeRange(Hospitalization *&hosHead);
 
-    // /**
-    //  * @brief 分配床位
-    //  * @param patientID 患者ID
-    //  * @param bedID 床位ID
-    //  * @return 成功返回 true，否则返回 false
-    //  */
-    // bool assignBed(const std::string &patientID, const std::string &bedID);
+    void setHospitalizationStatus(Hospitalization *&target);
+    void assignNurseToHospitalization(Hospitalization *&target);
+    void assignBed(Hospitalization *&target, bedInfo *&bedHead);
+    void transferBed(Hospitalization *&target, bedInfo *&bedHead);
+    void dischargePatient(Hospitalization *&target, bedInfo *&bedHead);
+    void deleteHospitalization(Hospitalization *&target);
+    void manageHospitalizations(Hospitalization *&hosHead, bedInfo *&bedHead);
 
-    // /**
-    //  * @brief 调整床位（转床）
-    //  * @param patientID 患者ID
-    //  * @param oldBedID 原床位ID
-    //  * @param newBedID 新床位ID
-    //  * @return 成功返回 true，否则返回 false
-    //  */
-    // bool transferBed(const std::string &patientID,
-    //                  const std::string &oldBedID,
-    //                  const std::string &newBedID);
+    // ==================== 床位信息管理 ====================
+    bool getAllBeds(bedInfo *&bedHead);
+    bool getBedsByStatus(bedInfo *&bedHead);
+    bool getBedsByPatientID(bedInfo *&bedHead);
+    bool getBedsByNurseID(bedInfo *&bedHead);
+    bool getBedsByDepartment(bedInfo *&bedHead);
+    bool getBedByID(bedInfo *&bedHead);
 
-    // /**
-    //  * @brief 释放床位（患者出院）
-    //  * @param bedID 床位ID
-    //  * @return 成功返回 true，否则返回 false
-    //  */
-    // bool releaseBed(const std::string &bedID);
+    void setBedStatus(bedInfo *&target);
+    void setBedNote(bedInfo *&target);
+    void setBedVitalSigns(bedInfo *&target);
+    void deleteBed(bedInfo *&target);
+    bool createBed(bedInfo *&bedHead, int &idCounter);
+    void manageBeds(bedInfo *&bedHead, int &idCounter);
 
-    // /**
-    //  * @brief 查看护理工作量
-    //  */
-    // void showWorkload() const;
-
-    // /**
-    //  * @brief 查看排班信息
-    //  */
-    // void showSchedule() const;
-
-    // /**
-    //  * @brief 获取角色名称
-    //  * @return 返回字符串 "Nurse"
-    //  */
-    // std::string getRoleName() const;
+    // ==================== 个人信息管理 ====================
+    void managePersonalInfo();
 };
 
 #endif // NURSE_H

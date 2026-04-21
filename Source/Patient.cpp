@@ -1687,6 +1687,8 @@ bool Patient::getMedicationsByTimeRange(MedicationRecord *&medHead)
     bool found = false;
     while (current != nullptr)
     {
+        std::string orderDate = current->createTime.substr(0, 10);
+
         if (!current->isDeleted && current->patientID == this->patientID && current->createTime >= startTime && current->createTime <= endTime)
         {
             printMedicationRecord(current);
@@ -1884,7 +1886,6 @@ bool Patient::getAllHospitalizations(Hospitalization *&hosHead)
         std::cout << "没找到任何住院记录。" << std::endl;
     return found;
 }
-
 bool Patient::getHospitalizationByID(Hospitalization *&hosHead)
 {
     std::string hosID = inputRecordIDCheck("请输入要查询的住院记录ID: ", {"hos"});
@@ -1904,19 +1905,18 @@ bool Patient::getHospitalizationByID(Hospitalization *&hosHead)
         std::cout << "没找到指定的住院记录。" << std::endl;
     return found;
 }
-
 bool Patient::getHospitalizationsByAdmitTimeRange(Hospitalization *&hosHead)
 {
-    std::string startTime, endTime;
-    std::cout << "请输入查询的入院开始时间 (如 2026-04-10): ";
-    std::cin >> startTime;
-    std::cout << "请输入查询的入院结束时间 (如 2026-04-20): ";
-    std::cin >> endTime;
+    std::string startTime = inputDateCheck("请输入查询的申请开始时间: ");
+    std::string endTime = inputDateCheck("请输入查询的申请结束时间: ");
+
     Hospitalization *current = hosHead;
     bool found = false;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->patientID == this->patientID && current->admitTime >= startTime && current->admitTime <= endTime && current->admitTime != "#")
+        std::string orderDate = current->applyTime.substr(0, 10);
+
+        if (!current->isDeleted && current->patientID == this->patientID && orderDate >= startTime && orderDate <= endTime && orderDate != "#")
         {
             printHospitalizationRecord(current, this);
             found = true;
@@ -1924,10 +1924,9 @@ bool Patient::getHospitalizationsByAdmitTimeRange(Hospitalization *&hosHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到对应入院时间范围的记录。" << std::endl;
+        std::cout << "没找到对应申请时间范围的记录。" << std::endl;
     return found;
 }
-
 bool Patient::getHospitalizationsByDischargeTimeRange(Hospitalization *&hosHead)
 {
     std::string startTime = inputDateCheck("请输入查询的出院开始时间: ");
@@ -1937,7 +1936,9 @@ bool Patient::getHospitalizationsByDischargeTimeRange(Hospitalization *&hosHead)
     bool found = false;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->patientID == this->patientID && current->dischargeTime >= startTime && current->dischargeTime <= endTime && current->dischargeTime != "#")
+        std::string orderDate = current->dischargeTime.substr(0, 10);
+
+        if (!current->isDeleted && current->patientID == this->patientID && orderDate >= startTime && orderDate <= endTime && orderDate != "#")
         {
             printHospitalizationRecord(current, this);
             found = true;
@@ -1948,7 +1949,6 @@ bool Patient::getHospitalizationsByDischargeTimeRange(Hospitalization *&hosHead)
         std::cout << "没找到对应出院时间范围的记录。" << std::endl;
     return found;
 }
-
 bool Patient::getHospitalizationsByStatus(Hospitalization *&hosHead, int select)
 {
     int sChoice;
@@ -1982,12 +1982,9 @@ bool Patient::getHospitalizationsByStatus(Hospitalization *&hosHead, int select)
         std::cout << "没有找到对应状态的住院记录。" << std::endl;
     return found;
 }
-
 bool Patient::getHospitalizationsByDepartment(Hospitalization *&hosHead)
 {
-    std::string dept;
-    std::cout << "请输入查询的住院科室名称: ";
-    std::cin >> dept;
+    std::string dept = inputDepartmentCheck("请输入要查询的科室: ");
     Hospitalization *current = hosHead;
     bool found = false;
     while (current != nullptr)
@@ -2003,11 +2000,11 @@ bool Patient::getHospitalizationsByDepartment(Hospitalization *&hosHead)
         std::cout << "没找到对应科室的住院记录。" << std::endl;
     return found;
 }
-
 bool Patient::getHospitalizationsByWardType(Hospitalization *&hosHead)
 {
     std::string type = HospitalizationWardTypeMenu();
-    if(type == "0") return false;
+    if (type == "0")
+        return false;
     Hospitalization *current = hosHead;
     bool found = false;
     while (current != nullptr)
@@ -2023,16 +2020,15 @@ bool Patient::getHospitalizationsByWardType(Hospitalization *&hosHead)
         std::cout << "没找到对应病房类型的住院记录。" << std::endl;
     return found;
 }
-
 bool Patient::getHospitalizationsByBedNumber(Hospitalization *&hosHead)
 {
-    std::string dept;
-    std::cout << "请输入科室名称: ";
-    std::cin >> dept;
+    std::string dept = inputDepartmentCheck("请输入要查询的科室: ");
     std::string wType = HospitalizationWardTypeMenu();
-    if(wType == "0") return false;
+    if (wType == "0")
+        return false;
     std::string bedID = inputBedNumberCheck("请输入要查询的床位号信息: ", dept, wType);
-    if(bedID == "") return false;
+    if (bedID == "")
+        return false;
 
     Hospitalization *current = hosHead;
     bool found = false;
@@ -2049,7 +2045,6 @@ bool Patient::getHospitalizationsByBedNumber(Hospitalization *&hosHead)
         std::cout << "没找到对应床位号的住院记录。" << std::endl;
     return found;
 }
-
 bool Patient::getHospitalizationsByDoctorID(Hospitalization *&hosHead)
 {
     std::string docID = inputIDCheck("请输入申请医生的ID: ");
@@ -2068,7 +2063,6 @@ bool Patient::getHospitalizationsByDoctorID(Hospitalization *&hosHead)
         std::cout << "没找到对应医生的住院记录。" << std::endl;
     return found;
 }
-
 bool Patient::getHospitalizationsByConsultationID(Hospitalization *&hosHead)
 {
     std::string conID = inputRecordIDCheck("请输入看诊记录ID: ", {"con"});
@@ -2087,9 +2081,10 @@ bool Patient::getHospitalizationsByConsultationID(Hospitalization *&hosHead)
         std::cout << "没找到对应看诊记录的住院记录。" << std::endl;
     return found;
 }
-
 void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
 {
+    getHospitalizationsByStatus(hosHead, 2); // 2 对应已入院状态
+
     std::string hosID = inputRecordIDCheck("请输入您要申请出院的住院记录ID: ", {"hos"});
     Hospitalization *current = hosHead;
     while (current != nullptr)
@@ -2114,14 +2109,15 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
     int days = 1;
     if (current->admitTime.length() >= 10)
     {
-        int y1=0,m1=0,d1=0,y2=0,m2=0,d2=0;
+        int y1 = 0, m1 = 0, d1 = 0, y2 = 0, m2 = 0, d2 = 0;
         sscanf(current->admitTime.c_str(), "%d-%d-%d", &y1, &m1, &d1);
         std::string nowTime = MyTime::getInstance().getTime();
         sscanf(nowTime.c_str(), "%d-%d-%d", &y2, &m2, &d2);
-        int day1 = y1*365 + m1*30 + d1;
-        int day2 = y2*365 + m2*30 + d2;
+        int day1 = y1 * 365 + m1 * 30 + d1;
+        int day2 = y2 * 365 + m2 * 30 + d2;
         days = day2 - day1;
-        if (days <= 0) days = 1;
+        if (days <= 0)
+            days = 1;
     }
     double calculatedCost = calculateHospitalizationFee(current->wardType, days);
     current->totalCost = calculatedCost;
@@ -2138,9 +2134,12 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
             std::cout << "余额不足，无法为其办理出院，请先充值!" << std::endl;
             return;
         }
-        std::cout << "是否确认扣款并办理出院? (1.确认 / 0.取消) : ";
+        std::cout << "是否确认扣款并办理出院?: ";
+        std::cout << "1. 确认" << std::endl;
+        std::cout << "0. 取消" << std::endl;
+
         int confirm = selectIntCheck(0, 1);
-        if(confirm == 1)
+        if (confirm == 1)
         {
             this->balance -= diff;
             std::cout << "扣款成功。新余额：" << this->balance << " 元。" << std::endl;
@@ -2167,7 +2166,7 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
     if (current->bedNumber != "#")
     {
         bedInfo *b = bedHead;
-        while(b)
+        while (b)
         {
             if (b->bedID == current->bedNumber && b->patientID == this->patientID)
             {
@@ -2180,13 +2179,12 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
         }
     }
 }
-
 void Patient::payHospitalizationDeposit(Hospitalization *&hosHead)
 {
     bool ishave = getHospitalizationsByStatus(hosHead, 0); // 0 对应 APPLIED
     if (!ishave)
     {
-        std::cout << "如果想为已入院的记录补交款，可以先联系护士或出院时一并结算哦。" << std::endl;
+        std::cout << "如果想为已入院的记录补交款，可以先联系护士或出院时一并结算" << std::endl;
         return;
     }
 
@@ -2210,11 +2208,11 @@ void Patient::payHospitalizationDeposit(Hospitalization *&hosHead)
     }
 
     double requiredDeposit = 1000.0; // 默认收取 1000 元作为基础押金
-    if(current->wardType == "ICU病房" || current->wardType == "VIP病房")
+    if (current->wardType == "ICU病房" || current->wardType == "VIP病房")
     {
         requiredDeposit = 5000.0;
     }
-    std::cout << "根据该记录("<< current->wardType <<")，您需要先缴纳床位押金: " << requiredDeposit << " 元。" << std::endl;
+    std::cout << "根据该记录(" << current->wardType << ")，您需要先缴纳床位押金: " << requiredDeposit << " 元。" << std::endl;
     std::cout << "您当前的余额为 " << this->balance << " 元。" << std::endl;
 
     if (this->balance < requiredDeposit)
@@ -2223,9 +2221,12 @@ void Patient::payHospitalizationDeposit(Hospitalization *&hosHead)
         return;
     }
 
-    std::cout << "是否确认缴纳? (1.确认 / 0.取消) : ";
+    std::cout << "是否确认缴纳?: ";
+    std::cout << "1. 确认" << std::endl;
+    std::cout << "0. 取消" << std::endl;
+
     int confirm = selectIntCheck(0, 1);
-    if(confirm == 1)
+    if (confirm == 1)
     {
         this->balance -= requiredDeposit;
         current->deposit += requiredDeposit;
@@ -2252,17 +2253,38 @@ void Patient::manageHospitalizations(Hospitalization *&hosHead, bedInfo *&bedHea
             int viewChoice = patientHospitalizationViewMenu();
             switch (viewChoice)
             {
-            case 1: getAllHospitalizations(hosHead); break;
-            case 2: getHospitalizationByID(hosHead); break;
-            case 3: getHospitalizationsByAdmitTimeRange(hosHead); break;
-            case 4: getHospitalizationsByDischargeTimeRange(hosHead); break;
-            case 5: getHospitalizationsByStatus(hosHead); break;
-            case 6: getHospitalizationsByDepartment(hosHead); break;
-            case 7: getHospitalizationsByWardType(hosHead); break;
-            case 8: getHospitalizationsByBedNumber(hosHead); break;
-            case 9: getHospitalizationsByDoctorID(hosHead); break;
-            case 10: getHospitalizationsByConsultationID(hosHead); break;
-            case 0: break;
+            case 1:
+                getAllHospitalizations(hosHead);
+                break;
+            case 2:
+                getHospitalizationByID(hosHead);
+                break;
+            case 3:
+                getHospitalizationsByAdmitTimeRange(hosHead);
+                break;
+            case 4:
+                getHospitalizationsByDischargeTimeRange(hosHead);
+                break;
+            case 5:
+                getHospitalizationsByStatus(hosHead);
+                break;
+            case 6:
+                getHospitalizationsByDepartment(hosHead);
+                break;
+            case 7:
+                getHospitalizationsByWardType(hosHead);
+                break;
+            case 8:
+                getHospitalizationsByBedNumber(hosHead);
+                break;
+            case 9:
+                getHospitalizationsByDoctorID(hosHead);
+                break;
+            case 10:
+                getHospitalizationsByConsultationID(hosHead);
+                break;
+            case 0:
+                break;
             }
         }
         else if (choice == 2)
@@ -2272,6 +2294,254 @@ void Patient::manageHospitalizations(Hospitalization *&hosHead, bedInfo *&bedHea
         else if (choice == 3)
         {
             payHospitalizationDeposit(hosHead);
+        }
+    }
+}
+
+// ---------------- 患者个人信息管理 ----------------
+
+void Patient::managePersonalInfo()
+{
+    while (true)
+    {
+        int choice = patientPersonalInfoManagementMenu();
+        if (choice == 0)
+        {
+            break;
+        }
+        else if (choice == 1)
+        {
+            while (true)
+            {
+                int viewChoice = patientPersonalInfoViewMenu();
+                if (viewChoice == 0)
+                {
+                    break;
+                }
+                else if (viewChoice == 1)
+                {
+                    std::cout << "ID: " << this->patientID << std::endl;
+                }
+                else if (viewChoice == 2)
+                {
+                    std::cout << "姓名: " << this->username << std::endl;
+                }
+                else if (viewChoice == 3)
+                {
+                    std::cout << "性别: " << this->gender << std::endl;
+                }
+                else if (viewChoice == 4)
+                {
+                    std::cout << "年龄: " << this->age << std::endl;
+                }
+                else if (viewChoice == 5)
+                {
+                    std::cout << "身份证号: " << this->idCardNumber << std::endl;
+                }
+                else if (viewChoice == 6)
+                {
+                    std::cout << "联系电话: " << this->telephone << std::endl;
+                }
+                else if (viewChoice == 7)
+                {
+                    std::cout << "邮箱地址: " << this->email << std::endl;
+                }
+                else if (viewChoice == 8)
+                {
+                    std::cout << "家庭住址: " << this->address << std::endl;
+                }
+                else if (viewChoice == 9)
+                {
+                    std::cout << "紧急联系人姓名: " << this->emergencyContactName << std::endl;
+                }
+                else if (viewChoice == 10)
+                {
+                    std::cout << "紧急联系人电话: " << this->emergencyContactPhone << std::endl;
+                }
+                else if (viewChoice == 11)
+                {
+                    std::cout << "过敏史: " << this->allergyHistory << std::endl;
+                }
+                else if (viewChoice == 12)
+                {
+                    std::cout << "既往病史: " << this->pastMedicalHistory << std::endl;
+                }
+                else if (viewChoice == 13)
+                {
+                    std::cout << "婚姻状况: " << patientMaritalStatusToString(this->maritalStatus) << std::endl;
+                }
+                else if (viewChoice == 14)
+                {
+                    std::cout << "账户余额: " << this->balance << " 元" << std::endl;
+                }
+                else if (viewChoice == 15)
+                {
+                    std::cout << "是否住院中: " << (this->isHospitalized ? "是" : "否") << std::endl;
+                }
+                else if (viewChoice == 16)
+                {
+                    std::cout << "累计挂号次数: " << this->registrationCount << std::endl;
+                }
+                else if (viewChoice == 17)
+                {
+                    std::cout << "累计就诊次数: " << this->consultationCount << std::endl;
+                }
+                else if (viewChoice == 18)
+                {
+                    std::cout << "累计住院次数: " << this->hospitalizationCount << std::endl;
+                }
+                else if (viewChoice == 19)
+                {
+                    std::cout << "累计用药次数: " << this->medicationCount << std::endl;
+                }
+                else if (viewChoice == 20)
+                {
+                    std::cout << "账户创建时间: " << this->createTime << std::endl;
+                }
+                pause();
+            }
+        }
+        else if (choice == 2)
+        {
+            while (true)
+            {
+                int modifyChoice = patientPersonalInfoModificationMenu();
+
+                if (modifyChoice == 0)
+                {
+                    break;
+                }
+                else if (modifyChoice == 1)
+                {
+                    std::cout << "当前的姓名: " << this->username << std::endl;
+                    this->username = inputStringCheck("请输入新的姓名: ");
+                    std::cout << "姓名已更新！" << std::endl;
+                }
+                else if (modifyChoice == 2)
+                {
+                    std::cout << "当前的性别: " << this->gender << std::endl;
+                    this->gender = inputGenderCheck("请输入新的性别: ");
+                    std::cout << "性别已更新！" << std::endl;
+                }
+                else if (modifyChoice == 3)
+                {
+                    std::cout << "当前的年龄: " << this->age << std::endl;
+                    this->age = inputAgeCheck("请输入新的年龄: ");
+                    std::cout << "年龄已更新！" << std::endl;
+                }
+                else if (modifyChoice == 4)
+                {
+                    std::cout << "当前的身份证号: " << this->idCardNumber << std::endl;
+                    this->idCardNumber = inputIDcardCheck("请输入新的身份证号: ");
+                    std::cout << "身份证号已更新！" << std::endl;
+                }
+                else if (modifyChoice == 5)
+                {
+                    std::cout << "当前的联系电话: " << this->telephone << std::endl;
+                    this->telephone = inputTelephoneCheck("请输入新的联系电话: ");
+                    std::cout << "联系电话已更新！" << std::endl;
+                }
+                else if (modifyChoice == 6)
+                {
+                    std::cout << "当前的邮箱地址: " << this->email << std::endl;
+                    this->email = inputEmailCheck("请输入新的邮箱地址: ");
+                    std::cout << "邮箱地址已更新！" << std::endl;
+                }
+                else if (modifyChoice == 7)
+                {
+                    std::cout << "当前的家庭住址: " << this->address << std::endl;
+                    this->address = inputStringCheck("请输入新的家庭住址: ");
+                    std::cout << "家庭住址已更新！" << std::endl;
+                }
+                else if (modifyChoice == 8)
+                {
+                    std::cout << "当前的紧急联系人姓名: " << this->emergencyContactName << std::endl;
+                    this->emergencyContactName = inputStringCheck("请输入新的紧急联系人姓名: ");
+                    std::cout << "紧急联系人姓名已更新！" << std::endl;
+                }
+                else if (modifyChoice == 9)
+                {
+                    std::cout << "当前的紧急联系人电话: " << this->emergencyContactPhone << std::endl;
+                    this->emergencyContactPhone = inputTelephoneCheck("请输入新的紧急联系人电话: ");
+                    std::cout << "紧急联系人电话已更新！" << std::endl;
+                }
+                else if (modifyChoice == 10)
+                {
+                    std::cout << "当前的过敏史: " << this->allergyHistory << std::endl;
+                    this->allergyHistory = inputStringCheck("请输入新的过敏史: ");
+                    std::cout << "过敏史已更新！" << std::endl;
+                }
+                else if (modifyChoice == 11)
+                {
+                    std::cout << "当前的既往病史: " << this->pastMedicalHistory << std::endl;
+                    this->pastMedicalHistory = inputStringCheck("请输入新的既往病史: ");
+                    std::cout << "既往病史已更新！" << std::endl;
+                }
+                else if (modifyChoice == 12)
+                {
+                    std::cout << "当前的婚姻状况: " << patientMaritalStatusToString(this->maritalStatus) << std::endl;
+                    std::cout << "请选择新的婚姻状况:" << std::endl;
+                    std::cout << "1. 未婚" << std::endl;
+                    std::cout << "2. 已婚" << std::endl;
+                    std::cout << "3. 离异" << std::endl;
+                    std::cout << "4. 丧偶" << std::endl;
+                    std::cout << "0. 取消修改" << std::endl;
+
+                    int maritalChoice = selectIntCheck(0, 4);
+                    if (maritalChoice == 0)
+                    {
+                        std::cout << "已取消修改操作！" << std::endl;
+                        continue;
+                    }
+                    this->maritalStatus = static_cast<MaritalStatus>(maritalChoice);
+                    std::cout << "婚姻状况已更新！" << std::endl;
+                }
+                else if (modifyChoice == 13)
+                {
+                    std::string oldpwd = inputStringCheck("请输入当前密码以验证身份: ");
+
+                    if (SHA256Verify(oldpwd, this->salt, this->kHashIterations))
+                    {
+                        std::string newpwd = inputStringCheck("请输入新的密码: ");
+                        std::string newSalt = generateSalt();
+                        std::string newHash = SHA256Encrypt(newpwd, newSalt, this->kHashIterations);
+
+                        newpwd = inputStringCheck("请再次输入新的密码以确认: ");
+
+                        if (SHA256Verify(newpwd, newHash, this->kHashIterations))
+                        {
+                            this->salt = newSalt;
+                            this->storedHash = newHash;
+
+                            std::cout << "密码更新成功！" << std::endl;
+                        }
+                        else
+                        {
+                            std::cout << "两次输入的新密码不一致，密码更新失败！" << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        std::cout << "密码验证失败，无法修改密码！" << std::endl;
+                    }
+                }
+                pause();
+            }
+        }
+        else if (choice == 3)
+        {
+            std::cout << "当前的账户余额: " << this->balance << " 元" << std::endl;
+            double amount = inputFeeCheck("请输入充值金额 (输入0取消充值): ");
+            if (amount > 0)
+            {
+                this->balance += amount;
+                std::cout << "成功充值 " << amount << " 元。当前余额: " << this->balance << " 元" << std::endl;
+            }
+            else
+            {
+                std::cout << "已取消充值。" << std::endl;
+            }
+            pause();
         }
     }
 }

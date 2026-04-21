@@ -13,8 +13,9 @@
 #include "Doctor.h"
 #include "UI.h"
 
-Admin *adminLogin(Admin *&adminHead);     // 管理员登录函数，验证管理员身份并返回登录结果
-Doctor *doctorLogin(Doctor *&doctorHead); // 医生登录函数，验证医生身份并返回登录结果
+Admin *adminLogin(Admin *&adminHead);         // 管理员登录函数，验证管理员身份并返回登录结果
+Doctor *doctorLogin(Doctor *&doctorHead);     // 医生登录函数，验证医生身份并返回登录结果
+Patient *patientLogin(Patient *&patientHead); // 患者登录函数，验证患者身份并返回登录结果
 
 void manageAdmins(Admin *&admin, int &idCounter); // 管理管理员信息
 void viewAllAdmins(Admin *&admin);                // 查看所有管理员信息

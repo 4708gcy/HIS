@@ -567,7 +567,47 @@ int main()
                 }
                 else if (roleChoice == 5) // 患者登录
                 {
-                    std::cout << "患者登录功能尚未实现，敬请期待！" << std::endl;
+                    Patient *client = patientLogin(patientHead);
+                    if (client)
+                    {
+                        while (true)
+                        {
+                            int patientChoice = patientMenu();
+                            if (patientChoice == 0)
+                            {
+                                break; // 退出登录
+                            }
+                            else if (patientChoice == 1)
+                            {
+                                client->manageRegistrations(regHead, docHead, registrationCount);
+                            }
+                            else if (patientChoice == 2)
+                            {
+                                client->manageConsultations(conHead);
+                            }
+                            else if (patientChoice == 3)
+                            {
+                                client->manageExaminations(examHead);
+                            }
+                            else if (patientChoice == 4)
+                            {
+                                client->manageMedications(medRecHead);
+                            }
+                            else if (patientChoice == 5)
+                            {
+                                client->manageHospitalizations(hosHead, bedHead);
+                            }
+                            else if (patientChoice == 6)
+                            {
+                                client->managePersonalInfo();
+                            }
+                            else
+                            {
+                                std::cout << "无效的选择! 请重新选择。" << std::endl;
+                            }
+                        }
+                    }
+                    pause();
                 }
                 else if (roleChoice == 0) // 返回上一级
                 {
@@ -581,7 +621,98 @@ int main()
         }
         else if (loginChoice == 2)
         {
-            std::cout << "请先登录管理员账号进行注册操作！" << std::endl;
+            int registerChoice = identitySelectionMenu();
+            if (registerChoice == 1) // 管理员注册
+            {
+                Admin *newAdmin = new Admin();
+                if (newAdmin->adminSignUp(adminIDCount))
+                {
+                    newAdmin->next = adminHead;
+                    adminHead = newAdmin;
+                    std::cout << "管理员注册成功" << std::endl;
+                }
+                else
+                {
+                    delete newAdmin;
+                    std::cout << "注册失败！" << std::endl;
+                }
+            }
+            else if (registerChoice == 2) // 医生注册
+            {
+                Doctor *newDoctor = new Doctor();
+                if (newDoctor->doctorSignUp(doctorIDCount))
+                {
+                    newDoctor->next = docHead;
+                    if (docHead != nullptr)
+                    {
+                        docHead->prev = newDoctor;
+                    }
+                    docHead = newDoctor;
+                    std::cout << "医生注册成功！" << std::endl;
+                }
+                else
+                {
+                    delete newDoctor;
+                    std::cout << "注册失败！" << std::endl;
+                }
+            }
+            else if (registerChoice == 3) // 护士注册
+            {
+                Nurse *newNurse = new Nurse();
+                if (newNurse->nurseSignUp(nurseIDCount))
+                {
+                    newNurse->next = nurseHead;
+                    if (nurseHead != nullptr)
+                    {
+                        nurseHead->prev = newNurse;
+                    }
+                    nurseHead = newNurse;
+                    std::cout << "护士注册成功！" << std::endl;
+                }
+                else
+                {
+                    delete newNurse;
+                    std::cout << "注册失败！" << std::endl;
+                }
+            }
+            else if (registerChoice == 4) // 药剂师注册
+            {
+                Pharmacist *newPharmacist = new Pharmacist();
+                if (newPharmacist->pharmacistSignUp(pharmacistIDCount))
+                {
+                    newPharmacist->next = phaHead;
+                    if (phaHead != nullptr)
+                    {
+                        phaHead->prev = newPharmacist;
+                    }
+                    phaHead = newPharmacist;
+                    std::cout << "药剂师注册成功！" << std::endl;
+                }
+                else
+                {
+                    delete newPharmacist;
+                    std::cout << "注册失败！" << std::endl;
+                }
+            }
+            else if (registerChoice == 5) // 患者注册
+            {
+                Patient *newPatient = new Patient();
+                if (newPatient->patientSignUp(patientIDCount))
+                {
+                    newPatient->next = patientHead;
+                    if (patientHead != nullptr)
+                    {
+                        patientHead->prev = newPatient;
+                    }
+                    patientHead = newPatient;
+                    std::cout << "患者注册成功！" << std::endl;
+                }
+                else
+                {
+                    delete newPatient;
+                    std::cout << "注册失败！" << std::endl;
+                }
+            }
             pause();
         }
         else

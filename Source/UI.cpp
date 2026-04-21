@@ -1796,3 +1796,70 @@ int patientHospitalizationViewMenu()
     int viewChoice = selectIntCheck(0, 10);
     return viewChoice;
 }
+
+// 患者个人信息管理菜单
+int patientPersonalInfoManagementMenu()
+{
+    std::cout << "------- 个人信息管理界面 -------" << std::endl;
+    std::cout << "请选择你要进行的操作:" << std::endl;
+    std::cout << "1. 查看个人信息" << std::endl;
+    std::cout << "2. 修改个人信息" << std::endl;
+    std::cout << "3. 充值账户余额" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 3);
+    return choice;
+}
+
+// 患者个人信息查看选择菜单
+int patientPersonalInfoViewMenu()
+{
+    std::cout << "请选择你要查看的个人信息内容:" << std::endl;
+    std::cout << "1. ID" << std::endl;
+    std::cout << "2. 姓名" << std::endl;
+    std::cout << "3. 性别" << std::endl;
+    std::cout << "4. 年龄" << std::endl;
+    std::cout << "5. 身份证号" << std::endl;
+    std::cout << "6. 联系电话" << std::endl;
+    std::cout << "7. 邮箱地址" << std::endl;
+    std::cout << "8. 家庭住址" << std::endl;
+    std::cout << "9. 紧急联系人姓名" << std::endl;
+    std::cout << "10. 紧急联系人电话" << std::endl;
+    std::cout << "11. 过敏史" << std::endl;
+    std::cout << "12. 既往病史" << std::endl;
+    std::cout << "13. 婚姻状况" << std::endl;
+    std::cout << "14. 账户余额" << std::endl;
+    std::cout << "15. 是否住院中" << std::endl;
+    std::cout << "16. 累计挂号次数" << std::endl;
+    std::cout << "17. 累计就诊次数" << std::endl;
+    std::cout << "18. 累计住院次数" << std::endl;
+    std::cout << "19. 累计用药次数" << std::endl;
+    std::cout << "20. 账户创建时间" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int viewChoice = selectIntCheck(0, 20);
+    return viewChoice;
+}
+
+// 患者个人信息修改菜单
+int patientPersonalInfoModificationMenu()
+{
+    std::cout << "请选择你要修改的个人信息内容:" << std::endl;
+    std::cout << "1. 姓名" << std::endl;
+    std::cout << "2. 性别" << std::endl;
+    std::cout << "3. 年龄" << std::endl;
+    std::cout << "4. 身份证号" << std::endl;
+    std::cout << "5. 联系电话" << std::endl;
+    std::cout << "6. 邮箱地址" << std::endl;
+    std::cout << "7. 家庭住址" << std::endl;
+    std::cout << "8. 紧急联系人姓名" << std::endl;
+    std::cout << "9. 紧急联系人电话" << std::endl;
+    std::cout << "10. 过敏史" << std::endl;
+    std::cout << "11. 既往病史" << std::endl;
+    std::cout << "12. 婚姻状况" << std::endl;
+    std::cout << "13. 账号密码" << std::endl;
+    std::cout << "0. 返回上级菜单" << std::endl;
+
+    int choice = selectIntCheck(0, 13);
+    return choice;
+}
