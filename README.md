@@ -13,36 +13,39 @@
  为了简化，就不使用ID来区分不同科室，而是在类的属性中添加一个表示 `科室` 的属性
  这样命名也决定了在该系统中，每一个身份最多可以容纳 99999 个不同的个体
 4. 所有人物类的数据在从文件中读取时，采用链表的存储方式，也就是每一个类中都应该添加一个属性 `next` 来保存下一个结点
- 例如
+    例如
 
- ```cpp
- class Doctor{
-    public:
-    Doctor *next;
- }
- ```
+    ```cpp
+    class Doctor{
+        public:
+        Doctor *next;
+    }
+    ```
 
 5. 所有人物类都应该继承自 User 类，否则每一个类都单独从文件中读取 "医疗信息" ，他们一旦对其中某一条信息进行修改，其他类很难获取到同步的信息，比如患者添加了一条挂号信息，但是由于类之间的独立，医生无法获取到该条信息，因此，只需要使用一个User类来保管所有的医疗信息，子类根据身份的不同来访问父类中的不同信息
+
 6. 所有人员的登录密码都需要调用SHA256加密算法进行加密，然后保存到数据库中，下面是头文件`SHA-256.h`中的三个方法：
 
- ```cpp
- // 获取随机盐(可以理解成密钥)，这个是验证密码的关键，所以每一个类中都需要添加一个属性 `Salt` 来存储密钥，写入文件的时候也需要将该属性写入
- std::string generateSalt(unsigned int len = 16);
+    ```cpp
+    // 获取随机盐(可以理解成密钥)，这个是验证密码的关键，所以每一个类中都需要添加一个属性 `Salt` 来存储密钥，写入文件的时候也需要将该属性写入
+    std::string generateSalt(unsigned int len = 16);
 
- // 密码加密，第一个参数password是明文密码，第二个参数salt是密钥，第三个参数iterations(该属性由管理员管理)是迭代次数
-  // 这里的返回结果字符串格式是 "密钥$密文"，这就是存储在文件中的密码
- std::string SHA256Encrypt(const std::string &password, const std::string &salt, int iterations);
+    // 密码加密，第一个参数password是明文密码，第二个参数salt是密钥，第三个参数iterations(该属性由管理员管理)是迭代次数
+    // 这里的返回结果字符串格式是 "密钥$密文"，这就是存储在文件中的密码
+    std::string SHA256Encrypt(const std::string &password, const std::string &salt, int iterations);
 
 
- // 密码验证，第一个参数inputPassword是输入的密码，第二个参数storedHash是保存在文件中的密码，第三个参数iterations(该属性由管理员管理)是迭代次数
- bool SHA256Verify(const std::string &inputPassword, const std::string &storedHash, int iterations);
- ```
+    // 密码验证，第一个参数inputPassword是输入的密码，第二个参数storedHash是保存在文件中的密码，第三个参数iterations(该属性由管理员管理)是迭代次数
+    bool SHA256Verify(const std::string &inputPassword, const std::string &storedHash, int iterations);
+    ```
 
 7. 涉及到时间的属性，需要调用`GetTime.h`以保证时间存储格式的一致，这里面既有返回 "2026-4-7 10:0:0" 格式的函数`getTime()`
  也有可以获取单个时间位置的函数`getYear()`, `getMonth()`, `getDay()`, `getHour()`, `getMinute()`, `getSecond()`
 
 8. 数据持久化存储的框架应按照如下格式：
-```
+
+```markdown
+
 C课设-HIS
 └── Data
     ├── RecordData
@@ -59,4 +62,20 @@ C课设-HIS
         └── PharmacistChainData
 
 ```
+
 注意：上图中的名词全部都是文件夹的名称，而不是文件的名称，比如存储医生的相关信息的txt文件的路径是 `./Data/UserData/DoctorChainData/doctor_users.txt`
+
+## 运行方式
+
+1. 将整个项目文件夹克隆到本地
+2. 使用 Visual Studio Code 打开该项目文件夹
+3. 在 Visual Studio Code 中安装 C/C++ 插件
+4. 在 Visual Studio Code 使用快捷键 `Ctrl + Shift + P` 来打开命令面板，输入 `Tasks: Run Task` 按回车
+5. 在任务列表中选择 "`CMake: 编译` : 进入 build 目录后执行 cmake --build . --config Debug 命令，编译项目" 来编译项目
+6. 然后打开终端，通过命令 `cd build` 进入到 build 目录
+7. 在 build 目录下的终端中输入命令 `./Debug/his.exe` 来运行项目
+8. 在运行完成之后，按照上面的操作重新打开运行任务列表，在运行任务中选择 "`CMake: build清理` : CMake模板清理任务" 来清理之前的编译文件
+
+## 调试方式
+
+在要调试的地方设置断点，然后使用快捷键 `F5` 来启动调试器

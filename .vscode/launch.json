@@ -8,7 +8,8 @@
             "program": "${workspaceFolder}/build/Debug/his.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "console": "externalTerminal",
+            "cwd": "${workspaceFolder}/build",
             "preLaunchTask": "CMake: 编译",
             "postDebugTask": "CMake: build清理"
         }

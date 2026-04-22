@@ -507,4 +507,9 @@
 
 - 在 `Admin.cpp` 中修复了管理员创建床位时未检测床位ID是否已存在的漏洞。
 
+### 6. 调试配置优化
+
+- 修改了 `launch.json` 文件中的 `cwd` 路径为 `"cwd": "${workspaceFolder}/build"`，确保调试时的工作目录正确，避免因目录错误导致的文件读取失败问题。
+- 新增了 `console` 配置项 `"console": "externalTerminal"`，使调试时使用外部终端，便于查看输入输出，解决了之前无法输入的问题。
+
 ---
