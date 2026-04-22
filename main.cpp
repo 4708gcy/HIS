@@ -65,7 +65,7 @@ int main()
     {
         int loginChoice = loginRegisterUI();
 
-        if (loginChoice == 1)
+        if (loginChoice == 1) // 登录
         {
             while (true) // 身份选择界面循环，直到用户选择退出
             {
@@ -559,7 +559,35 @@ int main()
                 }
                 else if (roleChoice == 3) // 护士登录
                 {
-                    std::cout << "护士登录功能尚未实现，敬请期待！" << std::endl;
+                    Nurse *client = nurseLogin(nurseHead);
+                    if (client)
+                    {
+                        while (true)
+                        {
+                            int nurseChoice = nurseMenu();
+                            if (nurseChoice == 0)
+                            {
+                                break; // 退出登录
+                            }
+                            else if (nurseChoice == 1)
+                            {
+                                client->manageHospitalizations(hosHead, conHead, bedHead, hospitalizationCount); // 管理住院记录和床位信息
+                            }
+                            else if (nurseChoice == 2)
+                            {
+                                client->manageExaminations(examHead); // 管理检查记录
+                            }
+                            else if (nurseChoice == 3)
+                            {
+                                client->manageBeds(bedHead, bedCount); // 管理床位信息
+                            }
+                            else if (nurseChoice == 4)
+                            {
+                                client->managePersonalInfo(); // 个人信息管理
+                            }
+                        }
+                    }
+                    pause();
                 }
                 else if (roleChoice == 4) // 药剂师登录
                 {
@@ -636,13 +664,9 @@ int main()
                 {
                     break; // 返回到登录注册选择界面
                 }
-                else
-                {
-                    std::cout << "无效的选择! 请重新选择。" << std::endl;
-                }
             }
         }
-        else if (loginChoice == 2)
+        else if (loginChoice == 2) // 注册
         {
             int registerChoice = identitySelectionMenu();
             if (registerChoice == 1) // 管理员注册

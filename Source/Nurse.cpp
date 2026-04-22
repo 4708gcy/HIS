@@ -1458,7 +1458,8 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, Consultation *&con
                 std::cout << "已取消删除操作！" << std::endl;
             }
             pause();
-        }else if (choice == 4)
+        }
+        else if (choice == 4)
         {
             createHospitalization(hosHead, conHead, idCounter);
             pause();
@@ -1468,6 +1469,7 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, Consultation *&con
 
 // ==================== 床位信息管理 ====================
 
+// 获取本科室的所有床位信息
 bool Nurse::getAllBeds(bedInfo *&bedHead)
 {
     bedInfo *current = bedHead;
@@ -1476,19 +1478,7 @@ bool Nurse::getAllBeds(bedInfo *&bedHead)
     {
         if (!current->isDeleted && current->department == this->department)
         {
-            std::cout << "床位ID: " << current->bedID
-                      << ", 状态: " << bedStatusToString(current->status)
-                      << ", 病房类型: " << current->wardType
-                      << ", 科室: " << current->department
-                      << ", 区域号: " << current->areaNumber
-                      << ", 病房号: " << current->wardNumber
-                      << ", 床号: " << current->bedNumber
-                      << ", 患者ID: " << current->patientID
-                      << ", 护士ID: " << current->nurseID
-                      << ", 使用次数: " << current->useTimes
-                      << ", 占用天数: " << current->daysOccupied
-                      << ", 备注: " << current->note
-                      << std::endl;
+            printBedDetails(current);
             found = true;
         }
         current = current->next;
@@ -1500,7 +1490,7 @@ bool Nurse::getAllBeds(bedInfo *&bedHead)
     }
     return found;
 }
-
+// 根据床位状态查询床位信息
 bool Nurse::getBedsByStatus(bedInfo *&bedHead)
 {
     std::cout << "请选择床位状态：" << std::endl;
@@ -1522,11 +1512,7 @@ bool Nurse::getBedsByStatus(bedInfo *&bedHead)
     {
         if (!current->isDeleted && current->department == this->department && current->status == targetStatus)
         {
-            std::cout << "床位ID: " << current->bedID
-                      << ", 状态: " << bedStatusToString(current->status)
-                      << ", 患者ID: " << current->patientID
-                      << ", 护士ID: " << current->nurseID
-                      << std::endl;
+            printBedDetails(current);
             found = true;
         }
         current = current->next;
@@ -1538,16 +1524,16 @@ bool Nurse::getBedsByStatus(bedInfo *&bedHead)
     }
     return found;
 }
-
+// 根据患者ID查询床位信息
 bool Nurse::getBedsByPatientID(bedInfo *&bedHead)
 {
-    std::string patientID = inputRecordIDCheck("请输入患者ID: ", {"pat"});
+    std::string patientID = inputIDCheck("请输入患者ID: ");
     bedInfo *current = bedHead;
     while (current != nullptr)
     {
         if (!current->isDeleted && current->department == this->department && current->patientID == patientID)
         {
-            std::cout << "床位ID: " << current->bedID << ", 状态: " << bedStatusToString(current->status) << std::endl;
+            printBedDetails(current);
             return true;
         }
         current = current->next;
@@ -1555,7 +1541,7 @@ bool Nurse::getBedsByPatientID(bedInfo *&bedHead)
     std::cout << "未找到该患者对应床位。" << std::endl;
     return false;
 }
-
+// 根据护士ID查询床位信息
 bool Nurse::getBedsByNurseID(bedInfo *&bedHead)
 {
     std::string nurseID = inputIDCheck("请输入护士ID: ");
@@ -1565,7 +1551,7 @@ bool Nurse::getBedsByNurseID(bedInfo *&bedHead)
     {
         if (!current->isDeleted && current->department == this->department && current->nurseID == nurseID)
         {
-            std::cout << "床位ID: " << current->bedID << ", 患者ID: " << current->patientID << std::endl;
+            printBedDetails(current);
             found = true;
         }
         current = current->next;
@@ -1576,19 +1562,23 @@ bool Nurse::getBedsByNurseID(bedInfo *&bedHead)
     }
     return found;
 }
-
+// 根据科室查询床位信息
 bool Nurse::getBedsByDepartment(bedInfo *&bedHead)
 {
     std::string dept = inputDepartmentCheck("请输入科室名称: ");
+
+    if(dept == "#"){
+        std::cout << "已取消查询操作！" << std::endl;
+        return false;
+    }
+
     bedInfo *current = bedHead;
     bool found = false;
     while (current != nullptr)
     {
         if (!current->isDeleted && current->department == dept)
         {
-            std::cout << "床位ID: " << current->bedID
-                      << ", 状态: " << bedStatusToString(current->status)
-                      << std::endl;
+            printBedDetails(current);
             found = true;
         }
         current = current->next;
@@ -1599,20 +1589,29 @@ bool Nurse::getBedsByDepartment(bedInfo *&bedHead)
     }
     return found;
 }
-
+// 根据床位ID查询床位信息
 bool Nurse::getBedByID(bedInfo *&bedHead)
 {
-    std::string bedID = inputStringCheck("请输入床位ID: ");
+    std::string dept = inputDepartmentCheck("请输入科室名称: ");
+
+    if(dept == "#"){
+        std::cout << "已取消查询操作！" << std::endl;
+        return false;
+    }
+
+    std::string wardtype = HospitalizationWardTypeMenu();
+    if(wardtype == "0"){
+        std::cout << "已取消查询操作！" << std::endl;
+        return false;
+    }
+
+    std::string bedID = inputBedNumberCheck("请填写要查找的床位信息: ", dept, wardtype);
     bedInfo *current = bedHead;
     while (current != nullptr)
     {
         if (!current->isDeleted && current->bedID == bedID)
         {
-            std::cout << "床位ID: " << current->bedID
-                      << ", 状态: " << bedStatusToString(current->status)
-                      << ", 病房类型: " << current->wardType
-                      << ", 患者ID: " << current->patientID
-                      << std::endl;
+            printBedDetails(current);
             return true;
         }
         current = current->next;
@@ -1620,7 +1619,37 @@ bool Nurse::getBedByID(bedInfo *&bedHead)
     std::cout << "未找到该床位。" << std::endl;
     return false;
 }
+// 根据病房类型查询床位信息
+bool Nurse::getBedsByWardType(bedInfo *&bedHead)
+{
+    std::string wardType = HospitalizationWardTypeMenu();
 
+    if (wardType == "0")
+    {
+        std::cout << "已取消查询操作！" << std::endl;
+        return false;
+    }
+
+    bedInfo *current = bedHead;
+    bool found = false;
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->department == this->department && current->wardType == wardType)
+        {
+            printBedDetails(current);
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found)
+    {
+        std::cout << "未找到该病房类型的床位。" << std::endl;
+    }
+    return found;
+}
+
+// 护士修改床位状态
 void Nurse::setBedStatus(bedInfo *&target)
 {
     std::cout << "当前床位状态: " << bedStatusToString(target->status) << std::endl;
@@ -1629,51 +1658,95 @@ void Nurse::setBedStatus(bedInfo *&target)
     std::cout << "2. 清洁中" << std::endl;
     std::cout << "3. 可分配" << std::endl;
     std::cout << "4. 不可用" << std::endl;
+    std::cout << "0. 取消" << std::endl;
 
-    int choice = selectIntCheck(1, 4);
+    int choice = selectIntCheck(0, 4);
+
+    if (choice == 0)
+    {
+        std::cout << "已取消修改！" << std::endl;
+        return;
+    }
+
     target->status = static_cast<bedStatus>(choice);
     std::cout << "床位状态已更新！" << std::endl;
 }
-
+// 护士修改床位备注
 void Nurse::setBedNote(bedInfo *&target)
 {
     std::cout << "当前备注: " << target->note << std::endl;
     target->note = inputStringCheck("请输入新的备注信息: ");
     std::cout << "床位备注已更新！" << std::endl;
 }
-
+// 护士修改床位关联患者生命体征
 void Nurse::setBedVitalSigns(bedInfo *&target)
 {
-    std::cout << "开始录入床位关联患者生命体征..." << std::endl;
-    setVitalSigns(target->vitalSigns, "综合体征录入");
+    std::string itemName = ExaminationItemMenu();
+
+    if (itemName == "0")    {
+        std::cout << "已取消修改操作！" << std::endl;
+        return;
+    }
+
+    std::cout << "开始录入床位关联患者的生命体征..." << std::endl;
+
+    setVitalSigns(target->vitalSigns, itemName);
+
     std::cout << "生命体征已更新！" << std::endl;
 }
-
+// 护士逻辑删除床位信息
 void Nurse::deleteBed(bedInfo *&target)
 {
     target->isDeleted = true;
     std::cout << "床位信息已逻辑删除！" << std::endl;
 }
-
+// 护士创建床位信息
 bool Nurse::createBed(bedInfo *&bedHead, int &idCounter)
 {
     bedInfo *newBed = new bedInfo();
 
-    newBed->department = inputDepartmentCheck("请输入床位所属科室: ");
-    newBed->wardType = inputStringCheck("请输入病房类型(普通病房/隔离病房/VIP病房/ICU): ");
+    newBed->department = inputDepartmentCheck("请输入床位所属科室，输入 \" # \" 取消创建: ");
 
-    std::cout << "请输入区域号: " << std::endl;
-    newBed->areaNumber = selectIntCheck(1, 999);
+    if(newBed->department == "#"){
+        std::cout << "已取消创建操作！" << std::endl;
+        delete newBed;
+        return false;
+    }
 
-    std::cout << "请输入病房号: " << std::endl;
-    newBed->wardNumber = selectIntCheck(1, 999);
+    newBed->wardType = HospitalizationWardTypeMenu();
 
-    std::cout << "请输入床号: " << std::endl;
-    newBed->bedNumber = selectIntCheck(1, 99);
+    if(newBed->wardType == "0"){
+        std::cout << "已取消创建操作！" << std::endl;
+        delete newBed;
+        return false;
+    }
+
+    newBed->areaNumber = inputIntCheck("请输入新添加病房所在的区域号(0-10)：", 0, 10); // 输入区域号并检查格式，假设区域号在0-10之间
+
+    newBed->wardNumber = inputIntCheck("请输入新添加病房的病房号(0-100)：", 0, 100); // 输入病房号并检查格式，假设病房号在0-100之间
+
+    newBed->bedNumber = inputIntCheck("请输入新添加病房的床位号(0-10)：", 0, 10); // 输入床位号并检查格式，假设床位号在0-10之间
+
+    newBed->bedID = autoGenerateBedID(department, newBed->wardType, newBed->areaNumber, newBed->wardNumber, newBed->bedNumber); // 自动生成床位ID
+
+    bedInfo *current = bedHead;
+    // 检查是否有重复的床位ID
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->bedID == newBed->bedID && current->department == department)
+        {
+
+
+            std::cout << "床位ID " << newBed->bedID << " 已存在！无法添加床位信息。" << std::endl;
+            delete newBed; // 释放内存
+            return false;
+        }
+        current = current->next;
+    }
 
     newBed->note = inputStringCheck("请输入备注信息: ");
 
-    newBed->bedID = "bed" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0');
+   idCounter++;
 
     newBed->next = bedHead;
     if (bedHead)
@@ -1688,14 +1761,7 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
 {
     while (true)
     {
-        std::cout << "\n========== 护士-床位信息管理 ==========" << std::endl;
-        std::cout << "1. 查看床位信息" << std::endl;
-        std::cout << "2. 修改床位信息" << std::endl;
-        std::cout << "3. 删除床位信息" << std::endl;
-        std::cout << "4. 新增床位信息" << std::endl;
-        std::cout << "0. 返回上一级" << std::endl;
-
-        int choice = selectIntCheck(0, 4);
+        int choice = nurseBedManagementMenu();
 
         if (choice == 0)
         {
@@ -1705,16 +1771,7 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
         {
             while (true)
             {
-                std::cout << "\n------ 查看床位信息 ------" << std::endl;
-                std::cout << "1. 查看本科室全部床位" << std::endl;
-                std::cout << "2. 按床位状态查询" << std::endl;
-                std::cout << "3. 按患者ID查询" << std::endl;
-                std::cout << "4. 按护士ID查询" << std::endl;
-                std::cout << "5. 按科室查询" << std::endl;
-                std::cout << "6. 按床位ID查询" << std::endl;
-                std::cout << "0. 返回上一级" << std::endl;
-
-                int viewChoice = selectIntCheck(0, 6);
+                int viewChoice = nurseBedViewMenu();
 
                 if (viewChoice == 0)
                     break;
@@ -1730,6 +1787,8 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
                     getBedsByDepartment(bedHead);
                 else if (viewChoice == 6)
                     getBedByID(bedHead);
+                else if (viewChoice == 7)
+                    getBedsByWardType(bedHead);
 
                 pause();
             }
@@ -1747,7 +1806,7 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
             bedInfo *target = bedHead;
             while (target)
             {
-                if (!target->isDeleted && target->bedID == bedID)
+                if (!target->isDeleted && target->bedID == bedID && target->department == this->department)
                 {
                     break;
                 }
@@ -1763,13 +1822,7 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
 
             while (true)
             {
-                std::cout << "\n------ 修改床位信息 ------" << std::endl;
-                std::cout << "1. 修改床位状态" << std::endl;
-                std::cout << "2. 修改备注" << std::endl;
-                std::cout << "3. 更新生命体征" << std::endl;
-                std::cout << "0. 返回上一级" << std::endl;
-
-                int modifyChoice = selectIntCheck(0, 3);
+                int modifyChoice = nurseBedModificationMenu();
 
                 if (modifyChoice == 0)
                     break;
@@ -1796,7 +1849,7 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
             bedInfo *target = bedHead;
             while (target)
             {
-                if (!target->isDeleted && target->bedID == bedID)
+                if (!target->isDeleted && target->bedID == bedID && target->department == this->department)
                 {
                     break;
                 }
@@ -1809,6 +1862,15 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
                 pause();
                 continue;
             }
+
+            if(target->status == bedStatus::OCCUPIED){
+                std::cout << "该床位当前处于占用状态，无法删除！" << std::endl;
+                pause();
+                continue;
+            }
+
+            std::cout << "正在删除的床位详情：" << std::endl;
+            printBedDetails(target);
 
             std::cout << "确认删除该床位吗？\n1. 确认\n0. 取消" << std::endl;
             int confirmChoice = selectIntCheck(0, 1);
@@ -1836,12 +1898,8 @@ void Nurse::managePersonalInfo()
 {
     while (true)
     {
-        std::cout << "\n========== 护士-个人信息管理 ==========" << std::endl;
-        std::cout << "1. 查看个人信息" << std::endl;
-        std::cout << "2. 修改个人信息" << std::endl;
-        std::cout << "0. 返回上一级" << std::endl;
 
-        int choice = selectIntCheck(0, 2);
+        int choice = nursePersonalInfoManagementMenu();
 
         if (choice == 0)
         {
@@ -1851,23 +1909,7 @@ void Nurse::managePersonalInfo()
         {
             while (true)
             {
-                std::cout << "\n------ 查看个人信息 ------" << std::endl;
-                std::cout << "1. 护士ID" << std::endl;
-                std::cout << "2. 姓名" << std::endl;
-                std::cout << "3. 性别" << std::endl;
-                std::cout << "4. 年龄" << std::endl;
-                std::cout << "5. 科室" << std::endl;
-                std::cout << "6. 护士等级" << std::endl;
-                std::cout << "7. 联系电话" << std::endl;
-                std::cout << "8. 邮箱" << std::endl;
-                std::cout << "9. 在岗状态" << std::endl;
-                std::cout << "10. 排班信息" << std::endl;
-                std::cout << "11. 累计护理人数" << std::endl;
-                std::cout << "12. 累计床位管理次数" << std::endl;
-                std::cout << "13. 账户创建时间" << std::endl;
-                std::cout << "0. 返回上一级" << std::endl;
-
-                int viewChoice = selectIntCheck(0, 13);
+                int viewChoice = nursePersonalInfoViewMenu();
 
                 if (viewChoice == 0)
                     break;
@@ -1905,20 +1947,7 @@ void Nurse::managePersonalInfo()
         {
             while (true)
             {
-                std::cout << "\n------ 修改个人信息 ------" << std::endl;
-                std::cout << "1. 修改姓名" << std::endl;
-                std::cout << "2. 修改性别" << std::endl;
-                std::cout << "3. 修改年龄" << std::endl;
-                std::cout << "4. 修改科室" << std::endl;
-                std::cout << "5. 修改护士等级" << std::endl;
-                std::cout << "6. 修改联系电话" << std::endl;
-                std::cout << "7. 修改邮箱" << std::endl;
-                std::cout << "8. 修改在岗状态" << std::endl;
-                std::cout << "9. 修改排班信息" << std::endl;
-                std::cout << "10. 修改密码" << std::endl;
-                std::cout << "0. 返回上一级" << std::endl;
-
-                int modifyChoice = selectIntCheck(0, 10);
+                int modifyChoice = nursePersonalInfoModificationMenu();
 
                 if (modifyChoice == 0)
                 {
@@ -1956,7 +1985,16 @@ void Nurse::managePersonalInfo()
                     std::cout << "2. 初级护士" << std::endl;
                     std::cout << "3. 高级护士" << std::endl;
                     std::cout << "4. 护士长" << std::endl;
-                    int levelChoice = selectIntCheck(1, 4);
+                    std::cout << "0. 取消" << std::endl;
+
+                    int levelChoice = selectIntCheck(0, 4);
+
+                    if (levelChoice == 0)
+                    {
+                        std::cout << "已取消修改操作！" << std::endl;
+                        continue;
+                    }
+
                     this->level = static_cast<NurseLevel>(levelChoice);
                     std::cout << "护士等级已更新！" << std::endl;
                 }
@@ -1977,7 +2015,16 @@ void Nurse::managePersonalInfo()
                     std::cout << "当前在岗状态: " << (this->isOnDuty ? "在岗" : "不在岗") << std::endl;
                     std::cout << "1. 在岗" << std::endl;
                     std::cout << "2. 不在岗" << std::endl;
-                    int dutyChoice = selectIntCheck(1, 2);
+                    std::cout << "0. 取消" << std::endl;
+
+                    int dutyChoice = selectIntCheck(0, 2);
+
+                    if (dutyChoice == 0)
+                    {
+                        std::cout << "已取消修改操作！" << std::endl;
+                        continue;
+                    }
+
                     this->isOnDuty = (dutyChoice == 1);
                     std::cout << "在岗状态已更新！" << std::endl;
                 }
@@ -1989,11 +2036,11 @@ void Nurse::managePersonalInfo()
                 }
                 else if (modifyChoice == 10)
                 {
-                    std::string oldpwd = inputStringCheck("请输入当前密码以验证身份: ");
+                    std::string oldpwd = inputPwdCheck("请输入当前密码以验证身份: ");
                     if (SHA256Verify(oldpwd, this->storedHash, this->kHashIterations))
                     {
-                        std::string newpwd1 = inputStringCheck("请输入新的密码: ");
-                        std::string newpwd2 = inputStringCheck("请再次输入新的密码以确认: ");
+                        std::string newpwd1 = inputPwdCheck("请输入新的密码: ");
+                        std::string newpwd2 = inputPwdCheck("请再次输入新的密码以确认: ");
 
                         if (newpwd1 == newpwd2)
                         {

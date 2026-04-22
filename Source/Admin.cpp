@@ -1566,7 +1566,8 @@ bool Admin::viewExaminationsByStatus(Examination *&exam, const std::string &depa
 
     int statusFilter = selectIntCheck(0, 6);
 
-    if(statusFilter == 0){
+    if (statusFilter == 0)
+    {
         return false;
     }
 
@@ -2239,7 +2240,7 @@ bool Admin::viewHospitalizationsByStatus(Hospitalization *&hos, const std::strin
 
     int statusFilter = selectIntCheck(0, 5);
 
-    if(statusFilter == 0)
+    if (statusFilter == 0)
     {
         std::cout << "已取消查看操作。" << std::endl;
         return false;
@@ -2871,7 +2872,8 @@ bool Admin::viewBedsByStatus(bedInfo *&bed, const std::string &department)
 
     int statusFilter = selectIntCheck(0, 4);
 
-    if(statusFilter == 0){
+    if (statusFilter == 0)
+    {
         std::cout << "已取消查看操作" << std::endl;
         return false;
     }
@@ -3130,16 +3132,26 @@ bool Admin::addBedInfo(bedInfo *&bed, const std::string &department)
 
     newBed->department = department; // 设置科室
 
-    std::cout << "请输入新添加病房所在的区域号(0-10)：" << std::endl;
-    newBed->areaNumber = selectIntCheck(0, 10); // 输入区域号并检查格式，假设区域号在0-10之间
+    newBed->areaNumber = inputIntCheck("请输入新添加病房所在的区域号(0-10)：",0, 10); // 输入区域号并检查格式，假设区域号在0-10之间
 
-    std::cout << "请输入新添加病房的病房号(0-100)：" << std::endl;
-    newBed->wardNumber = selectIntCheck(0, 100); // 输入病房号并检查格式，假设病房号在0-100之间
+    newBed->wardNumber = inputIntCheck("请输入新添加病房的病房号(0-100)：",0, 100); // 输入病房号并检查格式，假设病房号在0-100之间
 
-    std::cout << "请输入新添加病房的床位号(0-10)：" << std::endl;
-    newBed->bedNumber = selectIntCheck(0, 10); // 输入床位号并检查格式，假设床位号在0-10之间
+    newBed->bedNumber = inputIntCheck("请输入新添加病房的床位号(0-10)：",0, 10); // 输入床位号并检查格式，假设床位号在0-10之间
 
     newBed->bedID = autoGenerateBedID(department, wardType, newBed->areaNumber, newBed->wardNumber, newBed->bedNumber); // 自动生成床位ID
+
+    bedInfo *current = bed;
+    // 检查是否有重复的床位ID
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->bedID == newBed->bedID && current->department == department)
+        {
+            std::cout << "床位ID已存在！无法添加床位信息。" << std::endl;
+            delete newBed; // 释放内存
+            return false;
+        }
+        current = current->next;
+    }
 
     newBed->status = bedStatus::AVAILABLE; // 新增床位默认为可用状态
 

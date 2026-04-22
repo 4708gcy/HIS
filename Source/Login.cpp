@@ -58,8 +58,6 @@ Doctor *doctorLogin(Doctor *&doctorHead)
     return nullptr; // 未找到匹配的医生用户ID
 }
 
-
-
 // 药剂师登录函数，验证药剂师身份并返回登录结果
 Pharmacist *pharmacistLogin(Pharmacist *&pharmacistHead)
 {
@@ -113,6 +111,35 @@ Patient *patientLogin(Patient *&patientHead)
     std::cout << "未找到患者账号" << std::endl;
     return nullptr; // 未找到匹配的患者用户ID
 }
+
+// 护士登录函数，验证护士身份并返回登录结果
+Nurse *nurseLogin(Nurse *&nurseHead)
+{
+    Nurse *currentNurse = nurseHead;
+    std::string id = inputIDCheck("请输入护士用户ID: ");
+
+    while (currentNurse != nullptr)
+    {
+        if (currentNurse->getUserID() == id)
+        {
+            if (currentNurse->nurseSignIn()) // 调用护士登录方法验证密码并设置登录状态
+            {
+                return currentNurse;
+            }
+            else
+            {
+                return nullptr; // 登录失败（如密码错误或账户锁定）
+            }
+        }
+        currentNurse = currentNurse->next;
+    }
+
+    std::cout << "未找到护士账号" << std::endl;
+    return nullptr; // 未找到匹配的护士用户ID
+}
+
+
+// =========================== 管理管理员信息的函数实现 ====================
 
 // 查看所有管理员信息
 void viewAllAdmins(Admin *&adminHead)

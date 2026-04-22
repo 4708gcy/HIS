@@ -114,6 +114,7 @@ public:
     bool getBedsByNurseID(bedInfo *&bedHead);
     bool getBedsByDepartment(bedInfo *&bedHead);
     bool getBedByID(bedInfo *&bedHead);
+    bool getBedsByWardType(bedInfo *&bedHead);
 
     void setBedStatus(bedInfo *&target);
     void setBedNote(bedInfo *&target);
