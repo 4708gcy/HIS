@@ -461,7 +461,7 @@ int main()
                                     }
                                     else if (department == "0")
                                     {
-                                        // 返回上级菜单
+                                        break; // 返回上级菜单
                                     }
                                     else
                                     {
