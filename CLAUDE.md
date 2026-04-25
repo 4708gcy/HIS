@@ -34,7 +34,8 @@ C++17 console application for a Hospital Information System. Windows-only (uses 
 
 ### Class Hierarchy
 
-```
+```text
+
 User (base class) — holds all shared auth, enums, fee calculators, status-to-string converters
   ├── Admin    — manages all records and all user types (7,775 lines, the largest file)
   ├── Doctor   — registration, consultation, examination
