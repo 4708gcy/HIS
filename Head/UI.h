@@ -16,9 +16,43 @@
 #include <algorithm>
 #include <sstream>
 #include <vector>
+#include <fstream>
+#include <mutex>
 
-void pause();                             // 暂停函数，等待用户按键继续
-std::string trim(const std::string &str); // 去除字符串首尾空格的辅助函数
+void pause(const std::string &breadcrumb = ""); // 暂停函数，等待用户按键继续（支持面包屑导航）
+std::string trim(const std::string &str);       // 去除字符串首尾空格的辅助函数
+
+// ======================================== 终端颜色与工具函数区域 =======================================
+
+enum class ConsoleColor { RED, GREEN, YELLOW, CYAN, WHITE, DEFAULT };
+void setConsoleColor(ConsoleColor color); // 设置终端文本颜色
+void resetConsoleColor();                 // 重置终端文本颜色
+void printTitle(const std::string &title); // 打印带颜色的标题分隔线
+void printSuccess(const std::string &msg); // 打印成功消息（绿色）
+void printError(const std::string &msg);   // 打印错误消息（红色）
+void printWarning(const std::string &msg); // 打印警告消息（黄色）
+
+// ======================================== 分页显示工具 =======================================================================
+
+void printWithPagination(const std::vector<std::string> &lines, int pageSize = 10); // 分页打印字符串列表，返回是否被用户中断
+
+// ======================================== 操作日志系统 =====================================================================
+
+class LogManager {
+public:
+    static LogManager &getInstance();
+    void info(const std::string &msg);
+    void warn(const std::string &msg);
+    void error(const std::string &msg);
+    void logOperation(const std::string &userId, const std::string &role, const std::string &operation, const std::string &detail);
+
+private:
+    LogManager();
+    std::string logFilePath;
+    void writeLog(const std::string &level, const std::string &msg);
+};
+
+// ======================================== 操作日志系统 =====================================================================
 
 //  ======================================== 输入校验函数区域 =======================================
 
@@ -28,6 +62,7 @@ std::string inputStringCheck(const std::string &prompt);                        
 std::string inputIDCheck(const std::string &prompt);                                                                                      // 检查输入的用户ID是否符合格式要求（如长度、前缀等）
 std::string inputRecordIDCheck(const std::string &prompt, const std::vector<std::string> &validPrefixes);                                 // 检查输入的记录ID是否符合格式要求（如长度、前缀等）
 std::string inputPwdCheck(const std::string &prompt);                                                                                     // 检查输入的密码是否符合安全要求（如长度、复杂度等）
+std::string inputHiddenPwdCheck(const std::string &prompt);                                                                               // 隐藏输入密码（用于登录场景）
 std::string inputBedNumberCheck(const std::string &prompt, std::string department, std::string wardType);                                 // 检查输入的床位号是否符合格式要求（如非空、特定格式等）
 std::string autoGenerateBedID(const std::string &department, const std::string &wardType, int areaNumber, int wardNumber, int bedNumber); // 根据输入信息自动生成床位ID
 std::string inputGenderCheck(const std::string &prompt);                                                                                  // 检查输入的性别是否为有效选项（如男、女、其他等）

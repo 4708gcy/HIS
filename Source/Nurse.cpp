@@ -58,7 +58,7 @@ bool Nurse::nurseSignIn()
 
     while (loginAttempts < kMaxLoginAttempts)
     {
-        std::string pwd = inputStringCheck("请输入密码(输入\"quit\"退出登录): ");
+        std::string pwd = inputHiddenPwdCheck("请输入密码(输入\"quit\"退出登录): ");
 
         if (pwd == "quit")
         {
@@ -70,6 +70,7 @@ bool Nurse::nurseSignIn()
 
         if (success)
         {
+            loginAttempts = 0;
             isLoggedIn = true;
             std::cout << "护士登录成功！" << std::endl;
             return true;
@@ -1279,7 +1280,8 @@ void Nurse::createHospitalization(Hospitalization *&hosHead, Consultation *&conH
     newHos->consultationID = current->consultationID;
     newHos->department = current->department;
     newHos->applyTime = MyTime::getInstance().getTime();
-    newHos->hospitalizationID = "hos" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    newHos->hospitalizationID = "hos" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    idCounter++;
 
     // 将新住院记录插入链表头部
     newHos->next = hosHead;

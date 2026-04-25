@@ -46,7 +46,7 @@ bool Admin::adminSignIn()
 
     while (loginAttempts < kMaxLoginAttempts)
     {
-        std::string pwd = inputStringCheck("请输入密码(输入\"quit\"退出登录): ");
+        std::string pwd = inputHiddenPwdCheck("请输入密码(输入\"quit\"退出登录): ");
 
         if (pwd == "quit")
         {
@@ -58,6 +58,7 @@ bool Admin::adminSignIn()
 
         if (success)
         {
+            loginAttempts = 0;
             isLoggedIn = true;
             std::cout << "管理员登录成功！" << std::endl;
             return true;
@@ -238,19 +239,21 @@ bool Admin::addRegistration(Registration *&reg, Doctor *&doc, const std::string 
 
     std::cout << "可用医生列表:" << std::endl;
     Doctor *currentDoc = doc;
+    bool hasOnDutyDoctor = false;
     while (currentDoc != nullptr)
     {
         if (!currentDoc->isDeleted && currentDoc->department == department && currentDoc->isOnDuty) // 只显示在岗的医生
         {
             std::cout << "医生ID: " << currentDoc->getUserID() << ", 姓名: " << currentDoc->getUsername() << ", 擅长领域：" << currentDoc->specialty << ", 职称：" << doctorTitleToString(currentDoc->title) << ", 联系方式：" << currentDoc->getTelephone() << " / " << currentDoc->getEmail()
                       << std::endl;
+            hasOnDutyDoctor = true;
         }
         currentDoc = currentDoc->next;
     }
 
-    if (doc == nullptr)
+    if (!hasOnDutyDoctor)
     {
-        std::cout << "该科室暂无医生可选！" << std::endl;
+        std::cout << "该科室暂无在岗医生可选！" << std::endl;
         delete newReg;
         return false;
     }
@@ -280,7 +283,8 @@ bool Admin::addRegistration(Registration *&reg, Doctor *&doc, const std::string 
     newReg->fee = calculateRegistrationFee(currentDoc->title);
 
     // 生成唯一的挂号ID（可以根据实际需求改为更复杂的生成方式）
-    newReg->registrationID = "reg" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    newReg->registrationID = "reg" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    idCounter++;
     MyTime &t = MyTime::getInstance();
     newReg->registerTime = t.getTime(); // 获取当前时间字符串
 
@@ -1712,7 +1716,8 @@ bool Admin::addExamination(Examination *&exam, const std::string &department, Co
 
                 newExam->itemName = itemName; // 设置检查项目名称
                 // 生成唯一的检查ID（可以根据实际需求改为更复杂的生成方式）
-                newExam->examinationID = "exa" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0');
+                newExam->examinationID = "exa" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+                idCounter++;
                 MyTime &t = MyTime::getInstance();
                 newExam->orderTime = t.getTime(); // 获取当前时间字符串
 
@@ -2567,7 +2572,8 @@ bool Admin::addHospitalization(Hospitalization *&hos, Nurse *nurse, const std::s
         return false;
     }
 
-    newHos->hospitalizationID = "hos" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0'); // 生成住院记录ID，格式为 "hos" + 6位数字
+    newHos->hospitalizationID = "hos" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0'); // 生成住院记录ID，格式为 "hos" + 6位数字
+    idCounter++;
     MyTime &t = MyTime::getInstance();
     newHos->applyTime = t.getTime(); // 设置申请时间为当前时间
 
@@ -3840,8 +3846,8 @@ bool Admin::viewMedicationRecordsByStatus(MedicationRecord *&medRec, const std::
 void Admin::modifyMedicationRecordReviewStatus(MedicationRecord *&target, const std::string &department)
 {
     int newStatus = MedicationRecordReviewResultMenu(); // 选择新的审核状态
-    target->status = static_cast<MedicationStatus>(newStatus);
-    std::cout << "用药记录状态已更新！" << std::endl;
+    target->reviewStatus = static_cast<MedicationReviewStatus>(newStatus);
+    std::cout << "用药记录审核状态已更新！" << std::endl;
 }
 // 删除用药记录（逻辑删除，设置 isDeleted 标志）
 void Admin::deleteMedicationRecord(MedicationRecord *&target, const std::string &department)
@@ -3999,7 +4005,8 @@ bool Admin::addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Ph
                 return false;
             }
 
-            newMedRec->medRecordID = "mrd" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0');
+            newMedRec->medRecordID = "mrd" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+            idCounter++;
             MyTime &t = MyTime::getInstance();
             newMedRec->createTime = t.getTime();
 
@@ -4595,7 +4602,8 @@ bool Admin::addMedicine(Medicine *&med, const std::string &department, int &idCo
 
     newMed->note = inputStringCheck("请输入药品备注信息（可选）: ");
 
-    newMed->medicineID = "med" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    newMed->medicineID = "med" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    idCounter++;
 
     // 插入到链表头部
     newMed->next = med;
@@ -4701,57 +4709,57 @@ void Admin::manageMedicines(Medicine *&med, const std::string &department, int &
                         }
                         else if (modifyChoice == 1) // 修改药品状态
                         {
-                            modifyMedicineStatus(med, department);
+                            modifyMedicineStatus(target, department);
                             pause();
                         }
                         else if (modifyChoice == 2) // 修改药品名称
                         {
-                            modifyMedicineName(med, department);
+                            modifyMedicineName(target, department);
                             pause();
                         }
                         else if (modifyChoice == 3) // 修改药品规格
                         {
-                            modifyMedicineSpecification(med, department);
+                            modifyMedicineSpecification(target, department);
                             pause();
                         }
                         else if (modifyChoice == 4) // 修改药品进价
                         {
-                            modifyMedicinePurchasePrice(med, department);
+                            modifyMedicinePurchasePrice(target, department);
                             pause();
                         }
                         else if (modifyChoice == 5) // 修改药品售价
                         {
-                            modifyMedicineSalePrice(med, department);
+                            modifyMedicineSalePrice(target, department);
                             pause();
                         }
                         else if (modifyChoice == 6) // 修改药品库存数量
                         {
-                            modifyMedicineStock(med, department);
+                            modifyMedicineStock(target, department);
                             pause();
                         }
                         else if (modifyChoice == 7) // 修改药品安全库存阈值
                         {
-                            modifyMedicineSafetyStock(med, department);
+                            modifyMedicineSafetyStock(target, department);
                             pause();
                         }
                         else if (modifyChoice == 8) // 修改药品生产日期
                         {
-                            modifyMedicineProductionDate(med, department);
+                            modifyMedicineProductionDate(target, department);
                             pause();
                         }
                         else if (modifyChoice == 9) // 修改药品有效期
                         {
-                            modifyMedicineExpiryDate(med, department);
+                            modifyMedicineExpiryDate(target, department);
                             pause();
                         }
                         else if (modifyChoice == 10) // 修改药品生产厂家
                         {
-                            modifyMedicineManufacturer(med, department);
+                            modifyMedicineManufacturer(target, department);
                             pause();
                         }
                         else if (modifyChoice == 11) // 修改药品备注信息
                         {
-                            modifyMedicineNote(med, department);
+                            modifyMedicineNote(target, department);
                             pause();
                         }
                     }
@@ -5294,67 +5302,67 @@ void Admin::manageDoctors(Doctor *&doc, const std::string &department, int &idCo
                         }
                         else if (modifyChoice == 1) // 修改医生姓名
                         {
-                            modifyDoctorName(doc, department);
+                            modifyDoctorName(target, department);
                             pause();
                         }
                         else if (modifyChoice == 2) // 修改医生性别
                         {
-                            modifyDoctorGender(doc, department);
+                            modifyDoctorGender(target, department);
                             pause();
                         }
                         else if (modifyChoice == 3) // 修改医生年龄
                         {
-                            modifyDoctorAge(doc, department);
+                            modifyDoctorAge(target, department);
                             pause();
                         }
                         else if (modifyChoice == 4) // 修改医生所属科室
                         {
-                            modifyDoctorDepartment(doc, department);
+                            modifyDoctorDepartment(target, department);
                             pause();
                         }
                         else if (modifyChoice == 5) // 修改医生职称
                         {
-                            modifyDoctorTitle(doc, department);
+                            modifyDoctorTitle(target, department);
                             pause();
                         }
                         else if (modifyChoice == 6) // 修改医生电话
                         {
-                            modifyDoctorTelephone(doc, department);
+                            modifyDoctorTelephone(target, department);
                             pause();
                         }
                         else if (modifyChoice == 7) // 修改医生邮箱
                         {
-                            modifyDoctorEmail(doc, department);
+                            modifyDoctorEmail(target, department);
                             pause();
                         }
                         else if (modifyChoice == 8) // 修改医生在岗状态
                         {
-                            modifyDoctorOnDutyStatus(doc, department);
+                            modifyDoctorOnDutyStatus(target, department);
                             pause();
                         }
                         else if (modifyChoice == 9) // 修改医生擅长领域
                         {
-                            modifyDoctorSpecialty(doc, department);
+                            modifyDoctorSpecialty(target, department);
                             pause();
                         }
                         else if (modifyChoice == 10) // 修改医生排班信息
                         {
-                            modifyDoctorScheduleInfo(doc, department);
+                            modifyDoctorScheduleInfo(target, department);
                             pause();
                         }
                         else if (modifyChoice == 11) // 修改医生累计看诊人数
                         {
-                            modifyDoctorConsultationCount(doc, department);
+                            modifyDoctorConsultationCount(target, department);
                             pause();
                         }
                         else if (modifyChoice == 12) // 修改医生累计开具检查次数
                         {
-                            modifyDoctorExaminationCount(doc, department);
+                            modifyDoctorExaminationCount(target, department);
                             pause();
                         }
                         else if (modifyChoice == 13) // 修改医生累计开具住院证次数
                         {
-                            modifyDoctorHospitalizationApplyCount(doc, department);
+                            modifyDoctorHospitalizationApplyCount(target, department);
                             pause();
                         }
                     }
@@ -5864,57 +5872,57 @@ void Admin::manageNurses(Nurse *&nurse, const std::string &department, int &idCo
                         }
                         else if (modifyChoice == 1) // 修改护士姓名
                         {
-                            modifyNurseName(nurse, department);
+                            modifyNurseName(target, department);
                             pause();
                         }
                         else if (modifyChoice == 2) // 修改护士性别
                         {
-                            modifyNurseGender(nurse, department);
+                            modifyNurseGender(target, department);
                             pause();
                         }
                         else if (modifyChoice == 3) // 修改护士年龄
                         {
-                            modifyNurseAge(nurse, department);
+                            modifyNurseAge(target, department);
                             pause();
                         }
                         else if (modifyChoice == 4) // 修改护士所属科室
                         {
-                            modifyNurseDepartment(nurse, department);
+                            modifyNurseDepartment(target, department);
                             pause();
                         }
                         else if (modifyChoice == 5) // 修改护士等级
                         {
-                            modifyNurseLevel(nurse, department);
+                            modifyNurseLevel(target, department);
                             pause();
                         }
                         else if (modifyChoice == 6) // 修改护士电话
                         {
-                            modifyNurseTelephone(nurse, department);
+                            modifyNurseTelephone(target, department);
                             pause();
                         }
                         else if (modifyChoice == 7) // 修改护士邮箱
                         {
-                            modifyNurseEmail(nurse, department);
+                            modifyNurseEmail(target, department);
                             pause();
                         }
                         else if (modifyChoice == 8) // 修改护士在岗状态
                         {
-                            modifyNurseOnDutyStatus(nurse, department);
+                            modifyNurseOnDutyStatus(target, department);
                             pause();
                         }
                         else if (modifyChoice == 9) // 修改护士排班信息
                         {
-                            modifyNurseScheduleInfo(nurse, department);
+                            modifyNurseScheduleInfo(target, department);
                             pause();
                         }
                         else if (modifyChoice == 10) // 修改护士累计护理人数
                         {
-                            modifyNursePatientCareCount(nurse, department);
+                            modifyNursePatientCareCount(target, department);
                             pause();
                         }
                         else if (modifyChoice == 11) // 修改护士床位管理次数
                         {
-                            modifyNurseBedManageCount(nurse, department);
+                            modifyNurseBedManageCount(target, department);
                             pause();
                         }
                     }
@@ -6432,62 +6440,62 @@ void Admin::managePharmacists(Pharmacist *&pharmacist, const std::string &depart
                         }
                         else if (modifyChoice == 1) // 修改药剂师姓名
                         {
-                            modifyPharmacistName(pharmacist, department);
+                            modifyPharmacistName(target, department);
                             pause();
                         }
                         else if (modifyChoice == 2) // 修改药剂师性别
                         {
-                            modifyPharmacistGender(pharmacist, department);
+                            modifyPharmacistGender(target, department);
                             pause();
                         }
                         else if (modifyChoice == 3) // 修改药剂师年龄
                         {
-                            modifyPharmacistAge(pharmacist, department);
+                            modifyPharmacistAge(target, department);
                             pause();
                         }
                         else if (modifyChoice == 4) // 修改药剂师所属科室
                         {
-                            modifyPharmacistDepartment(pharmacist, department);
+                            modifyPharmacistDepartment(target, department);
                             pause();
                         }
                         else if (modifyChoice == 5) // 修改药剂师职称
                         {
-                            modifyPharmacistLevel(pharmacist, department);
+                            modifyPharmacistLevel(target, department);
                             pause();
                         }
                         else if (modifyChoice == 6) // 修改药剂师电话
                         {
-                            modifyPharmacistTelephone(pharmacist, department);
+                            modifyPharmacistTelephone(target, department);
                             pause();
                         }
                         else if (modifyChoice == 7) // 修改药剂师邮箱
                         {
-                            modifyPharmacistEmail(pharmacist, department);
+                            modifyPharmacistEmail(target, department);
                             pause();
                         }
                         else if (modifyChoice == 8) // 修改药剂师在岗状态
                         {
-                            modifyPharmacistOnDutyStatus(pharmacist, department);
+                            modifyPharmacistOnDutyStatus(target, department);
                             pause();
                         }
                         else if (modifyChoice == 9) // 修改药剂师排班信息
                         {
-                            modifyPharmacistScheduleInfo(pharmacist, department);
+                            modifyPharmacistScheduleInfo(target, department);
                             pause();
                         }
                         else if (modifyChoice == 10) // 修改药剂师累计审核用药记录数量
                         {
-                            modifyPharmacistMedicationReviewCount(pharmacist, department);
+                            modifyPharmacistMedicationReviewCount(target, department);
                             pause();
                         }
                         else if (modifyChoice == 11) // 修改药剂师累计发药数量
                         {
-                            modifyPharmacistDispenseCount(pharmacist, department);
+                            modifyPharmacistDispenseCount(target, department);
                             pause();
                         }
                         else if (modifyChoice == 12) // 修改药剂师累计库存管理次数
                         {
-                            modifyPharmacistInventoryManageCount(pharmacist, department);
+                            modifyPharmacistInventoryManageCount(target, department);
                             pause();
                         }
                     }
@@ -6541,7 +6549,7 @@ void Admin::managePharmacists(Pharmacist *&pharmacist, const std::string &depart
 
                     if (confirmChoice == 1)
                     {
-                        deletePharmacist(pharmacist, department);
+                        deletePharmacist(target, department);
                         pause();
                     }
                     else if (confirmChoice == 0)
@@ -7498,72 +7506,72 @@ void Admin::managePatients(Patient *&patient, const std::string &department, int
                         }
                         else if (modifyChoice == 1)
                         {
-                            modifyPatientName(patient, department);
+                            modifyPatientName(target, department);
                             pause();
                         }
                         else if (modifyChoice == 2)
                         {
-                            modifyPatientGender(patient, department);
+                            modifyPatientGender(target, department);
                             pause();
                         }
                         else if (modifyChoice == 3)
                         {
-                            modifyPatientAge(patient, department);
+                            modifyPatientAge(target, department);
                             pause();
                         }
                         else if (modifyChoice == 4)
                         {
-                            modifyPatientDepartment(patient, department);
+                            modifyPatientDepartment(target, department);
                             pause();
                         }
                         else if (modifyChoice == 5)
                         {
-                            modifyPatientIDCard(patient, department);
+                            modifyPatientIDCard(target, department);
                             pause();
                         }
                         else if (modifyChoice == 6)
                         {
-                            modifyPatientTelephone(patient, department);
+                            modifyPatientTelephone(target, department);
                             pause();
                         }
                         else if (modifyChoice == 7)
                         {
-                            modifyPatientEmail(patient, department);
+                            modifyPatientEmail(target, department);
                             pause();
                         }
                         else if (modifyChoice == 8)
                         {
-                            modifyPatientAddress(patient, department);
+                            modifyPatientAddress(target, department);
                             pause();
                         }
                         else if (modifyChoice == 9)
                         {
-                            modifyPatientMaritalStatus(patient, department);
+                            modifyPatientMaritalStatus(target, department);
                             pause();
                         }
                         else if (modifyChoice == 10)
                         {
-                            modifyPatientEmergencyContact(patient, department);
+                            modifyPatientEmergencyContact(target, department);
                             pause();
                         }
                         else if (modifyChoice == 11)
                         {
-                            modifyPatientRegistrationCount(patient, department);
+                            modifyPatientRegistrationCount(target, department);
                             pause();
                         }
                         else if (modifyChoice == 12)
                         {
-                            modifyPatientConsultationCount(patient, department);
+                            modifyPatientConsultationCount(target, department);
                             pause();
                         }
                         else if (modifyChoice == 13)
                         {
-                            modifyPatientHospitalizationCount(patient, department);
+                            modifyPatientHospitalizationCount(target, department);
                             pause();
                         }
                         else if (modifyChoice == 14)
                         {
-                            modifyPatientMedicationCount(patient, department);
+                            modifyPatientMedicationCount(target, department);
                             pause();
                         }
                     }
@@ -7619,7 +7627,7 @@ void Admin::managePatients(Patient *&patient, const std::string &department, int
                     int confirmChoice = selectIntCheck(0, 1);
                     if (confirmChoice == 1)
                     {
-                        deletePatient(patient, department);
+                        deletePatient(target, department);
                         pause();
                     }
                     else
@@ -7646,7 +7654,7 @@ void Admin::managePatients(Patient *&patient, const std::string &department, int
 // ========================== 管理员个人信息管理 ========================
 
 // 管理员个人信息管理
-void Admin::AdminPersionalInfo()
+void Admin::AdminPersonalInfo()
 {
     while (true)
     {
@@ -7741,18 +7749,17 @@ void Admin::AdminPersionalInfo()
                 }
                 else if (modifyChoice == 6)
                 {
-                    std::string oldpwd = inputStringCheck("请输入当前密码以验证身份: ");
+                    std::string oldpwd = inputPwdCheck("请输入当前密码以验证身份: ");
 
-                    if (SHA256Verify(oldpwd, this->salt, this->kHashIterations))
+                    if (SHA256Verify(oldpwd, this->storedHash, this->kHashIterations))
                     {
-                        std::string newpwd = inputStringCheck("请输入新的密码: ");
-                        std::string newSalt = generateSalt();
-                        std::string newHash = SHA256Encrypt(newpwd, newSalt, this->kHashIterations);
+                        std::string newpwd1 = inputPwdCheck("请输入新的密码: ");
+                        std::string newpwd2 = inputPwdCheck("请再次输入新的密码以确认: ");
 
-                        newpwd = inputStringCheck("请再次输入新的密码以确认: ");
-
-                        if (SHA256Verify(newpwd, newHash, this->kHashIterations))
+                        if (newpwd1 == newpwd2)
                         {
+                            std::string newSalt = generateSalt();
+                            std::string newHash = SHA256Encrypt(newpwd1, newSalt, this->kHashIterations);
                             this->salt = newSalt;
                             this->storedHash = newHash;
 

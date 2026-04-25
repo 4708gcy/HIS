@@ -62,7 +62,7 @@ bool Doctor::doctorSignIn()
 
     while (loginAttempts < kMaxLoginAttempts)
     {
-        std::string pwd = inputStringCheck("请输入密码(输入\"quit\"退出登录): ");
+        std::string pwd = inputHiddenPwdCheck("请输入密码(输入\"quit\"退出登录): ");
 
         if (pwd == "quit")
         {
@@ -74,6 +74,7 @@ bool Doctor::doctorSignIn()
 
         if (success)
         {
+            loginAttempts = 0;
             isLoggedIn = true;
             std::cout << "医生登录成功！" << std::endl;
             return true;
@@ -397,7 +398,8 @@ bool Doctor::createRegistrationByPatient(Registration *&regHead, Doctor *&doctor
                 if (!doc->isDeleted && doc->isOnDuty && doc->department == this->department && doc->doctorID == assignedDoctorID)
                 {
                     Registration *newReg = new Registration();
-                    newReg->registrationID = "reg" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0'); // 生成新的挂号ID，格式为 reg000001
+                    newReg->registrationID = "reg" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0'); // 生成新的挂号ID，格式为 reg000001
+                    idCounter++;
                     newReg->patientID = patientID;
 
                     currentPatient->department = this->department; // 将患者的就诊科室设置为医生所在科室
@@ -406,7 +408,7 @@ bool Doctor::createRegistrationByPatient(Registration *&regHead, Doctor *&doctor
 
                     MyTime &t = MyTime::getInstance();
                     newReg->registerTime = t.getTime();
-                    newReg->fee = calculateRegistrationFee(this->title);
+                    newReg->fee = calculateRegistrationFee(doc->title);
                     newReg->status = RegistrationStatus::BOOKED;
 
                     newReg->note = inputStringCheck("请输入挂号备注信息: ");
@@ -802,7 +804,7 @@ bool Doctor::getConsultationsByID(Consultation *&conHead)
                 std::cout << "处方列表:" << std::endl;
                 for (const auto &pres : current->prescriptions)
                 {
-                    std::cout << "  - 药品名称: " << pres.medicineID
+                    std::cout << "  - 药品ID: " << pres.medicineID
                               << ", 药品名称: " << pres.name
                               << ", 药品数量: " << pres.quantity
                               << ", 用量: " << pres.dosage
@@ -1167,7 +1169,7 @@ bool Doctor::createConsultationByRegistration(Registration *&regHead, Consultati
 
     currentReg = regHead;
     foundPendingReg = false;
-    while (true)
+    while (currentReg != nullptr)
     {
         if (!currentReg->isDeleted && currentReg->doctorID == this->doctorID && currentReg->registrationID == regID && currentReg->status == RegistrationStatus::PAID)
         {
@@ -1189,7 +1191,8 @@ bool Doctor::createConsultationByRegistration(Registration *&regHead, Consultati
         if (!currentReg->isDeleted && currentReg->doctorID == this->doctorID && currentReg->registrationID == regID)
         {
             Consultation *newCon = new Consultation();
-            newCon->consultationID = "con" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0'); // 生成新的看诊ID，格式为 con000001
+            newCon->consultationID = "con" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0'); // 生成新的看诊ID，格式为 con000001
+            idCounter++;
             newCon->registrationID = regID;
             newCon->patientID = currentReg->patientID;
             newCon->doctorID = this->doctorID;
@@ -1317,7 +1320,7 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                             std::cout << "处方列表:" << std::endl;
                             for (const auto &pres : target->prescriptions)
                             {
-                                std::cout << "  - 药品名称: " << pres.medicineID
+                                std::cout << "  - 药品ID: " << pres.medicineID
                                           << ", 药品名称: " << pres.name
                                           << ", 药品数量: " << pres.quantity
                                           << ", 用量: " << pres.dosage
@@ -1435,7 +1438,7 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                         std::cout << "处方列表:" << std::endl;
                         for (const auto &pres : target->prescriptions)
                         {
-                            std::cout << "  - 药品名称: " << pres.medicineID
+                            std::cout << "  - 药品ID: " << pres.medicineID
                                       << ", 药品名称: " << pres.name
                                       << ", 药品数量: " << pres.quantity
                                       << ", 用量: " << pres.dosage
@@ -2002,7 +2005,7 @@ bool Doctor::createExaminationByConsultation(Consultation *&conHead, Examination
     Consultation *targetCon = conHead;
     while (targetCon != nullptr)
     {
-        if (!currentCon->isDeleted && currentCon->department == this->department && currentCon->status == ConsultationStatus::IN_PROGRESS && !currentCon->examinationlist.empty() && targetCon->consultationID == conID)
+        if (!targetCon->isDeleted && targetCon->department == this->department && targetCon->status == ConsultationStatus::IN_PROGRESS && !targetCon->examinationlist.empty() && targetCon->consultationID == conID)
         {
             for (const auto &examItem : targetCon->examinationlist)
             {
@@ -2018,7 +2021,8 @@ bool Doctor::createExaminationByConsultation(Consultation *&conHead, Examination
 
                 newExa->fee = calculateExaminationFee(newExa->itemName); // 根据检查项目名称计算检查费用
 
-                newExa->examinationID = "exa" + std::to_string(idCounter++).insert(0, 6 - std::to_string(idCounter).length(), '0'); // 生成新的检查ID，格式为 exa000001
+                newExa->examinationID = "exa" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0'); // 生成新的检查ID，格式为 exa000001
+                idCounter++;
                 MyTime &t = MyTime::getInstance();
                 newExa->orderTime = t.getTime();
 
@@ -2397,13 +2401,13 @@ void Doctor::managePersonalInfo()
                     std::cout << "2. 不在岗" << std::endl;
                     std::cout << "0. 取消修改" << std::endl;
 
-                    if (modifyChoice == 0)
+                    int dutyChoice = selectIntCheck(0, 2);
+                    if (dutyChoice == 0)
                     {
                         std::cout << "已取消修改操作！" << std::endl;
                         continue;
                     }
 
-                    int dutyChoice = selectIntCheck(1, 2);
                     this->isOnDuty = (dutyChoice == 1);
                     std::cout << "在岗状态已更新！" << std::endl;
                 }
@@ -2423,16 +2427,15 @@ void Doctor::managePersonalInfo()
                 {
                     std::string oldpwd = inputPwdCheck("请输入当前密码以验证身份: ");
 
-                    if (SHA256Verify(oldpwd, this->salt, this->kHashIterations))
+                    if (SHA256Verify(oldpwd, this->storedHash, this->kHashIterations))
                     {
-                        std::string newpwd = inputPwdCheck("请输入新的密码: ");
-                        std::string newSalt = generateSalt();
-                        std::string newHash = SHA256Encrypt(newpwd, newSalt, this->kHashIterations);
+                        std::string newpwd1 = inputPwdCheck("请输入新的密码: ");
+                        std::string newpwd2 = inputPwdCheck("请再次输入新的密码以确认: ");
 
-                        newpwd = inputPwdCheck("请再次输入新的密码以确认: ");
-
-                        if (SHA256Verify(newpwd, newHash, this->kHashIterations))
+                        if (newpwd1 == newpwd2)
                         {
+                            std::string newSalt = generateSalt();
+                            std::string newHash = SHA256Encrypt(newpwd1, newSalt, this->kHashIterations);
                             this->salt = newSalt;
                             this->storedHash = newHash;
 

@@ -219,7 +219,7 @@ public:
     void deletePatient(Patient *&target, const std::string &department);                        // 删除患者信息（逻辑删除，设置 isDeleted 标志）
     bool addPatient(Patient *&patient, int &idCounter);                                         // 添加患者信息（根据输入信息创建新的 Patient 对象，并插入到链表中）
 
-    void AdminPersionalInfo(); // 管理员个人信息管理（查看、修改密码等）
+    void AdminPersonalInfo(); // 管理员个人信息管理（查看、修改密码等）
 };
 
 #endif // ADMIN_H

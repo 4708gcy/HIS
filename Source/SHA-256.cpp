@@ -106,15 +106,22 @@ bool SHA256Verify(const std::string& inputPassword, const std::string& storedHas
     if (pos == std::string::npos) {
         return false; // 格式不正确
     }
-    
+
     // substr(起始位置，截取长度)
     std::string salt = storedHash.substr(0, pos);
-    
+
     // 重新计算哈希值
     std::string calculatedHash = SHA256Encrypt(inputPassword, salt, iterations);
-    
-    // 比较计算出的哈希值与存储的哈希值
-    return calculatedHash == storedHash;
+
+    // 恒定时间比较，防止时序攻击
+    if (calculatedHash.length() != storedHash.length()) {
+        return false;
+    }
+    volatile int result = 0;
+    for (size_t i = 0; i < calculatedHash.length(); ++i) {
+        result |= calculatedHash[i] ^ storedHash[i];
+    }
+    return result == 0;
 }
 
 std::string generateSalt(unsigned int len)

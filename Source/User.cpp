@@ -17,7 +17,8 @@ bool User::signUp(int choice, int &idCounter)
         if (apiKey == "88888888")
         {
             role = UserRole::ADMIN;
-            userID = "0" + std::to_string(idCounter++).insert(0, 5 - std::to_string(idCounter).length(), '0');
+            userID = "0" + std::to_string(idCounter).insert(0, 5 - std::to_string(idCounter).length(), '0');
+            idCounter++;
             salt = generateSalt();
             MyTime &myTime = MyTime::getInstance();
             createTime = myTime.getTime();

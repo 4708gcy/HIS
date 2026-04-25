@@ -64,8 +64,6 @@ Pharmacist *pharmacistLogin(Pharmacist *&pharmacistHead)
     Pharmacist *currentPharmacist = pharmacistHead;
     std::string id = inputIDCheck("请输入药剂师用户ID: ");
 
-    if (id == "0") return nullptr;
-
     while (currentPharmacist != nullptr)
     {
         if (currentPharmacist->getUserID() == id)
@@ -223,6 +221,7 @@ void viewAdminsByGender(Admin *&admin)
                       << std::endl;
             found = true;
         }
+        current = current->next;
     }
     if (!found)
     {
@@ -450,31 +449,21 @@ void modifyAdminEmail(Admin *&admin)
         std::cout << "未找到用户ID为 " << targetID << " 的管理员！" << std::endl;
     }
 }
-// 删除管理员(真实删除)
+// 删除管理员(逻辑删除)
 void deleteAdmin(Admin *&admin)
 {
     std::string targetID = inputIDCheck("请输入要删除的管理员用户ID: ");
     Admin *current = admin;
-    Admin *prev = nullptr;
     bool found = false;
     while (current != nullptr)
     {
         if (current->getUserID() == targetID)
         {
-            if (prev == nullptr)
-            {
-                admin = current->next; // 删除头节点
-            }
-            else
-            {
-                prev->next = current->next; // 删除中间或尾节点
-            }
-            delete current; // 释放内存
+            current->setIsDeleted(true);
             std::cout << "管理员账号已删除！" << std::endl;
             found = true;
             break;
         }
-        prev = current;
         current = current->next;
     }
     if (!found)

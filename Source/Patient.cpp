@@ -63,7 +63,7 @@ bool Patient::patientSignIn()
 
     while (loginAttempts < kMaxLoginAttempts)
     {
-        std::string pwd = inputStringCheck("请输入密码(输入\"quit\"退出登录): ");
+        std::string pwd = inputHiddenPwdCheck("请输入密码(输入\"quit\"退出登录): ");
 
         if (pwd == "quit")
         {
@@ -75,6 +75,7 @@ bool Patient::patientSignIn()
 
         if (success)
         {
+            loginAttempts = 0;
             isLoggedIn = true;
             std::cout << "患者登录成功！" << std::endl;
             return true;
@@ -1974,7 +1975,7 @@ bool Patient::getHospitalizationsByStatus(Hospitalization *&hosHead, int select)
         std::cout << "3. 已入院" << std::endl;
         std::cout << "4. 已出院" << std::endl;
         std::cout << "5. 已作废" << std::endl;
-        sChoice = selectIntCheck(1, 5) - 1;
+        sChoice = selectIntCheck(1, 5);
     }
     else
     {
@@ -2514,16 +2515,15 @@ void Patient::managePersonalInfo()
                 {
                     std::string oldpwd = inputPwdCheck("请输入当前密码以验证身份: ");
 
-                    if (SHA256Verify(oldpwd, this->salt, this->kHashIterations))
+                    if (SHA256Verify(oldpwd, this->storedHash, this->kHashIterations))
                     {
-                        std::string newpwd = inputPwdCheck("请输入新的密码: ");
-                        std::string newSalt = generateSalt();
-                        std::string newHash = SHA256Encrypt(newpwd, newSalt, this->kHashIterations);
+                        std::string newpwd1 = inputPwdCheck("请输入新的密码: ");
+                        std::string newpwd2 = inputPwdCheck("请再次输入新的密码以确认: ");
 
-                        newpwd = inputPwdCheck("请再次输入新的密码以确认: ");
-
-                        if (SHA256Verify(newpwd, newHash, this->kHashIterations))
+                        if (newpwd1 == newpwd2)
                         {
+                            std::string newSalt = generateSalt();
+                            std::string newHash = SHA256Encrypt(newpwd1, newSalt, this->kHashIterations);
                             this->salt = newSalt;
                             this->storedHash = newHash;
 

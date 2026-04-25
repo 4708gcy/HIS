@@ -58,7 +58,7 @@ bool Pharmacist::pharmacistSignIn()
 
     while (loginAttempts < kMaxLoginAttempts)
     {
-        std::string pwd = inputStringCheck("请输入密码(输入\"quit\"退出登录): ");
+        std::string pwd = inputHiddenPwdCheck("请输入密码(输入\"quit\"退出登录): ");
 
         if (pwd == "quit")
         {
@@ -70,6 +70,7 @@ bool Pharmacist::pharmacistSignIn()
 
         if (success)
         {
+            loginAttempts = 0;
             isLoggedIn = true;
             std::cout << "药剂师登录成功！" << std::endl;
             return true;
@@ -457,7 +458,7 @@ void Pharmacist::setMedicationRecordReviewStatus(MedicationRecord *&target, Cons
     Consultation *con = conHead;
     while (con)
     {
-        if (con->consultationID == target->consultationID)
+        if (!con->isDeleted && con->consultationID == target->consultationID)
         {
             break;
         }
@@ -486,7 +487,10 @@ void Pharmacist::setMedicationRecordReviewStatus(MedicationRecord *&target, Cons
 
     target->reviewStatus = static_cast<MedicationReviewStatus>(choice);
 
-    con->isPrecriptionReviewed = true; // 同步更新看诊记录中的处方审核状态
+    if (target->reviewStatus == MedicationReviewStatus::APPROVED)
+    {
+        con->isPrecriptionReviewed = true; // 审核通过时同步更新看诊记录中的处方审核状态
+    }
 
     increaseReviewCount();
     std::cout << "审核状态已更新！" << std::endl;
@@ -791,7 +795,8 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
     }
 
     MedicationRecord *newRecord = new MedicationRecord;
-    newRecord->medRecordID = "mrd" + std::to_string(++idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    newRecord->medRecordID = "mrd" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    idCounter++;
     newRecord->consultationID = con->consultationID;
     newRecord->doctorID = con->doctorID;
     newRecord->pharmacistID = this->pharmacistID;
@@ -1166,7 +1171,7 @@ bool Pharmacist::getMedicinesByStatus(Medicine *&medHead, int select)
     int choice;
     if (select == -1)
     {
-        int choice = MedicineStatusMenu();
+        choice = MedicineStatusMenu();
     }
     else
     {
@@ -1393,7 +1398,8 @@ void Pharmacist::reduceMedicineStock(Medicine *&target)
 void Pharmacist::addNewMedicine(Medicine *&medHead, int &idCounter)
 {
     Medicine *newMed = new Medicine;
-    newMed->medicineID = "med" + std::to_string(++idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    newMed->medicineID = "med" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    idCounter++;
     newMed->name = inputStringCheck("请输入药品名称: ");
     newMed->specification = inputStringCheck("请输入药品规格: ");
     newMed->manufacturer = inputStringCheck("请输入生产厂家: ");

@@ -1,9 +1,21 @@
 
 #include "../Head/UI.h"
+#include "../Head/GetTime.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
+#include <fstream>
+#include <mutex>
 
-// 暂停函数，等待用户按键继续
-void pause()
+// 暂停函数，等待用户按键继续（支持面包屑导航显示）
+void pause(const std::string &breadcrumb)
 {
+    if (!breadcrumb.empty())
+    {
+        setConsoleColor(ConsoleColor::CYAN);
+        std::cout << "📍 " << breadcrumb << std::endl;
+        resetConsoleColor();
+    }
     std::cout << "按下回车键继续..." << std::flush;
     std::string dummy;
     std::getline(std::cin, dummy);
@@ -15,6 +27,162 @@ std::string trim(const std::string &s)
     auto start = s.find_first_not_of(" \t\r\n");
     auto end = s.find_last_not_of(" \t\r\n");
     return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
+}
+
+// ======================================== 终端颜色函数 =======================================
+
+void setConsoleColor(ConsoleColor color)
+{
+#ifdef _WIN32
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    switch (color)
+    {
+    case ConsoleColor::RED:
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+        break;
+    case ConsoleColor::GREEN:
+        SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        break;
+    case ConsoleColor::YELLOW:
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        break;
+    case ConsoleColor::CYAN:
+        SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        break;
+    case ConsoleColor::WHITE:
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        break;
+    default:
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        break;
+    }
+#else
+    // ANSI 颜色码（Linux/Mac 兼容）
+    switch (color)
+    {
+    case ConsoleColor::RED:    std::cout << "\033[91m"; break;
+    case ConsoleColor::GREEN:  std::cout << "\033[92m"; break;
+    case ConsoleColor::YELLOW: std::cout << "\033[93m"; break;
+    case ConsoleColor::CYAN:   std::cout << "\033[96m"; break;
+    case ConsoleColor::WHITE:  std::cout << "\033[97m"; break;
+    default:                   std::cout << "\033[0m"; break;
+    }
+#endif
+}
+
+void resetConsoleColor()
+{
+    setConsoleColor(ConsoleColor::DEFAULT);
+}
+
+void printTitle(const std::string &title)
+{
+    setConsoleColor(ConsoleColor::CYAN);
+    std::cout << "\n════════════════════════════════════════" << std::endl;
+    std::cout << "  " << title << std::endl;
+    std::cout << "════════════════════════════════════════" << std::endl;
+    resetConsoleColor();
+}
+
+void printSuccess(const std::string &msg)
+{
+    setConsoleColor(ConsoleColor::GREEN);
+    std::cout << "[成功] " << msg << std::endl;
+    resetConsoleColor();
+}
+
+void printError(const std::string &msg)
+{
+    setConsoleColor(ConsoleColor::RED);
+    std::cout << "[错误] " << msg << std::endl;
+    resetConsoleColor();
+}
+
+void printWarning(const std::string &msg)
+{
+    setConsoleColor(ConsoleColor::YELLOW);
+    std::cout << "[警告] " << msg << std::endl;
+    resetConsoleColor();
+}
+
+// ======================================== 分页显示函数 =======================================
+
+void printWithPagination(const std::vector<std::string> &lines, int pageSize)
+{
+    if (lines.empty())
+    {
+        std::cout << "暂无数据。" << std::endl;
+        return;
+    }
+
+    int totalPages = (static_cast<int>(lines.size()) + pageSize - 1) / pageSize;
+    int currentPage = 1;
+
+    while (currentPage <= totalPages)
+    {
+        int start = (currentPage - 1) * pageSize;
+        int end = (std::min)(start + pageSize, static_cast<int>(lines.size()));
+
+        std::cout << "--- 第 " << currentPage << "/" << totalPages << " 页 ---" << std::endl;
+        for (int i = start; i < end; i++)
+        {
+            std::cout << lines[i] << std::endl;
+        }
+
+        if (currentPage < totalPages)
+        {
+            std::cout << "--- 按回车查看下一页，输入 0 返回 ---" << std::endl;
+            std::string input;
+            std::getline(std::cin, input);
+            if (input == "0") return;
+            currentPage++;
+        }
+    }
+    std::cout << "--- 共 " << lines.size() << " 条记录 ---" << std::endl;
+}
+
+// ======================================== 操作日志系统 =======================================
+
+LogManager::LogManager()
+{
+    MyTime &t = MyTime::getInstance();
+    std::string today = t.getTime().substr(0, 10);
+    // 替换日期中的 '-' 为 '_'
+    for (auto &c : today) if (c == '-') c = '_';
+    logFilePath = "../Data/OperationLog/his_" + today + ".log";
+
+    // 确保日志目录存在
+#ifdef _WIN32
+    CreateDirectoryA("../Data/OperationLog", nullptr);
+#endif
+}
+
+LogManager &LogManager::getInstance()
+{
+    static LogManager instance;
+    return instance;
+}
+
+void LogManager::writeLog(const std::string &level, const std::string &msg)
+{
+    std::ofstream logFile(logFilePath, std::ios::app);
+    if (logFile.is_open())
+    {
+        MyTime &t = MyTime::getInstance();
+        logFile << "[" << t.getTime() << "] [" << level << "] " << msg << std::endl;
+        logFile.close();
+    }
+}
+
+void LogManager::info(const std::string &msg) { writeLog("INFO", msg); }
+void LogManager::warn(const std::string &msg) { writeLog("WARN", msg); }
+void LogManager::error(const std::string &msg) { writeLog("ERROR", msg); }
+
+void LogManager::logOperation(const std::string &userId, const std::string &role,
+                              const std::string &operation, const std::string &detail)
+{
+    std::string msg = "[用户:" + userId + "] [角色:" + role + "] [操作:" + operation + "] [详情:" + detail + "]";
+    writeLog("OPERATION", msg);
 }
 
 // ============================ 输入校验函数区域 =======================================
@@ -35,7 +203,9 @@ int selectIntCheck(const int min, const int max)
         }
         else
         {
+            setConsoleColor(ConsoleColor::RED);
             std::cout << "无效输入，请输入 " << min << " - " << max << " 之间的数字!" << std::endl;
+            resetConsoleColor();
         }
     }
 }
@@ -178,6 +348,56 @@ std::string inputPwdCheck(const std::string &prompt)
 
         return pwd;
     }
+}
+
+// 5b. 隐藏密码输入（用于登录场景，Windows下不回显字符）
+std::string inputHiddenPwdCheck(const std::string &prompt)
+{
+    std::string pwd;
+    std::cout << prompt << std::endl;
+
+#ifdef _WIN32
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+    if (GetConsoleScreenBufferInfo(hConsole, &csbiInfo))
+    {
+        DWORD charsWritten = 0;
+        COORD cursorPos = csbiInfo.dwCursorPosition;
+        // 覆盖当前行的"请输入密码"提示后的内容
+        FillConsoleOutputCharacter(hConsole, ' ', 80, cursorPos, &charsWritten);
+        SetConsoleCursorPosition(hConsole, cursorPos);
+    }
+#endif
+
+    // 使用 Windows API 实现无回显输入
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD mode = 0;
+    GetConsoleMode(hStdin, &mode);
+    SetConsoleMode(hStdin, mode & ~ENABLE_LINE_INPUT & ~ENABLE_ECHO_INPUT);
+
+    char c = 0;
+    DWORD charsRead = 0;
+    while (ReadFile(hStdin, &c, 1, &charsRead, nullptr) && charsRead == 1)
+    {
+        if (c == '\r' || c == '\n') break;
+        if (c == '\b' || c == 127) // 退格
+        {
+            if (!pwd.empty())
+            {
+                pwd.pop_back();
+                std::cout << "\b \b";
+            }
+        }
+        else if (c >= 32 && c <= 126)
+        {
+            pwd += c;
+            std::cout << '*';
+        }
+    }
+    std::cout << std::endl;
+    SetConsoleMode(hStdin, mode); // 恢复控制台模式
+    pwd = trim(pwd);
+    return pwd;
 }
 
 // 6. 安全床位号输入
@@ -546,26 +766,34 @@ double inputDoubleCheck(const std::string &prompt, double min, double max)
 // 打印菜单边框（宽度50字符）
 static void printMenuBorder()
 {
+    setConsoleColor(ConsoleColor::CYAN);
     std::cout << "+";
     for (int i = 0; i < 50; i++)
         std::cout << "-";
     std::cout << "+" << std::endl;
+    resetConsoleColor();
 }
 
-// 打印居中标题
+// 打印居中标题（带颜色）
 static void printMenuTitle(const std::string &title)
 {
     int padding = (50 - (int)title.length()) / 2;
     if (padding < 1)
         padding = 1;
+    setConsoleColor(ConsoleColor::CYAN);
     std::cout << "|";
+    resetConsoleColor();
     for (int i = 0; i < padding; i++)
         std::cout << " ";
+    setConsoleColor(ConsoleColor::WHITE);
     std::cout << title;
+    resetConsoleColor();
     int rightPadding = 50 - padding - (int)title.length();
     for (int i = 0; i < rightPadding; i++)
         std::cout << " ";
+    setConsoleColor(ConsoleColor::CYAN);
     std::cout << "|" << std::endl;
+    resetConsoleColor();
 }
 
 // 打印菜单分隔线

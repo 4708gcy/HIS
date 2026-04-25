@@ -510,7 +510,7 @@ int main()
                             }
                             else if (adminChoice == 6) // 个人信息管理
                             {
-                                client->AdminPersionalInfo(); // 调用管理员个人信息管理函数
+                                client->AdminPersonalInfo(); // 调用管理员个人信息管理函数
                             }
                             else if (adminChoice == 7) // 账号封锁管理
                             {
