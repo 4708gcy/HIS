@@ -16,7 +16,6 @@ Doctor::Doctor()
 
 Doctor::~Doctor()
 {
-    // 析构函数实现（如有需要）
 }
 
 bool Doctor::doctorSignUp(int &idCounter)
@@ -24,7 +23,7 @@ bool Doctor::doctorSignUp(int &idCounter)
     bool success = signUp(2, idCounter); // 调用基类的注册方法，传入角色类型 2（医生）
     if (!success)
     {
-        std::cout << "医生注册失败！" << std::endl;
+        printError("医生注册失败！");
         return false;
     }
     this->doctorID = this->userID; // 医生ID与用户ID保持一致
@@ -48,7 +47,7 @@ bool Doctor::doctorSignUp(int &idCounter)
     int onDutyChoice = selectIntCheck(0, 1);
     this->isOnDuty = (onDutyChoice == 1);
 
-    std::cout << "医生注册成功! 您的用户ID是: " << this->userID << std::endl;
+    printSuccess("医生注册成功! 您的用户ID是: " + this->userID);
     return true;
 }
 
@@ -56,7 +55,7 @@ bool Doctor::doctorSignIn()
 {
     if (isAccountActive == false)
     {
-        std::cout << "账户已锁定，请联系系统管理员解锁！" << std::endl;
+        printError("账户已锁定，请联系系统管理员解锁！");
         return false;
     }
 
@@ -66,7 +65,7 @@ bool Doctor::doctorSignIn()
 
         if (pwd == "quit")
         {
-            std::cout << "退出登录。" << std::endl;
+            printWarning("退出登录。");
             return false;
         }
 
@@ -76,18 +75,18 @@ bool Doctor::doctorSignIn()
         {
             loginAttempts = 0;
             isLoggedIn = true;
-            std::cout << "医生登录成功！" << std::endl;
+            printSuccess("医生登录成功！");
             return true;
         }
         else
         {
             loginAttempts++;
-            std::cout << "密码错误! 请重新输入密码(当前失败次数: " << loginAttempts << ")" << std::endl;
+            printError("密码错误! 请重新输入密码(当前失败次数: " + std::to_string(loginAttempts) + ")");
 
             if (loginAttempts >= kMaxLoginAttempts)
             {
                 isAccountActive = false;
-                std::cout << "连续登录失败次数过多，账户已锁定，请联系系统管理员解锁！" << std::endl;
+                printError("连续登录失败次数过多，账户已锁定，请联系系统管理员解锁！");
             }
         }
     }
@@ -336,7 +335,7 @@ bool Doctor::getRegistrationsByTimeRange(Registration *&regHead)
 
     if (!found)
     {
-        std::cout << "没有找到挂号日期在指定范围内的记录。" << std::endl;
+        printWarning("没有找到挂号日期在指定范围内的记录。");
     }
     return found;
 }
@@ -347,13 +346,13 @@ void Doctor::setRegistrationStatus(Registration *&target)
     std::cout << "请输入新的挂号状态 (0-已预约, 1-已支付, 2-已取消, 3-已完成): ";
     int statusChoice = selectIntCheck(0, 3);
     target->status = static_cast<RegistrationStatus>(statusChoice);
-    std::cout << "挂号状态已更新为: " << regStatusToString(target->status) << std::endl;
+    printSuccess("挂号状态已更新为: " + regStatusToString(target->status));
 }
 // 删除挂号记录（逻辑删除）
 void Doctor::deleteRegistration(Registration *&target)
 {
     target->isDeleted = true; // 逻辑删除
-    std::cout << "挂号记录已删除！" << std::endl;
+    printSuccess("挂号记录已删除！");
 }
 // 为患者创建新的挂号记录
 bool Doctor::createRegistrationByPatient(Registration *&regHead, Doctor *&doctor, Patient *&patient, int &idCounter)
@@ -385,7 +384,7 @@ bool Doctor::createRegistrationByPatient(Registration *&regHead, Doctor *&doctor
 
             if (!foundOnDutyDoctor)
             {
-                std::cout << "未找到同科室在岗医生，无法为患者挂号！" << std::endl;
+                printError("未找到同科室在岗医生，无法为患者挂号！");
                 return false;
             }
 
@@ -419,18 +418,18 @@ bool Doctor::createRegistrationByPatient(Registration *&regHead, Doctor *&doctor
                         regHead->prev = newReg;
                     regHead = newReg;
 
-                    std::cout << "挂号成功！新挂号ID: " << newReg->registrationID << std::endl;
+                    printSuccess("挂号成功！新挂号ID: " + newReg->registrationID);
                     return true;
                 }
                 doc = doc->next;
             }
-            std::cout << "未找到指定的医生，无法为患者挂号！" << std::endl;
+            printError("未找到指定的医生，无法为患者挂号！");
             return false;
         }
         currentPatient = currentPatient->next;
     }
 
-    std::cout << "未找到指定的患者信息！" << std::endl;
+    printError("未找到指定的患者信息！");
     return false;
 }
 
@@ -456,27 +455,27 @@ void Doctor::manageRegistrations(Registration *&regHead, Doctor *&doctor, Patien
                 else if (viewChoice == 1)
                 {
                     getAllRegistrations(regHead);
-                    pause();
+                    pause("医生 > 挂号管理");
                 }
                 else if (viewChoice == 2)
                 {
                     getRegistrationsByID(regHead);
-                    pause();
+                    pause("医生 > 挂号管理");
                 }
                 else if (viewChoice == 3)
                 {
                     getRegistrationsByPatientID(regHead);
-                    pause();
+                    pause("医生 > 挂号管理");
                 }
                 else if (viewChoice == 4)
                 {
                     getRegistrationsByTimeRange(regHead);
-                    pause();
+                    pause("医生 > 挂号管理");
                 }
                 else if (viewChoice == 5)
                 {
                     getRegistrationsByStatus(regHead);
-                    pause();
+                    pause("医生 > 挂号管理");
                 }
             }
         }
@@ -519,7 +518,7 @@ void Doctor::manageRegistrations(Registration *&regHead, Doctor *&doctor, Patien
                         if (modifyChoice == 1)
                         {
                             setRegistrationStatus(target);
-                            pause();
+                            pause("医生 > 挂号管理");
                         }
                         else
                         {
@@ -529,8 +528,8 @@ void Doctor::manageRegistrations(Registration *&regHead, Doctor *&doctor, Patien
                 }
                 else
                 {
-                    std::cout << "未找到挂号ID为 " << regID << " 的挂号记录，无法修改状态！" << std::endl;
-                    pause();
+                    printError("未找到挂号ID为 " + regID + " 的挂号记录，无法修改状态！");
+                    pause("医生 > 挂号管理");
                 }
             }
         }
@@ -571,25 +570,25 @@ void Doctor::manageRegistrations(Registration *&regHead, Doctor *&doctor, Patien
                     if (confirmChoice == 1)
                     {
                         deleteRegistration(target);
-                        pause();
+                        pause("医生 > 挂号管理");
                     }
                     else
                     {
-                        std::cout << "已取消删除操作。" << std::endl;
-                        pause();
+                        printWarning("已取消删除操作。");
+                        pause("医生 > 挂号管理");
                     }
                 }
                 else
                 {
-                    std::cout << "未找到挂号ID为 " << regID << " 的挂号记录，无法删除！" << std::endl;
-                    pause();
+                    printError("未找到挂号ID为 " + regID + " 的挂号记录，无法删除！");
+                    pause("医生 > 挂号管理");
                 }
             }
         }
         else if (choice == 4)
         {
             createRegistrationByPatient(regHead, doctor, patientHead, idCounter); // 这里传入 nullptr，因为在 createRegistrationByPatient 内部会再次输入患者ID并查找患者信息
-            pause();
+            pause("医生 > 挂号管理");
         }
     }
 }
@@ -759,7 +758,7 @@ bool Doctor::getConsultationsByTimeRange(Consultation *&conHead)
 
     if (!found)
     {
-        std::cout << "没有找到看诊日期在指定范围内的记录。" << std::endl;
+        printWarning("没有找到看诊日期在指定范围内的记录。");
     }
     return found;
 }
@@ -829,7 +828,7 @@ void Doctor::setConsultationStatus(Consultation *&target)
     std::cout << "请输入新的看诊状态 (0-待就诊, 1-正在处理, 2-已结束, 3-已作废): ";
     int statusChoice = selectIntCheck(0, 3);
     target->status = static_cast<ConsultationStatus>(statusChoice);
-    std::cout << "看诊状态已更新为: " << conStatusToString(target->status) << std::endl;
+    printSuccess("看诊状态已更新为: " + conStatusToString(target->status));
 }
 // 修改看诊记录的主诉信息
 void Doctor::setConsultationChiefComplaint(Consultation *&target)
@@ -837,7 +836,7 @@ void Doctor::setConsultationChiefComplaint(Consultation *&target)
     std::cout << "当前主诉信息: " << target->chiefComplaint << std::endl;
     std::string newChiefComplaint = inputStringCheck("请输入新的主诉信息: ");
     target->chiefComplaint = newChiefComplaint;
-    std::cout << "主诉信息已更新！" << std::endl;
+    printSuccess("主诉信息已更新！");
 }
 // 修改看诊记录的现病史信息
 void Doctor::setConsultationHistoryOfPresentIllness(Consultation *&target)
@@ -845,7 +844,7 @@ void Doctor::setConsultationHistoryOfPresentIllness(Consultation *&target)
     std::cout << "当前现病史信息: " << target->historyOfPresentIllness << std::endl;
     std::string newHistory = inputStringCheck("请输入新的现病史信息: ");
     target->historyOfPresentIllness = newHistory;
-    std::cout << "现病史信息已更新！" << std::endl;
+    printSuccess("现病史信息已更新！");
 }
 // 修改看诊记录的既往史信息
 void Doctor::setConsultationPastMedicalHistory(Consultation *&target)
@@ -853,7 +852,7 @@ void Doctor::setConsultationPastMedicalHistory(Consultation *&target)
     std::cout << "当前既往史信息: " << target->pastMedicalHistory << std::endl;
     std::string newHistory = inputStringCheck("请输入新的既往史信息: ");
     target->pastMedicalHistory = newHistory;
-    std::cout << "既往史信息已更新！" << std::endl;
+    printSuccess("既往史信息已更新！");
 }
 // 修改看诊记录的家族史信息
 void Doctor::setConsultationFamilyHistory(Consultation *&target)
@@ -861,7 +860,7 @@ void Doctor::setConsultationFamilyHistory(Consultation *&target)
     std::cout << "当前家族史信息: " << target->familyHistory << std::endl;
     std::string newHistory = inputStringCheck("请输入新的家族史信息: ");
     target->familyHistory = newHistory;
-    std::cout << "家族史信息已更新！" << std::endl;
+    printSuccess("家族史信息已更新！");
 }
 // 修改看诊记录的初步诊断信息
 void Doctor::setConsultationPreliminaryDiagnosis(Consultation *&target)
@@ -869,7 +868,7 @@ void Doctor::setConsultationPreliminaryDiagnosis(Consultation *&target)
     std::cout << "当前初步诊断信息: " << target->preliminaryDiagnosis << std::endl;
     std::string newDiagnosis = inputStringCheck("请输入新的初步诊断信息: ");
     target->preliminaryDiagnosis = newDiagnosis;
-    std::cout << "初步诊断信息已更新！" << std::endl;
+    printSuccess("初步诊断信息已更新！");
 }
 // 向看诊记录添加检查项目（避免重复，类似 set 功能）
 void Doctor::addConsultationExamination(Consultation *&target)
@@ -906,12 +905,12 @@ void Doctor::addConsultationExamination(Consultation *&target)
 
         if (exists)
         {
-            std::cout << "该检查项目已存在，不能重复添加！" << std::endl;
+            printError("该检查项目已存在，不能重复添加！");
         }
         else
         {
             target->examinationlist.push_back(newExam);
-            std::cout << "检查项目信息已添加！" << std::endl;
+            printSuccess("检查项目信息已添加！");
         }
     }
 }
@@ -963,7 +962,7 @@ void Doctor::addConsultationPrescription(Consultation *&target, Medicine *&medHe
 
         if (exists)
         {
-            std::cout << "该药品已存在于处方中，不能重复添加！" << std::endl;
+            printError("该药品已存在于处方中，不能重复添加！");
         }
         else
         {
@@ -975,14 +974,14 @@ void Doctor::addConsultationPrescription(Consultation *&target, Medicine *&medHe
                 {
                     newPres.name = medCurrent->name; // 自动填充药品名称
                     std::cout << "请输入要使用的药品数量：" << std::endl;
-                    newPres.quantity = selectIntCheck(1, INT_MAX);
+                    newPres.quantity = selectIntCheck(1, 10000);
 
                     newPres.dosage = inputStringCheck("请输入用量信息: ");
                     newPres.frequency = inputStringCheck("请输入频次信息: ");
                     newPres.duration = inputStringCheck("请输入疗程信息: ");
                     newPres.note = inputStringCheck("请输入处方备注信息: ");
 
-                    std::cout << "处方信息已添加！" << std::endl;
+                    printSuccess("处方信息已添加！");
 
                     target->prescriptions.push_back(newPres);
                     medFound = true;
@@ -993,7 +992,7 @@ void Doctor::addConsultationPrescription(Consultation *&target, Medicine *&medHe
 
             if (!medFound)
             {
-                std::cout << "未找到指定的药品！" << std::endl;
+                printError("未找到指定的药品！");
             }
         }
 
@@ -1011,13 +1010,13 @@ void Doctor::setHospitalizationRecommendation(Consultation *&target)
     std::cout << "请输入新的住院建议 (1-建议住院, 0-不建议住院): ";
     int choice = selectIntCheck(0, 1);
     target->isHospitalizationRecommended = (choice == 1);
-    std::cout << "住院建议已更新！" << std::endl;
+    printSuccess("住院建议已更新！");
 }
 // 删除看诊记录（逻辑删除）
 void Doctor::deleteConsultation(Consultation *&target)
 {
     target->isDeleted = true; // 逻辑删除
-    std::cout << "看诊记录已删除！" << std::endl;
+    printSuccess("看诊记录已删除！");
 }
 // 初始化看诊记录的检查项目列表
 void Doctor::initConsultationExamination(Consultation *&target)
@@ -1054,12 +1053,12 @@ void Doctor::initConsultationExamination(Consultation *&target)
 
         if (exists)
         {
-            std::cout << "该检查项目已存在，不能重复添加！" << std::endl;
+            printError("该检查项目已存在，不能重复添加！");
         }
         else
         {
             target->examinationlist.push_back(newExam);
-            std::cout << "检查项目信息已添加！" << std::endl;
+            printSuccess("检查项目信息已添加！");
         }
     }
     return;
@@ -1096,7 +1095,7 @@ void Doctor::initConsultationPrescription(Consultation *&target, Medicine *&medH
 
         if (exists)
         {
-            std::cout << "该药品已存在于处方中，不能重复添加！" << std::endl;
+            printError("该药品已存在于处方中，不能重复添加！");
         }
         else
         {
@@ -1108,14 +1107,14 @@ void Doctor::initConsultationPrescription(Consultation *&target, Medicine *&medH
                 {
                     newPres.name = medCurrent->name; // 自动填充药品名称
                     std::cout << "请输入要使用的药品数量：" << std::endl;
-                    newPres.quantity = selectIntCheck(1, INT_MAX);
+                    newPres.quantity = selectIntCheck(1, 10000);
 
                     newPres.dosage = inputStringCheck("请输入用量信息: ");
                     newPres.frequency = inputStringCheck("请输入频次信息: ");
                     newPres.duration = inputStringCheck("请输入疗程信息: ");
                     newPres.note = inputStringCheck("请输入处方备注信息: ");
 
-                    std::cout << "处方信息已添加！" << std::endl;
+                    printSuccess("处方信息已添加！");
 
                     target->prescriptions.push_back(newPres);
                     medFound = true;
@@ -1126,7 +1125,7 @@ void Doctor::initConsultationPrescription(Consultation *&target, Medicine *&medH
 
             if (!medFound)
             {
-                std::cout << "未找到指定的药品！" << std::endl;
+                printError("未找到指定的药品！");
             }
         }
     }
@@ -1161,7 +1160,7 @@ bool Doctor::createConsultationByRegistration(Registration *&regHead, Consultati
 
     if (!foundPendingReg)
     {
-        std::cout << "没有找到任何待就诊的挂号记录，无法创建看诊记录！" << std::endl;
+        printError("没有找到任何待就诊的挂号记录，无法创建看诊记录！");
         return false;
     }
 
@@ -1181,7 +1180,7 @@ bool Doctor::createConsultationByRegistration(Registration *&regHead, Consultati
 
     if (!foundPendingReg)
     {
-        std::cout << "未找到指定的待就诊挂号记录，无法创建看诊记录！" << std::endl;
+        printError("未找到指定的待就诊挂号记录，无法创建看诊记录！");
         return false;
     }
 
@@ -1216,13 +1215,13 @@ bool Doctor::createConsultationByRegistration(Registration *&regHead, Consultati
                 conHead->prev = newCon;
             conHead = newCon;
 
-            std::cout << "看诊记录已创建！新看诊ID: " << newCon->consultationID << std::endl;
+            printSuccess("看诊记录已创建！新看诊ID: " + newCon->consultationID);
             return true;
         }
         currentReg = currentReg->next;
     }
 
-    std::cout << "未找到指定的挂号记录，无法创建看诊记录！" << std::endl;
+    printError("未找到指定的挂号记录，无法创建看诊记录！");
     return false;
 }
 
@@ -1247,27 +1246,27 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                 else if (viewChoice == 1)
                 {
                     getAllConsultations(conHead);
-                    pause();
+                    pause("医生 > 看诊管理");
                 }
                 else if (viewChoice == 2)
                 {
                     getConsultationsByPatientID(conHead);
-                    pause();
+                    pause("医生 > 看诊管理");
                 }
                 else if (viewChoice == 3)
                 {
                     getConsultationsByID(conHead);
-                    pause();
+                    pause("医生 > 看诊管理");
                 }
                 else if (viewChoice == 4)
                 {
                     getConsultationsByTimeRange(conHead);
-                    pause();
+                    pause("医生 > 看诊管理");
                 }
                 else if (viewChoice == 5)
                 {
                     getConsultationsByStatus(conHead);
-                    pause();
+                    pause("医生 > 看诊管理");
                 }
             }
         }
@@ -1339,54 +1338,54 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                         else if (modifyChoice == 1)
                         {
                             setConsultationStatus(target);
-                            pause();
+                            pause("医生 > 看诊管理");
                         }
                         else if (modifyChoice == 2)
                         {
                             setConsultationChiefComplaint(target);
-                            pause();
+                            pause("医生 > 看诊管理");
                         }
                         else if (modifyChoice == 3)
                         {
                             setConsultationHistoryOfPresentIllness(target);
-                            pause();
+                            pause("医生 > 看诊管理");
                         }
                         else if (modifyChoice == 4)
                         {
                             setConsultationPastMedicalHistory(target);
-                            pause();
+                            pause("医生 > 看诊管理");
                         }
                         else if (modifyChoice == 5)
                         {
                             setConsultationFamilyHistory(target);
-                            pause();
+                            pause("医生 > 看诊管理");
                         }
                         else if (modifyChoice == 6)
                         {
                             setConsultationPreliminaryDiagnosis(target);
-                            pause();
+                            pause("医生 > 看诊管理");
                         }
                         else if (modifyChoice == 7)
                         {
                             addConsultationExamination(target);
-                            pause();
+                            pause("医生 > 看诊管理");
                         }
                         else if (modifyChoice == 8)
                         {
                             addConsultationPrescription(target, medHead);
-                            pause();
+                            pause("医生 > 看诊管理");
                         }
                         else if (modifyChoice == 9)
                         {
                             setHospitalizationRecommendation(target);
-                            pause();
+                            pause("医生 > 看诊管理");
                         }
                     }
                 }
                 else
                 {
-                    std::cout << "未找到看诊ID为 " << conID << " 的看诊记录，无法进行修改操作！" << std::endl;
-                    pause();
+                    printError("未找到看诊ID为 " + conID + " 的看诊记录，无法进行修改操作！");
+                    pause("医生 > 看诊管理");
                 }
             }
         }
@@ -1457,25 +1456,25 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                     if (deleteChoice == 1)
                     {
                         deleteConsultation(target);
-                        pause();
+                        pause("医生 > 看诊管理");
                     }
                     else
                     {
-                        std::cout << "已取消删除操作！" << std::endl;
-                        pause();
+                        printWarning("已取消删除操作！");
+                        pause("医生 > 看诊管理");
                     }
                 }
                 else
                 {
-                    std::cout << "未找到看诊ID为 " << conID << " 的看诊记录，无法删除！" << std::endl;
-                    pause();
+                    printError("未找到看诊ID为 " + conID + " 的看诊记录，无法删除！");
+                    pause("医生 > 看诊管理");
                 }
             }
         }
         else if (choice == 4)
         {
             createConsultationByRegistration(regHead, conHead, medHead, idCounter);
-            pause();
+            pause("医生 > 看诊管理");
         }
     }
 }
@@ -1705,7 +1704,7 @@ bool Doctor::getExaminationsByTimeRange(Examination *&exaHead)
 
     if (!found)
     {
-        std::cout << "未找到指定时间范围内的检查记录。" << std::endl;
+        printWarning("未找到指定时间范围内的检查记录。");
     }
 
     return found;
@@ -1717,7 +1716,7 @@ bool Doctor::getExaminationsByItemName(Examination *&exaHead)
 
     if (itemName == "0")
     {
-        std::cout << "已取消查询操作！" << std::endl;
+        printWarning("已取消查询操作！");
         return false;
     }
 
@@ -1840,12 +1839,12 @@ void Doctor::setExaminationStatus(Examination *&target)
 
     if (statusChoice == 0)
     {
-        std::cout << "已取消修改操作！" << std::endl;
+        printWarning("已取消修改操作！");
         return;
     }
 
     target->status = static_cast<ExaminationStatus>(statusChoice);
-    std::cout << "检查状态已更新为: " << examStatusToString(target->status) << std::endl;
+    printSuccess("检查状态已更新为: " + examStatusToString(target->status));
 }
 // 修改检查项目名称
 void Doctor::setExaminationItemName(Examination *&target)
@@ -1855,12 +1854,12 @@ void Doctor::setExaminationItemName(Examination *&target)
 
     if (newItemName == "0")
     {
-        std::cout << "已取消修改操作！" << std::endl;
+        printWarning("已取消修改操作！");
         return;
     }
 
     target->itemName = newItemName;
-    std::cout << "检查项目名称已更新！" << std::endl;
+    printSuccess("检查项目名称已更新！");
 }
 // 修改检查结果报告
 void Doctor::setExaminationReport(Examination *&target)
@@ -1869,7 +1868,7 @@ void Doctor::setExaminationReport(Examination *&target)
 
     setVitalSigns(target->vitalSigns, target->itemName); // 根据检查项目名称设置相应的生命体征信息
 
-    std::cout << "检查结果报告已更新！" << std::endl;
+    printSuccess("检查结果报告已更新！");
 }
 // 修改检查报告摘要
 void Doctor::setExaminationReportSummary(Examination *&target)
@@ -1877,7 +1876,7 @@ void Doctor::setExaminationReportSummary(Examination *&target)
     std::cout << "当前检查报告摘要: " << target->reportSummary << std::endl;
     std::string newSummary = inputStringCheck("请输入新的检查报告摘要: ");
     target->reportSummary = newSummary;
-    std::cout << "检查报告摘要已更新！" << std::endl;
+    printSuccess("检查报告摘要已更新！");
 }
 // 修改检查记录的相关附件信息
 void Doctor::setExaminationAttachments(Examination *&target)
@@ -1923,19 +1922,19 @@ void Doctor::setExaminationAttachments(Examination *&target)
             }
             if (exists)
             {
-                std::cout << "该附件已存在，不能重复添加！" << std::endl;
+                printError("该附件已存在，不能重复添加！");
             }
             else
             {
                 target->attachments.push_back(newAttach);
-                std::cout << "附件已添加！" << std::endl;
+                printSuccess("附件已添加！");
             }
         }
         else if (op == 2)
         {
             if (target->attachments.empty())
             {
-                std::cout << "当前没有附件可删除！" << std::endl;
+                printWarning("当前没有附件可删除！");
                 continue;
             }
             std::cout << "请输入要删除的附件序号（1-" << target->attachments.size() << "，0返回）: ";
@@ -1943,7 +1942,7 @@ void Doctor::setExaminationAttachments(Examination *&target)
             if (idx == 0)
                 continue;
             target->attachments.erase(target->attachments.begin() + idx - 1);
-            std::cout << "附件已删除！" << std::endl;
+            printSuccess("附件已删除！");
         }
     }
 }
@@ -1953,13 +1952,13 @@ void Doctor::setExaminationNote(Examination *&target)
     std::cout << "当前备注信息: " << target->note << std::endl;
     std::string newNote = inputStringCheck("请输入要添加的备注信息: ");
     target->note = newNote;
-    std::cout << "备注信息已更新！" << std::endl;
+    printSuccess("备注信息已更新！");
 }
 // 删除检查记录（逻辑删除）
 void Doctor::deleteExamination(Examination *&target)
 {
     target->isDeleted = true;
-    std::cout << "检查记录已删除！" << std::endl;
+    printSuccess("检查记录已删除！");
 }
 // 创建检查记录（从看诊记录创建）
 bool Doctor::createExaminationByConsultation(Consultation *&conHead, Examination *&exaHead, int &idCounter) // 从看诊记录创建检查记录
@@ -1997,7 +1996,7 @@ bool Doctor::createExaminationByConsultation(Consultation *&conHead, Examination
 
     if (!foundPendingCon)
     {
-        std::cout << "没有找到任何需要创建检查记录的看诊记录，无法创建检查记录！" << std::endl;
+        printError("没有找到任何需要创建检查记录的看诊记录，无法创建检查记录！");
         return false;
     }
 
@@ -2033,12 +2032,12 @@ bool Doctor::createExaminationByConsultation(Consultation *&conHead, Examination
                 exaHead = newExa;
             }
 
-            std::cout << "成功为看诊ID为 " << conID << " 的看诊记录创建了 " << targetCon->examinationlist.size() << " 条检查记录！" << std::endl;
+            printSuccess("成功为看诊ID为 " + conID + " 的看诊记录创建了 " + std::to_string(targetCon->examinationlist.size()) + " 条检查记录！");
             return true;
         }
         targetCon = targetCon->next;
     }
-    std::cout << "未找到看诊ID为 " << conID << " 的看诊记录，无法创建检查记录！" << std::endl;
+    printError("未找到看诊ID为 " + conID + " 的看诊记录，无法创建检查记录！");
     return false;
 }
 
@@ -2063,37 +2062,37 @@ void Doctor::manageExaminations(Examination *&exaHead, Consultation *&conHead, i
                 else if (viewChoice == 1)
                 {
                     getAllExaminations(exaHead);
-                    pause();
+                    pause("医生 > 检查管理");
                 }
                 else if (viewChoice == 2)
                 {
                     getExaminationsByPatientID(exaHead);
-                    pause();
+                    pause("医生 > 检查管理");
                 }
                 else if (viewChoice == 3)
                 {
                     getExaminationsByConsultationID(exaHead);
-                    pause();
+                    pause("医生 > 检查管理");
                 }
                 else if (viewChoice == 4)
                 {
                     getExaminationsByID(exaHead);
-                    pause();
+                    pause("医生 > 检查管理");
                 }
                 else if (viewChoice == 5)
                 {
                     getExaminationsByTimeRange(exaHead);
-                    pause();
+                    pause("医生 > 检查管理");
                 }
                 else if (viewChoice == 6)
                 {
                     getExaminationsByItemName(exaHead);
-                    pause();
+                    pause("医生 > 检查管理");
                 }
                 else if (viewChoice == 7)
                 {
                     getExaminationsByStatus(exaHead);
-                    pause();
+                    pause("医生 > 检查管理");
                 }
             }
         }
@@ -2147,39 +2146,39 @@ void Doctor::manageExaminations(Examination *&exaHead, Consultation *&conHead, i
                         else if (modifyChoice == 1)
                         {
                             setExaminationStatus(target);
-                            pause();
+                            pause("医生 > 检查管理");
                         }
                         else if (modifyChoice == 2)
                         {
                             setExaminationItemName(target);
-                            pause();
+                            pause("医生 > 检查管理");
                         }
                         else if (modifyChoice == 3)
                         {
                             setExaminationReport(target);
-                            pause();
+                            pause("医生 > 检查管理");
                         }
                         else if (modifyChoice == 4)
                         {
                             setExaminationReportSummary(target);
-                            pause();
+                            pause("医生 > 检查管理");
                         }
                         else if (modifyChoice == 5)
                         {
                             setExaminationAttachments(target);
-                            pause();
+                            pause("医生 > 检查管理");
                         }
                         else if (modifyChoice == 6)
                         {
                             setExaminationNote(target);
-                            pause();
+                            pause("医生 > 检查管理");
                         }
                     }
                 }
                 else
                 {
-                    std::cout << "未找到检查ID为 " << examID << " 的检查记录，无法进行修改操作！" << std::endl;
-                    pause();
+                    printError("未找到检查ID为 " + examID + " 的检查记录，无法进行修改操作！");
+                    pause("医生 > 检查管理");
                 }
             }
         }
@@ -2231,12 +2230,12 @@ void Doctor::manageExaminations(Examination *&exaHead, Consultation *&conHead, i
                     if (deleteChoice == 1)
                     {
                         deleteExamination(target);
-                        pause();
+                        pause("医生 > 检查管理");
                     }
                     else
                     {
-                        std::cout << "已取消删除操作！" << std::endl;
-                        pause();
+                        printWarning("已取消删除操作！");
+                        pause("医生 > 检查管理");
                     }
                 }
             }
@@ -2244,7 +2243,7 @@ void Doctor::manageExaminations(Examination *&exaHead, Consultation *&conHead, i
         else if (choice == 4)
         {
             createExaminationByConsultation(conHead, exaHead, idCounter);
-            pause();
+            pause("医生 > 检查管理");
         }
     }
 }
@@ -2329,7 +2328,7 @@ void Doctor::managePersonalInfo()
                 {
                     std::cout << "账户创建时间: " << this->createTime << std::endl;
                 }
-                pause();
+                pause("医生 > 个人信息管理");
             }
         }
         else if (choice == 2)
@@ -2346,25 +2345,25 @@ void Doctor::managePersonalInfo()
                 {
                     std::cout << "当前的姓名: " << this->username << std::endl;
                     this->username = inputStringCheck("请输入新的姓名: ");
-                    std::cout << "姓名已更新！" << std::endl;
+                    printSuccess("姓名已更新！");
                 }
                 else if (modifyChoice == 2)
                 {
                     std::cout << "当前的性别: " << this->gender << std::endl;
                     this->gender = inputGenderCheck("请输入新的性别: ");
-                    std::cout << "性别已更新！" << std::endl;
+                    printSuccess("性别已更新！");
                 }
                 else if (modifyChoice == 3)
                 {
                     std::cout << "当前的年龄: " << this->age << std::endl;
                     this->age = inputAgeCheck("请输入新的年龄: ");
-                    std::cout << "年龄已更新！" << std::endl;
+                    printSuccess("年龄已更新！");
                 }
                 else if (modifyChoice == 4)
                 {
                     std::cout << "当前的科室: " << this->department << std::endl;
                     this->department = inputDepartmentCheck("请输入新的科室: ");
-                    std::cout << "科室已更新！" << std::endl;
+                    printSuccess("科室已更新！");
                 }
                 else if (modifyChoice == 5)
                 {
@@ -2374,24 +2373,24 @@ void Doctor::managePersonalInfo()
 
                     if (titleChoice == 0)
                     {
-                        std::cout << "已取消修改操作！" << std::endl;
+                        printWarning("已取消修改操作！");
                         continue;
                     }
 
                     this->title = static_cast<DoctorTitle>(titleChoice);
-                    std::cout << "职称已更新！" << std::endl;
+                    printSuccess("职称已更新！");
                 }
                 else if (modifyChoice == 6)
                 {
                     std::cout << "当前的联系电话: " << this->telephone << std::endl;
                     this->telephone = inputTelephoneCheck("请输入新的联系电话: ");
-                    std::cout << "联系电话已更新！" << std::endl;
+                    printSuccess("联系电话已更新！");
                 }
                 else if (modifyChoice == 7)
                 {
                     std::cout << "当前的邮箱: " << this->email << std::endl;
                     this->email = inputEmailCheck("请输入新的邮箱: ");
-                    std::cout << "邮箱已更新！" << std::endl;
+                    printSuccess("邮箱已更新！");
                 }
                 else if (modifyChoice == 8)
                 {
@@ -2404,24 +2403,24 @@ void Doctor::managePersonalInfo()
                     int dutyChoice = selectIntCheck(0, 2);
                     if (dutyChoice == 0)
                     {
-                        std::cout << "已取消修改操作！" << std::endl;
+                        printWarning("已取消修改操作！");
                         continue;
                     }
 
                     this->isOnDuty = (dutyChoice == 1);
-                    std::cout << "在岗状态已更新！" << std::endl;
+                    printSuccess("在岗状态已更新！");
                 }
                 else if (modifyChoice == 9)
                 {
                     std::cout << "当前的擅长方向: " << this->specialty << std::endl;
                     this->specialty = inputStringCheck("请输入新的擅长方向: ");
-                    std::cout << "擅长方向已更新！" << std::endl;
+                    printSuccess("擅长方向已更新！");
                 }
                 else if (modifyChoice == 10)
                 {
                     std::cout << "当前的排班信息: " << this->scheduleInfo << std::endl;
                     this->scheduleInfo = inputStringCheck("请输入新的排班信息: ");
-                    std::cout << "排班信息已更新！" << std::endl;
+                    printSuccess("排班信息已更新！");
                 }
                 else if (modifyChoice == 11)
                 {
@@ -2439,19 +2438,19 @@ void Doctor::managePersonalInfo()
                             this->salt = newSalt;
                             this->storedHash = newHash;
 
-                            std::cout << "密码更新成功！" << std::endl;
+                            printSuccess("密码更新成功！");
                         }
                         else
                         {
-                            std::cout << "两次输入的新密码不一致，密码更新失败！" << std::endl;
+                            printError("两次输入的新密码不一致，密码更新失败！");
                         }
                     }
                     else
                     {
-                        std::cout << "密码验证失败，无法修改密码！" << std::endl;
+                        printError("密码验证失败，无法修改密码！");
                     }
                 }
-                pause();
+                pause("医生 > 个人信息管理");
             }
         }
     }

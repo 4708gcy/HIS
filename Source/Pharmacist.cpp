@@ -9,6 +9,7 @@
  */
 
 #include "../Head/Pharmacist.h"
+#include "../Head/UI.h"
 
 Pharmacist::Pharmacist()
 {
@@ -23,7 +24,7 @@ bool Pharmacist::pharmacistSignUp(int &idCounter)
     bool success = signUp(4, idCounter); // 药剂师角色编号为 4
     if (!success)
     {
-        std::cout << "药剂师注册失败！" << std::endl;
+        printError("药剂师注册失败！");
         return false;
     }
 
@@ -44,7 +45,7 @@ bool Pharmacist::pharmacistSignUp(int &idCounter)
     int onDutyChoice = selectIntCheck(0, 1);
     this->isOnDuty = (onDutyChoice == 1);
 
-    std::cout << "药剂师注册成功! 您的用户ID是: " << this->userID << std::endl;
+    printSuccess("药剂师注册成功! 您的用户ID是: " + this->userID);
     return true;
 }
 
@@ -52,7 +53,7 @@ bool Pharmacist::pharmacistSignIn()
 {
     if (isAccountActive == false)
     {
-        std::cout << "账户已锁定，请联系系统管理员解锁！" << std::endl;
+        printError("账户已锁定，请联系系统管理员解锁！");
         return false;
     }
 
@@ -72,7 +73,7 @@ bool Pharmacist::pharmacistSignIn()
         {
             loginAttempts = 0;
             isLoggedIn = true;
-            std::cout << "药剂师登录成功！" << std::endl;
+            printSuccess("药剂师登录成功！");
             return true;
         }
         else
@@ -83,7 +84,7 @@ bool Pharmacist::pharmacistSignIn()
             if (loginAttempts >= kMaxLoginAttempts)
             {
                 isAccountActive = false;
-                std::cout << "连续登录失败次数过多，账户已锁定，请联系系统管理员解锁！" << std::endl;
+                printError("连续登录失败次数过多，账户已锁定，请联系系统管理员解锁！");
             }
         }
     }
@@ -203,7 +204,7 @@ void Pharmacist::printMedicationRecord(MedicationRecord *current)
               << ", 医生ID: " << current->doctorID
               << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
               << ", 科室: " << current->department
-              << ", 审核状态: " << statusStr
+              << ", 审核状态: " << reviewStatusStr
               << ", 总费用: " << current->totalCost
               << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
               << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
@@ -242,7 +243,7 @@ bool Pharmacist::getAllMedicationRecords(MedicationRecord *&medRecHead)
 
     if (!found)
     {
-        std::cout << "没有找到任何用药记录。" << std::endl;
+        printWarning("没有找到任何用药记录。");
     }
     return found;
 }
@@ -265,7 +266,7 @@ bool Pharmacist::getMedicationRecordsByPatientID(MedicationRecord *&medRecHead)
 
     if (!found)
     {
-        std::cout << "未找到该患者的用药记录。" << std::endl;
+        printWarning("未找到该患者的用药记录。");
     }
     return found;
 }
@@ -287,7 +288,7 @@ bool Pharmacist::getMedicationRecordsByConsultationID(MedicationRecord *&medRecH
     }
     if (!found)
     {
-        std::cout << "未找到该看诊对应的用药记录。" << std::endl;
+        printWarning("未找到该看诊对应的用药记录。");
     }
     return found;
 }
@@ -307,7 +308,7 @@ bool Pharmacist::getMedicationRecordsByID(MedicationRecord *&medRecHead)
         current = current->next;
     }
 
-    std::cout << "未找到该用药记录。" << std::endl;
+    printWarning("未找到该用药记录。");
     return false;
 }
 // 根据用药状态查询用药记录（仅限本部门且分配给自己的记录）
@@ -345,7 +346,7 @@ bool Pharmacist::getMedicationRecordsByStatus(MedicationRecord *&medRecHead, int
 
     if (!found)
     {
-        std::cout << "未找到该状态下的用药记录。" << std::endl;
+        printWarning("未找到该状态下的用药记录。");
     }
     return found;
 }
@@ -375,7 +376,7 @@ bool Pharmacist::getMedicationRecordsByReviewStatus(MedicationRecord *&medRecHea
 
     if (!found)
     {
-        std::cout << "未找到该审核状态下的用药记录。" << std::endl;
+        printWarning("未找到该审核状态下的用药记录。");
     }
     return found;
 }
@@ -403,7 +404,7 @@ bool Pharmacist::getMedicationRecordsByTimeRange(MedicationRecord *&medRecHead)
 
     if (!found)
     {
-        std::cout << "未找到指定时间范围内的用药记录。" << std::endl;
+        printWarning("未找到指定时间范围内的用药记录。");
     }
     return found;
 }
@@ -433,7 +434,7 @@ bool Pharmacist::getMedicationRecordsByMedicineName(MedicationRecord *&medRecHea
     }
     if (!found)
     {
-        std::cout << "未找到该药品名称的用药记录。" << std::endl;
+        printWarning("未找到该药品名称的用药记录。");
     }
     return found;
 }
@@ -445,12 +446,12 @@ void Pharmacist::setMedicationRecordStatus(MedicationRecord *&target)
     int choice = MedicationRecordStatusMenu();
     if (choice == 0)
     {
-        std::cout << "已取消修改！" << std::endl;
+        printWarning("已取消修改！");
         return;
     }
 
     target->status = static_cast<MedicationStatus>(choice);
-    std::cout << "用药状态已更新！" << std::endl;
+    printSuccess("用药状态已更新！");
 }
 // 修改用药记录的审核状态
 void Pharmacist::setMedicationRecordReviewStatus(MedicationRecord *&target, Consultation *&conHead)
@@ -467,13 +468,13 @@ void Pharmacist::setMedicationRecordReviewStatus(MedicationRecord *&target, Cons
 
     if (con == nullptr)
     {
-        std::cout << "未找到关联的看诊记录，无法修改审核状态！" << std::endl;
+        printError("未找到关联的看诊记录，无法修改审核状态！");
         return;
     }
 
     if (con->isPrecriptionReviewed)
     {
-        std::cout << "该用药记录对应的看诊记录中的处方已审核，不能修改审核状态！" << std::endl;
+        printError("该用药记录对应的看诊记录中的处方已审核，不能修改审核状态！");
         return;
     }
 
@@ -481,7 +482,7 @@ void Pharmacist::setMedicationRecordReviewStatus(MedicationRecord *&target, Cons
     int choice = MedicationRecordReviewResultMenu();
     if (choice == 0)
     {
-        std::cout << "已取消修改！" << std::endl;
+        printWarning("已取消修改！");
         return;
     }
 
@@ -493,20 +494,20 @@ void Pharmacist::setMedicationRecordReviewStatus(MedicationRecord *&target, Cons
     }
 
     increaseReviewCount();
-    std::cout << "审核状态已更新！" << std::endl;
+    printSuccess("审核状态已更新！");
 }
 // 增加用药记录中的药品数量（仅限审核通过且未发药的记录）
 void Pharmacist::setMedicationRecordMedicineIncrease(MedicationRecord *&target, Medicine *&medHead)
 {
     if (target->reviewStatus != MedicationReviewStatus::APPROVED)
     {
-        std::cout << "该用药记录尚未审核通过，不能修改药品信息！" << std::endl;
+        printError("该用药记录尚未审核通过，不能修改药品信息！");
         return;
     }
 
     if (target->status == MedicationStatus::DISPENSED)
     {
-        std::cout << "该用药记录已发药，不能修改药品信息！" << std::endl;
+        printError("该用药记录已发药，不能修改药品信息！");
         return;
     }
 
@@ -535,26 +536,26 @@ void Pharmacist::setMedicationRecordMedicineIncrease(MedicationRecord *&target, 
             int quantity = inputIntCheck("请输入要增加的数量: ", 1, 1000);
             target->lines.push_back({medID, currentMed->name, quantity, currentMed->salePrice, ""});
             target->totalCost += quantity * currentMed->salePrice;
-            std::cout << "已成功增加药品到用药记录！" << std::endl;
+            printSuccess("已成功增加药品到用药记录！");
             return;
         }
         currentMed = currentMed->next;
     }
 
-    std::cout << "未找到该药品，无法增加！" << std::endl;
+    printError("未找到该药品，无法增加！");
 }
 // 减少用药记录中的药品数量（仅限审核通过且未发药的记录）
 void Pharmacist::setMedicationRecordMedicineDecrease(MedicationRecord *&target, Medicine *&medHead)
 {
     if (target->reviewStatus != MedicationReviewStatus::APPROVED)
     {
-        std::cout << "该用药记录尚未审核通过，不能修改药品信息！" << std::endl;
+        printError("该用药记录尚未审核通过，不能修改药品信息！");
         return;
     }
 
     if (target->status == MedicationStatus::DISPENSED)
     {
-        std::cout << "该用药记录已发药，不能修改药品信息！" << std::endl;
+        printError("该用药记录已发药，不能修改药品信息！");
         return;
     }
 
@@ -572,7 +573,7 @@ void Pharmacist::setMedicationRecordMedicineDecrease(MedicationRecord *&target, 
 
     if (!hasMedicine)
     {
-        std::cout << "该用药记录没有任何药品，无法减少！" << std::endl;
+        printWarning("该用药记录没有任何药品，无法减少！");
         return;
     }
 
@@ -590,43 +591,43 @@ void Pharmacist::setMedicationRecordMedicineDecrease(MedicationRecord *&target, 
                 target->lines.erase(it);
             }
 
-            std::cout << "已成功减少药品数量！" << std::endl;
+            printSuccess("已成功减少药品数量！");
             return;
         }
     }
 
-    std::cout << "未找到该药品，无法减少！" << std::endl;
+    printError("未找到该药品，无法减少！");
 }
 // 修改用药记录的备注信息（仅限审核通过且未发药的记录）
 void Pharmacist::setMedicationRecordNote(MedicationRecord *&target)
 {
     if (target->reviewStatus != MedicationReviewStatus::APPROVED)
     {
-        std::cout << "该用药记录尚未审核通过，不能修改备注信息！" << std::endl;
+        printError("该用药记录尚未审核通过，不能修改备注信息！");
         return;
     }
     if (target->status == MedicationStatus::DISPENSED)
     {
-        std::cout << "该用药记录已发药，不能修改备注信息！" << std::endl;
+        printError("该用药记录已发药，不能修改备注信息！");
         return;
     }
 
     std::cout << "当前备注: " << target->note << std::endl;
     target->note = inputStringCheck("请输入新的备注信息: ");
-    std::cout << "备注已更新！" << std::endl;
+    printSuccess("备注已更新！");
 }
 // 发药（仅限审核通过且已缴费的记录）
 bool Pharmacist::dispenseMedicine(MedicationRecord *&target, Medicine *&medHead)
 {
     if (target->reviewStatus != MedicationReviewStatus::APPROVED)
     {
-        std::cout << "该用药记录尚未审核通过，不能发药！" << std::endl;
+        printError("该用药记录尚未审核通过，不能发药！");
         return false;
     }
 
     if (target->status != MedicationStatus::PAID)
     {
-        std::cout << "该用药记录尚未缴费，不能发药！" << std::endl;
+        printError("该用药记录尚未缴费，不能发药！");
         return false;
     }
 
@@ -644,13 +645,13 @@ bool Pharmacist::dispenseMedicine(MedicationRecord *&target, Medicine *&medHead)
                 if (currentMed->status == MedicineStatus::EXPIRED ||
                     currentMed->status == MedicineStatus::DISCONTINUED)
                 {
-                    std::cout << "药品 [" << currentMed->name << "] 当前状态不可发放！" << std::endl;
+                    printError("药品 [" + currentMed->name + "] 当前状态不可发放！");
                     return false;
                 }
 
                 if (currentMed->stock < line.quantity)
                 {
-                    std::cout << "药品 [" << currentMed->name << "] 库存不足，无法发药！" << std::endl;
+                    printError("药品 [" + currentMed->name + "] 库存不足，无法发药！");
                     return false;
                 }
 
@@ -661,7 +662,7 @@ bool Pharmacist::dispenseMedicine(MedicationRecord *&target, Medicine *&medHead)
 
         if (!found)
         {
-            std::cout << "未找到药品ID为 " << line.medicineID << " 的药品，无法发药！" << std::endl;
+            printError("未找到药品ID为 " + line.medicineID + " 的药品，无法发药！");
             return false;
         }
     }
@@ -697,14 +698,14 @@ bool Pharmacist::dispenseMedicine(MedicationRecord *&target, Medicine *&medHead)
 
     increaseDispenseCount();
 
-    std::cout << "发药成功！" << std::endl;
+    printSuccess("发药成功！");
     return true;
 }
 // 逻辑删除用药记录
 void Pharmacist::deleteMedicationRecord(MedicationRecord *&target)
 {
     target->isDeleted = true;
-    std::cout << "用药记录已逻辑删除！" << std::endl;
+    printSuccess("用药记录已逻辑删除！");
 }
 // 创建用药记录（仅限关联的看诊记录已开具处方的情况）
 void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation *conHead, Medicine *&medHead, int &idCounter)
@@ -767,7 +768,7 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
 
     if (!hasUnreviewed)
     {
-        std::cout << "没有找到任何未审核的看诊记录，无法创建用药记录！" << std::endl;
+        printWarning("没有找到任何未审核的看诊记录，无法创建用药记录！");
         return;
     }
 
@@ -784,13 +785,13 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
 
     if (con == nullptr)
     {
-        std::cout << "未找到指定的看诊记录！" << std::endl;
+        printError("未找到指定的看诊记录！");
         return;
     }
 
     if (con->prescriptions.empty())
     {
-        std::cout << "该看诊记录尚未开具处方，无法添加用药记录！" << std::endl;
+        printError("该看诊记录尚未开具处方，无法添加用药记录！");
         return;
     }
 
@@ -855,7 +856,7 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
         newRecord->prev = temp;
     }
 
-    std::cout << "用药记录创建成功！记录ID: " << newRecord->medRecordID << std::endl;
+    printSuccess("用药记录创建成功！记录ID: " + newRecord->medRecordID);
 }
 
 void Pharmacist::manageMedicationRecords(MedicationRecord *&medRecHead, Medicine *&medHead, Consultation *conHead, int &idCounter)
@@ -908,7 +909,7 @@ void Pharmacist::manageMedicationRecords(MedicationRecord *&medRecHead, Medicine
                 {
                     getMedicationRecordsByMedicineName(medRecHead);
                 }
-                pause();
+                pause("药剂师 > 用药管理");
             }
         }
         else if (choice == 2)
@@ -916,7 +917,7 @@ void Pharmacist::manageMedicationRecords(MedicationRecord *&medRecHead, Medicine
             bool ishave = getAllMedicationRecords(medRecHead);
             if (!ishave)
             {
-                pause();
+                pause("药剂师 > 用药管理");
                 continue;
             }
 
@@ -933,8 +934,8 @@ void Pharmacist::manageMedicationRecords(MedicationRecord *&medRecHead, Medicine
 
             if (!target)
             {
-                std::cout << "未找到指定用药记录！" << std::endl;
-                pause();
+                printError("未找到指定用药记录！");
+                pause("药剂师 > 用药管理");
                 continue;
             }
 
@@ -975,7 +976,7 @@ void Pharmacist::manageMedicationRecords(MedicationRecord *&medRecHead, Medicine
                 {
                     setMedicationRecordNote(target);
                 }
-                pause();
+                pause("药剂师 > 用药管理");
             }
         }
         else if (choice == 3) // 发药操作
@@ -983,7 +984,7 @@ void Pharmacist::manageMedicationRecords(MedicationRecord *&medRecHead, Medicine
             bool ishave = getMedicationRecordsByStatus(medRecHead, 2);
             if (!ishave)
             {
-                pause();
+                pause("药剂师 > 用药管理");
                 continue;
             }
 
@@ -1000,20 +1001,20 @@ void Pharmacist::manageMedicationRecords(MedicationRecord *&medRecHead, Medicine
 
             if (!target)
             {
-                std::cout << "未找到指定用药记录！" << std::endl;
-                pause();
+                printError("未找到指定用药记录！");
+                pause("药剂师 > 用药管理");
                 continue;
             }
 
             dispenseMedicine(target, medHead);
-            pause();
+            pause("药剂师 > 用药管理");
         }
         else if (choice == 4) // 删除操作
         {
             bool ishave = getAllMedicationRecords(medRecHead);
             if (!ishave)
             {
-                pause();
+                pause("药剂师 > 用药管理");
                 continue;
             }
 
@@ -1030,8 +1031,8 @@ void Pharmacist::manageMedicationRecords(MedicationRecord *&medRecHead, Medicine
 
             if (!target)
             {
-                std::cout << "未找到指定用药记录！" << std::endl;
-                pause();
+                printError("未找到指定用药记录！");
+                pause("药剂师 > 用药管理");
                 continue;
             }
 
@@ -1043,14 +1044,14 @@ void Pharmacist::manageMedicationRecords(MedicationRecord *&medRecHead, Medicine
             }
             else
             {
-                std::cout << "已取消删除操作！" << std::endl;
+                printWarning("已取消删除操作！");
             }
-            pause();
+            pause("药剂师 > 用药管理");
         }
         else if (choice == 5) // 创建用药记录
         {
             addMedicationRecord(medRecHead, conHead, medHead, idCounter);
-            pause();
+            pause("药剂师 > 用药管理");
         }
     }
 }
@@ -1092,7 +1093,7 @@ bool Pharmacist::getAllMedicines(Medicine *&medHead)
 
     if (!found)
     {
-        std::cout << "没有找到任何药品信息。" << std::endl;
+        printWarning("没有找到任何药品信息。");
     }
     return found;
 }
@@ -1126,7 +1127,7 @@ bool Pharmacist::getMedicinesByID(Medicine *&medHead)
         current = current->next;
     }
 
-    std::cout << "未找到该药品信息。" << std::endl;
+    printWarning("未找到该药品信息。");
     return false;
 }
 // 根据药品名称查询药品信息（支持模糊查询，仅限本部门的专科药和通用药）
@@ -1161,7 +1162,7 @@ bool Pharmacist::getMedicinesByName(Medicine *&medHead)
     }
     if (!found)
     {
-        std::cout << "未找到该名称对应的药品。" << std::endl;
+        printWarning("未找到该名称对应的药品。");
     }
     return found;
 }
@@ -1213,7 +1214,7 @@ bool Pharmacist::getMedicinesByStatus(Medicine *&medHead, int select)
 
     if (!found)
     {
-        std::cout << "未找到该状态下的药品。" << std::endl;
+        printWarning("未找到该状态下的药品。");
     }
     return found;
 }
@@ -1250,7 +1251,7 @@ bool Pharmacist::getMedicinesByDepartment(Medicine *&medHead)
 
     if (!found)
     {
-        std::cout << "未找到该科室标签的药品。" << std::endl;
+        printWarning("未找到该科室标签的药品。");
     }
     return found;
 }
@@ -1262,68 +1263,68 @@ void Pharmacist::setMedicineStatus(Medicine *&target)
     int choice = MedicineStatusMenu();
     if (choice == 0)
     {
-        std::cout << "已取消修改！" << std::endl;
+        printWarning("已取消修改！");
         return;
     }
 
     target->status = static_cast<MedicineStatus>(choice);
-    std::cout << "药品状态已更新！" << std::endl;
+    printSuccess("药品状态已更新！");
 }
 // 修改药品名称
 void Pharmacist::setMedicineName(Medicine *&target)
 {
     std::cout << "当前药品名称: " << target->name << std::endl;
     target->name = inputStringCheck("请输入新的药品名称: ");
-    std::cout << "药品名称已更新！" << std::endl;
+    printSuccess("药品名称已更新！");
 }
 // 修改药品规格
 void Pharmacist::setMedicineSpecification(Medicine *&target)
 {
     std::cout << "当前药品规格: " << target->specification << std::endl;
     target->specification = inputStringCheck("请输入新的药品规格: ");
-    std::cout << "药品规格已更新！" << std::endl;
+    printSuccess("药品规格已更新！");
 }
 // 修改药品生产厂家
 void Pharmacist::setMedicineManufacturer(Medicine *&target)
 {
     std::cout << "当前生产厂家: " << target->manufacturer << std::endl;
     target->manufacturer = inputStringCheck("请输入新的生产厂家: ");
-    std::cout << "生产厂家已更新！" << std::endl;
+    printSuccess("生产厂家已更新！");
 }
 // 修改药品进价
 void Pharmacist::setMedicinePurchasePrice(Medicine *&target)
 {
     std::cout << "当前进价: " << target->purchasePrice << std::endl;
     target->purchasePrice = inputFeeCheck("请输入新的进价: ");
-    std::cout << "进价已更新！" << std::endl;
+    printSuccess("进价已更新！");
 }
 // 修改药品售价
 void Pharmacist::setMedicineSalePrice(Medicine *&target)
 {
     std::cout << "当前售价: " << target->salePrice << std::endl;
     target->salePrice = inputFeeCheck("请输入新的售价: ");
-    std::cout << "售价已更新！" << std::endl;
+    printSuccess("售价已更新！");
 }
 // 修改药品安全库存
 void Pharmacist::setMedicineSafetyStock(Medicine *&target)
 {
     std::cout << "当前安全库存: " << target->safetyStock << std::endl;
     target->safetyStock = inputIntCheck("请输入新的安全库存: ", 0, 1000000);
-    std::cout << "安全库存已更新！" << std::endl;
+    printSuccess("安全库存已更新！");
 }
 // 修改药品生产日期
 void Pharmacist::setMedicineProductionDate(Medicine *&target)
 {
     std::cout << "当前生产日期: " << target->productionDate << std::endl;
     target->productionDate = inputDateCheck("请输入新的生产日期: ");
-    std::cout << "生产日期已更新！" << std::endl;
+    printSuccess("生产日期已更新！");
 }
 // 修改药品有效期
 void Pharmacist::setMedicineExpiryDate(Medicine *&target)
 {
     std::cout << "当前有效期: " << target->expiryDate << std::endl;
     target->expiryDate = inputDateCheck("请输入新的有效期: ");
-    std::cout << "有效期已更新！" << std::endl;
+    printSuccess("有效期已更新！");
 }
 // 修改药品科室标签
 void Pharmacist::setMedicineDepartment(Medicine *&target)
@@ -1331,20 +1332,20 @@ void Pharmacist::setMedicineDepartment(Medicine *&target)
     std::cout << "当前科室标签: " << target->department << std::endl;
     target->department = inputDepartmentCheck("请输入新的科室标签: ");
     target->isSpecial = (target->department != "#");
-    std::cout << "科室标签已更新！" << std::endl;
+    printSuccess("科室标签已更新！");
 }
 // 修改药品备注信息
 void Pharmacist::setMedicineNote(Medicine *&target)
 {
     std::cout << "当前备注: " << target->note << std::endl;
     target->note = inputStringCheck("请输入新的备注信息: ");
-    std::cout << "药品备注已更新！" << std::endl;
+    printSuccess("药品备注已更新！");
 }
 // 逻辑删除药品信息
 void Pharmacist::deleteMedicine(Medicine *&target)
 {
     target->isDeleted = true;
-    std::cout << "药品信息已逻辑删除！" << std::endl;
+    printSuccess("药品信息已逻辑删除！");
 }
 // 增加药品库存
 void Pharmacist::addMedicineStock(Medicine *&target)
@@ -1366,9 +1367,9 @@ void Pharmacist::addMedicineStock(Medicine *&target)
     if (target->stock > target->safetyStock && target->status == MedicineStatus::LOW_STOCK)
     {
         target->status = MedicineStatus::NORMAL;
-        std::cout << "药品库存已恢复至安全阈值以上，状态更新为NORMAL！" << std::endl;
+        printWarning("药品库存已恢复至安全阈值以上，状态更新为NORMAL！");
     }
-    std::cout << "库存增加成功！当前库存: " << target->stock << std::endl;
+    printSuccess("库存增加成功！当前库存: " + std::to_string(target->stock));
 }
 // 减少药品库存
 void Pharmacist::reduceMedicineStock(Medicine *&target)
@@ -1390,9 +1391,9 @@ void Pharmacist::reduceMedicineStock(Medicine *&target)
     if (target->stock <= target->safetyStock && target->status == MedicineStatus::NORMAL)
     {
         target->status = MedicineStatus::LOW_STOCK;
-        std::cout << "警告：药品库存已低至安全阈值及以下，状态更新为LOW_STOCK！" << std::endl;
+        printWarning("警告：药品库存已低至安全阈值及以下，状态更新为LOW_STOCK！");
     }
-    std::cout << "库存减少成功！当前库存: " << target->stock << std::endl;
+    printSuccess("库存减少成功！当前库存: " + std::to_string(target->stock));
 }
 // 添加新药品信息
 void Pharmacist::addNewMedicine(Medicine *&medHead, int &idCounter)
@@ -1431,7 +1432,7 @@ void Pharmacist::addNewMedicine(Medicine *&medHead, int &idCounter)
         newMed->prev = temp;
     }
 
-    std::cout << "新药品信息添加成功！药品ID: " << newMed->medicineID << std::endl;
+    printSuccess("新药品信息添加成功！药品ID: " + newMed->medicineID);
 }
 
 void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
@@ -1471,7 +1472,7 @@ void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
                 {
                     getMedicinesByStatus(medHead);
                 }
-                pause();
+                pause("药剂师 > 药品管理");
             }
         }
         else if (choice == 2)
@@ -1479,7 +1480,7 @@ void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
             bool ishave = getAllMedicines(medHead);
             if (!ishave)
             {
-                pause();
+                pause("药剂师 > 药品管理");
                 continue;
             }
 
@@ -1496,8 +1497,8 @@ void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
 
             if (!target)
             {
-                std::cout << "未找到指定药品！" << std::endl;
-                pause();
+                printError("未找到指定药品！");
+                pause("药剂师 > 药品管理");
                 continue;
             }
 
@@ -1552,8 +1553,8 @@ void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
                 {
                     setMedicineNote(target);
                 }
-                
-                pause();
+
+                pause("药剂师 > 药品管理");
             }
         }
         else if (choice == 3)
@@ -1561,7 +1562,7 @@ void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
             bool ishave = getAllMedicines(medHead);
             if (!ishave)
             {
-                pause();
+                pause("药剂师 > 药品管理");
                 continue;
             }
 
@@ -1578,8 +1579,8 @@ void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
 
             if (!target)
             {
-                std::cout << "未找到指定药品！" << std::endl;
-                pause();
+                printError("未找到指定药品！");
+                pause("药剂师 > 药品管理");
                 continue;
             }
 
@@ -1608,19 +1609,19 @@ void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
             }
             else
             {
-                std::cout << "已取消删除操作！" << std::endl;
+                printWarning("已取消删除操作！");
             }
-            pause();
+            pause("药剂师 > 药品管理");
         }else if(choice == 4) // 添加新药品信息
         {
             addNewMedicine(medHead, idCounter);
-            pause();
+            pause("药剂师 > 药品管理");
         }else if(choice == 5) // 管理药品库存
         {
             bool ishave = getAllMedicines(medHead);
             if (!ishave)
             {
-                pause();
+                pause("药剂师 > 药品管理");
                 continue;
             }
 
@@ -1637,8 +1638,8 @@ void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
 
             if (!target)
             {
-                std::cout << "未找到指定药品！" << std::endl;
-                pause();
+                printError("未找到指定药品！");
+                pause("药剂师 > 药品管理");
                 continue;
             }
 
@@ -1654,14 +1655,14 @@ void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
                 std::cout << "请选择库存管理操作:\n1. 增加库存\n2. 减少库存\n0. 取消" << std::endl;
                 int stockChoice = selectIntCheck(0, 2);
                 if(stockChoice == 0){
-                    std::cout << "已取消库存管理操作！" << std::endl;
+                    printWarning("已取消库存管理操作！");
                     break;
                 }else if(stockChoice == 1){
                     addMedicineStock(target);
                 }else if(stockChoice == 2){
                     reduceMedicineStock(target);
                 }
-                pause();
+                pause("药剂师 > 药品管理");
             }
         }
     }
@@ -1743,7 +1744,7 @@ void Pharmacist::managePersonalInfo()
                 {
                     std::cout << "账户创建时间: " << this->createTime << std::endl;
                 }
-                pause();
+                pause("药剂师 > 个人信息管理");
             }
         }
         else if (choice == 2)
@@ -1760,25 +1761,25 @@ void Pharmacist::managePersonalInfo()
                 {
                     std::cout << "当前姓名: " << this->username << std::endl;
                     this->username = inputStringCheck("请输入新的姓名: ");
-                    std::cout << "姓名已更新！" << std::endl;
+                    printSuccess("姓名已更新！");
                 }
                 else if (modifyChoice == 2)
                 {
                     std::cout << "当前性别: " << this->gender << std::endl;
                     this->gender = inputGenderCheck("请输入新的性别: ");
-                    std::cout << "性别已更新！" << std::endl;
+                    printSuccess("性别已更新！");
                 }
                 else if (modifyChoice == 3)
                 {
                     std::cout << "当前年龄: " << this->age << std::endl;
                     this->age = inputAgeCheck("请输入新的年龄: ");
-                    std::cout << "年龄已更新！" << std::endl;
+                    printSuccess("年龄已更新！");
                 }
                 else if (modifyChoice == 4)
                 {
                     std::cout << "当前科室: " << this->department << std::endl;
                     this->department = inputDepartmentCheck("请输入新的科室: ");
-                    std::cout << "科室已更新！" << std::endl;
+                    printSuccess("科室已更新！");
                 }
                 else if (modifyChoice == 5)
                 {
@@ -1786,23 +1787,23 @@ void Pharmacist::managePersonalInfo()
                     int levelChoice = PharmacistTitleMenu();
                     if (levelChoice == 0)
                     {
-                        std::cout << "已取消修改操作！" << std::endl;
+                        printWarning("已取消修改操作！");
                         continue;
                     }
                     this->level = static_cast<PharmacistLevel>(levelChoice);
-                    std::cout << "职称已更新！" << std::endl;
+                    printSuccess("职称已更新！");
                 }
                 else if (modifyChoice == 6)
                 {
                     std::cout << "当前联系电话: " << this->telephone << std::endl;
                     this->telephone = inputTelephoneCheck("请输入新的联系电话: ");
-                    std::cout << "联系电话已更新！" << std::endl;
+                    printSuccess("联系电话已更新！");
                 }
                 else if (modifyChoice == 7)
                 {
                     std::cout << "当前邮箱: " << this->email << std::endl;
                     this->email = inputEmailCheck("请输入新的邮箱: ");
-                    std::cout << "邮箱已更新！" << std::endl;
+                    printSuccess("邮箱已更新！");
                 }
                 else if (modifyChoice == 8)
                 {
@@ -1816,18 +1817,18 @@ void Pharmacist::managePersonalInfo()
 
                     if(dutyChoice == 0)
                     {
-                        std::cout << "已取消修改操作！" << std::endl;
+                        printWarning("已取消修改操作！");
                         continue;
                     }
 
                     this->isOnDuty = (dutyChoice == 1);
-                    std::cout << "在岗状态已更新！" << std::endl;
+                    printSuccess("在岗状态已更新！");
                 }
                 else if (modifyChoice == 9)
                 {
                     std::cout << "当前排班信息: " << this->scheduleInfo << std::endl;
                     this->scheduleInfo = inputStringCheck("请输入新的排班信息: ");
-                    std::cout << "排班信息已更新！" << std::endl;
+                    printSuccess("排班信息已更新！");
                 }
                 else if (modifyChoice == 10)
                 {
@@ -1843,20 +1844,20 @@ void Pharmacist::managePersonalInfo()
                             std::string newHash = SHA256Encrypt(newpwd1, newSalt, this->kHashIterations);
                             this->salt = newSalt;
                             this->storedHash = newHash;
-                            std::cout << "密码更新成功！" << std::endl;
+                            printSuccess("密码更新成功！");
                         }
                         else
                         {
-                            std::cout << "两次输入的新密码不一致，密码更新失败！" << std::endl;
+                            printError("两次输入的新密码不一致，密码更新失败！");
                         }
                     }
                     else
                     {
-                        std::cout << "密码验证失败，无法修改密码！" << std::endl;
+                        printError("密码验证失败，无法修改密码！");
                     }
                 }
 
-                pause();
+                pause("药剂师 > 个人信息管理");
             }
         }
     }

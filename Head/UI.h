@@ -49,6 +49,7 @@ public:
 private:
     LogManager();
     std::string logFilePath;
+    std::mutex logMutex;
     void writeLog(const std::string &level, const std::string &msg);
 };
 

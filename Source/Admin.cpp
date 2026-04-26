@@ -26,12 +26,12 @@ bool Admin::adminSignUp(int &idCounter)
     bool flag = signUp(1, idCounter); // 1 - Admin
     if (flag)
     {
-        std::cout << "管理员注册成功! 您的用户ID是: " << getUserID() << std::endl;
+        printSuccess("管理员注册成功! 您的用户ID是: " + getUserID());
         return true;
     }
     else
     {
-        std::cout << "管理员注册失败！" << std::endl;
+        printError("管理员注册失败！");
         return false;
     }
 }
@@ -40,7 +40,7 @@ bool Admin::adminSignIn()
 {
     if (isAccountActive == false)
     {
-        std::cout << "账户已锁定，请联系系统管理员解锁！" << std::endl;
+        printError("账户已锁定，请联系系统管理员解锁！");
         return false;
     }
 
@@ -60,18 +60,18 @@ bool Admin::adminSignIn()
         {
             loginAttempts = 0;
             isLoggedIn = true;
-            std::cout << "管理员登录成功！" << std::endl;
+            printSuccess("管理员登录成功！");
             return true;
         }
         else
         {
             loginAttempts++;
-            std::cout << "密码错误! 请重新输入密码(当前失败次数: " << loginAttempts << ")" << std::endl;
+            printError("密码错误! 请重新输入密码(当前失败次数: " + std::to_string(loginAttempts) + ")");
 
             if (loginAttempts >= kMaxLoginAttempts)
             {
                 isAccountActive = false;
-                std::cout << "连续登录失败次数过多，账户已锁定，请联系系统管理员解锁！" << std::endl;
+                printError("连续登录失败次数过多，账户已锁定，请联系系统管理员解锁！");
             }
         }
     }
@@ -407,32 +407,32 @@ void Admin::manageRegistrations(Registration *&reg, Doctor *&doc, const std::str
                 else if (viewChoice == 1)
                 {
                     viewAllRegistrations(reg, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 挂号记录管理");
                 }
                 else if (viewChoice == 2)
                 {
                     viewRegistrationsByStatus(reg, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 挂号记录管理");
                 }
                 else if (viewChoice == 3)
                 {
                     viewRegistrationsByPatient(reg, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 挂号记录管理");
                 }
                 else if (viewChoice == 4)
                 {
                     viewRegistrationsByDoctor(reg, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 挂号记录管理");
                 }
                 else if (viewChoice == 5)
                 {
                     viewRegistrationsByID(reg, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 挂号记录管理");
                 }
                 else
                 {
-                    std::cout << "无效的选择! 请重新选择。" << std::endl;
-                    pause();
+                    printError("无效的选择! 请重新选择。");
+                    pause("管理员 > 医疗记录管理 > 挂号记录管理");
                 }
             }
         }
@@ -479,24 +479,24 @@ void Admin::manageRegistrations(Registration *&reg, Doctor *&doc, const std::str
                         else if (modifyChoice == 1)
                         {
                             modifyRegistrationDoctor(target, doc, department);
-                            pause();
+                            pause("管理员 > 医疗记录管理 > 挂号记录管理");
                         }
                         else if (modifyChoice == 2)
                         {
                             modifyRegistrationStatus(target, department);
-                            pause();
+                            pause("管理员 > 医疗记录管理 > 挂号记录管理");
                         }
                         else
                         {
-                            std::cout << "无效的选择! 请重新选择。" << std::endl;
-                            pause();
+                            printError("无效的选择! 请重新选择。");
+                            pause("管理员 > 医疗记录管理 > 挂号记录管理");
                         }
                     }
                 }
                 else
                 {
                     std::cout << "未找到指定的挂号记录！" << std::endl;
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 挂号记录管理");
                 }
             }
         }
@@ -539,30 +539,30 @@ void Admin::manageRegistrations(Registration *&reg, Doctor *&doc, const std::str
                     if (confirmChoice == 1)
                     {
                         deleteRegistration(target, department);
-                        pause();
+                        pause("管理员 > 医疗记录管理 > 挂号记录管理");
                     }
                     else
                     {
                         std::cout << "已取消删除操作。" << std::endl;
-                        pause();
+                        pause("管理员 > 医疗记录管理 > 挂号记录管理");
                     }
                 }
                 else
                 {
                     std::cout << "未找到指定的挂号记录！" << std::endl;
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 挂号记录管理");
                 }
             }
         }
         else if (choice == 4)
         {
             addRegistration(reg, doc, department, idCounter);
-            pause();
+            pause("管理员 > 医疗记录管理 > 挂号记录管理");
         }
         else
         {
-            std::cout << "无效的选择! 请重新选择。" << std::endl;
-            pause();
+            printError("无效的选择! 请重新选择。");
+            pause("管理员 > 医疗记录管理 > 挂号记录管理");
         }
     }
 }
@@ -631,17 +631,17 @@ bool Admin::viewAllConsultations(Consultation *&con, const std::string &departme
             std::cout << exam << " ";
         }
         std::cout << std::endl;
-        std::cout << "  计划用药" << (current->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
-        for (const auto &med : current->prescriptions)
+        std::cout << "  计划用药" << (c->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+        for (const auto &med : c->prescriptions)
         {
             std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
                       << ", 频次: " << med.frequency << ", 疗程: " << med.duration
                       << ", 备注: " << med.note << std::endl;
         }
 
-        std::cout << "是否建议住院: " << (current->isHospitalizationRecommended ? "是" : "否") << std::endl;
+        std::cout << "是否建议住院: " << (c->isHospitalizationRecommended ? "是" : "否") << std::endl;
 
-        std::cout << "  医生备注: " << current->note << std::endl;
+        std::cout << "  医生备注: " << c->note << std::endl;
     }
     return true;
 }
@@ -707,17 +707,17 @@ bool Admin::viewConsultationsByDoctor(Consultation *&con, const std::string &dep
             std::cout << exam << " ";
         }
         std::cout << std::endl;
-        std::cout << "  计划用药" << (current->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
-        for (const auto &med : current->prescriptions)
+        std::cout << "  计划用药" << (c->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+        for (const auto &med : c->prescriptions)
         {
             std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
                       << ", 频次: " << med.frequency << ", 疗程: " << med.duration
                       << ", 备注: " << med.note << std::endl;
         }
 
-        std::cout << "是否建议住院: " << (current->isHospitalizationRecommended ? "是" : "否") << std::endl;
+        std::cout << "是否建议住院: " << (c->isHospitalizationRecommended ? "是" : "否") << std::endl;
 
-        std::cout << "  医生备注: " << current->note << std::endl;
+        std::cout << "  医生备注: " << c->note << std::endl;
     }
     return true;
 }
@@ -784,17 +784,17 @@ bool Admin::viewConsultationsByPatient(Consultation *&con, const std::string &de
         }
         std::cout << std::endl;
 
-        std::cout << "  计划用药" << (current->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
-        for (const auto &med : current->prescriptions)
+        std::cout << "  计划用药" << (c->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+        for (const auto &med : c->prescriptions)
         {
             std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
                       << ", 频次: " << med.frequency << ", 疗程: " << med.duration
                       << ", 备注: " << med.note << std::endl;
         }
 
-        std::cout << "是否建议住院: " << (current->isHospitalizationRecommended ? "是" : "否") << std::endl;
+        std::cout << "是否建议住院: " << (c->isHospitalizationRecommended ? "是" : "否") << std::endl;
 
-        std::cout << "  医生备注: " << current->note << std::endl;
+        std::cout << "  医生备注: " << c->note << std::endl;
     }
     return true;
 }
@@ -937,17 +937,17 @@ bool Admin::viewConsultationByRegistrationID(Consultation *&con, const std::stri
         }
         std::cout << std::endl;
 
-        std::cout << "  计划用药" << (current->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
-        for (const auto &med : current->prescriptions)
+        std::cout << "  计划用药" << (c->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+        for (const auto &med : c->prescriptions)
         {
             std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
                       << ", 频次: " << med.frequency << ", 疗程: " << med.duration
                       << ", 备注: " << med.note << std::endl;
         }
 
-        std::cout << "是否建议住院: " << (current->isHospitalizationRecommended ? "是" : "否") << std::endl;
+        std::cout << "是否建议住院: " << (c->isHospitalizationRecommended ? "是" : "否") << std::endl;
 
-        std::cout << "  医生备注: " << current->note << std::endl;
+        std::cout << "  医生备注: " << c->note << std::endl;
     }
     return true;
 }
@@ -1068,6 +1068,7 @@ bool Admin::viewConsultationByID(Consultation *&con, const std::string &departme
             found = true;
             break;
         }
+        current = current->next;
     }
     if (!found)
     {
@@ -1136,37 +1137,37 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
                 else if (viewChoice == 1)
                 {
                     viewAllConsultations(con, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 看诊记录管理");
                 }
                 else if (viewChoice == 2)
                 {
                     viewConsultationsByPatient(con, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 看诊记录管理");
                 }
                 else if (viewChoice == 3)
                 {
                     viewConsultationsByDoctor(con, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 看诊记录管理");
                 }
                 else if (viewChoice == 4)
                 {
                     viewConsultationsByStatus(con, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 看诊记录管理");
                 }
                 else if (viewChoice == 5)
                 {
                     viewConsultationByRegistrationID(con, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 看诊记录管理");
                 }
                 else if (viewChoice == 6)
                 {
                     viewConsultationByID(con, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 看诊记录管理");
                 }
                 else
                 {
-                    std::cout << "无效的选择! 请重新选择。" << std::endl;
-                    pause();
+                    printError("无效的选择! 请重新选择。");
+                    pause("管理员 > 医疗记录管理 > 看诊记录管理");
                 }
             }
         }
@@ -1249,7 +1250,7 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
                         if (actionChoice == 1)
                         {
                             modifyConsultationStatus(target, department);
-                            pause();
+                            pause("管理员 > 医疗记录管理 > 看诊记录管理");
                         }
                         else
                         {
@@ -1260,7 +1261,7 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
                 else
                 {
                     std::cout << "未找到指定的看诊记录！" << std::endl;
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 看诊记录管理");
                 }
             }
         }
@@ -1342,29 +1343,29 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
                     if (confirm == 1)
                     {
                         deleteConsultation(target, department);
-                        pause();
+                        pause("管理员 > 医疗记录管理 > 看诊记录管理");
                     }
                     else
                     {
                         std::cout << "已取消删除操作。" << std::endl;
-                        pause();
+                        pause("管理员 > 医疗记录管理 > 看诊记录管理");
                     }
                 }
                 else
                 {
                     std::cout << "未找到指定的看诊记录！" << std::endl;
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 看诊记录管理");
                 }
             }
             else if (choice == 4)
             {
                 addConsultation(con, department, reg, conCounter);
-                pause();
+                pause("管理员 > 医疗记录管理 > 看诊记录管理");
             }
             else
             {
-                std::cout << "无效的选择! 请重新选择。" << std::endl;
-                pause();
+                printError("无效的选择! 请重新选择。");
+                pause("管理员 > 医疗记录管理 > 看诊记录管理");
             }
         }
     }
@@ -1822,32 +1823,32 @@ void Admin::manageExaminations(Examination *&exam, const std::string &department
                 else if (viewChoice == 1)
                 {
                     viewAllExaminations(exam, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 检查记录管理");
                 }
                 else if (viewChoice == 2)
                 {
                     viewExaminationsByPatient(exam, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 检查记录管理");
                 }
                 else if (viewChoice == 3)
                 {
                     viewExaminationsByDoctor(exam, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 检查记录管理");
                 }
                 else if (viewChoice == 4)
                 {
                     viewExaminationsByStatus(exam, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 检查记录管理");
                 }
                 else if (viewChoice == 5)
                 {
                     viewExaminationByID(exam, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 检查记录管理");
                 }
                 else
                 {
-                    std::cout << "无效的选择! 请重新选择。" << std::endl;
-                    pause();
+                    printError("无效的选择! 请重新选择。");
+                    pause("管理员 > 医疗记录管理 > 检查记录管理");
                 }
             }
         }
@@ -1915,7 +1916,7 @@ void Admin::manageExaminations(Examination *&exam, const std::string &department
                         if (modifyChoice == 1)
                         {
                             modifyExaminationStatus(target, department);
-                            pause();
+                            pause("管理员 > 医疗记录管理 > 检查记录管理");
                         }
                         else
                         {
@@ -1926,7 +1927,7 @@ void Admin::manageExaminations(Examination *&exam, const std::string &department
                 else
                 {
                     std::cout << "未找到指定的检查记录！" << std::endl;
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 检查记录管理");
                 }
             }
         }
@@ -1993,30 +1994,30 @@ void Admin::manageExaminations(Examination *&exam, const std::string &department
                     {
 
                         deleteExamination(target, department);
-                        pause();
+                        pause("管理员 > 医疗记录管理 > 检查记录管理");
                     }
                     else
                     {
                         std::cout << "已取消删除操作。" << std::endl;
-                        pause();
+                        pause("管理员 > 医疗记录管理 > 检查记录管理");
                     }
                 }
                 else
                 {
                     std::cout << "未找到指定的检查记录！" << std::endl;
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 检查记录管理");
                 }
             }
         }
         else if (choice == 4)
         {
             addExamination(exam, department, con, idCounter);
-            pause();
+            pause("管理员 > 医疗记录管理 > 检查记录管理");
         }
         else
         {
-            std::cout << "无效的选择! 请重新选择。" << std::endl;
-            pause();
+            printError("无效的选择! 请重新选择。");
+            pause("管理员 > 医疗记录管理 > 检查记录管理");
         }
     }
 }
@@ -2518,10 +2519,10 @@ bool Admin::addHospitalization(Hospitalization *&hos, Nurse *nurse, const std::s
                 b->status = bedStatus::OCCUPIED;  // 占用床位
                 b->patientID = newHos->patientID; // 关联患者ID
                 b->useTimes++;                    // 使用次数加1
+                bedFound = true;
                 break;
             }
 
-            bedFound = true;
         }
         b = b->next;
     }
@@ -2610,42 +2611,42 @@ void Admin::manageHospitalizations(Hospitalization *&hos, Nurse *nurse, const st
                 else if (viewChoice == 1)
                 {
                     viewAllHospitalizations(hos, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 住院记录管理");
                 }
                 else if (viewChoice == 2)
                 {
                     viewHospitalizationsByPatient(hos, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 住院记录管理");
                 }
                 else if (viewChoice == 3)
                 {
                     viewHospitalizationsByDoctor(hos, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 住院记录管理");
                 }
                 else if (viewChoice == 4)
                 {
                     viewHospitalizationByNurse(hos, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 住院记录管理");
                 }
                 else if (viewChoice == 5)
                 {
                     viewHospitalizationByID(hos, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 住院记录管理");
                 }
                 else if (viewChoice == 6)
                 {
                     viewHospitalizationsByStatus(hos, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 住院记录管理");
                 }
                 else if (viewChoice == 7)
                 {
                     viewHospitalizationByWardType(hos, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 住院记录管理");
                 }
                 else
                 {
-                    std::cout << "无效的选择! 请重新选择。" << std::endl;
-                    pause();
+                    printError("无效的选择! 请重新选择。");
+                    pause("管理员 > 医疗记录管理 > 住院记录管理");
                 }
             }
         }
@@ -2699,7 +2700,7 @@ void Admin::manageHospitalizations(Hospitalization *&hos, Nurse *nurse, const st
                         if (modifyChoice == 1)
                         {
                             modifyHospitalizationStatus(target, department);
-                            pause();
+                            pause("管理员 > 医疗记录管理 > 住院记录管理");
                         }
                         else
                         {
@@ -2710,7 +2711,7 @@ void Admin::manageHospitalizations(Hospitalization *&hos, Nurse *nurse, const st
                 else
                 {
                     std::cout << "未找到指定的住院记录！" << std::endl;
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 住院记录管理");
                 }
             }
         }
@@ -2762,30 +2763,30 @@ void Admin::manageHospitalizations(Hospitalization *&hos, Nurse *nurse, const st
                     {
 
                         deleteHospitalization(target, department);
-                        pause();
+                        pause("管理员 > 医疗记录管理 > 住院记录管理");
                     }
                     else
                     {
                         std::cout << "已取消删除操作。" << std::endl;
-                        pause();
+                        pause("管理员 > 医疗记录管理 > 住院记录管理");
                     }
                 }
                 else
                 {
                     std::cout << "未找到指定的住院记录！" << std::endl;
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 住院记录管理");
                 }
             }
         }
         else if (choice == 4)
         {
             addHospitalization(hos, nurse, department, con, bed, idCounter);
-            pause();
+            pause("管理员 > 医疗记录管理 > 住院记录管理");
         }
         else
         {
-            std::cout << "无效的选择! 请重新选择。" << std::endl;
-            pause();
+            printError("无效的选择! 请重新选择。");
+            pause("管理员 > 医疗记录管理 > 住院记录管理");
         }
     }
 }
@@ -3195,45 +3196,45 @@ void Admin::manageBedInfo(bedInfo *&bed, Hospitalization *&hos, const std::strin
                 else if (viewChoice == 1) // 查看所有床位信息
                 {
                     viewAllBeds(bed, department);
-                    pause();
+                    pause("管理员 > 床位管理");
                 }
                 else if (viewChoice == 2) // 根据床位状态查看床位信息
                 {
                     viewBedsByStatus(bed, department);
 
-                    pause();
+                    pause("管理员 > 床位管理");
                 }
                 else if (viewChoice == 3) // 根据病房类型查看床位信息
                 {
                     viewBedsByWardType(bed, department);
-                    pause();
+                    pause("管理员 > 床位管理");
                 }
                 else if (viewChoice == 4) // 根据床位ID查看床位信息
                 {
                     viewBedByID(bed, department);
-                    pause();
+                    pause("管理员 > 床位管理");
                 }
                 else if (viewChoice == 5) // 根据患者ID查看床位信息
                 {
                     viewBedsByPatientID(bed, department);
 
-                    pause();
+                    pause("管理员 > 床位管理");
                 }
                 else if (viewChoice == 6) // 根据住院记录ID查看床位信息
                 {
                     viewBedsByHospitalizationID(bed, hos, department);
-                    pause();
+                    pause("管理员 > 床位管理");
                 }
                 else if (viewChoice == 7) // 根据护士ID查看床位信息
                 {
                     viewBedsByNurseID(bed, department);
 
-                    pause();
+                    pause("管理员 > 床位管理");
                 }
                 else
                 {
-                    std::cout << "无效的选择! 请重新选择。" << std::endl;
-                    pause();
+                    printError("无效的选择! 请重新选择。");
+                    pause("管理员 > 床位管理");
                 }
             }
         }
@@ -3284,7 +3285,7 @@ void Admin::manageBedInfo(bedInfo *&bed, Hospitalization *&hos, const std::strin
                         if (modifyChoice == 1)
                         {
                             modifyBedStatus(target, department);
-                            pause();
+                            pause("管理员 > 床位管理");
                         }
                         else
                         {
@@ -3295,7 +3296,7 @@ void Admin::manageBedInfo(bedInfo *&bed, Hospitalization *&hos, const std::strin
                 else
                 {
                     std::cout << "未找到指定的床位信息！" << std::endl;
-                    pause();
+                    pause("管理员 > 床位管理");
                 }
             }
         }
@@ -3345,30 +3346,30 @@ void Admin::manageBedInfo(bedInfo *&bed, Hospitalization *&hos, const std::strin
                     {
 
                         deleteBedInfo(target, department);
-                        pause();
+                        pause("管理员 > 床位管理");
                     }
                     else
                     {
                         std::cout << "已取消删除操作。" << std::endl;
-                        pause();
+                        pause("管理员 > 床位管理");
                     }
                 }
                 else
                 {
                     std::cout << "未找到指定的床位信息！" << std::endl;
-                    pause();
+                    pause("管理员 > 床位管理");
                 }
             }
         }
         else if (choice == 4) // 添加床位信息
         {
             addBedInfo(bed, department);
-            pause();
+            pause("管理员 > 床位管理");
         }
         else
         {
-            std::cout << "无效的选择! 请重新选择。" << std::endl;
-            pause();
+            printError("无效的选择! 请重新选择。");
+            pause("管理员 > 床位管理");
         }
     }
 }
@@ -3394,7 +3395,7 @@ bool Admin::viewAllMedicationRecords(MedicationRecord *&medRec, const std::strin
                       << ", 医生ID: " << current->doctorID
                       << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
                       << ", 科室: " << current->department
-                      << ", 审核状态: " << statusStr
+                      << ", 审核状态: " << reviewStatusStr
                       << ", 总费用: " << current->totalCost
                       << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
                       << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
@@ -3444,7 +3445,7 @@ bool Admin::viewMedicationRecordsByPatient(MedicationRecord *&medRec, const std:
                       << ", 医生ID: " << current->doctorID
                       << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
                       << ", 科室: " << current->department
-                      << ", 审核状态: " << statusStr
+                      << ", 审核状态: " << reviewStatusStr
                       << ", 总费用: " << current->totalCost
                       << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
                       << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
@@ -3494,7 +3495,7 @@ bool Admin::viewMedicationRecordsByDoctor(MedicationRecord *&medRec, const std::
                       << ", 医生ID: " << current->doctorID
                       << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
                       << ", 科室: " << current->department
-                      << ", 审核状态: " << statusStr
+                      << ", 审核状态: " << reviewStatusStr
                       << ", 总费用: " << current->totalCost
                       << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
                       << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
@@ -3544,7 +3545,7 @@ bool Admin::viewMedicationRecordsByPharmacist(MedicationRecord *&medRec, const s
                       << ", 医生ID: " << current->doctorID
                       << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
                       << ", 科室: " << current->department
-                      << ", 审核状态: " << statusStr
+                      << ", 审核状态: " << reviewStatusStr
                       << ", 总费用: " << current->totalCost
                       << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
                       << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
@@ -3594,7 +3595,7 @@ bool Admin::viewMedicationRecordByID(MedicationRecord *&medRec, const std::strin
                       << ", 医生ID: " << current->doctorID
                       << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
                       << ", 科室: " << current->department
-                      << ", 审核状态: " << statusStr
+                      << ", 审核状态: " << reviewStatusStr
                       << ", 总费用: " << current->totalCost
                       << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
                       << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
@@ -3649,7 +3650,7 @@ bool Admin::viewMedicationRecordsByMedicationID(MedicationRecord *&medRec, const
                               << ", 医生ID: " << current->doctorID
                               << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
                               << ", 科室: " << current->department
-                              << ", 审核状态: " << statusStr
+                              << ", 审核状态: " << reviewStatusStr
                               << ", 总费用: " << current->totalCost
                               << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
                               << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
@@ -3705,7 +3706,7 @@ bool Admin::viewMedicationRecordsByConsultationID(MedicationRecord *&medRec, con
                       << ", 医生ID: " << current->doctorID
                       << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
                       << ", 科室: " << current->department
-                      << ", 审核状态: " << statusStr
+                      << ", 审核状态: " << reviewStatusStr
                       << ", 总费用: " << current->totalCost
                       << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
                       << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
@@ -3759,7 +3760,7 @@ bool Admin::viewMedicationRecordsByReviewStatus(MedicationRecord *&medRec, const
                       << ", 医生ID: " << current->doctorID
                       << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
                       << ", 科室: " << current->department
-                      << ", 审核状态: " << statusStr
+                      << ", 审核状态: " << reviewStatusStr
                       << ", 总费用: " << current->totalCost
                       << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
                       << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
@@ -3812,7 +3813,7 @@ bool Admin::viewMedicationRecordsByStatus(MedicationRecord *&medRec, const std::
                       << ", 医生ID: " << current->doctorID
                       << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
                       << ", 科室: " << current->department
-                      << ", 审核状态: " << statusStr
+                      << ", 审核状态: " << reviewStatusStr
                       << ", 总费用: " << current->totalCost
                       << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
                       << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
@@ -3935,7 +3936,7 @@ bool Admin::addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Ph
             }
             if (!foundPha)
             {
-                std::cout << "未找到指定的药师信息！用药记录创建失败。" << std::endl;
+                printError("未找到指定的药师信息！用药记录创建失败。");
                 delete newMedRec; // 释放之前创建的 MedicationRecord 对象，避免内存泄漏
                 return false;
             }
@@ -4051,47 +4052,47 @@ void Admin::manageMedicationRecords(MedicationRecord *&medRec, Consultation *con
                 if (viewChoice == 1) // 查看所有用药记录
                 {
                     viewAllMedicationRecords(medRec, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 用药记录管理");
                 }
                 else if (viewChoice == 2) // 根据患者ID查看用药记录
                 {
                     viewMedicationRecordsByPatient(medRec, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 用药记录管理");
                 }
                 else if (viewChoice == 3) // 根据医生ID查看用药记录
                 {
                     viewMedicationRecordsByDoctor(medRec, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 用药记录管理");
                 }
                 else if (viewChoice == 4) // 根据药师ID查看用药记录
                 {
                     viewMedicationRecordsByPharmacist(medRec, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 用药记录管理");
                 }
                 else if (viewChoice == 5) // 根据用药记录ID查看用药记录
                 {
                     viewMedicationRecordByID(medRec, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 用药记录管理");
                 }
                 else if (viewChoice == 6) // 根据药品ID查看用药记录
                 {
                     viewMedicationRecordsByMedicationID(medRec, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 用药记录管理");
                 }
                 else if (viewChoice == 7) // 根据看诊记录ID查看用药记录
                 {
                     viewMedicationRecordsByConsultationID(medRec, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 用药记录管理");
                 }
                 else if (viewChoice == 8) // 根据审核状态查看用药记录
                 {
                     viewMedicationRecordsByReviewStatus(medRec, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 用药记录管理");
                 }
                 else if (viewChoice == 9) // 根据用药状态查看用药记录
                 {
                     viewMedicationRecordsByStatus(medRec, department);
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 用药记录管理");
                 }
             }
         }
@@ -4126,7 +4127,7 @@ void Admin::manageMedicationRecords(MedicationRecord *&medRec, Consultation *con
                                   << ", 医生ID: " << target->doctorID
                                   << ", 药师ID: " << (target->pharmacistID.empty() ? "无" : target->pharmacistID)
                                   << ", 科室: " << target->department
-                                  << ", 审核状态: " << statusStr
+                                  << ", 审核状态: " << reviewStatusStr
                                   << ", 总费用: " << target->totalCost
                                   << ", 支付时间: " << (target->paymentTime.empty() ? "未支付" : target->paymentTime)
                                   << ", 发药时间: " << (target->dispenseTime.empty() ? "未发药" : target->dispenseTime)
@@ -4154,7 +4155,7 @@ void Admin::manageMedicationRecords(MedicationRecord *&medRec, Consultation *con
                         if (modifyChoice == 1)
                         {
                             modifyMedicationRecordReviewStatus(target, department);
-                            pause();
+                            pause("管理员 > 医疗记录管理 > 用药记录管理");
                         }
                         else
                         {
@@ -4165,7 +4166,7 @@ void Admin::manageMedicationRecords(MedicationRecord *&medRec, Consultation *con
                 else
                 {
                     std::cout << "未找到ID为 " << medRecordID << " 的用药记录！" << std::endl;
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 用药记录管理");
                 }
             }
         }
@@ -4198,7 +4199,7 @@ void Admin::manageMedicationRecords(MedicationRecord *&medRec, Consultation *con
                               << ", 医生ID: " << target->doctorID
                               << ", 药师ID: " << (target->pharmacistID.empty() ? "无" : target->pharmacistID)
                               << ", 科室: " << target->department
-                              << ", 审核状态: " << statusStr
+                              << ", 审核状态: " << reviewStatusStr
                               << ", 总费用: " << target->totalCost
                               << ", 支付时间: " << (target->paymentTime.empty() ? "未支付" : target->paymentTime)
                               << ", 发药时间: " << (target->dispenseTime.empty() ? "未发药" : target->dispenseTime)
@@ -4226,25 +4227,25 @@ void Admin::manageMedicationRecords(MedicationRecord *&medRec, Consultation *con
                     if (confirm == 1)
                     {
                         deleteMedicationRecord(target, department);
-                        pause();
+                        pause("管理员 > 医疗记录管理 > 用药记录管理");
                     }
                     else
                     {
                         std::cout << "用药记录删除已取消！" << std::endl;
-                        pause();
+                        pause("管理员 > 医疗记录管理 > 用药记录管理");
                     }
                 }
                 else
                 {
                     std::cout << "未找到ID为 " << medRecordID << " 的用药记录！" << std::endl;
-                    pause();
+                    pause("管理员 > 医疗记录管理 > 用药记录管理");
                 }
             }
         }
         else if (choice == 4) // 添加用药记录
         {
             addMedicationRecord(medRec, con, pha, med, department, idCounter);
-            pause();
+            pause("管理员 > 医疗记录管理 > 用药记录管理");
         }
         else if (choice == 0) // 返回上一级菜单
         {
@@ -4634,32 +4635,32 @@ void Admin::manageMedicines(Medicine *&med, const std::string &department, int &
                 else if (viewChoice == 1) // 查看所有药品信息
                 {
                     viewAllMedicines(med, department);
-                    pause();
+                    pause("管理员 > 药品管理");
                 }
                 else if (viewChoice == 2) // 根据药品ID查看药品信息
                 {
                     viewMedicineByID(med, department);
-                    pause();
+                    pause("管理员 > 药品管理");
                 }
                 else if (viewChoice == 3) // 根据药品名称查看药品信息
                 {
                     viewMedicinesByName(med, department);
-                    pause();
+                    pause("管理员 > 药品管理");
                 }
                 else if (viewChoice == 4) // 根据药品状态查看药品信息
                 {
                     viewMedicinesByStatus(med, department);
-                    pause();
+                    pause("管理员 > 药品管理");
                 }
                 else if (viewChoice == 5) // 根据生产厂家查看药品信息
                 {
                     viewMedicinesByManufacturer(med, department);
-                    pause();
+                    pause("管理员 > 药品管理");
                 }
                 else if (viewChoice == 6) // 查看低于安全库存阈值的药品信息
                 {
                     viewMedicinesBySafetyStock(med, department);
-                    pause();
+                    pause("管理员 > 药品管理");
                 }
             }
         }
@@ -4710,64 +4711,64 @@ void Admin::manageMedicines(Medicine *&med, const std::string &department, int &
                         else if (modifyChoice == 1) // 修改药品状态
                         {
                             modifyMedicineStatus(target, department);
-                            pause();
+                            pause("管理员 > 药品管理");
                         }
                         else if (modifyChoice == 2) // 修改药品名称
                         {
                             modifyMedicineName(target, department);
-                            pause();
+                            pause("管理员 > 药品管理");
                         }
                         else if (modifyChoice == 3) // 修改药品规格
                         {
                             modifyMedicineSpecification(target, department);
-                            pause();
+                            pause("管理员 > 药品管理");
                         }
                         else if (modifyChoice == 4) // 修改药品进价
                         {
                             modifyMedicinePurchasePrice(target, department);
-                            pause();
+                            pause("管理员 > 药品管理");
                         }
                         else if (modifyChoice == 5) // 修改药品售价
                         {
                             modifyMedicineSalePrice(target, department);
-                            pause();
+                            pause("管理员 > 药品管理");
                         }
                         else if (modifyChoice == 6) // 修改药品库存数量
                         {
                             modifyMedicineStock(target, department);
-                            pause();
+                            pause("管理员 > 药品管理");
                         }
                         else if (modifyChoice == 7) // 修改药品安全库存阈值
                         {
                             modifyMedicineSafetyStock(target, department);
-                            pause();
+                            pause("管理员 > 药品管理");
                         }
                         else if (modifyChoice == 8) // 修改药品生产日期
                         {
                             modifyMedicineProductionDate(target, department);
-                            pause();
+                            pause("管理员 > 药品管理");
                         }
                         else if (modifyChoice == 9) // 修改药品有效期
                         {
                             modifyMedicineExpiryDate(target, department);
-                            pause();
+                            pause("管理员 > 药品管理");
                         }
                         else if (modifyChoice == 10) // 修改药品生产厂家
                         {
                             modifyMedicineManufacturer(target, department);
-                            pause();
+                            pause("管理员 > 药品管理");
                         }
                         else if (modifyChoice == 11) // 修改药品备注信息
                         {
                             modifyMedicineNote(target, department);
-                            pause();
+                            pause("管理员 > 药品管理");
                         }
                     }
                 }
                 else
                 {
                     std::cout << "未找到ID为 " << medicineID << " 的药品信息！" << std::endl;
-                    pause();
+                    pause("管理员 > 药品管理");
                 }
             }
         }
@@ -4817,25 +4818,25 @@ void Admin::manageMedicines(Medicine *&med, const std::string &department, int &
                     {
 
                         deleteMedicine(target, department);
-                        pause();
+                        pause("管理员 > 药品管理");
                     }
                     else
                     {
                         std::cout << "药品删除已取消！" << std::endl;
-                        pause();
+                        pause("管理员 > 药品管理");
                     }
                 }
                 else
                 {
                     std::cout << "未找到ID为 " << medicineID << " 的药品信息！" << std::endl;
-                    pause();
+                    pause("管理员 > 药品管理");
                 }
             }
         }
         else if (choice == 4) // 添加药品
         {
             addMedicine(med, department, idCounter);
-            pause();
+            pause("管理员 > 药品管理");
         }
         else if (choice == 0) // 返回上一级菜单
         {
@@ -5088,7 +5089,7 @@ void Admin::modifyDoctorDepartment(Doctor *&target, const std::string &departmen
     }
     else if (newDepartment.empty())
     {
-        std::cout << "输入无效，科室修改已取消！" << std::endl;
+        printWarning("输入无效，科室修改已取消！");
         return; // 输入无效，取消修改，返回上一级菜单
     }
 
@@ -5231,27 +5232,27 @@ void Admin::manageDoctors(Doctor *&doc, const std::string &department, int &idCo
                 else if (viewChoice == 1) // 查看所有医生信息
                 {
                     viewAllDoctors(doc, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 医生管理");
                 }
                 else if (viewChoice == 2) // 根据医生ID查看医生信息
                 {
                     viewDoctorByID(doc, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 医生管理");
                 }
                 else if (viewChoice == 3) // 根据医生姓名查看医生信息
                 {
                     viewDoctorsByName(doc, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 医生管理");
                 }
                 else if (viewChoice == 4) // 根据医生在岗状态查看医生信息
                 {
                     viewDoctorsByOnDutyStatus(doc, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 医生管理");
                 }
                 else if (viewChoice == 5) // 根据医生职称查看医生信息
                 {
                     viewDoctorByTitle(doc, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 医生管理");
                 }
             }
         }
@@ -5303,74 +5304,74 @@ void Admin::manageDoctors(Doctor *&doc, const std::string &department, int &idCo
                         else if (modifyChoice == 1) // 修改医生姓名
                         {
                             modifyDoctorName(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                         else if (modifyChoice == 2) // 修改医生性别
                         {
                             modifyDoctorGender(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                         else if (modifyChoice == 3) // 修改医生年龄
                         {
                             modifyDoctorAge(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                         else if (modifyChoice == 4) // 修改医生所属科室
                         {
                             modifyDoctorDepartment(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                         else if (modifyChoice == 5) // 修改医生职称
                         {
                             modifyDoctorTitle(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                         else if (modifyChoice == 6) // 修改医生电话
                         {
                             modifyDoctorTelephone(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                         else if (modifyChoice == 7) // 修改医生邮箱
                         {
                             modifyDoctorEmail(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                         else if (modifyChoice == 8) // 修改医生在岗状态
                         {
                             modifyDoctorOnDutyStatus(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                         else if (modifyChoice == 9) // 修改医生擅长领域
                         {
                             modifyDoctorSpecialty(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                         else if (modifyChoice == 10) // 修改医生排班信息
                         {
                             modifyDoctorScheduleInfo(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                         else if (modifyChoice == 11) // 修改医生累计看诊人数
                         {
                             modifyDoctorConsultationCount(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                         else if (modifyChoice == 12) // 修改医生累计开具检查次数
                         {
                             modifyDoctorExaminationCount(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                         else if (modifyChoice == 13) // 修改医生累计开具住院证次数
                         {
                             modifyDoctorHospitalizationApplyCount(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 医生管理");
                         }
                     }
                 }
                 else
                 {
                     std::cout << "未找到ID为 " << doctorID << " 的医生信息！" << std::endl;
-                    pause();
+                    pause("管理员 > 账户管理 > 医生管理");
                 }
             }
         }
@@ -5418,25 +5419,25 @@ void Admin::manageDoctors(Doctor *&doc, const std::string &department, int &idCo
                     if (confirmChoice == 1)
                     {
                         deleteDoctor(target, department);
-                        pause();
+                        pause("管理员 > 账户管理 > 医生管理");
                     }
                     else
                     {
                         std::cout << "医生删除已取消！" << std::endl;
-                        pause();
+                        pause("管理员 > 账户管理 > 医生管理");
                     }
                 }
                 else
                 {
                     std::cout << "未找到ID为 " << doctorID << " 的医生信息！" << std::endl;
-                    pause();
+                    pause("管理员 > 账户管理 > 医生管理");
                 }
             }
         }
         else if (choice == 4) // 添加医生
         {
             addDoctor(doc, idCounter);
-            pause();
+            pause("管理员 > 账户管理 > 医生管理");
         }
         else if (choice == 0) // 返回上一级菜单
         {
@@ -5679,7 +5680,7 @@ void Admin::modifyNurseDepartment(Nurse *&target, const std::string &department)
     }
     else if (newDepartment.empty())
     {
-        std::cout << "输入无效，科室修改已取消！" << std::endl;
+        printWarning("输入无效，科室修改已取消！");
         return; // 输入无效，取消修改，返回上一级菜单
     }
 
@@ -5805,27 +5806,27 @@ void Admin::manageNurses(Nurse *&nurse, const std::string &department, int &idCo
                 else if (viewChoice == 1) // 查看所有护士信息
                 {
                     viewAllNurses(nurse, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 护士管理");
                 }
                 else if (viewChoice == 2) // 根据护士ID查看护士信息
                 {
                     viewNurseByID(nurse, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 护士管理");
                 }
                 else if (viewChoice == 3) // 根据护士姓名查看护士信息
                 {
                     viewNursesByName(nurse, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 护士管理");
                 }
                 else if (viewChoice == 4) // 根据护士在岗状态查看护士信息
                 {
                     viewNursesByOnDutyStatus(nurse, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 护士管理");
                 }
                 else if (viewChoice == 5) // 根据护士等级查看护士信息
                 {
                     viewNurseByLevel(nurse, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 护士管理");
                 }
             }
         }
@@ -5873,64 +5874,64 @@ void Admin::manageNurses(Nurse *&nurse, const std::string &department, int &idCo
                         else if (modifyChoice == 1) // 修改护士姓名
                         {
                             modifyNurseName(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 护士管理");
                         }
                         else if (modifyChoice == 2) // 修改护士性别
                         {
                             modifyNurseGender(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 护士管理");
                         }
                         else if (modifyChoice == 3) // 修改护士年龄
                         {
                             modifyNurseAge(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 护士管理");
                         }
                         else if (modifyChoice == 4) // 修改护士所属科室
                         {
                             modifyNurseDepartment(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 护士管理");
                         }
                         else if (modifyChoice == 5) // 修改护士等级
                         {
                             modifyNurseLevel(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 护士管理");
                         }
                         else if (modifyChoice == 6) // 修改护士电话
                         {
                             modifyNurseTelephone(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 护士管理");
                         }
                         else if (modifyChoice == 7) // 修改护士邮箱
                         {
                             modifyNurseEmail(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 护士管理");
                         }
                         else if (modifyChoice == 8) // 修改护士在岗状态
                         {
                             modifyNurseOnDutyStatus(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 护士管理");
                         }
                         else if (modifyChoice == 9) // 修改护士排班信息
                         {
                             modifyNurseScheduleInfo(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 护士管理");
                         }
                         else if (modifyChoice == 10) // 修改护士累计护理人数
                         {
                             modifyNursePatientCareCount(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 护士管理");
                         }
                         else if (modifyChoice == 11) // 修改护士床位管理次数
                         {
                             modifyNurseBedManageCount(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 护士管理");
                         }
                     }
                 }
                 else
                 {
                     std::cout << "未找到ID为 " << nurseID << " 的护士信息！" << std::endl;
-                    pause();
+                    pause("管理员 > 账户管理 > 护士管理");
                 }
             }
         }
@@ -5976,25 +5977,25 @@ void Admin::manageNurses(Nurse *&nurse, const std::string &department, int &idCo
                     {
 
                         deleteNurse(target, department);
-                        pause();
+                        pause("管理员 > 账户管理 > 护士管理");
                     }
                     else
                     {
                         std::cout << "护士删除已取消！" << std::endl;
-                        pause();
+                        pause("管理员 > 账户管理 > 护士管理");
                     }
                 }
                 else
                 {
                     std::cout << "未找到ID为 " << nurseID << " 的护士信息！" << std::endl;
-                    pause();
+                    pause("管理员 > 账户管理 > 护士管理");
                 }
             }
         }
         else if (choice == 4) // 添加护士
         {
             addNurse(nurse, idCounter);
-            pause();
+            pause("管理员 > 账户管理 > 护士管理");
         }
         else if (choice == 0) // 返回上一级菜单
         {
@@ -6237,7 +6238,7 @@ void Admin::modifyPharmacistDepartment(Pharmacist *&target, const std::string &d
     }
     else if (newDepartment.empty())
     {
-        std::cout << "输入无效，科室修改已取消！" << std::endl;
+        printWarning("输入无效，科室修改已取消！");
         return; // 输入无效，取消修改，返回上一级菜单
     }
 
@@ -6372,27 +6373,27 @@ void Admin::managePharmacists(Pharmacist *&pharmacist, const std::string &depart
                 else if (viewChoice == 1) // 查看所有药剂师信息
                 {
                     viewAllPharmacists(pharmacist, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 药剂师管理");
                 }
                 else if (viewChoice == 2) // 根据药剂师ID查看药剂师信息
                 {
                     viewPharmacistByID(pharmacist, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 药剂师管理");
                 }
                 else if (viewChoice == 3) // 根据药剂师姓名查看药剂师信息
                 {
                     viewPharmacistsByName(pharmacist, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 药剂师管理");
                 }
                 else if (viewChoice == 4) // 根据药剂师在岗状态查看药剂师信息
                 {
                     viewPharmacistsByOnDutyStatus(pharmacist, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 药剂师管理");
                 }
                 else if (viewChoice == 5) // 根据药剂师职称查看药剂师信息
                 {
                     viewPharmacistByLevel(pharmacist, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 药剂师管理");
                 }
             }
         }
@@ -6441,69 +6442,69 @@ void Admin::managePharmacists(Pharmacist *&pharmacist, const std::string &depart
                         else if (modifyChoice == 1) // 修改药剂师姓名
                         {
                             modifyPharmacistName(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 药剂师管理");
                         }
                         else if (modifyChoice == 2) // 修改药剂师性别
                         {
                             modifyPharmacistGender(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 药剂师管理");
                         }
                         else if (modifyChoice == 3) // 修改药剂师年龄
                         {
                             modifyPharmacistAge(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 药剂师管理");
                         }
                         else if (modifyChoice == 4) // 修改药剂师所属科室
                         {
                             modifyPharmacistDepartment(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 药剂师管理");
                         }
                         else if (modifyChoice == 5) // 修改药剂师职称
                         {
                             modifyPharmacistLevel(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 药剂师管理");
                         }
                         else if (modifyChoice == 6) // 修改药剂师电话
                         {
                             modifyPharmacistTelephone(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 药剂师管理");
                         }
                         else if (modifyChoice == 7) // 修改药剂师邮箱
                         {
                             modifyPharmacistEmail(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 药剂师管理");
                         }
                         else if (modifyChoice == 8) // 修改药剂师在岗状态
                         {
                             modifyPharmacistOnDutyStatus(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 药剂师管理");
                         }
                         else if (modifyChoice == 9) // 修改药剂师排班信息
                         {
                             modifyPharmacistScheduleInfo(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 药剂师管理");
                         }
                         else if (modifyChoice == 10) // 修改药剂师累计审核用药记录数量
                         {
                             modifyPharmacistMedicationReviewCount(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 药剂师管理");
                         }
                         else if (modifyChoice == 11) // 修改药剂师累计发药数量
                         {
                             modifyPharmacistDispenseCount(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 药剂师管理");
                         }
                         else if (modifyChoice == 12) // 修改药剂师累计库存管理次数
                         {
                             modifyPharmacistInventoryManageCount(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 药剂师管理");
                         }
                     }
                 }
                 else
                 {
                     std::cout << "未找到ID为 " << pharmacistID << " 的药剂师信息！" << std::endl;
-                    pause();
+                    pause("管理员 > 账户管理 > 药剂师管理");
                 }
             }
         }
@@ -6550,25 +6551,25 @@ void Admin::managePharmacists(Pharmacist *&pharmacist, const std::string &depart
                     if (confirmChoice == 1)
                     {
                         deletePharmacist(target, department);
-                        pause();
+                        pause("管理员 > 账户管理 > 药剂师管理");
                     }
                     else if (confirmChoice == 0)
                     {
                         std::cout << "药剂师删除已取消！" << std::endl;
-                        pause();
+                        pause("管理员 > 账户管理 > 药剂师管理");
                     }
                 }
                 else
                 {
                     std::cout << "未找到ID为 " << pharmacistID << " 的药剂师信息！" << std::endl;
-                    pause();
+                    pause("管理员 > 账户管理 > 药剂师管理");
                 }
             }
         }
         else if (choice == 4) // 添加药剂师
         {
             addPharmacist(pharmacist, idCounter);
-            pause();
+            pause("管理员 > 账户管理 > 药剂师管理");
         }
         else if (choice == 0) // 返回上一级菜单
         {
@@ -6788,7 +6789,7 @@ bool Admin::viewPatientsByAgeGroup(Patient *&patient, const std::string &departm
 
     if (minAge > maxAge)
     {
-        std::cout << "输入的年龄范围无效！" << std::endl;
+        printError("输入的年龄范围无效！");
         return false;
     }
 
@@ -6978,7 +6979,7 @@ bool Admin::viewPatientsByContactInfo(Patient *&patient, const std::string &depa
     {
         std::string email = inputEmailCheck("请输入患者电子邮箱: ");
         Patient *current = patient;
-        bool found = false;
+        found = false;
         std::cout << "正在查找电子邮箱为 " << email << " 的患者信息..." << std::endl;
         while (current != nullptr)
         {
@@ -7129,7 +7130,7 @@ void Admin::modifyPatientDepartment(Patient *&patient, const std::string &depart
             }
             else if (newDepartment.empty())
             {
-                std::cout << "输入的科室名称无效！" << std::endl;
+                printError("输入的科室名称无效！");
                 return;
             }
 
@@ -7409,52 +7410,52 @@ void Admin::managePatients(Patient *&patient, const std::string &department, int
                 else if (viewChoice == 1)
                 {
                     viewAllPatients(patient, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 患者管理");
                 }
                 else if (viewChoice == 2)
                 {
                     viewPatientByID(patient, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 患者管理");
                 }
                 else if (viewChoice == 3)
                 {
                     viewPatientsByName(patient, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 患者管理");
                 }
                 else if (viewChoice == 4)
                 {
                     viewPatientsByIDCard(patient, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 患者管理");
                 }
                 else if (viewChoice == 5)
                 {
                     viewPatientsByGender(patient, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 患者管理");
                 }
                 else if (viewChoice == 6)
                 {
                     viewPatientsByAgeGroup(patient, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 患者管理");
                 }
                 else if (viewChoice == 7)
                 {
                     viewPatientsByContactInfo(patient, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 患者管理");
                 }
                 else if (viewChoice == 8)
                 {
                     viewPatientsByHospitalizationStatus(patient, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 患者管理");
                 }
                 else if (viewChoice == 9)
                 {
                     viewPatientsByAddress(patient, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 患者管理");
                 }
                 else if (viewChoice == 10)
                 {
                     viewPatientsByMaritalStatus(patient, department);
-                    pause();
+                    pause("管理员 > 账户管理 > 患者管理");
                 }
             }
         }
@@ -7507,79 +7508,79 @@ void Admin::managePatients(Patient *&patient, const std::string &department, int
                         else if (modifyChoice == 1)
                         {
                             modifyPatientName(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 2)
                         {
                             modifyPatientGender(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 3)
                         {
                             modifyPatientAge(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 4)
                         {
                             modifyPatientDepartment(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 5)
                         {
                             modifyPatientIDCard(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 6)
                         {
                             modifyPatientTelephone(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 7)
                         {
                             modifyPatientEmail(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 8)
                         {
                             modifyPatientAddress(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 9)
                         {
                             modifyPatientMaritalStatus(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 10)
                         {
                             modifyPatientEmergencyContact(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 11)
                         {
                             modifyPatientRegistrationCount(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 12)
                         {
                             modifyPatientConsultationCount(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 13)
                         {
                             modifyPatientHospitalizationCount(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                         else if (modifyChoice == 14)
                         {
                             modifyPatientMedicationCount(target, department);
-                            pause();
+                            pause("管理员 > 账户管理 > 患者管理");
                         }
                     }
                 }
                 else
                 {
                     std::cout << "未找到ID为 " << patientID << " 的患者！" << std::endl;
-                    pause();
+                    pause("管理员 > 账户管理 > 患者管理");
                 }
             }
         }
@@ -7628,25 +7629,25 @@ void Admin::managePatients(Patient *&patient, const std::string &department, int
                     if (confirmChoice == 1)
                     {
                         deletePatient(target, department);
-                        pause();
+                        pause("管理员 > 账户管理 > 患者管理");
                     }
                     else
                     {
                         std::cout << "已取消删除操作！" << std::endl;
-                        pause();
+                        pause("管理员 > 账户管理 > 患者管理");
                     }
                 }
                 else
                 {
                     std::cout << "未找到ID为 " << patientID << " 的患者！" << std::endl;
-                    pause();
+                    pause("管理员 > 账户管理 > 患者管理");
                 }
             }
         }
         else if (choice == 4)
         {
             addPatient(patient, idCounter);
-            pause();
+            pause("管理员 > 账户管理 > 患者管理");
         }
     }
 }
@@ -7700,7 +7701,7 @@ void Admin::AdminPersonalInfo()
                 {
                     std::cout << "账号创建时间: " << this->createTime << std::endl;
                 }
-                pause();
+                pause("管理员 > 个人信息管理");
             }
         }
         else if (choice == 2)
@@ -7763,19 +7764,19 @@ void Admin::AdminPersonalInfo()
                             this->salt = newSalt;
                             this->storedHash = newHash;
 
-                            std::cout << "密码更新成功！" << std::endl;
+                            printSuccess("密码更新成功！");
                         }
                         else
                         {
-                            std::cout << "两次输入的新密码不一致，密码更新失败！" << std::endl;
+                            printError("两次输入的新密码不一致，密码更新失败！");
                         }
                     }
                     else
                     {
-                        std::cout << "密码验证失败，无法修改密码！" << std::endl;
+                        printError("密码验证失败，无法修改密码！");
                     }
                 }
-                pause();
+                pause("管理员 > 个人信息管理");
             }
         }
     }

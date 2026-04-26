@@ -1,4 +1,5 @@
 #include "../Head/Login.h"
+#include "../Head/UI.h"
 
 // 管理员登录函数，验证管理员身份并返回登录结果
 Admin *adminLogin(Admin *&adminHead)
@@ -8,27 +9,34 @@ Admin *adminLogin(Admin *&adminHead)
 
     // std::cout << id << std::endl;
 
+    // 查找未删除的账户
     while (current != nullptr)
     {
-        // std::cout << current->getUserID() << std::endl;
-
-        if (current->getUserID() == id)
+        if (current->getUserID() == id && !current->getIsDeleted())
         {
-            if (current->adminSignIn()) // 调用管理员登录方法验证密码并设置登录状态
-            {
-                return current;
-            }
-            else
-            {
-                return nullptr; // 登录失败（如密码错误或账户锁定）
-            }
+            break;
         }
-
-        // std::cout << "failed to find user, checking next..." << std::endl;
-
         current = current->next;
     }
-    std::cout << "未找到管理员账号" << std::endl;
+
+    if (current == nullptr)
+    {
+        printError("未找到管理员账号");
+        return nullptr;
+    }
+
+    // 最多重试3次密码输入
+    for (int attempt = 0; attempt < 3; ++attempt)
+    {
+        if (current->adminSignIn())
+        {
+            return current;
+        }
+        if (attempt < 2)
+        {
+            std::cout << "请重新输入密码（还剩 " << (2 - attempt) << " 次机会）: " << std::endl;
+        }
+    }
     return nullptr;
 }
 
@@ -40,22 +48,31 @@ Doctor *doctorLogin(Doctor *&doctorHead)
 
     while (currentDoctor != nullptr)
     {
-        if (currentDoctor->getUserID() == id)
+        if (currentDoctor->getUserID() == id && !currentDoctor->isDeleted)
         {
-            if (currentDoctor->doctorSignIn()) // 调用医生登录方法验证密码并设置登录状态
-            {
-                return currentDoctor;
-            }
-            else
-            {
-                return nullptr; // 登录失败（如密码错误或账户锁定）
-            }
+            break;
         }
         currentDoctor = currentDoctor->next;
     }
 
-    std::cout << "未找到医生账号" << std::endl;
-    return nullptr; // 未找到匹配的医生用户ID
+    if (currentDoctor == nullptr)
+    {
+        printError("未找到医生账号");
+        return nullptr;
+    }
+
+    for (int attempt = 0; attempt < 3; ++attempt)
+    {
+        if (currentDoctor->doctorSignIn())
+        {
+            return currentDoctor;
+        }
+        if (attempt < 2)
+        {
+            std::cout << "请重新输入密码（还剩 " << (2 - attempt) << " 次机会）: " << std::endl;
+        }
+    }
+    return nullptr;
 }
 
 // 药剂师登录函数，验证药剂师身份并返回登录结果
@@ -66,21 +83,30 @@ Pharmacist *pharmacistLogin(Pharmacist *&pharmacistHead)
 
     while (currentPharmacist != nullptr)
     {
-        if (currentPharmacist->getUserID() == id)
+        if (currentPharmacist->getUserID() == id && !currentPharmacist->isDeleted)
         {
-            if (currentPharmacist->pharmacistSignIn()) // 调用药剂师登录方法验证密码并设置登录状态
-            {
-                return currentPharmacist;
-            }
-            else
-            {
-                return nullptr; // 登录失败（如密码错误或账户锁定）
-            }
+            break;
         }
         currentPharmacist = currentPharmacist->next;
     }
-    
-    std::cout << "未找到该用户ID！" << std::endl;
+
+    if (currentPharmacist == nullptr)
+    {
+        printError("未找到该用户ID！");
+        return nullptr;
+    }
+
+    for (int attempt = 0; attempt < 3; ++attempt)
+    {
+        if (currentPharmacist->pharmacistSignIn())
+        {
+            return currentPharmacist;
+        }
+        if (attempt < 2)
+        {
+            std::cout << "请重新输入密码（还剩 " << (2 - attempt) << " 次机会）: " << std::endl;
+        }
+    }
     return nullptr;
 }
 
@@ -92,22 +118,31 @@ Patient *patientLogin(Patient *&patientHead)
 
     while (currentPatient != nullptr)
     {
-        if (currentPatient->getUserID() == id)
+        if (currentPatient->getUserID() == id && !currentPatient->isDeleted)
         {
-            if (currentPatient->patientSignIn()) // 调用患者登录方法验证密码并设置登录状态
-            {
-                return currentPatient;
-            }
-            else
-            {
-                return nullptr; // 登录失败（如密码错误或账户锁定）
-            }
+            break;
         }
         currentPatient = currentPatient->next;
     }
 
-    std::cout << "未找到患者账号" << std::endl;
-    return nullptr; // 未找到匹配的患者用户ID
+    if (currentPatient == nullptr)
+    {
+        printError("未找到患者账号");
+        return nullptr;
+    }
+
+    for (int attempt = 0; attempt < 3; ++attempt)
+    {
+        if (currentPatient->patientSignIn())
+        {
+            return currentPatient;
+        }
+        if (attempt < 2)
+        {
+            std::cout << "请重新输入密码（还剩 " << (2 - attempt) << " 次机会）: " << std::endl;
+        }
+    }
+    return nullptr;
 }
 
 // 护士登录函数，验证护士身份并返回登录结果
@@ -118,22 +153,31 @@ Nurse *nurseLogin(Nurse *&nurseHead)
 
     while (currentNurse != nullptr)
     {
-        if (currentNurse->getUserID() == id)
+        if (currentNurse->getUserID() == id && !currentNurse->isDeleted)
         {
-            if (currentNurse->nurseSignIn()) // 调用护士登录方法验证密码并设置登录状态
-            {
-                return currentNurse;
-            }
-            else
-            {
-                return nullptr; // 登录失败（如密码错误或账户锁定）
-            }
+            break;
         }
         currentNurse = currentNurse->next;
     }
 
-    std::cout << "未找到护士账号" << std::endl;
-    return nullptr; // 未找到匹配的护士用户ID
+    if (currentNurse == nullptr)
+    {
+        printError("未找到护士账号");
+        return nullptr;
+    }
+
+    for (int attempt = 0; attempt < 3; ++attempt)
+    {
+        if (currentNurse->nurseSignIn())
+        {
+            return currentNurse;
+        }
+        if (attempt < 2)
+        {
+            std::cout << "请重新输入密码（还剩 " << (2 - attempt) << " 次机会）: " << std::endl;
+        }
+    }
+    return nullptr;
 }
 
 
@@ -143,17 +187,18 @@ Nurse *nurseLogin(Nurse *&nurseHead)
 void viewAllAdmins(Admin *&adminHead)
 {
     Admin *current = adminHead;
-    std::cout << "管理员列表：" << std::endl;
+    std::vector<std::string> lines;
+    lines.push_back("管理员列表：");
     while (current != nullptr)
     {
-        std::cout << "用户ID: " << current->getUserID() << ", 姓名: " << current->getUsername()
-                  << ", 性别: " << current->getGender() << ", 年龄: " << current->getAge()
-                  << ", 电话: " << current->getTelephone() << ", 邮箱: " << current->getEmail()
-                  << ", 账户状态: " << (current->getIsAccountActive() ? "激活" : "锁定")
-                  << ", 创建时间: " << current->getCreateTime()
-                  << std::endl;
+        lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
+                  + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
+                  + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
+                  + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
+                  + ", 创建时间: " + current->getCreateTime());
         current = current->next;
     }
+    printWithPagination(lines, 10);
 }
 // 根据管理员ID查看管理员信息
 void viewAdminByID(Admin *&adminHead)
@@ -174,59 +219,61 @@ void viewAdminByID(Admin *&adminHead)
         }
         current = current->next;
     }
-    std::cout << "未找到指定管理员账号" << std::endl;
+    printError("未找到指定管理员账号");
 }
 // 根据管理员姓名查看管理员信息(支持模糊查询)
 void viewAdminsByName(Admin *&admin)
 {
     Admin *current = admin;
     std::string targetName = inputStringCheck("请输入要查看的管理员姓名（支持模糊查询）: ");
-    std::cout << "搜索结果：" << std::endl;
+    std::vector<std::string> lines;
+    lines.push_back("搜索结果：");
     bool found = false;
     while (current != nullptr)
     {
         if (current->getUsername().find(targetName) != std::string::npos) // 模糊匹配
         {
-            std::cout << "用户ID: " << current->getUserID() << ", 姓名: " << current->getUsername()
-                      << ", 性别: " << current->getGender() << ", 年龄: " << current->getAge()
-                      << ", 电话: " << current->getTelephone() << ", 邮箱: " << current->getEmail()
-                      << ", 账户状态: " << (current->getIsAccountActive() ? "激活" : "锁定")
-                      << ", 创建时间: " << current->getCreateTime()
-                      << std::endl;
+            lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
+                      + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
+                      + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
+                      + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
+                      + ", 创建时间: " + current->getCreateTime());
             found = true;
         }
         current = current->next;
     }
     if (!found)
     {
-        std::cout << "未找到匹配的管理员账号" << std::endl;
+        printError("未找到匹配的管理员账号");
     }
+    printWithPagination(lines, 10);
 }
 // 根据性别查看管理员信息
 void viewAdminsByGender(Admin *&admin)
 {
     Admin *current = admin;
     std::string targetGender = inputGenderCheck("请输入要查看的管理员性别");
-    std::cout << "搜索结果：" << std::endl;
+    std::vector<std::string> lines;
+    lines.push_back("搜索结果：");
     bool found = false;
     while (current != nullptr)
     {
         if (current->getGender() == targetGender)
         {
-            std::cout << "用户ID: " << current->getUserID() << ", 姓名: " << current->getUsername()
-                      << ", 性别: " << current->getGender() << ", 年龄: " << current->getAge()
-                      << ", 电话: " << current->getTelephone() << ", 邮箱: " << current->getEmail()
-                      << ", 账户状态: " << (current->getIsAccountActive() ? "激活" : "锁定")
-                      << ", 创建时间: " << current->getCreateTime()
-                      << std::endl;
+            lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
+                      + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
+                      + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
+                      + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
+                      + ", 创建时间: " + current->getCreateTime());
             found = true;
         }
         current = current->next;
     }
     if (!found)
     {
-        std::cout << "未找到匹配的管理员账号" << std::endl;
+        printError("未找到匹配的管理员账号");
     }
+    printWithPagination(lines, 10);
 }
 // 根据年龄段查看管理员信息
 void viewAdminsByAgeGroup(Admin *&admin)
@@ -238,31 +285,32 @@ void viewAdminsByAgeGroup(Admin *&admin)
 
     if (minAge > maxAge)
     {
-        std::cout << "输入的年龄范围无效，最小年龄应小于或等于最大年龄。" << std::endl;
+        printError("输入的年龄范围无效，最小年龄应小于或等于最大年龄。");
         return;
     }
 
+    std::vector<std::string> lines;
+    lines.push_back("正在查找年龄在 " + std::to_string(minAge) + " 到 " + std::to_string(maxAge) + " 岁之间的管理员信息...");
     bool found = false;
-    std::cout << "正在查找年龄在 " << minAge << " 到 " << maxAge << " 岁之间的管理员信息..." << std::endl;
     while (current != nullptr)
     {
         int age = current->getAge();
         if (age >= minAge && age <= maxAge)
         {
-            std::cout << "用户ID: " << current->getUserID() << ", 姓名: " << current->getUsername()
-                      << ", 性别: " << current->getGender() << ", 年龄: " << current->getAge()
-                      << ", 电话: " << current->getTelephone() << ", 邮箱: " << current->getEmail()
-                      << ", 账户状态: " << (current->getIsAccountActive() ? "激活" : "锁定")
-                      << ", 创建时间: " << current->getCreateTime()
-                      << std::endl;
+            lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
+                      + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
+                      + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
+                      + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
+                      + ", 创建时间: " + current->getCreateTime());
             found = true;
         }
         current = current->next;
     }
     if (!found)
     {
-        std::cout << "未找到匹配的管理员账号" << std::endl;
+        printError("未找到匹配的管理员账号");
     }
+    printWithPagination(lines, 10);
 }
 // 根据联系方式查看管理员信息
 void viewAdminsByContactInfo(Admin *&admin)
@@ -278,29 +326,29 @@ void viewAdminsByContactInfo(Admin *&admin)
         return; // 返回上一级菜单
     }
 
+    std::vector<std::string> lines;
     if (contactChoice == 1)
     {
         std::string telephone = inputTelephoneCheck("请输入管理员的电话号码: ");
         Admin *current = admin;
         bool found = false;
-        std::cout << "正在查找电话号码为 " << telephone << " 的管理员信息..." << std::endl;
+        lines.push_back("正在查找电话号码为 " + telephone + " 的管理员信息...");
         while (current != nullptr)
         {
             if (current->getTelephone() == telephone)
             {
-                std::cout << "用户ID: " << current->getUserID() << ", 姓名: " << current->getUsername()
-                          << ", 性别: " << current->getGender() << ", 年龄: " << current->getAge()
-                          << ", 电话: " << current->getTelephone() << ", 邮箱: " << current->getEmail()
-                          << ", 账户状态: " << (current->getIsAccountActive() ? "激活" : "锁定")
-                          << ", 创建时间: " << current->getCreateTime()
-                          << std::endl;
+                lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
+                          + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
+                          + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
+                          + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
+                          + ", 创建时间: " + current->getCreateTime());
                 found = true;
             }
             current = current->next;
         }
         if (!found)
         {
-            std::cout << "未找到电话号码为 " << telephone << " 的管理员信息！" << std::endl;
+            printError("未找到电话号码为 " + telephone + " 的管理员信息！");
         }
     }
     else if (contactChoice == 2)
@@ -308,26 +356,26 @@ void viewAdminsByContactInfo(Admin *&admin)
         std::string email = inputEmailCheck("请输入管理员电子邮箱: ");
         Admin *current = admin;
         bool found = false;
-        std::cout << "正在查找电子邮箱为 " << email << " 的管理员信息..." << std::endl;
+        lines.push_back("正在查找电子邮箱为 " + email + " 的管理员信息...");
         while (current != nullptr)
         {
             if (current->getEmail() == email)
             {
-                std::cout << "用户ID: " << current->getUserID() << ", 姓名: " << current->getUsername()
-                          << ", 性别: " << current->getGender() << ", 年龄: " << current->getAge()
-                          << ", 电话: " << current->getTelephone() << ", 邮箱: " << current->getEmail()
-                          << ", 账户状态: " << (current->getIsAccountActive() ? "激活" : "锁定")
-                          << ", 创建时间: " << current->getCreateTime()
-                          << std::endl;
+                lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
+                          + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
+                          + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
+                          + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
+                          + ", 创建时间: " + current->getCreateTime());
                 found = true;
             }
             current = current->next;
         }
         if (!found)
         {
-            std::cout << "未找到电子邮箱为 " << email << " 的管理员信息！" << std::endl;
+            printError("未找到电子邮箱为 " + email + " 的管理员信息！");
         }
     }
+    printWithPagination(lines, 10);
 }
 // 修改管理员名字
 void modifyAdminName(Admin *&admin)
@@ -342,7 +390,7 @@ void modifyAdminName(Admin *&admin)
             std::cout << "现在的管理员姓名是: " << current->getUsername() << std::endl;
             std::string newName = inputStringCheck("请输入新的管理员姓名: ");
             current->setUsername(newName);
-            std::cout << "管理员姓名已更新！" << std::endl;
+            printSuccess("管理员姓名已更新！");
             found = true;
             break;
         }
@@ -350,7 +398,7 @@ void modifyAdminName(Admin *&admin)
     }
     if (!found)
     {
-        std::cout << "未找到用户ID为 " << targetID << " 的管理员！" << std::endl;
+        printError("未找到用户ID为 " + targetID + " 的管理员！");
     }
 }
 // 修改管理员性别
@@ -366,7 +414,7 @@ void modifyAdminGender(Admin *&admin)
             std::cout << "现在的管理员性别是: " << current->getGender() << std::endl;
             std::string newGender = inputGenderCheck("请输入新的管理员性别");
             current->setGender(newGender);
-            std::cout << "管理员性别已更新！" << std::endl;
+            printSuccess("管理员性别已更新！");
             found = true;
             break;
         }
@@ -374,7 +422,7 @@ void modifyAdminGender(Admin *&admin)
     }
     if (!found)
     {
-        std::cout << "未找到用户ID为 " << targetID << " 的管理员！" << std::endl;
+        printError("未找到用户ID为 " + targetID + " 的管理员！");
     }
 }
 // 修改管理员年龄
@@ -390,7 +438,7 @@ void modifyAdminAge(Admin *&admin)
             std::cout << "现在的管理员年龄是: " << current->getAge() << std::endl;
             int newAge = inputAgeCheck("请输入新的管理员年龄: ");
             current->setAge(newAge);
-            std::cout << "管理员年龄已更新！" << std::endl;
+            printSuccess("管理员年龄已更新！");
             found = true;
             break;
         }
@@ -398,7 +446,7 @@ void modifyAdminAge(Admin *&admin)
     }
     if (!found)
     {
-        std::cout << "未找到用户ID为 " << targetID << " 的管理员！" << std::endl;
+        printError("未找到用户ID为 " + targetID + " 的管理员！");
     }
 }
 // 修改管理员电话号码
@@ -414,7 +462,7 @@ void modifyAdminTelephone(Admin *&admin)
             std::cout << "现在的管理员电话号码是: " << current->getTelephone() << std::endl;
             std::string newTelephone = inputTelephoneCheck("请输入新的管理员电话号码");
             current->setTelephone(newTelephone);
-            std::cout << "管理员电话号码已更新！" << std::endl;
+            printSuccess("管理员电话号码已更新！");
             found = true;
             break;
         }
@@ -422,7 +470,7 @@ void modifyAdminTelephone(Admin *&admin)
     }
     if (!found)
     {
-        std::cout << "未找到用户ID为 " << targetID << " 的管理员！" << std::endl;
+        printError("未找到用户ID为 " + targetID + " 的管理员！");
     }
 }
 // 修改管理员电子邮箱
@@ -438,7 +486,7 @@ void modifyAdminEmail(Admin *&admin)
             std::cout << "现在的管理员电子邮箱是: " << current->getEmail() << std::endl;
             std::string newEmail = inputEmailCheck("请输入新的管理员电子邮箱");
             current->setEmail(newEmail);
-            std::cout << "管理员电子邮箱已更新！" << std::endl;
+            printSuccess("管理员电子邮箱已更新！");
             found = true;
             break;
         }
@@ -446,7 +494,7 @@ void modifyAdminEmail(Admin *&admin)
     }
     if (!found)
     {
-        std::cout << "未找到用户ID为 " << targetID << " 的管理员！" << std::endl;
+        printError("未找到用户ID为 " + targetID + " 的管理员！");
     }
 }
 // 删除管理员(逻辑删除)
@@ -460,7 +508,7 @@ void deleteAdmin(Admin *&admin)
         if (current->getUserID() == targetID)
         {
             current->setIsDeleted(true);
-            std::cout << "管理员账号已删除！" << std::endl;
+            printSuccess("管理员账号已删除！");
             found = true;
             break;
         }
@@ -468,7 +516,7 @@ void deleteAdmin(Admin *&admin)
     }
     if (!found)
     {
-        std::cout << "未找到用户ID为 " << targetID << " 的管理员！" << std::endl;
+        printError("未找到用户ID为 " + targetID + " 的管理员！");
     }
 }
 // 添加管理员(通过注册流程创建新管理员账号，并插入到管理员链表中)
@@ -479,12 +527,12 @@ void addAdmin(Admin *&admin, int &idCounter)
     {
         newAdmin->next = admin; // 将新管理员插入到链表头部
         admin = newAdmin;
-        std::cout << "新管理员账号已添加！" << std::endl;
+        printSuccess("新管理员账号已添加！");
     }
     else
     {
         delete newAdmin; // 注册失败或账户未激活，释放内存
-        std::cout << "管理员账号添加失败！" << std::endl;
+        printError("管理员账号添加失败！");
     }
 }
 

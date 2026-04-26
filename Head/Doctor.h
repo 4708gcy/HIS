@@ -13,6 +13,7 @@
 
 #include "User.h"
 #include "Patient.h"
+#include "UI.h"
 
 /**
  * @brief 医生类

@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cmake --build . --config Debug)"
+      "Bash(cmake --build . --config Debug)",
+      "Bash(xxd)",
+      "Bash(python fix_quotes.py)",
+      "Bash(python -c ' *)"
     ]
   }
 }

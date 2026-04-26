@@ -3,6 +3,7 @@
 #include "Head/LoadData.h"
 #include "Head/SaveData.h"
 #include "Head/Login.h"
+#include <mutex>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -75,6 +76,7 @@ int main()
                     Admin *client = adminLogin(adminHead);
                     if (client)
                     {
+                        LogManager::getInstance().logOperation(client->getUserID(), "管理员", "登录", "管理员登录成功");
                         while (true) // 管理员功能菜单循环，直到用户选择退出
                         {
                             int adminChoice = adminMenu();
@@ -530,6 +532,7 @@ int main()
                     Doctor *client = doctorLogin(docHead);
                     if (client)
                     {
+                        LogManager::getInstance().logOperation(client->getUserID(), "医生", "登录", "医生登录成功");
                         while (true)
                         {
                             int doctorChoice = doctorMenu();
@@ -562,6 +565,7 @@ int main()
                     Nurse *client = nurseLogin(nurseHead);
                     if (client)
                     {
+                        LogManager::getInstance().logOperation(client->getUserID(), "护士", "登录", "护士登录成功");
                         while (true)
                         {
                             int nurseChoice = nurseMenu();
@@ -594,6 +598,7 @@ int main()
                     Pharmacist *client = pharmacistLogin(phaHead);
                     if (client)
                     {
+                        LogManager::getInstance().logOperation(client->getUserID(), "药剂师", "登录", "药剂师登录成功");
                         while (true)
                         {
                             int pharmacistChoice = pharmacistMenu();
@@ -615,12 +620,14 @@ int main()
                             }
                         }
                     }
+                    pause("药剂师 > 退出登录");
                 }
                 else if (roleChoice == 5) // 患者登录
                 {
                     Patient *client = patientLogin(patientHead);
                     if (client)
                     {
+                        LogManager::getInstance().logOperation(client->getUserID(), "患者", "登录", "患者登录成功");
                         while (true)
                         {
                             int patientChoice = patientMenu();
@@ -676,7 +683,8 @@ int main()
                 {
                     newAdmin->next = adminHead;
                     adminHead = newAdmin;
-                    std::cout << "管理员注册成功" << std::endl;
+                    printSuccess("管理员注册成功");
+                    LogManager::getInstance().logOperation(newAdmin->getUserID(), "管理员", "注册", "新管理员账号注册成功");
                 }
                 else
                 {
@@ -695,7 +703,8 @@ int main()
                         docHead->prev = newDoctor;
                     }
                     docHead = newDoctor;
-                    std::cout << "医生注册成功！" << std::endl;
+                    printSuccess("医生注册成功！");
+                    LogManager::getInstance().logOperation(newDoctor->getUserID(), "医生", "注册", "新医生账号注册成功");
                 }
                 else
                 {
@@ -714,7 +723,8 @@ int main()
                         nurseHead->prev = newNurse;
                     }
                     nurseHead = newNurse;
-                    std::cout << "护士注册成功！" << std::endl;
+                    printSuccess("护士注册成功！");
+                    LogManager::getInstance().logOperation(newNurse->getUserID(), "护士", "注册", "新护士账号注册成功");
                 }
                 else
                 {
@@ -733,7 +743,8 @@ int main()
                         phaHead->prev = newPharmacist;
                     }
                     phaHead = newPharmacist;
-                    std::cout << "药剂师注册成功！" << std::endl;
+                    printSuccess("药剂师注册成功！");
+                    LogManager::getInstance().logOperation(newPharmacist->getUserID(), "药剂师", "注册", "新药剂师账号注册成功");
                 }
                 else
                 {
@@ -752,7 +763,8 @@ int main()
                         patientHead->prev = newPatient;
                     }
                     patientHead = newPatient;
-                    std::cout << "患者注册成功！" << std::endl;
+                    printSuccess("患者注册成功！");
+                    LogManager::getInstance().logOperation(newPatient->getUserID(), "患者", "注册", "新患者账号注册成功");
                 }
                 else
                 {
@@ -782,4 +794,20 @@ int main()
     saveMedicationRecords(medRecHead, medicationRecordCount); // 保存用药记录数据
     saveMedicines(medHead, medicineCount);                    // 保存药品信息数据
     saveBedInfos(bedHead, bedCount);                          // 保存床位信息数据
+
+    LogManager::getInstance().info("系统退出，所有数据已保存");
+
+    // 清理所有链表内存
+    while (adminHead) { Admin *n = adminHead->next; delete adminHead; adminHead = n; }
+    while (docHead) { Doctor *n = docHead->next; delete docHead; docHead = n; }
+    while (nurseHead) { Nurse *n = nurseHead->next; delete nurseHead; nurseHead = n; }
+    while (phaHead) { Pharmacist *n = phaHead->next; delete phaHead; phaHead = n; }
+    while (patientHead) { Patient *n = patientHead->next; delete patientHead; patientHead = n; }
+    while (regHead) { Registration *n = regHead->next; delete regHead; regHead = n; }
+    while (conHead) { Consultation *n = conHead->next; delete conHead; conHead = n; }
+    while (examHead) { Examination *n = examHead->next; delete examHead; examHead = n; }
+    while (hosHead) { Hospitalization *n = hosHead->next; delete hosHead; hosHead = n; }
+    while (medRecHead) { MedicationRecord *n = medRecHead->next; delete medRecHead; medRecHead = n; }
+    while (medHead) { Medicine *n = medHead->next; delete medHead; medHead = n; }
+    while (bedHead) { bedInfo *n = bedHead->next; delete bedHead; bedHead = n; }
 }

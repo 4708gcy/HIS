@@ -538,6 +538,7 @@
 对项目进行了全面的代码审核，发现并修复了 35+ 个 Bug，覆盖管理员、医生、护士、药剂师、患者以及登录注册系统：
 
 **严重级别（Critical）：**
+
 - 修复 `Login.cpp` 中 `viewAdminsByGender` 函数的无限循环 Bug：缺少 `current = current->next;` 导致遍历时陷入死循环
 - 修复 `Login.cpp` 中 `pharmacistLogin` 函数硬编码绕过问题：`if (id == "0") return nullptr;` 导致 ID 为 "0" 的药剂师无法登录
 - 修复 `SHA-256.cpp` 中的时序攻击漏洞：使用标准 `std::string` 比较密码 hash，攻击者可通过响应时间推断密码正确性，改为使用 volatile XOR 逐字节比较的时序安全比较函数
@@ -545,6 +546,7 @@
 - 修复所有角色（Admin/Doctor/Nurse/Pharmacist/Patient）的登录成功后未重置 `loginAttempts` 计数器的问题，导致登录失败次数累计异常
 
 **高级别（High）：**
+
 - 修复 `Admin.cpp` 中约 50 个 modify 函数调用：错误地传递了链表头指针而非目标指针，导致修改操作作用于错误对象
 - 修复 `Admin.cpp` 中 `modifyMedicationRecordReviewStatus`：错误使用 `target->status` 而非 `target->reviewStatus`
 - 修复 `Admin.cpp` 中 `deletePharmacist` 和 `deletePatient`：传递头指针而非目标指针，导致删除了错误的记录
@@ -560,6 +562,7 @@
 - 修复 `Doctor.cpp` 中 3 处 ID 生成的未定义行为
 
 **中等级别（Medium）：**
+
 - 修复 `Nurse.cpp` 中 ID 生成的未定义行为
 - 修复 `Pharmacist.cpp` 中 `getMedicinesByStatus` 的变量遮蔽问题：内部变量覆盖外部变量导致状态过滤失效
 - 修复 `Pharmacist.cpp` 中 `setMedicationRecordReviewStatus`：缺少 `!con->isDeleted` 检查，可能操作已删除记录
@@ -570,12 +573,14 @@
 - 修复 `Admin.cpp` 和 `main.cpp` 中的拼写错误：`AdminPersionalInfo` 改为 `AdminPersonalInfo`
 
 **低级别（Low）：**
+
 - 修复 `Login.cpp` 中 `deleteAdmin`：从物理删除改为逻辑删除（设置 `setIsDeleted`），保持与其他删除操作的一致性
 - 修正所有角色密码修改流程中的密码确认逻辑
 
 ### 2. 终端交互体验优化
 
 **控制台颜色系统（`UI.h` / `UI.cpp`）：**
+
 - 新增 `ConsoleColor` 枚举（RED, GREEN, YELLOW, CYAN, WHITE, DEFAULT）
 - 实现 `setConsoleColor()` / `resetConsoleColor()`：支持 Windows API (`SetConsoleTextAttribute`) 和 ANSI 转义序列双模式，确保跨平台兼容
 - 实现 4 个快捷打印函数：
@@ -586,14 +591,17 @@
 - 为 `printMenuBorder()` 和 `printMenuTitle()` 添加颜色增强
 
 **分页显示功能（`UI.h` / `UI.cpp`）：**
+
 - 实现 `printWithPagination()`：分页打印长列表，支持上一页/下一页/跳转到指定页/退出等导航操作
 - 使用 `(std::min)` 避免 Windows `min` 宏冲突
 
 **面包屑导航（`UI.h` / `UI.cpp`）：**
+
 - 增强 `pause()` 函数：支持 `breadcrumb` 参数，在暂停提示中显示当前导航路径
 - 管理员密码修改流程优化：改进密码确认步骤，先比较密码再执行修改
 
 **隐藏密码输入（`UI.h` / `UI.cpp`）：**
+
 - 实现 `inputHiddenPwdCheck()`：使用 Windows `ReadFile` API 实现终端密码隐藏输入（不回显），用于登录场景
 - 注册时仍使用普通密码输入（用户需要确认注册的密码内容）
 
@@ -616,7 +624,8 @@
 
 > 以下是前后端打通的详细实施步骤，供后续开发参考：
 
-**第一阶段：后端 API 化（C++ REST 服务器）**
+#### 第一阶段：后端 API 化（C++ REST 服务器
+
 1. 引入 REST 框架（推荐 cpp-httplib 或 Drogon），将现有的控制台交互逻辑与业务逻辑解耦
 2. 为每个角色（Admin/Doctor/Nurse/Pharmacist/Patient）的所有操作编写对应的 RESTful API 端点，例如：
    - `POST /api/auth/login` — 登录
@@ -629,7 +638,8 @@
 4. 引入 JWT (JSON Web Token) 进行身份认证和会话管理，替代当前的控制台交互式登录
 5. 保持现有的数据持久化层不变（CSV 文件），但可考虑迁移到 SQLite 或 MySQL 以支持并发访问
 
-**第二阶段：前端开发（Web 界面）**
+#### 第二阶段：前端开发（Web 界面）
+
 1. 技术栈推荐：Vue 3 + Element Plus（中文生态好，适合医疗管理系统）或 React + Ant Design
 2. 前端项目结构：
    - `src/views/` — 各角色页面（AdminDashboard, DoctorWorkspace, NurseWorkspace, PharmacistWorkspace, PatientPortal）
@@ -645,7 +655,122 @@
    - 颜色提示 → Element Plus `el-alert` / `el-message`
    - 操作日志 → 前端操作记录页面 + 后端日志 API
 
-**第三阶段：前后端联调与部署**
+#### 第三阶段：前后端联调与部署
+
+1. 前端开发阶段使用 Mock 数据（Mock.js），并行开发不阻塞
+2. 后端 API 完成后，前端切换到真实 API 联调
+3. CORS 配置：后端设置允许的跨域来源，或前后端使用同一域名（Nginx 反向代理）
+4. 部署方案：
+   - 后端：C++ 可执行文件作为独立服务运行（守护进程 / systemd / PM2）
+   - 前端：`npm run build` 生成静态文件，由 Nginx 托管
+   - 数据库（可选）：从 CSV 迁移到 SQLite/MySQL，修改后端数据访问层
+5. 安全加固：HTTPS、输入校验、SQL 注入防护、XSS 防护、CSRF Token
+
+**具体落地第一步建议：**
+先选一个最小功能模块做验证，例如 "登录 + 管理员查看挂号记录"，搭建完整的 API → 前端调用 → 数据返回流程，验证架构可行性后再逐步迁移其余功能。
+
+---
+
+## 2026.4.26
+
+### 1. 4.25 功能全面接入
+
+**彩色打印函数接入（5 个业务文件 + main.cpp）：**
+
+- 将 Admin.cpp、Doctor.cpp、Nurse.cpp、Pharmacist.cpp、Patient.cpp、Login.cpp 中所有裸 `std::cout` 成功/错误/警告消息替换为 `printSuccess()`（绿色）、`printError()`（红色）、`printWarning()`（黄色）
+- 共计替换 250+ 处消息
+
+**操作日志系统接入：**
+
+- 在所有角色（Admin/Doctor/Nurse/Pharmacist/Patient）登录成功时添加 `LogManager::logOperation()` 记录
+- 在所有角色注册成功时添加日志记录
+- 在 `main.cpp` 系统退出时添加 `LogManager::info("系统退出，所有数据已保存")`
+- 日志实时写入 `Data/OperationLog/his_YYYY_MM_DD.log`
+
+**面包屑导航接入：**
+
+- 为 300+ 处 `pause()` 调用添加了面包屑路径参数，例如 `"管理员 > 医疗记录管理 > 挂号记录管理"`、`"医生 > 看诊管理"`、`"护士 > 床位管理"` 等
+- 覆盖所有角色的全部业务操作模块
+
+**分页显示接入：**
+
+- 在 `Login.cpp` 的 `viewAllAdmins`、`viewAdminsByName`、`viewAdminsByGender`、`viewAdminsByAgeGroup`、`viewAdminsByContactInfo` 函数中，将直接打印改为收集到 `vector<string>` 后用 `printWithPagination()` 分页打印
+- 超过 10 条记录时自动分页，支持上一页/下一页/跳转/退出等导航操作
+
+---
+
+### 2. 关键 Bug 修复（6 项）
+
+**严重级别（Critical）：**
+
+- 修复 `Admin.cpp` 中 `addHospitalization` 函数的 `bedFound = true;` 死代码 Bug：该语句位于 `break;` 之后，永远不会执行，导致床位分配始终报告失败，无法正常添加住院记录
+- 修复 `Admin.cpp` 中 `viewConsultationByID` 函数的无限循环 Bug：while 循环缺少 `current = current->next;` 推进语句，当目标 ID 不在链表头部时会陷入死循环
+- 修复 `Admin.cpp` 中用药记录管理模块的 11 处 "审核状态" 显示错误：将 `statusStr`（缴费/发药状态）改为 `reviewStatusStr`（审核状态），涉及 `viewAllMedicationRecords`、`viewMedicationRecordsByPatient`、`viewMedicationRecordsByDoctor` 等多个查看和修改函数
+- 修复 `Pharmacist.cpp` 中 `printMedicationRecord` 函数的同一问题：`reviewStatusStr` 变量已声明但未使用，实际输出的是 `statusStr`（缴费状态）
+- 修复 `Login.cpp` 中全部 5 个登录函数（admin/doctor/nurse/pharmacist/patient）不检查 `isDeleted` 标志的问题：已逻辑删除的账户仍可正常登录，改为在查找循环中添加 `!isDeleted` 条件过滤
+- 修复 `Patient.cpp` 中 `applyForDischarge` 函数的日期计算公式错误：原来使用 `月 * 30 + 日` 的粗略算法（如 1月31日 到 2月28日 会算成 27 天而非 28 天），改用 `std::mktime` + `std::difftime` 进行精确的日历日期差计算
+
+**高级别（High）：**
+
+- 修复 `main.cpp` 中药剂师退出后缺少 `pause()` 的问题：所有角色退出后都有暂停提示，唯独药剂师缺失，导致用户看不到退出信息
+- 修复 `Login.cpp` 中全部 5 个登录函数缺少密码重试机制的问题：原逻辑密码错误一次就返回角色选择菜单，用户需重新导航，改为 3 次重试循环，每次提示剩余机会次数
+- 修复 `LoadData.cpp` 中 `loadBedInfos` 函数的 `std::stoi` 缺少 try-catch 保护的问题：与其他所有 load 函数不一致，损坏的 count 行会导致未捕获异常崩溃
+- 修复 `Admin.cpp` 中 `viewPatientsByContactInfo` 函数的邮箱搜索 `found` 变量遮蔽问题：内部重新声明了 `bool found` 导致外部变量始终为 false，即使找到匹配也会报告"未找到"
+- 修复 `Admin.cpp` 中 4 处看诊记录详情显示循环（`viewAllConsultations`、`viewConsultationsByDoctor`、`viewConsultationsByPatient`、`viewConsultationByRegistrationID`）中的 `current->` 误用 Bug：在 `for (Consultation *c : temp)` 循环中引用了已变为 nullptr 的 `current` 指针而非循环变量 `c`，属于未定义行为
+
+**中等级别（Medium）：**
+
+- 修复 `UI.cpp` 中 `LogManager::writeLog` 函数的线程安全问题：已 include `<mutex>` 但未实际使用，添加 `std::lock_guard<std::mutex>` 保护日志写入
+- 修复 `Doctor.cpp` 中处方数量上限 `INT_MAX` 的问题：理论上用户可输入 21 亿颗药，改为合理的上限 10000
+- 修复 `Patient.cpp` 中多处 C 风格 `(int)` 枚举转换：统一改为 `static_cast<int>()` 提升类型安全性
+- 在 `main.cpp` 系统退出流程中添加了 12 条链表（Admin/Doctor/Nurse/Pharmacist/Patient/Registration/Consultation/Examination/Hospitalization/MedicationRecord/Medicine/bedInfo）的完整内存清理逻辑，消除程序退出时的内存泄漏
+
+---
+
+### 3. 终端交互体验优化
+
+- 为 `pause()` 函数全面接入面包屑导航参数，用户在任意深层菜单操作后都能看到完整的导航路径提示（如 "管理员 > 医疗记录管理 > 看诊记录管理"）
+- 为长列表查看功能接入分页显示，管理员查看用户列表时超过 10 条记录自动分页
+
+---
+
+### 4. 前端后端分离架构落地方案（待实施）
+
+> 以下是前后端打通的详细实施步骤，供后续开发参考：
+
+#### 第一阶段 : 后端 API 化(C++ REST 服务器)
+
+1. 引入 REST 框架（推荐 cpp-httplib 或 Drogon），将现有的控制台交互逻辑与业务逻辑解耦
+2. 为每个角色（Admin/Doctor/Nurse/Pharmacist/Patient）的所有操作编写对应的 RESTful API 端点，例如：
+   - `POST /api/auth/login` — 登录
+   - `POST /api/auth/register` — 注册
+   - `GET /api/admin/registrations` — 管理员查看挂号记录
+   - `PUT /api/admin/registrations/{id}/status` — 修改挂号状态
+   - `POST /api/doctor/consultations` — 创建看诊记录
+   - `GET /api/patient/records` — 患者查看个人记录
+3. 设计统一的 JSON 响应格式：`{ "code": 200, "message": "success", "data": {} }`
+4. 引入 JWT (JSON Web Token) 进行身份认证和会话管理，替代当前的控制台交互式登录
+5. 保持现有的数据持久化层不变（CSV 文件），但可考虑迁移到 SQLite 或 MySQL 以支持并发访问
+
+#### 第二阶段 : 前端开发(Web 界面)
+
+1. 技术栈推荐：Vue 3 + Element Plus（中文生态好，适合医疗管理系统）或 React + Ant Design
+2. 前端项目结构：
+   - `src/views/` — 各角色页面（AdminDashboard, DoctorWorkspace, NurseWorkspace, PharmacistWorkspace, PatientPortal）
+   - `src/api/` — 封装所有后端 API 调用（axios 实例 + 拦截器）
+   - `src/store/` — Pinia 状态管理（用户信息、菜单权限、全局数据）
+   - `src/components/` — 复用组件（表格分页组件、表单组件、搜索过滤组件）
+   - `src/router/` — Vue Router 路由配置（按角色分流）
+3. 关键功能映射：
+   - 控制台菜单 → 侧边栏导航 + 路由
+   - 控制台输入 → HTML 表单 + 校验规则
+   - `printWithPagination` → 前端表格分页组件（Element Plus `el-pagination`）
+   - 面包屑导航 → Element Plus `el-breadcrumb`
+   - 颜色提示 → Element Plus `el-alert` / `el-message`
+   - 操作日志 → 前端操作记录页面 + 后端日志 API
+
+#### 第三阶段 : 前后端联调与部署
+
 1. 前端开发阶段使用 Mock 数据（Mock.js），并行开发不阻塞
 2. 后端 API 完成后，前端切换到真实 API 联调
 3. CORS 配置：后端设置允许的跨域来源，或前后端使用同一域名（Nginx 反向代理）

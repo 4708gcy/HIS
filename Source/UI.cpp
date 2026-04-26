@@ -165,6 +165,7 @@ LogManager &LogManager::getInstance()
 
 void LogManager::writeLog(const std::string &level, const std::string &msg)
 {
+    std::lock_guard<std::mutex> lock(logMutex);
     std::ofstream logFile(logFilePath, std::ios::app);
     if (logFile.is_open())
     {

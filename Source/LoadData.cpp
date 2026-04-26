@@ -1136,7 +1136,14 @@ bedInfo *loadBedInfos(int &count)
     {
         if (line.rfind("count:", 0) == 0)
         {
-            count = std::stoi(line.substr(6));
+            try
+            {
+                count = std::stoi(line.substr(6));
+            }
+            catch (...)
+            {
+                count = 0;
+            }
             break;
         }
         if (line.empty())

@@ -8,6 +8,7 @@
  */
 
 #include "../Head/Patient.h"
+#include <ctime>
 #include "../Head/Doctor.h"
 #include "../Head/UI.h"
 #include "../Head/GetTime.h"
@@ -20,7 +21,6 @@ Patient::Patient()
 
 Patient::~Patient()
 {
-    // 析构函数实现（如有需要）
 }
 
 bool Patient::patientSignUp(int &idCounter)
@@ -28,7 +28,7 @@ bool Patient::patientSignUp(int &idCounter)
     bool success = signUp(5, idCounter); // 调用基类的注册方法，传入角色类型 5（患者）
     if (!success)
     {
-        std::cout << "患者注册失败！" << std::endl;
+        printError("患者注册失败！");
         return false;
     }
     this->patientID = this->userID; // 患者ID与用户ID保持一致
@@ -49,7 +49,7 @@ bool Patient::patientSignUp(int &idCounter)
     int maritalChoice = selectIntCheck(1, 4);
     this->maritalStatus = static_cast<MaritalStatus>(maritalChoice);
 
-    std::cout << "患者注册成功! 您的用户ID是: " << this->userID << std::endl;
+    printSuccess("患者注册成功! 您的用户ID是: " + this->userID);
     return true;
 }
 
@@ -57,7 +57,7 @@ bool Patient::patientSignIn()
 {
     if (isAccountActive == false)
     {
-        std::cout << "账户已锁定，请联系系统管理员解锁！" << std::endl;
+        printError("账户已锁定，请联系系统管理员解锁！");
         return false;
     }
 
@@ -67,7 +67,7 @@ bool Patient::patientSignIn()
 
         if (pwd == "quit")
         {
-            std::cout << "退出登录。" << std::endl;
+            printError("退出登录。");
             return false;
         }
 
@@ -77,7 +77,7 @@ bool Patient::patientSignIn()
         {
             loginAttempts = 0;
             isLoggedIn = true;
-            std::cout << "患者登录成功！" << std::endl;
+            printSuccess("患者登录成功！");
             return true;
         }
         else
@@ -88,7 +88,7 @@ bool Patient::patientSignIn()
             if (loginAttempts >= kMaxLoginAttempts)
             {
                 isAccountActive = false;
-                std::cout << "连续登录失败次数过多，账户已锁定，请联系系统管理员解锁！" << std::endl;
+                printError("连续登录失败次数过多，账户已锁定，请联系系统管理员解锁！");
             }
         }
     }
@@ -220,7 +220,7 @@ bool Patient::getAllRegistrations(Registration *&regHead)
 
     if (!found)
     {
-        std::cout << "没有找到任何挂号记录。" << std::endl;
+        printError("没有找到任何挂号记录。");
     }
     return found;
 }
@@ -262,7 +262,7 @@ bool Patient::getRegistrationsByStatus(Registration *&regHead, int select)
 
     if (!found)
     {
-        std::cout << "没有找到状态为 " << regStatusToString(targetStatus) << " 的挂号记录。" << std::endl;
+        printError("没有找到状态为 " + std::string(regStatusToString(targetStatus)) + " 的挂号记录。");
     }
     return found;
 }
@@ -292,7 +292,7 @@ bool Patient::getRegistrationsByDepartment(Registration *&regHead)
 
     if (!found)
     {
-        std::cout << "没有找到科室为 " << targetDept << " 的挂号记录。" << std::endl;
+        printError("没有找到科室为 " + targetDept + " 的挂号记录。");
     }
     return found;
 }
@@ -323,7 +323,7 @@ bool Patient::getRegistrationsByDoctorID(Registration *&regHead)
 
     if (!found)
     {
-        std::cout << "没有找到医生ID为 " << docID << " 的挂号记录。" << std::endl;
+        printError("没有找到医生ID为 " + docID + " 的挂号记录。");
     }
     return found;
 }
@@ -356,7 +356,7 @@ bool Patient::getRegistrationsByTimeRange(Registration *&regHead)
 
     if (!found)
     {
-        std::cout << "没有找到指定时间范围内的挂号记录。" << std::endl;
+        printError("没有找到指定时间范围内的挂号记录。");
     }
     return found;
 }
@@ -387,7 +387,7 @@ bool Patient::getRegistrationsByID(Registration *&regHead)
 
     if (!found)
     {
-        std::cout << "没找到挂号ID为 " << regID << " 的挂号记录。" << std::endl;
+        printError("没找到挂号ID为 " + regID + " 的挂号记录。");
     }
     return found;
 }
@@ -412,7 +412,7 @@ bool Patient::appointRegistration(Registration *&regHead, Doctor *&doctorHead, i
     }
     if (!hasDoctor)
     {
-        std::cout << "该科室暂时没有可预约的医生！" << std::endl;
+        printError("该科室暂时没有可预约的医生！");
         return false;
     }
 
@@ -430,7 +430,7 @@ bool Patient::appointRegistration(Registration *&regHead, Doctor *&doctorHead, i
     }
     if (!docFound)
     {
-        std::cout << "医生ID不存在或不属于该科室！" << std::endl;
+        printError("医生ID不存在或不属于该科室！");
         return false;
     }
 
@@ -458,19 +458,19 @@ bool Patient::appointRegistration(Registration *&regHead, Doctor *&doctorHead, i
 
     this->registrationCount++;
 
-    std::cout << "预约挂号成功！挂号记录ID为: " << newReg->registrationID << std::endl;
+    printSuccess("预约挂号成功！挂号记录ID为: " + std::string(newReg->registrationID));
     return true;
 }
 void Patient::cancelRegistration(Registration *&target)
 {
     if (target->status == RegistrationStatus::FINISHED || target->status == RegistrationStatus::CANCELED)
     {
-        std::cout << "该挂号记录已经完成或取消，无法撤回申请！" << std::endl;
+        printError("该挂号记录已经完成或取消，无法撤回申请！");
         return;
     }
     else if (target->status == RegistrationStatus::PAID)
     {
-        std::cout << "该挂号记录已经支付，无法撤回申请！" << std::endl;
+        printError("该挂号记录已经支付，无法撤回申请！");
         return;
     }
 
@@ -482,31 +482,31 @@ void Patient::cancelRegistration(Registration *&target)
     if (c == 1)
     {
         target->status = RegistrationStatus::CANCELED;
-        std::cout << "您已成功撤回该挂号申请。" << std::endl;
+        printSuccess("您已成功撤回该挂号申请。");
     }
 }
 void Patient::payRegistrationFee(Registration *&target)
 {
     if (target->status == RegistrationStatus::PAID)
     {
-        std::cout << "您已经支付过费用了，无需再次支付。" << std::endl;
+        printWarning("您已经支付过费用了，无需再次支付。");
         return;
     }
     else if (target->status == RegistrationStatus::CANCELED)
     {
-        std::cout << "此记录已取消，无法支付。" << std::endl;
+        printError("此记录已取消，无法支付。");
         return;
     }
     else if (target->status == RegistrationStatus::FINISHED)
     {
-        std::cout << "此记录已经完成并支付过了。" << std::endl;
+        printWarning("此记录已经完成并支付过了。");
         return;
     }
 
     std::cout << "需支付的费用为 " << target->fee << " 元。您当前账户余额为 " << this->balance << " 元。" << std::endl;
     if (this->balance < target->fee)
     {
-        std::cout << "余额不足，无法支付挂号费用！请先进行充值。" << std::endl;
+        printError("余额不足，无法支付挂号费用！请先进行充值。");
         return;
     }
 
@@ -519,7 +519,7 @@ void Patient::payRegistrationFee(Registration *&target)
     {
         this->balance -= target->fee;
         target->status = RegistrationStatus::PAID;
-        std::cout << "支付成功！当前账户余额: " << this->balance << " 元。" << std::endl;
+        printSuccess("支付成功！当前账户余额: " + std::to_string(this->balance) + " 元。");
     }
 }
 
@@ -609,7 +609,7 @@ void Patient::manageRegistrations(Registration *&regHead, Doctor *&doctorHead, i
                 }
                 else
                 {
-                    std::cout << "没有找到属于您的挂号ID为 " << regID << " 的挂号记录。" << std::endl;
+                    printError("没有找到属于您的挂号ID为 " + regID + " 的挂号记录。");
                 }
                 break;
             }
@@ -653,13 +653,12 @@ void Patient::manageRegistrations(Registration *&regHead, Doctor *&doctorHead, i
                     }
                     else
                     {
-                        std::cout << "已取消支付操作。" << std::endl;
+                        printWarning("已取消支付操作。");
                     }
                 }
                 else
                 {
-
-                    std::cout << "没有找到属于您的挂号ID为 " << regID << " 的挂号记录。" << std::endl;
+                    printError("没有找到属于您的挂号ID为 " + regID + " 的挂号记录。");
                 }
             }
 
@@ -727,7 +726,7 @@ bool Patient::getAllConsultations(Consultation *&conHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没有找到任何看诊记录。" << std::endl;
+        printError("没有找到任何看诊记录。");
     return found;
 }
 bool Patient::getConsultationsByID(Consultation *&conHead)
@@ -784,7 +783,7 @@ bool Patient::getConsultationsByID(Consultation *&conHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到看诊ID为 " << conID << " 的看诊记录。" << std::endl;
+        printError("没找到看诊ID为 " + conID + " 的看诊记录。");
     return found;
 }
 bool Patient::getConsultationsByDoctorID(Consultation *&conHead)
@@ -841,7 +840,7 @@ bool Patient::getConsultationsByDoctorID(Consultation *&conHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到医生ID为 " << docID << " 的看诊记录。" << std::endl;
+        printError("没找到医生ID为 " + docID + " 的看诊记录。");
     return found;
 }
 bool Patient::getConsultationsByStatus(Consultation *&conHead)
@@ -900,7 +899,7 @@ bool Patient::getConsultationsByStatus(Consultation *&conHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到对应状态的看诊记录。" << std::endl;
+        printError("没找到对应状态的看诊记录。");
     return found;
 }
 bool Patient::getConsultationsByTimeRange(Consultation *&conHead)
@@ -959,7 +958,7 @@ bool Patient::getConsultationsByTimeRange(Consultation *&conHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到指定时间范围的看诊记录。" << std::endl;
+        printError("没找到指定时间范围的看诊记录。");
     return found;
 }
 bool Patient::getConsultationsByChiefComplaint(Consultation *&conHead)
@@ -1016,7 +1015,7 @@ bool Patient::getConsultationsByChiefComplaint(Consultation *&conHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到主诉包含该关键词的看诊记录。" << std::endl;
+        printError("没找到主诉包含该关键词的看诊记录。");
     return found;
 }
 bool Patient::getConsultationsByDepartment(Consultation *&conHead)
@@ -1074,7 +1073,7 @@ bool Patient::getConsultationsByDepartment(Consultation *&conHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到科室包含 " << dept << " 的看诊记录。" << std::endl;
+        printError("没找到科室包含 " + dept + " 的看诊记录。");
     return found;
 }
 
@@ -1154,7 +1153,7 @@ bool Patient::getAllExaminations(Examination *&examHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没有找到任何检查记录。" << std::endl;
+        printError("没有找到任何检查记录。");
     return found;
 }
 bool Patient::getExaminationsByID(Examination *&examHead)
@@ -1192,7 +1191,7 @@ bool Patient::getExaminationsByID(Examination *&examHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到检查ID为 " << examID << " 的检查记录。" << std::endl;
+        printError("没找到检查ID为 " + examID + " 的检查记录。");
     return found;
 }
 bool Patient::getExaminationsByConsultationID(Examination *&examHead)
@@ -1227,7 +1226,7 @@ bool Patient::getExaminationsByConsultationID(Examination *&examHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到看诊ID为 " << conID << " 的检查记录。" << std::endl;
+        printError("没找到看诊ID为 " + conID + " 的检查记录。");
     return found;
 }
 bool Patient::getExaminationsByItemName(Examination *&examHead)
@@ -1269,7 +1268,7 @@ bool Patient::getExaminationsByItemName(Examination *&examHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到检查项目包含该关键词的检查记录。" << std::endl;
+        printError("没找到检查项目包含该关键词的检查记录。");
     return found;
 }
 bool Patient::getExaminationsByStatus(Examination *&examHead, int select)
@@ -1324,7 +1323,7 @@ bool Patient::getExaminationsByStatus(Examination *&examHead, int select)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到状态为 " << examStatusToString(targetStatus) << " 的检查记录。" << std::endl;
+        printError("没找到状态为 " + std::string(examStatusToString(targetStatus)) + " 的检查记录。");
     return found;
 }
 bool Patient::getExaminationsByTimeRange(Examination *&examHead)
@@ -1361,26 +1360,26 @@ bool Patient::getExaminationsByTimeRange(Examination *&examHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到指定时间范围内的检查记录。" << std::endl;
+        printError("没找到指定时间范围内的检查记录。");
     return found;
 }
 void Patient::payExaminationFee(Examination *&target)
 {
     if (target->status == ExaminationStatus::PAID)
     {
-        std::cout << "您已经支付过该检查的费用了，无需再次支付。" << std::endl;
+        printWarning("您已经支付过该检查的费用了，无需再次支付。");
         return;
     }
     else if (target->status != ExaminationStatus::ORDERED)
     {
-        std::cout << "此记录当前状态为 " << examStatusToString(target->status) << "，无法进行支付。" << std::endl;
+        printError("此记录当前状态为 " + std::string(examStatusToString(target->status)) + "，无法进行支付。");
         return;
     }
 
     std::cout << "需支付的费用为 " << target->fee << " 元。您当前账户余额为 " << this->balance << " 元。" << std::endl;
     if (this->balance < target->fee)
     {
-        std::cout << "余额不足，无法支付检查费用！请先进行充值。" << std::endl;
+        printError("余额不足，无法支付检查费用！请先进行充值。");
         return;
     }
 
@@ -1393,11 +1392,11 @@ void Patient::payExaminationFee(Examination *&target)
     {
         this->balance -= target->fee;
         target->status = ExaminationStatus::PAID;
-        std::cout << "支付成功！当前账户余额: " << this->balance << " 元。" << std::endl;
+        printSuccess("支付成功！当前账户余额: " + std::to_string(this->balance) + " 元。");
     }
     else
     {
-        std::cout << "已取消支付操作。" << std::endl;
+        printWarning("已取消支付操作。");
     }
 }
 bool Patient::getExaminationsByDepartment(Examination *&examHead)
@@ -1432,7 +1431,7 @@ bool Patient::getExaminationsByDepartment(Examination *&examHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到科室包含 " << dept << " 的检查记录。" << std::endl;
+        printError("没找到科室包含 " + dept + " 的检查记录。");
     return found;
 }
 
@@ -1523,12 +1522,12 @@ void Patient::manageExaminations(Examination *&examHead)
                     }
                     else
                     {
-                        std::cout << "已取消支付操作。" << std::endl;
+                        printWarning("已取消支付操作。");
                     }
                 }
                 else
                 {
-                    std::cout << "没有找到属于您的检查ID为 " << examID << " 的待支付记录。" << std::endl;
+                    printError("没有找到属于您的检查ID为 " + examID + " 的待支付记录。");
                 }
             }
         }
@@ -1590,7 +1589,7 @@ bool Patient::getAllMedications(MedicationRecord *&medHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到任何用药记录。" << std::endl;
+        printError("没找到任何用药记录。");
     return found;
 }
 bool Patient::getMedicationsByID(MedicationRecord *&medHead)
@@ -1609,7 +1608,7 @@ bool Patient::getMedicationsByID(MedicationRecord *&medHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到用药记录ID为 " << medID << " 的记录。" << std::endl;
+        printError("没找到用药记录ID为 " + medID + " 的记录。");
     return found;
 }
 bool Patient::getMedicationsByConsultationID(MedicationRecord *&medHead)
@@ -1627,7 +1626,7 @@ bool Patient::getMedicationsByConsultationID(MedicationRecord *&medHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到看诊记录ID为 " << conID << " 的用药记录。" << std::endl;
+        printError("没找到看诊记录ID为 " + conID + " 的用药记录。");
     return found;
 }
 bool Patient::getMedicationsByMedicineName(MedicationRecord *&medHead)
@@ -1658,7 +1657,7 @@ bool Patient::getMedicationsByMedicineName(MedicationRecord *&medHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没有找到包含药品 '" << medName << "' 的用药记录。" << std::endl;
+        printError("没有找到包含药品 '" + medName + "' 的用药记录。");
     return found;
 }
 bool Patient::getMedicationsByStatus(MedicationRecord *&medHead, int select)
@@ -1682,7 +1681,7 @@ bool Patient::getMedicationsByStatus(MedicationRecord *&medHead, int select)
     bool found = false;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->patientID == this->patientID && (int)current->status == sChoice)
+        if (!current->isDeleted && current->patientID == this->patientID && static_cast<int>(current->status) == sChoice)
         {
             printMedicationRecord(current);
             found = true;
@@ -1690,7 +1689,7 @@ bool Patient::getMedicationsByStatus(MedicationRecord *&medHead, int select)
         current = current->next;
     }
     if (!found)
-        std::cout << "没有找到相关状态的用药记录。" << std::endl;
+        printError("没有找到相关状态的用药记录。");
     return found;
 }
 bool Patient::getMedicationsByTimeRange(MedicationRecord *&medHead)
@@ -1712,7 +1711,7 @@ bool Patient::getMedicationsByTimeRange(MedicationRecord *&medHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到从 " << startTime << " 到 " << endTime << " 的用药记录。" << std::endl;
+        printError("没找到从 " + startTime + " 到 " + endTime + " 的用药记录。");
     return found;
 }
 bool Patient::getMedicationsByDepartment(MedicationRecord *&medHead)
@@ -1730,32 +1729,32 @@ bool Patient::getMedicationsByDepartment(MedicationRecord *&medHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到科室 " << dept << " 的用药记录。" << std::endl;
+        printError("没找到科室 " + dept + " 的用药记录。");
     return found;
 }
 void Patient::payMedicationFee(MedicationRecord *&target)
 {
     if (target->status == MedicationStatus::PAID || target->status == MedicationStatus::DISPENSED)
     {
-        std::cout << "您已经支付过该药品的费用了，无需再次支付。" << std::endl;
+        printWarning("您已经支付过该药品的费用了，无需再次支付。");
         return;
     }
     else if (target->status != MedicationStatus::UNPAID)
     {
-        std::cout << "此记录当前发药状态为 " << medicationStatusToString(target->status) << "，无法进行支付。" << std::endl;
+        printError("此记录当前发药状态为 " + std::string(medicationStatusToString(target->status)) + "，无法进行支付。");
         return;
     }
 
     if (target->reviewStatus != MedicationReviewStatus::APPROVED)
     {
-        std::cout << "此记录审核状态为 " << medicationReviewStatusToString(target->reviewStatus) << "，无法进行支付。" << std::endl;
+        printError("此记录审核状态为 " + std::string(medicationReviewStatusToString(target->reviewStatus)) + "，无法进行支付。");
         return;
     }
 
     std::cout << "需支付的费用为 " << target->totalCost << " 元。您当前账户余额为 " << this->balance << " 元。" << std::endl;
     if (this->balance < target->totalCost)
     {
-        std::cout << "余额不足，无法支付用药费用！请先进行充值。" << std::endl;
+        printError("余额不足，无法支付用药费用！请先进行充值。");
         return;
     }
 
@@ -1769,13 +1768,13 @@ void Patient::payMedicationFee(MedicationRecord *&target)
         MyTime &t = MyTime::getInstance();
         target->paymentTime = t.getTime();
 
-        std::cout << "支付成功！扣除费用 " << target->totalCost << " 元。" << std::endl;
-        std::cout << "当前账户余额: " << this->balance << " 元" << std::endl;
-        std::cout << "请移步药房窗口取药。" << std::endl;
+        printSuccess("支付成功！扣除费用 " + std::to_string(target->totalCost) + " 元。");
+        printSuccess("当前账户余额: " + std::to_string(this->balance) + " 元");
+        printSuccess("请移步药房窗口取药。");
     }
     else
     {
-        std::cout << "已取消支付操作。" << std::endl;
+        printWarning("已取消支付操作。");
     }
 }
 
@@ -1849,12 +1848,12 @@ void Patient::manageMedications(MedicationRecord *&medHead)
                     }
                     else
                     {
-                        std::cout << "已取消支付操作。" << std::endl;
+                        printWarning("已取消支付操作。");
                     }
                 }
                 else
                 {
-                    std::cout << "没有找到属于您的用药记录ID为 " << medID << " 的记录。" << std::endl;
+                    printError("没有找到属于您的用药记录ID为 " + medID + " 的记录。");
                 }
             }
         }
@@ -1898,7 +1897,7 @@ bool Patient::getAllHospitalizations(Hospitalization *&hosHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到任何住院记录。" << std::endl;
+        printError("没找到任何住院记录。");
     return found;
 }
 bool Patient::getHospitalizationByID(Hospitalization *&hosHead)
@@ -1917,7 +1916,7 @@ bool Patient::getHospitalizationByID(Hospitalization *&hosHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到指定的住院记录。" << std::endl;
+        printError("没找到指定的住院记录。");
     return found;
 }
 bool Patient::getHospitalizationsByAdmitTimeRange(Hospitalization *&hosHead)
@@ -1939,7 +1938,7 @@ bool Patient::getHospitalizationsByAdmitTimeRange(Hospitalization *&hosHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到对应申请时间范围的记录。" << std::endl;
+        printError("没找到对应申请时间范围的记录。");
     return found;
 }
 bool Patient::getHospitalizationsByDischargeTimeRange(Hospitalization *&hosHead)
@@ -1961,7 +1960,7 @@ bool Patient::getHospitalizationsByDischargeTimeRange(Hospitalization *&hosHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到对应出院时间范围的记录。" << std::endl;
+        printError("没找到对应出院时间范围的记录。");
     return found;
 }
 bool Patient::getHospitalizationsByStatus(Hospitalization *&hosHead, int select)
@@ -1986,7 +1985,7 @@ bool Patient::getHospitalizationsByStatus(Hospitalization *&hosHead, int select)
     bool found = false;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->patientID == this->patientID && (int)current->status == sChoice)
+        if (!current->isDeleted && current->patientID == this->patientID && static_cast<int>(current->status) == sChoice)
         {
             printHospitalizationRecord(current, this);
             found = true;
@@ -1994,7 +1993,7 @@ bool Patient::getHospitalizationsByStatus(Hospitalization *&hosHead, int select)
         current = current->next;
     }
     if (!found)
-        std::cout << "没有找到对应状态的住院记录。" << std::endl;
+        printError("没有找到对应状态的住院记录。");
     return found;
 }
 bool Patient::getHospitalizationsByDepartment(Hospitalization *&hosHead)
@@ -2012,7 +2011,7 @@ bool Patient::getHospitalizationsByDepartment(Hospitalization *&hosHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到对应科室的住院记录。" << std::endl;
+        printError("没找到对应科室的住院记录。");
     return found;
 }
 bool Patient::getHospitalizationsByWardType(Hospitalization *&hosHead)
@@ -2032,7 +2031,7 @@ bool Patient::getHospitalizationsByWardType(Hospitalization *&hosHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到对应病房类型的住院记录。" << std::endl;
+        printError("没找到对应病房类型的住院记录。");
     return found;
 }
 bool Patient::getHospitalizationsByBedNumber(Hospitalization *&hosHead)
@@ -2057,7 +2056,7 @@ bool Patient::getHospitalizationsByBedNumber(Hospitalization *&hosHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到对应床位号的住院记录。" << std::endl;
+        printError("没找到对应床位号的住院记录。");
     return found;
 }
 bool Patient::getHospitalizationsByDoctorID(Hospitalization *&hosHead)
@@ -2075,7 +2074,7 @@ bool Patient::getHospitalizationsByDoctorID(Hospitalization *&hosHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到对应医生的住院记录。" << std::endl;
+        printError("没找到对应医生的住院记录。");
     return found;
 }
 bool Patient::getHospitalizationsByConsultationID(Hospitalization *&hosHead)
@@ -2093,7 +2092,7 @@ bool Patient::getHospitalizationsByConsultationID(Hospitalization *&hosHead)
         current = current->next;
     }
     if (!found)
-        std::cout << "没找到对应看诊记录的住院记录。" << std::endl;
+        printError("没找到对应看诊记录的住院记录。");
     return found;
 }
 void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
@@ -2110,17 +2109,17 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
     }
     if (!current)
     {
-        std::cout << "未找到该住院记录。" << std::endl;
+        printError("未找到该住院记录。");
         return;
     }
     if (current->status != HospitalizationStatus::ADMITTED)
     {
-        std::cout << "当前记录状态不仅是[已入院]，无法申请出院。" << std::endl;
+        printError("当前记录状态不仅是[已入院]，无法申请出院。");
         return;
     }
 
     std::cout << "正在为您计算出院费用结算..." << std::endl;
-    // 粗略按日期的前十位进行相减，如果不足1天按1天计算
+    // 使用正确的日期差计算，如果不足1天按1天计算
     int days = 1;
     if (current->admitTime.length() >= 10)
     {
@@ -2128,9 +2127,13 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
         sscanf(current->admitTime.c_str(), "%d-%d-%d", &y1, &m1, &d1);
         std::string nowTime = MyTime::getInstance().getTime();
         sscanf(nowTime.c_str(), "%d-%d-%d", &y2, &m2, &d2);
-        int day1 = y1 * 365 + m1 * 30 + d1;
-        int day2 = y2 * 365 + m2 * 30 + d2;
-        days = day2 - day1;
+        std::tm tm1 = {}, tm2 = {};
+        tm1.tm_year = y1 - 1900; tm1.tm_mon = m1 - 1; tm1.tm_mday = d1;
+        tm2.tm_year = y2 - 1900; tm2.tm_mon = m2 - 1; tm2.tm_mday = d2;
+        std::time_t t1 = std::mktime(&tm1);
+        std::time_t t2 = std::mktime(&tm2);
+        double diffSec = std::difftime(t2, t1);
+        days = static_cast<int>(diffSec / 86400.0);
         if (days <= 0)
             days = 1;
     }
@@ -2146,7 +2149,7 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
         std::cout << "您还需补交欠费 " << diff << " 元。您的账户余额为 " << this->balance << " 元。" << std::endl;
         if (this->balance < diff)
         {
-            std::cout << "余额不足，无法为其办理出院，请先充值!" << std::endl;
+            printError("余额不足，无法为其办理出院，请先充值!");
             return;
         }
         std::cout << "是否确认扣款并办理出院?: ";
@@ -2157,7 +2160,7 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
         if (confirm == 1)
         {
             this->balance -= diff;
-            std::cout << "扣款成功。新余额：" << this->balance << " 元。" << std::endl;
+            printSuccess("扣款成功。新余额：" + std::to_string(this->balance) + " 元。");
         }
         else
         {
@@ -2169,13 +2172,13 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
     {
         double refund = -diff;
         this->balance += refund;
-        std::cout << "您的押金已足够支付，系统将为您退还余额 " << refund << " 元。" << std::endl;
-        std::cout << "退款成功。新余额：" << this->balance << " 元。" << std::endl;
+        printSuccess("您的押金已足够支付，系统将为您退还余额 " + std::to_string(refund) + " 元。");
+        printSuccess("退款成功。新余额：" + std::to_string(this->balance) + " 元。");
     }
 
     current->status = HospitalizationStatus::DISCHARGED;
     current->dischargeTime = MyTime::getInstance().getTime();
-    std::cout << "已成功为您办理出院！状态已更改为 [出院]。" << std::endl;
+    printSuccess("已成功为您办理出院！状态已更改为 [出院]。");
 
     // 清理床位
     if (current->bedNumber != "#")
@@ -2187,7 +2190,7 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
             {
                 b->status = bedStatus::ClEANING; // 设置为清洁中
                 b->patientID = "#";
-                std::cout << "相应床位已释放，交由护士进行清洁！" << std::endl;
+                printSuccess("相应床位已释放，交由护士进行清洁！");
                 break;
             }
             b = b->next;
@@ -2213,12 +2216,12 @@ void Patient::payHospitalizationDeposit(Hospitalization *&hosHead)
     }
     if (!current)
     {
-        std::cout << "没有找到对应的记录。" << std::endl;
+        printError("没有找到对应的记录。");
         return;
     }
     if (current->status != HospitalizationStatus::APPLIED)
     {
-        std::cout << "该记录不是 [申请中] 状态，不能补交入账押金。" << std::endl;
+        printError("该记录不是 [申请中] 状态，不能补交入账押金。");
         return;
     }
 
@@ -2232,7 +2235,7 @@ void Patient::payHospitalizationDeposit(Hospitalization *&hosHead)
 
     if (this->balance < requiredDeposit)
     {
-        std::cout << "余额不足！请先回到账户中心充值。" << std::endl;
+        printError("余额不足！请先回到账户中心充值。");
         return;
     }
 
@@ -2246,11 +2249,11 @@ void Patient::payHospitalizationDeposit(Hospitalization *&hosHead)
         this->balance -= requiredDeposit;
         current->deposit += requiredDeposit;
         current->status = HospitalizationStatus::PAID; // 已缴费可以等护士分床了
-        std::cout << "缴纳成功！余额 " << this->balance << " 元。待护士为您排床处理。" << std::endl;
+        printSuccess("缴纳成功！余额 " + std::to_string(this->balance) + " 元。待护士为您排床处理。");
     }
     else
     {
-        std::cout << "已取消缴纳。" << std::endl;
+        printWarning("已取消缴纳。");
     }
 }
 
@@ -2413,7 +2416,7 @@ void Patient::managePersonalInfo()
                 {
                     std::cout << "账户创建时间: " << this->createTime << std::endl;
                 }
-                pause();
+                pause("患者 > 个人信息管理");
             }
         }
         else if (choice == 2)
@@ -2430,67 +2433,67 @@ void Patient::managePersonalInfo()
                 {
                     std::cout << "当前的姓名: " << this->username << std::endl;
                     this->username = inputStringCheck("请输入新的姓名: ");
-                    std::cout << "姓名已更新！" << std::endl;
+                    printSuccess("姓名已更新！");
                 }
                 else if (modifyChoice == 2)
                 {
                     std::cout << "当前的性别: " << this->gender << std::endl;
                     this->gender = inputGenderCheck("请输入新的性别: ");
-                    std::cout << "性别已更新！" << std::endl;
+                    printSuccess("性别已更新！");
                 }
                 else if (modifyChoice == 3)
                 {
                     std::cout << "当前的年龄: " << this->age << std::endl;
                     this->age = inputAgeCheck("请输入新的年龄: ");
-                    std::cout << "年龄已更新！" << std::endl;
+                    printSuccess("年龄已更新！");
                 }
                 else if (modifyChoice == 4)
                 {
                     std::cout << "当前的身份证号: " << this->idCardNumber << std::endl;
                     this->idCardNumber = inputIDcardCheck("请输入新的身份证号: ");
-                    std::cout << "身份证号已更新！" << std::endl;
+                    printSuccess("身份证号已更新！");
                 }
                 else if (modifyChoice == 5)
                 {
                     std::cout << "当前的联系电话: " << this->telephone << std::endl;
                     this->telephone = inputTelephoneCheck("请输入新的联系电话: ");
-                    std::cout << "联系电话已更新！" << std::endl;
+                    printSuccess("联系电话已更新！");
                 }
                 else if (modifyChoice == 6)
                 {
                     std::cout << "当前的邮箱地址: " << this->email << std::endl;
                     this->email = inputEmailCheck("请输入新的邮箱地址: ");
-                    std::cout << "邮箱地址已更新！" << std::endl;
+                    printSuccess("邮箱地址已更新！");
                 }
                 else if (modifyChoice == 7)
                 {
                     std::cout << "当前的家庭住址: " << this->address << std::endl;
                     this->address = inputStringCheck("请输入新的家庭住址: ");
-                    std::cout << "家庭住址已更新！" << std::endl;
+                    printSuccess("家庭住址已更新！");
                 }
                 else if (modifyChoice == 8)
                 {
                     std::cout << "当前的紧急联系人姓名: " << this->emergencyContactName << std::endl;
                     this->emergencyContactName = inputStringCheck("请输入新的紧急联系人姓名: ");
-                    std::cout << "紧急联系人姓名已更新！" << std::endl;
+                    printSuccess("紧急联系人姓名已更新！");
                 }
                 else if (modifyChoice == 9)
                 {
                     std::cout << "当前的紧急联系人电话: " << this->emergencyContactPhone << std::endl;
                     this->emergencyContactPhone = inputTelephoneCheck("请输入新的紧急联系人电话: ");
-                    std::cout << "紧急联系人电话已更新！" << std::endl;
+                    printSuccess("紧急联系人电话已更新！");
                 }
                 else if (modifyChoice == 10)
                 {
                     std::cout << "当前的过敏史: " << this->allergyHistory << std::endl;
                     this->allergyHistory = inputStringCheck("请输入新的过敏史: ");
-                    std::cout << "过敏史已更新！" << std::endl;
+                    printSuccess("过敏史已更新！");
                 }
                 else if (modifyChoice == 11)
                 {
                     std::cout << "当前的既往病史: " << this->pastMedicalHistory << std::endl;
                     this->pastMedicalHistory = inputStringCheck("请输入新的既往病史: ");
-                    std::cout << "既往病史已更新！" << std::endl;
+                    printSuccess("既往病史已更新！");
                 }
                 else if (modifyChoice == 12)
                 {
@@ -2505,11 +2508,11 @@ void Patient::managePersonalInfo()
                     int maritalChoice = selectIntCheck(0, 4);
                     if (maritalChoice == 0)
                     {
-                        std::cout << "已取消修改操作！" << std::endl;
+                        printWarning("已取消修改操作！");
                         continue;
                     }
                     this->maritalStatus = static_cast<MaritalStatus>(maritalChoice);
-                    std::cout << "婚姻状况已更新！" << std::endl;
+                    printSuccess("婚姻状况已更新！");
                 }
                 else if (modifyChoice == 13)
                 {
@@ -2527,19 +2530,19 @@ void Patient::managePersonalInfo()
                             this->salt = newSalt;
                             this->storedHash = newHash;
 
-                            std::cout << "密码更新成功！" << std::endl;
+                            printSuccess("密码更新成功！");
                         }
                         else
                         {
-                            std::cout << "两次输入的新密码不一致，密码更新失败！" << std::endl;
+                            printError("两次输入的新密码不一致，密码更新失败！");
                         }
                     }
                     else
                     {
-                        std::cout << "密码验证失败，无法修改密码！" << std::endl;
+                        printError("密码验证失败，无法修改密码！");
                     }
                 }
-                pause();
+                pause("患者 > 个人信息管理");
             }
         }
         else if (choice == 3)
@@ -2549,13 +2552,13 @@ void Patient::managePersonalInfo()
             if (amount > 0)
             {
                 this->balance += amount;
-                std::cout << "成功充值 " << amount << " 元。当前余额: " << this->balance << " 元" << std::endl;
+                printSuccess("成功充值 " + std::to_string(amount) + " 元。当前余额: " + std::to_string(this->balance) + " 元");
             }
             else
             {
-                std::cout << "已取消充值。" << std::endl;
+                printWarning("已取消充值。");
             }
-            pause();
+            pause("患者 > 个人信息管理");
         }
     }
 }

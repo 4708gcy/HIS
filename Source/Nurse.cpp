@@ -23,7 +23,7 @@ bool Nurse::nurseSignUp(int &idCounter)
     bool success = signUp(3, idCounter); // 假定护士角色编号为 3
     if (!success)
     {
-        std::cout << "护士注册失败！" << std::endl;
+        printError("护士注册失败！");
         return false;
     }
 
@@ -44,7 +44,7 @@ bool Nurse::nurseSignUp(int &idCounter)
     int onDutyChoice = selectIntCheck(0, 1);
     this->isOnDuty = (onDutyChoice == 1);
 
-    std::cout << "护士注册成功! 您的用户ID是: " << this->userID << std::endl;
+    printSuccess("护士注册成功! 您的用户ID是: " + this->userID);
     return true;
 }
 
@@ -52,7 +52,7 @@ bool Nurse::nurseSignIn()
 {
     if (isAccountActive == false)
     {
-        std::cout << "账户已锁定，请联系系统管理员解锁！" << std::endl;
+        printError("账户已锁定，请联系系统管理员解锁！");
         return false;
     }
 
@@ -72,18 +72,18 @@ bool Nurse::nurseSignIn()
         {
             loginAttempts = 0;
             isLoggedIn = true;
-            std::cout << "护士登录成功！" << std::endl;
+            printSuccess("护士登录成功！");
             return true;
         }
         else
         {
             loginAttempts++;
-            std::cout << "密码错误! 请重新输入密码(当前失败次数: " << loginAttempts << ")" << std::endl;
+            printError("密码错误! 请重新输入密码(当前失败次数: " + std::to_string(loginAttempts) + ")");
 
             if (loginAttempts >= kMaxLoginAttempts)
             {
                 isAccountActive = false;
-                std::cout << "连续登录失败次数过多，账户已锁定，请联系系统管理员解锁！" << std::endl;
+                printError("连续登录失败次数过多，账户已锁定，请联系系统管理员解锁！");
             }
         }
     }
@@ -184,7 +184,7 @@ void Nurse::printExaminationDetails(Examination *&exa)
 {
     if (exa == nullptr)
     {
-        std::cout << "检查记录不存在。" << std::endl;
+        printError("检查记录不存在。");
         return;
     }
 
@@ -229,7 +229,7 @@ bool Nurse::getAllExaminations(Examination *&exaHead)
 
     if (!found)
     {
-        std::cout << "未找到本科室的检查记录。" << std::endl;
+        printError("未找到本科室的检查记录。");
     }
     return found;
 }
@@ -252,7 +252,7 @@ bool Nurse::getExaminationsByPatientID(Examination *&exaHead)
 
     if (!found)
     {
-        std::cout << "没有找到患者ID为 " << patientID << " 的检查记录。" << std::endl;
+        printError("没有找到患者ID为 " + patientID + " 的检查记录。");
     }
     return found;
 }
@@ -275,7 +275,7 @@ bool Nurse::getExaminationsByConsultationID(Examination *&exaHead)
 
     if (!found)
     {
-        std::cout << "未找到看诊ID为 " << conID << " 的检查记录。" << std::endl;
+        printError("未找到看诊ID为 " + conID + " 的检查记录。");
     }
     return found;
 }
@@ -295,7 +295,7 @@ bool Nurse::getExaminationsByID(Examination *&exaHead)
         current = current->next;
     }
 
-    std::cout << "未找到检查ID为 " << examID << " 的检查记录。" << std::endl;
+    printError("未找到检查ID为 " + examID + " 的检查记录。");
     return false;
 }
 // 根据检查时间范围查询检查记录
@@ -322,7 +322,7 @@ bool Nurse::getExaminationsByTimeRange(Examination *&exaHead)
 
     if (!found)
     {
-        std::cout << "未找到指定时间范围内的检查记录。" << std::endl;
+        printError("未找到指定时间范围内的检查记录。");
     }
     return found;
 }
@@ -332,7 +332,7 @@ bool Nurse::getExaminationsByItemName(Examination *&exaHead)
     std::string itemName = ExaminationItemMenu();
     if (itemName == "0")
     {
-        std::cout << "已取消查询操作！" << std::endl;
+        printWarning("已取消查询操作！");
         return false;
     }
 
@@ -350,7 +350,7 @@ bool Nurse::getExaminationsByItemName(Examination *&exaHead)
 
     if (!found)
     {
-        std::cout << "未找到检查项目名称为 '" << itemName << "' 的检查记录。" << std::endl;
+        printError("未找到检查项目名称为 '" + itemName + "' 的检查记录。");
     }
     return found;
 }
@@ -388,7 +388,7 @@ bool Nurse::getExaminationsByStatus(Examination *&exaHead)
 
     if (!found)
     {
-        std::cout << "未找到该状态下的检查记录。" << std::endl;
+        printError("未找到该状态下的检查记录。");
     }
     return found;
 }
@@ -409,19 +409,19 @@ void Nurse::setExaminationStatus(Examination *&target)
     int statusChoice = selectIntCheck(0, 6);
     if (statusChoice == 0)
     {
-        std::cout << "已取消修改操作！" << std::endl;
+        printWarning("已取消修改操作！");
         return;
     }
 
     target->status = static_cast<ExaminationStatus>(statusChoice);
-    std::cout << "检查状态已更新为: " << examStatusToString(target->status) << std::endl;
+    printSuccess("检查状态已更新为: " + std::string(examStatusToString(target->status)));
 }
 // 护士录入/更新检查结果（体征信息）
 void Nurse::setExaminationReport(Examination *&target)
 {
     if (target->status == ExaminationStatus::ORDERED)
     {
-        std::cout << "检查尚未支付，无法录入检查结果！" << std::endl;
+        printError("检查尚未支付，无法录入检查结果！");
         return;
     }
 
@@ -440,27 +440,27 @@ void Nurse::setExaminationReport(Examination *&target)
 
     target->reportTime = MyTime::getInstance().getTime();
 
-    std::cout << "检查结果已更新！" << std::endl;
+    printSuccess("检查结果已更新！");
 }
 // 护士录入/更新检查报告摘要
 void Nurse::setExaminationReportSummary(Examination *&target)
 {
     if (target->status == ExaminationStatus::ORDERED)
     {
-        std::cout << "检查尚未支付，无法录入检查报告摘要！" << std::endl;
+        printError("检查尚未支付，无法录入检查报告摘要！");
         return;
     }
 
     if (target->status == ExaminationStatus::IN_PROGRESS)
     {
-        std::cout << "检查尚未完成，无法录入检查报告摘要！" << std::endl;
+        printError("检查尚未完成，无法录入检查报告摘要！");
         return;
     }
 
     std::cout << "当前检查报告摘要: " << target->reportSummary << std::endl;
     std::string newSummary = inputStringCheck("请输入新的检查报告摘要: ");
     target->reportSummary = newSummary;
-    std::cout << "检查报告摘要已更新！" << std::endl;
+    printSuccess("检查报告摘要已更新！");
 }
 // 护士管理检查记录相关附件
 void Nurse::setExaminationAttachments(Examination *&target)
@@ -506,19 +506,19 @@ void Nurse::setExaminationAttachments(Examination *&target)
             }
             if (exists)
             {
-                std::cout << "该附件已存在，不能重复添加！" << std::endl;
+                printWarning("该附件已存在，不能重复添加！");
             }
             else
             {
                 target->attachments.push_back(newAttach);
-                std::cout << "附件已添加！" << std::endl;
+                printSuccess("附件已添加！");
             }
         }
         else if (op == 2)
         {
             if (target->attachments.empty())
             {
-                std::cout << "当前没有附件可删除！" << std::endl;
+                printWarning("当前没有附件可删除！");
                 continue;
             }
 
@@ -526,7 +526,7 @@ void Nurse::setExaminationAttachments(Examination *&target)
 
             int idx = selectIntCheck(1, static_cast<int>(target->attachments.size()));
             target->attachments.erase(target->attachments.begin() + idx - 1);
-            std::cout << "附件已删除！" << std::endl;
+            printSuccess("附件已删除！");
         }
     }
 }
@@ -535,13 +535,13 @@ void Nurse::setExaminationNote(Examination *&target)
 {
     std::cout << "当前备注信息: " << target->note << std::endl;
     target->note = inputStringCheck("请输入新的备注信息: ");
-    std::cout << "备注信息已更新！" << std::endl;
+    printSuccess("备注信息已更新！");
 }
 // 护士删除检查记录（逻辑删除）
 void Nurse::deleteExamination(Examination *&target)
 {
     target->isDeleted = true;
-    std::cout << "检查记录已删除！" << std::endl;
+    printSuccess("检查记录已删除！");
 }
 
 void Nurse::manageExaminations(Examination *&exaHead)
@@ -577,7 +577,7 @@ void Nurse::manageExaminations(Examination *&exaHead)
                 else if (viewChoice == 7)
                     getExaminationsByStatus(exaHead);
 
-                pause();
+                pause("护士 > 检查管理");
             }
         }
         else if (choice == 2)
@@ -585,7 +585,7 @@ void Nurse::manageExaminations(Examination *&exaHead)
             bool ishave = getAllExaminations(exaHead);
             if (!ishave)
             {
-                pause();
+                pause("护士 > 检查管理");
                 continue;
             }
 
@@ -602,8 +602,8 @@ void Nurse::manageExaminations(Examination *&exaHead)
 
             if (!target)
             {
-                std::cout << "未找到指定检查记录！" << std::endl;
-                pause();
+                printError("未找到指定检查记录！");
+                pause("护士 > 检查管理");
                 continue;
             }
 
@@ -627,7 +627,7 @@ void Nurse::manageExaminations(Examination *&exaHead)
                 else if (modifyChoice == 5)
                     setExaminationNote(target);
 
-                pause();
+                pause("护士 > 检查管理");
             }
         }
         else if (choice == 3)
@@ -635,7 +635,7 @@ void Nurse::manageExaminations(Examination *&exaHead)
             bool ishave = getAllExaminations(exaHead);
             if (!ishave)
             {
-                pause();
+                pause("护士 > 检查管理");
                 continue;
             }
 
@@ -652,8 +652,8 @@ void Nurse::manageExaminations(Examination *&exaHead)
 
             if (!target)
             {
-                std::cout << "未找到指定检查记录！" << std::endl;
-                pause();
+                printError("未找到指定检查记录！");
+                pause("护士 > 检查管理");
                 continue;
             }
 
@@ -668,9 +668,9 @@ void Nurse::manageExaminations(Examination *&exaHead)
             }
             else
             {
-                std::cout << "已取消删除操作！" << std::endl;
+                printWarning("已取消删除操作！");
             }
-            pause();
+            pause("护士 > 检查管理");
         }
     }
 }
@@ -682,7 +682,7 @@ void Nurse::printHospitalizationDetails(Hospitalization *&hos)
 {
     if (hos == nullptr)
     {
-        std::cout << "住院记录不存在。" << std::endl;
+        printError("住院记录不存在。");
         return;
     }
 
@@ -708,7 +708,7 @@ void Nurse::printBedDetails(bedInfo *&bed)
 {
     if (bed == nullptr)
     {
-        std::cout << "床位信息不存在。" << std::endl;
+        printError("床位信息不存在。");
         return;
     }
 
@@ -745,7 +745,7 @@ bool Nurse::getAllHospitalizations(Hospitalization *&hosHead)
 
     if (!found)
     {
-        std::cout << "未找到本科室住院记录。" << std::endl;
+        printError("未找到本科室住院记录。");
     }
     return found;
 }
@@ -768,7 +768,7 @@ bool Nurse::getHospitalizationsByPatientID(Hospitalization *&hosHead)
 
     if (!found)
     {
-        std::cout << "未找到该患者住院记录。" << std::endl;
+        printError("未找到该患者住院记录。");
     }
     return found;
 }
@@ -791,7 +791,7 @@ bool Nurse::getHospitalizationsByConsultationID(Hospitalization *&hosHead)
 
     if (!found)
     {
-        std::cout << "未找到该看诊关联的住院记录。" << std::endl;
+        printError("未找到该看诊关联的住院记录。");
     }
     return found;
 }
@@ -810,7 +810,7 @@ bool Nurse::getHospitalizationsByID(Hospitalization *&hosHead)
         current = current->next;
     }
 
-    std::cout << "未找到该住院记录。" << std::endl;
+    printError("未找到该住院记录。");
     return false;
 }
 // 根据住院状态查询住院记录
@@ -846,7 +846,7 @@ bool Nurse::getHospitalizationsByStatus(Hospitalization *&hosHead)
 
     if (!found)
     {
-        std::cout << "未找到对应状态住院记录。" << std::endl;
+        printError("未找到对应状态住院记录。");
     }
     return found;
 }
@@ -875,7 +875,7 @@ bool Nurse::getHospitalizationsByAdmitTimeRange(Hospitalization *&hosHead)
 
     if (!found)
     {
-        std::cout << "未找到指定时间范围内住院记录。" << std::endl;
+        printError("未找到指定时间范围内住院记录。");
     }
     return found;
 }
@@ -904,7 +904,7 @@ bool Nurse::getHospitalizationsByDischargeTimeRange(Hospitalization *&hosHead)
 
     if (!found)
     {
-        std::cout << "未找到指定时间范围内住院记录。" << std::endl;
+        printError("未找到指定时间范围内住院记录。");
     }
     return found;
 }
@@ -915,7 +915,7 @@ bool Nurse::getHospitalizationsByWardType(Hospitalization *&hosHead)
 
     if (wardType == "0")
     {
-        std::cout << "已取消查询操作！" << std::endl;
+        printWarning("已取消查询操作！");
         return false;
     }
 
@@ -934,7 +934,7 @@ bool Nurse::getHospitalizationsByWardType(Hospitalization *&hosHead)
 
     if (!found)
     {
-        std::cout << "未找到该病房类型的住院记录。" << std::endl;
+        printError("未找到该病房类型的住院记录。");
     }
     return found;
 }
@@ -957,7 +957,7 @@ bool Nurse::getHospitalizationsByDoctorID(Hospitalization *&hosHead)
 
     if (!found)
     {
-        std::cout << "未找到该医生关联的住院记录。" << std::endl;
+        printError("未找到该医生关联的住院记录。");
     }
     return found;
 }
@@ -967,7 +967,7 @@ bool Nurse::getHospitalizationsByBedNumber(Hospitalization *&hosHead)
     std::string wardtype = HospitalizationWardTypeMenu();
     if (wardtype == "0")
     {
-        std::cout << "已取消查询操作！" << std::endl;
+        printWarning("已取消查询操作！");
         return false;
     }
 
@@ -987,7 +987,7 @@ bool Nurse::getHospitalizationsByBedNumber(Hospitalization *&hosHead)
 
     if (!found)
     {
-        std::cout << "未找到该床位号的住院记录。" << std::endl;
+        printError("未找到该床位号的住院记录。");
     }
     return found;
 }
@@ -1007,25 +1007,25 @@ void Nurse::setHospitalizationStatus(Hospitalization *&target)
     int choice = selectIntCheck(0, 5);
     if (choice == 0)
     {
-        std::cout << "已取消修改！" << std::endl;
+        printWarning("已取消修改！");
         return;
     }
 
     target->status = static_cast<HospitalizationStatus>(choice);
-    std::cout << "住院状态已更新！" << std::endl;
+    printSuccess("住院状态已更新！");
 }
 // 护士分配自己负责的住院记录
 void Nurse::assignNurseToHospitalization(Hospitalization *&target)
 {
     target->nurseID = this->nurseID;
-    std::cout << "已将当前护士分配到该住院记录。" << std::endl;
+    printSuccess("已将当前护士分配到该住院记录。");
 }
 // 护士分配床位给住院患者
 void Nurse::assignBed(Hospitalization *&target, bedInfo *&bedHead)
 {
     if (target->status != HospitalizationStatus::PAID)
     {
-        std::cout << "当前住院记录未处于“已缴费待分床”状态，无法分床！" << std::endl;
+        printError("当前住院记录未处于\"已缴费待分床\"状态，无法分床！");
         return;
     }
 
@@ -1047,7 +1047,7 @@ void Nurse::assignBed(Hospitalization *&target, bedInfo *&bedHead)
 
     if (!found)
     {
-        std::cout << "未找到可用床位！" << std::endl;
+        printError("未找到可用床位！");
         return;
     }
 
@@ -1076,20 +1076,20 @@ void Nurse::assignBed(Hospitalization *&target, bedInfo *&bedHead)
             increaseBedManageCount();
             increasePatientCareCount();
 
-            std::cout << "分配床位成功！" << std::endl;
+            printSuccess("分配床位成功！");
             return;
         }
         current = current->next;
     }
 
-    std::cout << "指定床位不可用，分配失败！" << std::endl;
+    printError("指定床位不可用，分配失败！");
 }
 // 护士转床操作
 void Nurse::transferBed(Hospitalization *&target, bedInfo *&bedHead)
 {
     if (target->status != HospitalizationStatus::ADMITTED)
     {
-        std::cout << "当前患者未入院，无法转床！" << std::endl;
+        printError("当前患者未入院，无法转床！");
         return;
     }
 
@@ -1107,7 +1107,7 @@ void Nurse::transferBed(Hospitalization *&target, bedInfo *&bedHead)
 
     if (oldBed == nullptr)
     {
-        std::cout << "未找到原床位信息，无法转床！" << std::endl;
+        printError("未找到原床位信息，无法转床！");
         return;
     }
 
@@ -1131,7 +1131,7 @@ void Nurse::transferBed(Hospitalization *&target, bedInfo *&bedHead)
 
     if (!found)
     {
-        std::cout << "没有可转入的新床位！" << std::endl;
+        printError("没有可转入的新床位！");
         return;
     }
 
@@ -1159,20 +1159,20 @@ void Nurse::transferBed(Hospitalization *&target, bedInfo *&bedHead)
 
             increaseBedManageCount();
 
-            std::cout << "转床成功！" << std::endl;
+            printSuccess("转床成功！");
             return;
         }
         current = current->next;
     }
 
-    std::cout << "新床位无效，转床失败！" << std::endl;
+    printError("新床位无效，转床失败！");
 }
 // 护士办理患者出院
 void Nurse::dischargePatient(Hospitalization *&target, bedInfo *&bedHead)
 {
     if (target->status != HospitalizationStatus::ADMITTED)
     {
-        std::cout << "当前住院记录未处于已入院状态，无法办理出院！" << std::endl;
+        printError("当前住院记录未处于已入院状态，无法办理出院！");
         return;
     }
 
@@ -1194,7 +1194,7 @@ void Nurse::dischargePatient(Hospitalization *&target, bedInfo *&bedHead)
 
     increaseBedManageCount();
 
-    std::cout << "患者已办理出院，床位已释放为清洁中状态！" << std::endl;
+    printSuccess("患者已办理出院，床位已释放为清洁中状态！");
 }
 // 修改病房类型
 void Nurse::setHospitalizationWardType(Hospitalization *&target)
@@ -1204,18 +1204,18 @@ void Nurse::setHospitalizationWardType(Hospitalization *&target)
     std::string newWardType = HospitalizationWardTypeMenu();
     if (newWardType == "0")
     {
-        std::cout << "已取消修改操作！" << std::endl;
+        printWarning("已取消修改操作！");
         return;
     }
 
     target->wardType = newWardType;
-    std::cout << "病房类型已更新！" << std::endl;
+    printSuccess("病房类型已更新！");
 }
 // 护士逻辑删除住院记录
 void Nurse::deleteHospitalization(Hospitalization *&target)
 {
     target->isDeleted = true;
-    std::cout << "住院记录已逻辑删除！" << std::endl;
+    printSuccess("住院记录已逻辑删除！");
 }
 // 根据开具住院证的看诊信息创建住院记录
 void Nurse::createHospitalization(Hospitalization *&hosHead, Consultation *&conHead, int &idCounter)
@@ -1251,7 +1251,7 @@ void Nurse::createHospitalization(Hospitalization *&hosHead, Consultation *&conH
 
     if (!found)
     {
-        std::cout << "未找到开具住院证的看诊记录！无法创建住院记录" << std::endl;
+        printError("未找到开具住院证的看诊记录！无法创建住院记录");
         return;
     }
 
@@ -1269,7 +1269,7 @@ void Nurse::createHospitalization(Hospitalization *&hosHead, Consultation *&conH
 
     if (!current)
     {
-        std::cout << "未找到指定看诊记录！无法创建住院记录" << std::endl;
+        printError("未找到指定看诊记录！无法创建住院记录");
         return;
     }
 
@@ -1290,7 +1290,7 @@ void Nurse::createHospitalization(Hospitalization *&hosHead, Consultation *&conH
         hosHead->prev = newHos;
     }
     hosHead = newHos;
-    std::cout << "住院记录创建成功！住院ID: " << newHos->hospitalizationID << std::endl;
+    printSuccess("住院记录创建成功！住院ID: " + newHos->hospitalizationID);
 }
 // 护士修改住院记录押金
 void Nurse::setHospitalizationDeposit(Hospitalization *&target)
@@ -1298,7 +1298,7 @@ void Nurse::setHospitalizationDeposit(Hospitalization *&target)
     std::cout << "当前押金: " << target->deposit << std::endl;
     double newDeposit = inputFeeCheck("请输入新的押金金额: ");
     target->deposit = newDeposit;
-    std::cout << "押金已更新！当前押金: " << target->deposit << std::endl;
+    printSuccess("押金已更新！当前押金: " + std::to_string(target->deposit));
 }
 
 // 护士管理住院记录主函数
@@ -1362,7 +1362,7 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, Consultation *&con
                     getHospitalizationsByConsultationID(hosHead);
                 }
 
-                pause();
+                pause("护士 > 住院管理");
             }
         }
         else if (choice == 2)
@@ -1370,7 +1370,7 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, Consultation *&con
             bool ishave = getAllHospitalizations(hosHead);
             if (!ishave)
             {
-                pause();
+                pause("护士 > 住院管理");
                 continue;
             }
 
@@ -1387,8 +1387,8 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, Consultation *&con
 
             if (!target)
             {
-                std::cout << "未找到指定住院记录！" << std::endl;
-                pause();
+                printError("未找到指定住院记录！");
+                pause("护士 > 住院管理");
                 continue;
             }
 
@@ -1416,7 +1416,7 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, Consultation *&con
                 else if (modifyChoice == 7)
                     setHospitalizationDeposit(target);
 
-                pause();
+                pause("护士 > 住院管理");
             }
         }
         else if (choice == 3)
@@ -1424,7 +1424,7 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, Consultation *&con
             bool ishave = getAllHospitalizations(hosHead);
             if (!ishave)
             {
-                pause();
+                pause("护士 > 住院管理");
                 continue;
             }
 
@@ -1441,8 +1441,8 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, Consultation *&con
 
             if (!target)
             {
-                std::cout << "未找到指定住院记录！" << std::endl;
-                pause();
+                printError("未找到指定住院记录！");
+                pause("护士 > 住院管理");
                 continue;
             }
 
@@ -1457,14 +1457,14 @@ void Nurse::manageHospitalizations(Hospitalization *&hosHead, Consultation *&con
             }
             else
             {
-                std::cout << "已取消删除操作！" << std::endl;
+                printWarning("已取消删除操作！");
             }
-            pause();
+            pause("护士 > 住院管理");
         }
         else if (choice == 4)
         {
             createHospitalization(hosHead, conHead, idCounter);
-            pause();
+            pause("护士 > 住院管理");
         }
     }
 }
@@ -1488,7 +1488,7 @@ bool Nurse::getAllBeds(bedInfo *&bedHead)
 
     if (!found)
     {
-        std::cout << "未找到本科室床位信息。" << std::endl;
+        printError("未找到本科室床位信息。");
     }
     return found;
 }
@@ -1522,7 +1522,7 @@ bool Nurse::getBedsByStatus(bedInfo *&bedHead)
 
     if (!found)
     {
-        std::cout << "未找到该状态床位。" << std::endl;
+        printError("未找到该状态床位。");
     }
     return found;
 }
@@ -1540,7 +1540,7 @@ bool Nurse::getBedsByPatientID(bedInfo *&bedHead)
         }
         current = current->next;
     }
-    std::cout << "未找到该患者对应床位。" << std::endl;
+    printError("未找到该患者对应床位。");
     return false;
 }
 // 根据护士ID查询床位信息
@@ -1560,7 +1560,7 @@ bool Nurse::getBedsByNurseID(bedInfo *&bedHead)
     }
     if (!found)
     {
-        std::cout << "未找到该护士负责的床位。" << std::endl;
+        printError("未找到该护士负责的床位。");
     }
     return found;
 }
@@ -1570,7 +1570,7 @@ bool Nurse::getBedsByDepartment(bedInfo *&bedHead)
     std::string dept = inputDepartmentCheck("请输入科室名称: ");
 
     if(dept == "#"){
-        std::cout << "已取消查询操作！" << std::endl;
+        printWarning("已取消查询操作！");
         return false;
     }
 
@@ -1587,7 +1587,7 @@ bool Nurse::getBedsByDepartment(bedInfo *&bedHead)
     }
     if (!found)
     {
-        std::cout << "未找到该科室床位。" << std::endl;
+        printError("未找到该科室床位。");
     }
     return found;
 }
@@ -1597,13 +1597,13 @@ bool Nurse::getBedByID(bedInfo *&bedHead)
     std::string dept = inputDepartmentCheck("请输入科室名称: ");
 
     if(dept == "#"){
-        std::cout << "已取消查询操作！" << std::endl;
+        printWarning("已取消查询操作！");
         return false;
     }
 
     std::string wardtype = HospitalizationWardTypeMenu();
     if(wardtype == "0"){
-        std::cout << "已取消查询操作！" << std::endl;
+        printWarning("已取消查询操作！");
         return false;
     }
 
@@ -1618,7 +1618,7 @@ bool Nurse::getBedByID(bedInfo *&bedHead)
         }
         current = current->next;
     }
-    std::cout << "未找到该床位。" << std::endl;
+    printError("未找到该床位。");
     return false;
 }
 // 根据病房类型查询床位信息
@@ -1628,7 +1628,7 @@ bool Nurse::getBedsByWardType(bedInfo *&bedHead)
 
     if (wardType == "0")
     {
-        std::cout << "已取消查询操作！" << std::endl;
+        printWarning("已取消查询操作！");
         return false;
     }
 
@@ -1646,7 +1646,7 @@ bool Nurse::getBedsByWardType(bedInfo *&bedHead)
 
     if (!found)
     {
-        std::cout << "未找到该病房类型的床位。" << std::endl;
+        printError("未找到该病房类型的床位。");
     }
     return found;
 }
@@ -1666,19 +1666,19 @@ void Nurse::setBedStatus(bedInfo *&target)
 
     if (choice == 0)
     {
-        std::cout << "已取消修改！" << std::endl;
+        printWarning("已取消修改！");
         return;
     }
 
     target->status = static_cast<bedStatus>(choice);
-    std::cout << "床位状态已更新！" << std::endl;
+    printSuccess("床位状态已更新！");
 }
 // 护士修改床位备注
 void Nurse::setBedNote(bedInfo *&target)
 {
     std::cout << "当前备注: " << target->note << std::endl;
     target->note = inputStringCheck("请输入新的备注信息: ");
-    std::cout << "床位备注已更新！" << std::endl;
+    printSuccess("床位备注已更新！");
 }
 // 护士修改床位关联患者生命体征
 void Nurse::setBedVitalSigns(bedInfo *&target)
@@ -1686,7 +1686,7 @@ void Nurse::setBedVitalSigns(bedInfo *&target)
     std::string itemName = ExaminationItemMenu();
 
     if (itemName == "0")    {
-        std::cout << "已取消修改操作！" << std::endl;
+        printWarning("已取消修改操作！");
         return;
     }
 
@@ -1694,13 +1694,13 @@ void Nurse::setBedVitalSigns(bedInfo *&target)
 
     setVitalSigns(target->vitalSigns, itemName);
 
-    std::cout << "生命体征已更新！" << std::endl;
+    printSuccess("生命体征已更新！");
 }
 // 护士逻辑删除床位信息
 void Nurse::deleteBed(bedInfo *&target)
 {
     target->isDeleted = true;
-    std::cout << "床位信息已逻辑删除！" << std::endl;
+    printSuccess("床位信息已逻辑删除！");
 }
 // 护士创建床位信息
 bool Nurse::createBed(bedInfo *&bedHead, int &idCounter)
@@ -1710,7 +1710,7 @@ bool Nurse::createBed(bedInfo *&bedHead, int &idCounter)
     newBed->department = inputDepartmentCheck("请输入床位所属科室，输入 \" # \" 取消创建: ");
 
     if(newBed->department == "#"){
-        std::cout << "已取消创建操作！" << std::endl;
+        printWarning("已取消创建操作！");
         delete newBed;
         return false;
     }
@@ -1718,7 +1718,7 @@ bool Nurse::createBed(bedInfo *&bedHead, int &idCounter)
     newBed->wardType = HospitalizationWardTypeMenu();
 
     if(newBed->wardType == "0"){
-        std::cout << "已取消创建操作！" << std::endl;
+        printWarning("已取消创建操作！");
         delete newBed;
         return false;
     }
@@ -1739,7 +1739,7 @@ bool Nurse::createBed(bedInfo *&bedHead, int &idCounter)
         {
 
 
-            std::cout << "床位ID " << newBed->bedID << " 已存在！无法添加床位信息。" << std::endl;
+            printError("床位ID " + newBed->bedID + " 已存在！无法添加床位信息。");
             delete newBed; // 释放内存
             return false;
         }
@@ -1755,7 +1755,7 @@ bool Nurse::createBed(bedInfo *&bedHead, int &idCounter)
         bedHead->prev = newBed;
     bedHead = newBed;
 
-    std::cout << "床位创建成功！床位ID: " << newBed->bedID << std::endl;
+    printSuccess("床位创建成功！床位ID: " + newBed->bedID);
     return true;
 }
 
@@ -1792,7 +1792,7 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
                 else if (viewChoice == 7)
                     getBedsByWardType(bedHead);
 
-                pause();
+                pause("护士 > 床位管理");
             }
         }
         else if (choice == 2)
@@ -1800,7 +1800,7 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
             bool ishave = getAllBeds(bedHead);
             if (!ishave)
             {
-                pause();
+                pause("护士 > 床位管理");
                 continue;
             }
 
@@ -1817,8 +1817,8 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
 
             if (!target)
             {
-                std::cout << "未找到指定床位！" << std::endl;
-                pause();
+                printError("未找到指定床位！");
+                pause("护士 > 床位管理");
                 continue;
             }
 
@@ -1835,7 +1835,7 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
                 else if (modifyChoice == 3)
                     setBedVitalSigns(target);
 
-                pause();
+                pause("护士 > 床位管理");
             }
         }
         else if (choice == 3)
@@ -1843,7 +1843,7 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
             bool ishave = getAllBeds(bedHead);
             if (!ishave)
             {
-                pause();
+                pause("护士 > 床位管理");
                 continue;
             }
 
@@ -1860,14 +1860,14 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
 
             if (!target)
             {
-                std::cout << "未找到指定床位！" << std::endl;
-                pause();
+                printError("未找到指定床位！");
+                pause("护士 > 床位管理");
                 continue;
             }
 
             if(target->status == bedStatus::OCCUPIED){
-                std::cout << "该床位当前处于占用状态，无法删除！" << std::endl;
-                pause();
+                printError("该床位当前处于占用状态，无法删除！");
+                pause("护士 > 床位管理");
                 continue;
             }
 
@@ -1882,14 +1882,14 @@ void Nurse::manageBeds(bedInfo *&bedHead, int &idCounter)
             }
             else
             {
-                std::cout << "已取消删除操作！" << std::endl;
+                printWarning("已取消删除操作！");
             }
-            pause();
+            pause("护士 > 床位管理");
         }
         else if (choice == 4)
         {
             createBed(bedHead, idCounter);
-            pause();
+            pause("护士 > 床位管理");
         }
     }
 }
@@ -1942,7 +1942,7 @@ void Nurse::managePersonalInfo()
                 else if (viewChoice == 13)
                     std::cout << "账户创建时间: " << this->createTime << std::endl;
 
-                pause();
+                pause("护士 > 个人信息管理");
             }
         }
         else if (choice == 2)
@@ -1959,25 +1959,25 @@ void Nurse::managePersonalInfo()
                 {
                     std::cout << "当前姓名: " << this->username << std::endl;
                     this->username = inputStringCheck("请输入新的姓名: ");
-                    std::cout << "姓名已更新！" << std::endl;
+                    printSuccess("姓名已更新！");
                 }
                 else if (modifyChoice == 2)
                 {
                     std::cout << "当前性别: " << this->gender << std::endl;
                     this->gender = inputGenderCheck("请输入新的性别: ");
-                    std::cout << "性别已更新！" << std::endl;
+                    printSuccess("性别已更新！");
                 }
                 else if (modifyChoice == 3)
                 {
                     std::cout << "当前年龄: " << this->age << std::endl;
                     this->age = inputAgeCheck("请输入新的年龄: ");
-                    std::cout << "年龄已更新！" << std::endl;
+                    printSuccess("年龄已更新！");
                 }
                 else if (modifyChoice == 4)
                 {
                     std::cout << "当前科室: " << this->department << std::endl;
                     this->department = inputDepartmentCheck("请输入新的科室: ");
-                    std::cout << "科室已更新！" << std::endl;
+                    printSuccess("科室已更新！");
                 }
                 else if (modifyChoice == 5)
                 {
@@ -1993,24 +1993,24 @@ void Nurse::managePersonalInfo()
 
                     if (levelChoice == 0)
                     {
-                        std::cout << "已取消修改操作！" << std::endl;
+                        printWarning("已取消修改操作！");
                         continue;
                     }
 
                     this->level = static_cast<NurseLevel>(levelChoice);
-                    std::cout << "护士等级已更新！" << std::endl;
+                    printSuccess("护士等级已更新！");
                 }
                 else if (modifyChoice == 6)
                 {
                     std::cout << "当前联系电话: " << this->telephone << std::endl;
                     this->telephone = inputTelephoneCheck("请输入新的联系电话: ");
-                    std::cout << "联系电话已更新！" << std::endl;
+                    printSuccess("联系电话已更新！");
                 }
                 else if (modifyChoice == 7)
                 {
                     std::cout << "当前邮箱: " << this->email << std::endl;
                     this->email = inputEmailCheck("请输入新的邮箱: ");
-                    std::cout << "邮箱已更新！" << std::endl;
+                    printSuccess("邮箱已更新！");
                 }
                 else if (modifyChoice == 8)
                 {
@@ -2023,18 +2023,18 @@ void Nurse::managePersonalInfo()
 
                     if (dutyChoice == 0)
                     {
-                        std::cout << "已取消修改操作！" << std::endl;
+                        printWarning("已取消修改操作！");
                         continue;
                     }
 
                     this->isOnDuty = (dutyChoice == 1);
-                    std::cout << "在岗状态已更新！" << std::endl;
+                    printSuccess("在岗状态已更新！");
                 }
                 else if (modifyChoice == 9)
                 {
                     std::cout << "当前排班信息: " << this->scheduleInfo << std::endl;
                     this->scheduleInfo = inputStringCheck("请输入新的排班信息: ");
-                    std::cout << "排班信息已更新！" << std::endl;
+                    printSuccess("排班信息已更新！");
                 }
                 else if (modifyChoice == 10)
                 {
@@ -2050,20 +2050,20 @@ void Nurse::managePersonalInfo()
                             std::string newHash = SHA256Encrypt(newpwd1, newSalt, this->kHashIterations);
                             this->salt = newSalt;
                             this->storedHash = newHash;
-                            std::cout << "密码更新成功！" << std::endl;
+                            printSuccess("密码更新成功！");
                         }
                         else
                         {
-                            std::cout << "两次输入的新密码不一致，密码更新失败！" << std::endl;
+                            printError("两次输入的新密码不一致，密码更新失败！");
                         }
                     }
                     else
                     {
-                        std::cout << "密码验证失败，无法修改密码！" << std::endl;
+                        printError("密码验证失败，无法修改密码！");
                     }
                 }
 
-                pause();
+                pause("护士 > 个人信息管理");
             }
         }
     }
