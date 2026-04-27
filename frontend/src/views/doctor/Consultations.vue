@@ -10,8 +10,9 @@
           <template #default="{ row }"><el-tag size="small">{{ row.statusStr }}</el-tag></template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column label="操作" width="100">
+        <el-table-column label="操作" width="160">
           <template #default="{ row }">
+            <el-button type="warning" size="small" @click="openExamDialog(row)">开具检查</el-button>
             <el-button type="primary" size="small" @click="openEdit(row)">编辑</el-button>
           </template>
         </el-table-column>
@@ -40,19 +41,64 @@
         <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="examDialogVisible" title="开具检查" width="600px" @open="loadExamItems">
+      <el-descriptions :column="3" border class="exam-summary">
+        <el-descriptions-item label="看诊ID">{{ examRow.consultationID }}</el-descriptions-item>
+        <el-descriptions-item label="患者ID">{{ examRow.patientID }}</el-descriptions-item>
+        <el-descriptions-item label="初步诊断">{{ examRow.preliminaryDiagnosis }}</el-descriptions-item>
+      </el-descriptions>
+
+      <div style="margin-top: 20px">
+        <div style="margin-bottom: 10px; font-weight: bold">选择检查项目：</div>
+        <el-checkbox-group v-model="examSelectedItems" v-loading="examItemsLoading">
+          <el-checkbox
+            v-for="item in examItemOptions"
+            :key="item.name"
+            :label="item.name"
+            :value="item.name"
+            style="margin-bottom: 8px"
+          >
+            {{ item.name }}(¥{{ item.fee }})
+          </el-checkbox>
+        </el-checkbox-group>
+        <el-empty v-if="!examItemsLoading && examItemOptions.length === 0" description="暂无可选检查项目" />
+      </div>
+
+      <template #footer>
+        <el-button @click="examDialogVisible = false">取消</el-button>
+        <el-button
+          type="primary"
+          :loading="examSubmitting"
+          :disabled="examSelectedItems.length === 0"
+          @click="handleCreateExam"
+        >
+          确认开具 ({{ examSelectedItems.length }}项)
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getMyConsultations, updateConsultation } from '../../api/doctor'
+import { getMyConsultations, updateConsultation, createExaminations } from '../../api/doctor'
+import { getExaminationItems } from '../../api/common'
 
 const loading = ref(false)
 const saving = ref(false)
 const tableData = ref([])
 const editVisible = ref(false)
 const editForm = reactive({})
+
+// Examination dialog state
+const examDialogVisible = ref(false)
+const examRow = reactive({})
+const examItemOptions = ref([])
+const examSelectedItems = ref([])
+const examItemsLoading = ref(false)
+const examSubmitting = ref(false)
 
 async function loadData() {
   loading.value = true
@@ -73,6 +119,40 @@ async function handleSave() {
     else ElMessage.error(res.message)
   } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '操作失败') }
   finally { saving.value = false }
+}
+
+function openExamDialog(row) {
+  Object.assign(examRow, { ...row })
+  examSelectedItems.value = []
+  examDialogVisible.value = true
+}
+
+async function loadExamItems() {
+  examItemsLoading.value = true
+  try {
+    const res = await getExaminationItems()
+    if (res.code === 200) examItemOptions.value = res.data.list || res.data || []
+    else ElMessage.error(res.message)
+  } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '加载检查项目失败') }
+  finally { examItemsLoading.value = false }
+}
+
+async function handleCreateExam() {
+  examSubmitting.value = true
+  try {
+    const res = await createExaminations({
+      consultationID: examRow.consultationID,
+      items: examSelectedItems.value
+    })
+    if (res.code === 200) {
+      ElMessage.success('检查开具成功')
+      examDialogVisible.value = false
+      loadData()
+    } else {
+      ElMessage.error(res.message)
+    }
+  } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '操作失败') }
+  finally { examSubmitting.value = false }
 }
 
 onMounted(loadData)

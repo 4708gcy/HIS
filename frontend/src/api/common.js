@@ -7,3 +7,7 @@ export function getDepartments() {
 export function getFeeStandards() {
   return request.get('/fee-standards')
 }
+
+export function getExaminationItems() {
+  return request.get('/examination-items')
+}

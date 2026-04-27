@@ -25,8 +25,10 @@ public:
     // 初始化：加载所有数据
     void init();
 
-    // 保存所有数据到文件
+    // 保存所有数据到文件（带锁，供外部无锁上下文调用）
     void saveAll();
+    // 保存所有数据到文件（不加锁，调用方必须已持有 mtx）
+    void saveAllUnsafe();
 
     // 获取数据头指针（可修改，用于链表头插入）
     Admin *&getAdminHead() { return adminHead; }

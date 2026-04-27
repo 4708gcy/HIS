@@ -12,6 +12,12 @@
     </el-card>
 
     <el-card>
+      <template #header>
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <span>药品列表</span>
+          <el-button type="success" @click="openAdd">添加药品</el-button>
+        </div>
+      </template>
       <el-table :data="tableData" stripe v-loading="loading">
         <el-table-column prop="medicineID" label="药品ID" width="100" />
         <el-table-column prop="name" label="药品名称" width="150" />
@@ -43,6 +49,30 @@
       </div>
     </el-card>
 
+    <el-dialog v-model="addVisible" title="添加药品" width="500px">
+      <el-form :model="addForm" label-width="80px" :rules="addRules" ref="addFormRef">
+        <el-form-item label="名称" prop="name"><el-input v-model="addForm.name" placeholder="请输入药品名称" /></el-form-item>
+        <el-form-item label="规格"><el-input v-model="addForm.specification" placeholder="请输入规格" /></el-form-item>
+        <el-form-item label="生产商"><el-input v-model="addForm.manufacturer" placeholder="请输入生产商" /></el-form-item>
+        <el-form-item label="进价"><el-input-number v-model="addForm.purchasePrice" :precision="2" :min="0" /></el-form-item>
+        <el-form-item label="售价"><el-input-number v-model="addForm.salePrice" :precision="2" :min="0" /></el-form-item>
+        <el-form-item label="库存"><el-input-number v-model="addForm.stock" :min="0" /></el-form-item>
+        <el-form-item label="安全库存"><el-input-number v-model="addForm.safetyStock" :min="0" /></el-form-item>
+        <el-form-item label="生产日期"><el-date-picker v-model="addForm.productionDate" type="date" value-format="YYYY-MM-DD" placeholder="选择生产日期" style="width: 100%" /></el-form-item>
+        <el-form-item label="有效期至"><el-date-picker v-model="addForm.expiryDate" type="date" value-format="YYYY-MM-DD" placeholder="选择有效期" style="width: 100%" /></el-form-item>
+        <el-form-item label="科室">
+          <el-select v-model="addForm.department" clearable placeholder="请选择科室" style="width: 100%">
+            <el-option v-for="d in departments" :key="d" :label="d" :value="d" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="备注"><el-input v-model="addForm.note" type="textarea" :rows="3" placeholder="请输入备注" /></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="addVisible = false">取消</el-button>
+        <el-button type="primary" :loading="addSaving" @click="handleAdd">确定</el-button>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="editVisible" title="编辑药品" width="500px">
       <el-form :model="editForm" label-width="80px">
         <el-form-item label="名称"><el-input v-model="editForm.name" /></el-form-item>
@@ -67,7 +97,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMedicines, updateMedicine, deleteMedicine } from '../../api/admin'
+import { getMedicines, createMedicine, updateMedicine, deleteMedicine } from '../../api/admin'
 import { getDepartments } from '../../api/common'
 
 const departments = ref([])
@@ -75,6 +105,7 @@ getDepartments().then(res => { departments.value = res.data.list }).catch(e => {
 
 const loading = ref(false)
 const saving = ref(false)
+const addSaving = ref(false)
 const tableData = ref([])
 const total = ref(0)
 const page = ref(1)
@@ -83,6 +114,44 @@ const query = reactive({ department: '' })
 const editVisible = ref(false)
 const editForm = reactive({})
 
+// -- 添加药品 --
+const addVisible = ref(false)
+const addFormRef = ref(null)
+const addForm = reactive({
+  name: '',
+  specification: '',
+  manufacturer: '',
+  purchasePrice: 0,
+  salePrice: 0,
+  stock: 0,
+  safetyStock: 0,
+  productionDate: '',
+  expiryDate: '',
+  department: '',
+  note: ''
+})
+const addRules = {
+  name: [{ required: true, message: '请输入药品名称', trigger: 'blur' }]
+}
+
+function openAdd() {
+  Object.assign(addForm, { name: '', specification: '', manufacturer: '', purchasePrice: 0, salePrice: 0, stock: 0, safetyStock: 0, productionDate: '', expiryDate: '', department: '', note: '' })
+  addVisible.value = true
+}
+
+async function handleAdd() {
+  if (addFormRef.value) {
+    try { await addFormRef.value.validate() } catch { return }
+  }
+  addSaving.value = true
+  try {
+    const res = await createMedicine(addForm)
+    if (res.code === 200) { ElMessage.success('添加成功'); addVisible.value = false; loadData() }
+  } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '添加失败') }
+  finally { addSaving.value = false }
+}
+
+// -- 编辑药品 --
 async function loadData() {
   loading.value = true
   try {

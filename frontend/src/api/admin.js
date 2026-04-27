@@ -126,6 +126,9 @@ export function getMedicines(params) {
 export function getMedicine(id) {
   return request.get(`/admin/medicines/${id}`)
 }
+export function createMedicine(data) {
+  return request.post('/admin/medicines', data)
+}
 export function updateMedicine(id, data) {
   return request.put(`/admin/medicines/${id}`, data)
 }
@@ -137,6 +140,9 @@ export function deleteMedicine(id) {
 export function getBeds(params) {
   return request.get('/admin/beds', { params })
 }
+export function createBed(data) {
+  return request.post('/admin/beds', data)
+}
 export function deleteBed(id) {
   return request.delete(`/admin/beds/${id}`)
 }
@@ -144,4 +150,9 @@ export function deleteBed(id) {
 // 账号管理
 export function updateAccountStatus(id, role, active) {
   return request.put(`/admin/account/${id}/status`, { role, active })
+}
+
+// 管理员个人信息
+export function updateAdminProfile(data) {
+  return request.put('/admin/profile', data)
 }

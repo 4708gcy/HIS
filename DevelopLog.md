@@ -1217,3 +1217,328 @@ frontend/
 3. **API 代理而非 CORS**：开发时使用 Vite `proxy` 转发请求到后端，避免浏览器跨域限制；生产环境通过 Nginx 反向代理实现
 4. **无 Mock 数据**：由于后端 API 已完成，前端直接对接真实 API，无需 Mock.js 中间层
 5. **Element Plus 中文 locale**：`import zhCn from 'element-plus/es/locale/lang/zh-cn'` 确保 `el-pagination`、`el-table` 空数据等提示为中文
+
+---
+
+### 3. 关键 Bug 修复：互斥锁死锁问题
+
+**问题现象**：前端所有修改操作（编辑、删除、激活等）均报错 `resource deadlock would occur`，导致系统无法进行任何写操作。
+
+**根因分析**：所有 API 处理函数先通过 `std::lock_guard<std::mutex> lock(dm.getMutex())` 获取互斥锁，然后调用 `dm.saveAll()` 持久化数据。但 `saveAll()` 内部又对**同一个** `std::mutex mtx`（非递归锁）执行 `std::lock_guard<std::mutex> lock(mtx)`。同一个线程对非递归互斥锁重复加锁，C++ 标准库抛出 `resource_deadlock_would_occur` 异常。
+
+**影响范围**：全部 33 个写操作端点（POST/PUT/DELETE）均受影响。GET 端点不调用 `saveAll()`，因此不受影响。
+
+**修复方案**：
+
+1. 新增 `DataManager::saveAllUnsafe()` 方法——保存逻辑与 `saveAll()` 完全相同，但**不加锁**，供已持有锁的 API 处理函数调用
+2. 原 `saveAll()`（带锁）保留给 `server_main.cpp` 中的信号处理和退出保存（这些场景不在锁内）
+3. 将 `ApiServer.cpp` 中全部 33 处 `dm.saveAll()` 替换为 `dm.saveAllUnsafe()`
+
+```cpp
+// 修改前（死锁）
+void DataManager::saveAll() {
+    std::lock_guard<std::mutex> lock(mtx);  // ← 二次加锁，死锁！
+    saveAdminData(adminHead, adminIDCount_);
+    // ... 其他保存
+}
+
+// 修改后
+void DataManager::saveAllUnsafe() {         // 不加锁版本
+    saveAdminData(adminHead, adminIDCount_);
+    // ... 其他保存
+}
+void DataManager::saveAll() {
+    std::lock_guard<std::mutex> lock(mtx);  // 加锁后调用 unsafe 版本
+    saveAllUnsafe();
+}
+```
+
+---
+
+### 4. 前端功能全面补全 — 所有角色核心业务闭环
+
+修复死锁后，对系统进行了全面审计，发现前端虽有基本框架，但大量创建/编辑/详情查看功能缺失。本轮补全了以下所有核心功能。
+
+#### 4.1 新增通用 API 端点
+
+| 端点 | 功能 |
+|------|------|
+
+| `GET /api/examination-items` | 返回 14 种检查项目名称及对应费用（体温测量5元、血压测量8元...），与 `User::calculateExaminationFee()` 保持一致。无需认证。 |
+
+#### 4.2 管理员功能补全
+
+**后端新增端点（4 个）：**
+
+| 端点 | 功能 |
+| ------ | ------ |
+| `POST /api/admin/medicines` | 添加药品（name/specification/manufacturer/价格/库存/日期/科室），自动生成 `medicineID`（`generateID(8, ...)`），默认状态 `NORMAL` |
+| `POST /api/admin/beds` | 添加床位（科室/病房类型/区号/病房号/床位号），自动生成结构化床位ID（格式 `Dpt-Area-Type-Ward-Bed`，如 `N-02-P-005-03`），检查ID重复，默认状态 `AVAILABLE` |
+| `PUT /api/admin/profile` | 管理员编辑个人信息（username/gender/age/telephone/email） |
+| `POST /api/admin/medicines` ID 生成 | 使用 `generateID(8, dm.medicineCount())`，首位数字 8 代表药品 |
+
+**床位ID生成规则（复用控制台 `autoGenerateBedID` 逻辑）：**
+
+```text
+格式：{科室代码}-{区号:02d}-{病房类型代码}-{病房号:03d}-{床位号:02d}
+科室代码：内科→N, 外科→W, 妇产科→F, 急诊科→J, 儿科→E
+病房类型：普通病房→P, 隔离病房→G, VIP病房→V, ICU病房→I
+示例：N-02-P-005-03 = 内科-2区-普通病房-5号房-3号床
+```
+
+**前端页面更新：**
+
+- **Medicines.vue**：新增"添加药品"按钮 + 创建对话框（11 个表单字段，包含 `el-date-picker` 选择生产日期/有效期，`el-input-number` 输入价格/库存）
+- **Beds.vue**：新增"添加床位"按钮 + 创建对话框（科室选择、病房类型选择、区号/病房号/床位号数字输入）
+- **Profile.vue**：新增编辑/查看切换（参照患者 `Profile.vue` 模式，卡片头"编辑"按钮切换 `el-descriptions` 和 `el-form`）
+
+#### 4.3 医生功能补全 — 完整诊疗工作流
+
+**后端新增端点（3 个）：**
+
+| 端点 | 功能 |
+| ------ | ------ |
+| `POST /api/doctor/consultations` | 从挂号创建看诊记录。验证挂号属于该医生且状态为 `PAID(1)`，生成 `consultationID`，填充挂号关联信息，接受主诉/病史/检查项目列表/建议住院等字段，**同时将挂号状态更新为 `FINISHED(3)`** 防止重复看诊 |
+| `POST /api/doctor/examinations` | 从看诊批量创建检查记录。接受 `consultationID` + `items[]`（检查项目名数组），为每个项目创建一条 `Examination` 记录，自动计算费用（`doc->calculateExaminationFee(itemName)`），同步更新看诊的 `examinationlist` |
+| `PUT /api/doctor/profile` | 医生编辑个人信息（username/gender/age/telephone/email） |
+
+**ID 数字分配规则：**
+
+```text
+0=Admin, 1=Doctor, 2=Nurse, 3=Pharmacist, 4=Patient（用户）
+5=Registration, 6=Consultation, 7=Examination（医疗记录）
+8=Medicine, 9=MedicationRecord, 床位使用结构化ID
+```
+
+**前端页面更新：**
+
+- **Registrations.vue**（重写）：
+  - 新增状态筛选下拉菜单（全部/已预约/已支付/已完成）
+  - 新增操作列：已支付状态的挂号显示"开始看诊"按钮
+  - 新增看诊创建对话框（`width=700px`）：
+    - 只读字段：挂号ID、患者ID（自动填充）
+    - 文本域：主诉、现病史、既往史、备注
+    - 输入框：家族史、初步诊断
+    - `el-checkbox-group`：检查项目多选（14 项，4 列网格布局，数据从 `GET /api/examination-items` 加载）
+    - `el-switch`：建议住院
+  - 提交后自动刷新列表，挂号状态变为"已完成"
+
+- **Consultations.vue**（增强）：
+  - 新增"开具检查"按钮列
+  - 新增检查创建对话框：顶部 `el-descriptions` 显示看诊摘要（ID/患者/诊断），中部 `el-checkbox-group` 选择检查项（显示名称和费用），底部确认按钮
+  - 提交调用 `createExaminations({ consultationID, items })`
+
+- **Profile.vue**（增强）：新增编辑/查看切换，可编辑 username/gender/age/telephone/email
+
+#### 4.4 护士功能补全 — 住院全流程 + 床位管理
+
+**后端新增端点（7 个）：**
+
+| 端点 | 功能 |
+| ------ | ------ |
+| `POST /api/nurse/hospitalizations` | 创建住院记录。从看诊创建（需 `isHospitalizationRecommended=true`），护士选择病房类型，设置押金，初始状态 `APPLIED(1)` |
+| `POST /api/nurse/hospitalizations/:id/assign-bed` | 分配床位（核心业务）。原子操作：验证住院记录状态为 `APPLIED/PAID` → 查找空闲床位 → 床位状态改为 `OCCUPIED` → 关联 patientID/nurseID → 住院记录状态改为 `ADMITTED(3)` → 记录入院时间 |
+| `POST /api/nurse/hospitalizations/:id/discharge` | 出院办理。根据病房类型计算住院费用（普通50/隔离100/VIP200/ICU500 元/天），释放床位（设为 `ClEANING` 状态），比较押金与总费用扣费或退还差额，状态改为 `DISCHARGED(4)` |
+| `DELETE /api/nurse/hospitalizations/:id` | 逻辑删除住院记录 |
+| `POST /api/nurse/beds` | 护士添加床位（与管理员相同的结构化ID生成逻辑） |
+| `PUT /api/nurse/beds/:id` | 修改床位状态（已占用/清洁中/可分配/不可用）和备注 |
+| `DELETE /api/nurse/beds/:id` | 删除床位（被占用时拒绝删除） |
+
+**已有端点增强：**
+
+- `PUT /api/nurse/hospitalizations/:id`：新增 `deposit`（押金）和 `wardType`（病房类型）字段支持
+
+**前端页面更新：**
+
+- **Hospitalizations.vue**（重写）：
+  - "新建住院"按钮 + 创建对话框（看诊ID输入、病房类型选择、押金输入）
+  - "分配床位"按钮（仅 APPLIED/PAID 状态显示）：弹出对话框，根据住院记录的病房类型筛选空闲床位列表，选择后调用 `assignBed` API
+  - "办理出院"按钮（仅 ADMITTED 状态显示）：确认后调用 `dischargePatient`，后端自动计算费用并显示结果
+  - "删除"按钮 + 确认对话框
+  - 状态标签颜色：申请中=info，已缴费=warning，已入院=success，已出院=default，已作废=danger
+
+- **Beds.vue**（重写）：
+  - "添加床位"按钮 + 创建对话框（科室/病房类型/区号/病房号/床位号）
+  - "编辑"按钮 + 编辑对话框（状态下拉选择：已占用/清洁中/可分配/不可用 + 备注输入）
+  - "删除"按钮（被占用时禁用）+ 确认对话框
+  - 新增病房类型筛选下拉菜单
+  - 状态标签颜色：已占用=danger，清洁中=warning，可分配=success，不可用=info
+
+#### 4.5 药剂师功能补全 — 用药记录创建 + 药品管理
+
+**后端新增端点（5 个）：**
+
+| 端点 | 功能 |
+| ------ | ------ |
+| `POST /api/pharmacist/medication-records` | 从看诊处方创建用药记录。查找看诊的 `prescriptions` 数组，为每条处方创建 `MedicationLine`（查找药品获取 `salePrice` 计算单价），汇总 `totalCost`，初始 `reviewStatus=PENDING_REVIEW`，`status=UNPAID` |
+| `DELETE /api/pharmacist/medication-records/:id` | 逻辑删除用药记录 |
+| `POST /api/pharmacist/medicines` | 药剂师添加药品（与管理员/护士相同的字段） |
+| `PUT /api/pharmacist/medicines/:id` | 编辑药品详情（11 个字段：name/specification/manufacturer/价格/safetyStock/日期/department/status/note） |
+| `DELETE /api/pharmacist/medicines/:id` | 逻辑删除药品 |
+
+**用药记录创建逻辑详解：**
+
+```text
+输入：consultationID
+1. 查找 Consultation，验证存在且有 prescriptions
+2. 生成 medRecordID = generateID(9, dm.medicationRecordCount())
+3. 遍历 consultation.prescriptions：
+   - 每条 Prescription → MedicationLine
+   - medicineID/name/quantity 从处方复制
+   - unitPrice 从 Medicine 链表查找 salePrice
+   - note = dosage + frequency + duration
+   - totalCost += unitPrice * quantity
+4. 设置 doctorID/patientID/department 从看诊复制
+5. pharmacistID = 当前登录药剂师
+6. 初始状态：reviewStatus=PENDING_REVIEW, status=UNPAID
+7. 链表头插入 → saveAllUnsafe()
+```
+
+**前端页面更新：**
+
+- **MedicationRecords.vue**（重写）：
+  - "新建用药记录"按钮 + 创建对话框（输入看诊ID，提交后自动从处方生成药品行明细）
+  - "查看详情"按钮 + 详情对话框：显示全部字段 + **药品行明细子表格**（药品名称/数量/单价/小计）
+  - "删除"按钮 + 确认对话框
+  - 保留原有审核通过/驳回/发药功能
+
+- **Medicines.vue**（重写）：
+  - "添加药品"按钮 + 创建对话框（11 个字段，创建时显示库存输入）
+  - "编辑"按钮 + 编辑对话框（11 个字段，编辑时隐藏库存，通过入库/出库调整）
+  - "删除"按钮 + 确认对话框
+  - 表格新增列：生产商、进价、科室
+  - 保留原有入库/出库功能
+
+#### 4.6 患者功能补全 — 详情查看 + 住院缴费
+
+**后端新增端点（1 个）：**
+
+| 端点 | 功能 |
+|------|------|
+
+| `PUT /api/patient/hospitalizations/:id/pay` | 住院押金缴纳。验证住院记录状态为 `APPLIED(1)`，从患者余额扣除押金，更新住院记录 `deposit` 字段，状态改为 `PAID(2)` |
+
+**前端页面更新：**
+
+- **Consultations.vue**（增强）：
+  - 详情对话框大幅扩充（宽度 `800px`），新增显示：挂号ID、科室、看诊时间、既往史、家族史、备注、处方审核状态、建议住院
+  - **检查项目列表**：`el-tag` 标签组显示 `examinationList` 数组
+  - **处方子表格**：`el-table` 嵌套显示 `prescriptions` 数组（药品名称/数量/剂量/频率/疗程）
+
+- **Examinations.vue**（增强）：
+  - 新增"查看详情"按钮 + 详情对话框
+  - 显示全部字段：检查ID、看诊ID、医生ID、科室、项目名称、下单时间、报告时间、报告摘要、费用、状态、备注
+  - **生命体征区块**：体温(°C)、收缩压/舒张压(mmHg)、心率(次/分)、呼吸频率(次/分)、血氧(%)、身高(cm)、体重(kg)、BMI、血糖(mmol/L)
+
+- **MedicationRecords.vue**（增强）：
+  - 新增"查看详情"按钮 + 详情对话框
+  - 显示全部字段：记录ID、看诊ID、医生ID、药剂师ID、科室、创建时间、总费用、审核状态、缴费状态、缴费时间、发药时间
+  - **药品行明细子表格**：药品名称、数量、单价、小计、用法备注
+
+- **Hospitalizations.vue**（增强）：
+  - 新增"查看详情"按钮 + 详情对话框（住院ID、看诊ID、医生/护士ID、科室、病房类型、床位号、申请/入院/出院时间、押金、总费用、状态）
+  - 新增"缴纳押金"按钮（仅 APPLIED 状态显示）：输入押金金额，从余额扣除，状态变为已缴费
+  - 状态标签颜色：申请中=warning，已缴费=info，已入院=success，已出院=default，已作废=danger
+
+#### 4.7 各角色个人信息编辑统一补全
+
+所有角色 `Profile.vue` 统一新增编辑/查看切换功能：
+
+- 卡片头右侧"编辑"/"取消编辑"按钮
+- 查看模式：`el-descriptions` 显示全部字段
+- 编辑模式：`el-form` 可修改 username/gender(radio)/age(input-number)/telephone/email
+- 保存调用各角色对应的 `PUT /api/{role}/profile` 端点
+
+新增的 PUT profile 端点：
+
+| 端点 | 角色 |
+| ------ | ------ |
+| `PUT /api/admin/profile` | 管理员 |
+| `PUT /api/doctor/profile` | 医生 |
+| `PUT /api/nurse/profile` | 护士 |
+| `PUT /api/pharmacist/profile` | 药剂师 |
+
+（患者 `PUT /api/patient/profile` 已在前期实现）
+
+#### 4.8 前端 API 文件更新汇总
+
+| 文件 | 新增函数 |
+| ------ | --------- |
+| `api/common.js` | `getExaminationItems()` |
+| `api/doctor.js` | `updateProfile()`、`createConsultation()`、`createExaminations()` |
+| `api/admin.js` | `createMedicine()`、`createBed()`、`updateAdminProfile()` |
+| `api/nurse.js` | `createHospitalization()`、`deleteHospitalization()`、`assignBed()`、`dischargePatient()`、`createBed()`、`updateBed()`、`deleteBed()`、`updateProfile()` |
+| `api/pharmacist.js` | `createMedicationRecord()`、`deleteMedicationRecord()`、`createMedicine()`、`updateMedicine()`、`deleteMedicine()`、`updateProfile()` |
+| `api/patient.js` | `payHospitalization()` |
+
+#### 4.9 后端新增端点完整清单（共 18 个）
+
+```text
+通用：
+  GET  /api/examination-items                     检查项目列表
+
+管理员：
+  POST /api/admin/medicines                       添加药品
+  POST /api/admin/beds                            添加床位
+  PUT  /api/admin/profile                         编辑个人信息
+
+医生：
+  POST /api/doctor/consultations                  从挂号创建看诊
+  POST /api/doctor/examinations                   从看诊批量创建检查
+  PUT  /api/doctor/profile                        编辑个人信息
+
+护士：
+  POST   /api/nurse/hospitalizations              创建住院记录
+  POST   /api/nurse/hospitalizations/:id/assign-bed  分配床位
+  POST   /api/nurse/hospitalizations/:id/discharge    出院办理
+  DELETE /api/nurse/hospitalizations/:id           删除住院记录
+  POST   /api/nurse/beds                          添加床位
+  PUT    /api/nurse/beds/:id                      修改床位
+  DELETE /api/nurse/beds/:id                      删除床位
+  PUT    /api/nurse/profile                       编辑个人信息
+
+药剂师：
+  POST   /api/pharmacist/medication-records       创建用药记录
+  DELETE /api/pharmacist/medication-records/:id    删除用药记录
+  POST   /api/pharmacist/medicines                添加药品
+  PUT    /api/pharmacist/medicines/:id             编辑药品
+  DELETE /api/pharmacist/medicines/:id             删除药品
+  PUT    /api/pharmacist/profile                   编辑个人信息
+
+患者：
+  PUT  /api/patient/hospitalizations/:id/pay      住院押金缴纳
+```
+
+#### 4.10 本轮新增/修改文件清单
+
+```text
+后端（2 个文件）：
+  Source/ApiServer.cpp    新增 18 个 API 端点 + saveAllUnsafe() 方法
+  Head/ApiServer.h        新增 saveAllUnsafe() 声明
+
+前端 API（6 个文件）：
+  src/api/common.js       新增 getExaminationItems()
+  src/api/doctor.js       新增 3 个函数
+  src/api/admin.js        新增 3 个函数
+  src/api/nurse.js        新增 8 个函数
+  src/api/pharmacist.js   新增 6 个函数
+  src/api/patient.js      新增 1 个函数
+
+前端页面（13 个文件）：
+  views/admin/Medicines.vue     新增添加药品对话框
+  views/admin/Beds.vue          新增添加床位对话框
+  views/admin/Profile.vue       新增编辑切换
+  views/doctor/Registrations.vue  重写：开始看诊对话框
+  views/doctor/Consultations.vue  增强：开具检查对话框
+  views/doctor/Profile.vue       新增编辑切换
+  views/nurse/Hospitalizations.vue 重写：创建住院/分配床位/出院
+  views/nurse/Beds.vue           重写：添加/编辑/删除床位
+  views/nurse/Profile.vue        新增编辑切换
+  views/pharmacist/MedicationRecords.vue 重写：创建/详情/删除
+  views/pharmacist/Medicines.vue  重写：添加/编辑/删除药品
+  views/pharmacist/Profile.vue    新增编辑切换
+  views/patient/Consultations.vue  增强：完整详情对话框
+  views/patient/Examinations.vue   增强：详情对话框+生命体征
+  views/patient/MedicationRecords.vue 增强：详情对话框+药品行
+  views/patient/Hospitalizations.vue 增强：详情对话框+缴纳押金
+```

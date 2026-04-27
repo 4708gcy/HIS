@@ -27,6 +27,9 @@ export function payMedicationRecord(id) {
 export function getMyHospitalizations() {
   return request.get('/patient/hospitalizations')
 }
+export function payHospitalization(id, deposit) {
+  return request.put(`/patient/hospitalizations/${id}/pay`, { deposit })
+}
 export function recharge(amount) {
   return request.post('/patient/recharge', { amount })
 }

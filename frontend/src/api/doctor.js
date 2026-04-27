@@ -24,3 +24,12 @@ export function updateExamination(id, data) {
 export function getProfile() {
   return request.get('/doctor/profile')
 }
+export function updateProfile(data) {
+  return request.put('/doctor/profile', data)
+}
+export function createConsultation(data) {
+  return request.post('/doctor/consultations', data)
+}
+export function createExaminations(data) {
+  return request.post('/doctor/examinations', data)
+}

@@ -9,15 +9,17 @@
 				"--build",
 				"${workspaceFolder}/build",
 				"--config",
-				"Debug"
+				"Debug",
+				"--target",
+				"his"
 			],
-			"dependsOn":["CMake: 配置"],
+			"dependsOn":[],
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			},
 			"problemMatcher": [],
-			"detail": "进入 build 目录后执行 cmake --build . --config Debug 命令，编译项目"
+			"detail": "进入 build 目录后执行 cmake --build . --config Debug --target his 命令，编译终端项目"
 		},
 		{
 			"label": "CMake: 配置",
@@ -51,6 +53,26 @@
 			},
 			"problemMatcher": [],
 			"detail": "CMake 模板 清理 任务"
+		},
+		{
+			"type": "shell",
+			"label": "CMake: his_server编译",
+			"command": "cmake",
+			"args": [
+				"--build",
+				"${workspaceFolder}/build",
+				"--config",
+				"Debug",
+				"--target",
+				"his_server"
+			],
+			"dependsOn": [],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"problemMatcher": [],
+			"detail": "进入 build 目录后执行 cmake --build . --config Debug --target his_server 命令，编译前端服务"
 		}
 	]
 }

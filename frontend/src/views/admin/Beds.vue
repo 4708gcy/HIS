@@ -12,6 +12,12 @@
     </el-card>
 
     <el-card>
+      <template #header>
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <span>床位列表</span>
+          <el-button type="success" @click="openAdd">添加床位</el-button>
+        </div>
+      </template>
       <el-table :data="tableData" stripe v-loading="loading">
         <el-table-column prop="bedID" label="床位ID" width="120" />
         <el-table-column prop="department" label="科室" width="100" />
@@ -37,25 +43,76 @@
         <el-pagination v-model:current-page="page" :page-size="pageSize" :total="total" layout="prev, pager, next" @current-change="loadData" />
       </div>
     </el-card>
+
+    <el-dialog v-model="addVisible" title="添加床位" width="500px">
+      <el-form :model="addForm" label-width="80px">
+        <el-form-item label="科室">
+          <el-select v-model="addForm.department" clearable placeholder="请选择科室" style="width: 100%">
+            <el-option v-for="d in departments" :key="d" :label="d" :value="d" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="病房类型">
+          <el-select v-model="addForm.wardType" placeholder="请选择病房类型" style="width: 100%">
+            <el-option label="普通病房" value="普通病房" />
+            <el-option label="隔离病房" value="隔离病房" />
+            <el-option label="VIP病房" value="VIP病房" />
+            <el-option label="ICU病房" value="ICU病房" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="区号"><el-input-number v-model="addForm.areaNumber" :min="1" :max="99" /></el-form-item>
+        <el-form-item label="病房号"><el-input-number v-model="addForm.wardNumber" :min="1" :max="999" /></el-form-item>
+        <el-form-item label="床位号"><el-input-number v-model="addForm.bedNumber" :min="1" :max="99" /></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="addVisible = false">取消</el-button>
+        <el-button type="primary" :loading="addSaving" @click="handleAdd">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getBeds, deleteBed } from '../../api/admin'
+import { getBeds, createBed, deleteBed } from '../../api/admin'
 import { getDepartments } from '../../api/common'
 
 const departments = ref([])
 getDepartments().then(res => { departments.value = res.data.list }).catch(e => { if (e !== 'cancel' && e?.message !== 'cancel') console.error('获取科室失败', e) })
 
 const loading = ref(false)
+const addSaving = ref(false)
 const tableData = ref([])
 const total = ref(0)
 const page = ref(1)
 const pageSize = 15
 const query = reactive({ department: '' })
 
+// -- 添加床位 --
+const addVisible = ref(false)
+const addForm = reactive({
+  department: '',
+  wardType: '',
+  areaNumber: 1,
+  wardNumber: 1,
+  bedNumber: 1
+})
+
+function openAdd() {
+  Object.assign(addForm, { department: '', wardType: '', areaNumber: 1, wardNumber: 1, bedNumber: 1 })
+  addVisible.value = true
+}
+
+async function handleAdd() {
+  addSaving.value = true
+  try {
+    const res = await createBed(addForm)
+    if (res.code === 200) { ElMessage.success('添加成功'); addVisible.value = false; loadData() }
+  } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '添加失败') }
+  finally { addSaving.value = false }
+}
+
+// -- 床位列表 --
 async function loadData() {
   loading.value = true
   try {

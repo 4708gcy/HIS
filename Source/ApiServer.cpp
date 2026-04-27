@@ -38,9 +38,8 @@ void DataManager::init()
     bedHead = loadBedInfos(bedCount_);
 }
 
-void DataManager::saveAll()
+void DataManager::saveAllUnsafe()
 {
-    std::lock_guard<std::mutex> lock(mtx);
     saveAdminData(adminHead, adminIDCount_);
     saveDoctorData(docHead, doctorIDCount_);
     saveNurseData(nurseHead, nurseIDCount_);
@@ -53,6 +52,12 @@ void DataManager::saveAll()
     saveMedicationRecords(medRecHead, medicationRecordCount_);
     saveMedicines(medHead, medicineCount_);
     saveBedInfos(bedHead, bedCount_);
+}
+
+void DataManager::saveAll()
+{
+    std::lock_guard<std::mutex> lock(mtx);
+    saveAllUnsafe();
 }
 
 // ===== 认证中间件 =====
@@ -473,7 +478,7 @@ void registerApiRoutes(httplib::Server &svr)
             }
             }
 
-            dm.saveAll();
+            dm.saveAllUnsafe();
             std::string token = JWTAuth::generateToken(newID, role, JWTAuth::getSecretKey());
             json data;
             data["token"] = token;
@@ -565,7 +570,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (body.contains("isOnDuty")) doc->setIsOnDuty(body["isOnDuty"]);
             if (body.contains("consultationCount")) doc->setConsultationCount(body["consultationCount"]);
             if (body.contains("examinationCount")) doc->setExaminationCount(body["examinationCount"]);
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("修改成功", JsonHelper::userToJson(doc)).dump(), "application/json");
         } catch (const std::exception &e) {
             res.set_content(ApiResponse::badRequest(std::string("参数错误: ") + e.what()).dump(), "application/json");
@@ -588,7 +593,7 @@ void registerApiRoutes(httplib::Server &svr)
             return;
         }
         doc->isDeleted = true;
-        dm.saveAll();
+        dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
     // GET /api/admin/nurses - 护士列表
@@ -645,7 +650,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (body.contains("level")) nurse->setLevel(static_cast<NurseLevel>(body["level"].get<int>()));
             if (body.contains("scheduleInfo")) nurse->setScheduleInfo(body["scheduleInfo"]);
             if (body.contains("isOnDuty")) nurse->setIsOnDuty(body["isOnDuty"]);
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::userToJson(nurse)).dump(), "application/json");
         } catch (const std::exception &e) {
             res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json");
@@ -661,7 +666,7 @@ void registerApiRoutes(httplib::Server &svr)
         Nurse *nurse = findNurse(dm.getNurseHead(), req.matches[1]);
         if (!nurse) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         nurse->isDeleted = true;
-        dm.saveAll();
+        dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
     // GET /api/admin/pharmacists - 药剂师列表
@@ -706,7 +711,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (body.contains("department")) pha->setDepartment(body["department"]);
             if (body.contains("level")) pha->setLevel(static_cast<PharmacistLevel>(body["level"].get<int>()));
             if (body.contains("isOnDuty")) pha->setIsOnDuty(body["isOnDuty"]);
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::userToJson(pha)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
@@ -719,7 +724,7 @@ void registerApiRoutes(httplib::Server &svr)
         std::lock_guard<std::mutex> lock(dm.getMutex());
         Pharmacist *pha = findPharmacist(dm.getPharmacistHead(), req.matches[1]);
         if (!pha) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
-        pha->isDeleted = true; dm.saveAll();
+        pha->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
     // GET /api/admin/patients - 患者列表
@@ -764,7 +769,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (body.contains("address")) pat->address = body["address"];
             if (body.contains("emergencyContactName")) pat->emergencyContactName = body["emergencyContactName"];
             if (body.contains("emergencyContactPhone")) pat->emergencyContactPhone = body["emergencyContactPhone"];
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::userToJson(pat)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
@@ -777,7 +782,7 @@ void registerApiRoutes(httplib::Server &svr)
         std::lock_guard<std::mutex> lock(dm.getMutex());
         Patient *pat = findPatient(dm.getPatientHead(), req.matches[1]);
         if (!pat) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
-        pat->isDeleted = true; dm.saveAll();
+        pat->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
     // ===== 医疗记录管理 API =====
@@ -833,7 +838,7 @@ void registerApiRoutes(httplib::Server &svr)
             int newStatus = body.value("status", -1);
             if (newStatus < 0 || newStatus > 3) { res.set_content(ApiResponse::badRequest("无效状态值(0-3)").dump(), "application/json"); return; }
             reg->status = static_cast<RegistrationStatus>(newStatus);
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("修改成功", JsonHelper::toJson(reg)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
@@ -846,7 +851,7 @@ void registerApiRoutes(httplib::Server &svr)
         std::lock_guard<std::mutex> lock(dm.getMutex());
         Registration *reg = findById(dm.getRegHead(), req.matches[1]);
         if (!reg) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
-        reg->isDeleted = true; dm.saveAll();
+        reg->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
     // 看诊记录
@@ -883,7 +888,7 @@ void registerApiRoutes(httplib::Server &svr)
         try {
             json body = json::parse(req.body);
             con->status = static_cast<ConsultationStatus>(body.value("status", 0));
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::toJson(con)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
@@ -895,7 +900,7 @@ void registerApiRoutes(httplib::Server &svr)
         std::lock_guard<std::mutex> lock(dm.getMutex());
         Consultation *con = findById(dm.getConHead(), req.matches[1]);
         if (!con) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
-        con->isDeleted = true; dm.saveAll();
+        con->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
     // 检查记录
@@ -928,7 +933,7 @@ void registerApiRoutes(httplib::Server &svr)
         std::lock_guard<std::mutex> lock(dm.getMutex());
         Examination *exa = findById(dm.getExamHead(), req.matches[1]);
         if (!exa) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
-        exa->isDeleted = true; dm.saveAll();
+        exa->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
     // 住院记录
@@ -961,7 +966,7 @@ void registerApiRoutes(httplib::Server &svr)
         std::lock_guard<std::mutex> lock(dm.getMutex());
         Hospitalization *hos = findById(dm.getHosHead(), req.matches[1]);
         if (!hos) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
-        hos->isDeleted = true; dm.saveAll();
+        hos->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
     // 用药记录
@@ -984,7 +989,7 @@ void registerApiRoutes(httplib::Server &svr)
         std::lock_guard<std::mutex> lock(dm.getMutex());
         MedicationRecord *med = findById(dm.getMedRecHead(), req.matches[1]);
         if (!med) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
-        med->isDeleted = true; dm.saveAll();
+        med->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
     // 药品管理
@@ -1003,6 +1008,41 @@ void registerApiRoutes(httplib::Server &svr)
             cur = cur->next;
         }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
+
+    // POST /api/admin/medicines - 添加药品
+    svr.Post("/api/admin/medicines", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string name = body.value("name", "");
+            if (name.empty()) { res.set_content(ApiResponse::badRequest("药品名称不能为空").dump(), "application/json"); return; }
+
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            std::string newID = generateID(8, dm.medicineCount());
+            Medicine *med = new Medicine();
+            med->medicineID = newID;
+            med->name = name;
+            med->specification = body.value("specification", "#");
+            med->manufacturer = body.value("manufacturer", "#");
+            med->purchasePrice = body.value("purchasePrice", 0.0);
+            med->salePrice = body.value("salePrice", 0.0);
+            med->stock = body.value("stock", 0);
+            med->safetyStock = body.value("safetyStock", 0);
+            med->productionDate = body.value("productionDate", "#");
+            med->expiryDate = body.value("expiryDate", "#");
+            med->department = body.value("department", "急诊科");
+            med->note = body.value("note", "#");
+            med->status = MedicineStatus::NORMAL;
+            med->isSpecial = false;
+            med->next = dm.getMedHead();
+            if (dm.getMedHead()) dm.getMedHead()->prev = med;
+            dm.getMedHead() = med;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(med)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     svr.Get(R"(/api/admin/medicines/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
             {
@@ -1033,7 +1073,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (body.contains("safetyStock")) med->safetyStock = body["safetyStock"];
             if (body.contains("status")) med->status = static_cast<MedicineStatus>(body["status"].get<int>());
             if (body.contains("note")) med->note = body["note"];
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::toJson(med)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
@@ -1045,7 +1085,7 @@ void registerApiRoutes(httplib::Server &svr)
         std::lock_guard<std::mutex> lock(dm.getMutex());
         Medicine *med = findById(dm.getMedHead(), req.matches[1]);
         if (!med) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
-        med->isDeleted = true; dm.saveAll();
+        med->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
     // 床位管理
@@ -1065,6 +1105,62 @@ void registerApiRoutes(httplib::Server &svr)
         }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
+    // POST /api/admin/beds - 添加床位
+    svr.Post("/api/admin/beds", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string department = body.value("department", "");
+            std::string wardType = body.value("wardType", "");
+            int areaNumber = body.value("areaNumber", 0);
+            int wardNumber = body.value("wardNumber", 0);
+            int bedNumber = body.value("bedNumber", 0);
+            if (department.empty() || wardType.empty() || areaNumber <= 0 || wardNumber <= 0 || bedNumber <= 0) {
+                res.set_content(ApiResponse::badRequest("请填写完整床位信息").dump(), "application/json"); return;
+            }
+
+            // 生成床位ID（复用 autoGenerateBedID 逻辑）
+            std::string dpt, type;
+            if (department == "内科") dpt = "N";
+            else if (department == "外科") dpt = "W";
+            else if (department == "妇产科") dpt = "F";
+            else if (department == "急诊科") dpt = "J";
+            else if (department == "儿科") dpt = "E";
+            else { res.set_content(ApiResponse::badRequest("无效科室").dump(), "application/json"); return; }
+
+            if (wardType == "普通病房") type = "P";
+            else if (wardType == "隔离病房") type = "G";
+            else if (wardType == "VIP病房") type = "V";
+            else if (wardType == "ICU病房") type = "I";
+            else { res.set_content(ApiResponse::badRequest("无效病房类型").dump(), "application/json"); return; }
+
+            char buffer[32];
+            snprintf(buffer, sizeof(buffer), "%s-%02d-%s-%03d-%02d", dpt.c_str(), areaNumber, type.c_str(), wardNumber, bedNumber);
+            std::string bedID(buffer);
+
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            // 检查床位ID是否重复
+            bedInfo *cur = dm.getBedHead();
+            while (cur) { if (!cur->isDeleted && cur->bedID == bedID) { res.set_content(ApiResponse::badRequest("床位ID已存在").dump(), "application/json"); return; } cur = cur->next; }
+
+            bedInfo *bed = new bedInfo();
+            bed->bedID = bedID;
+            bed->department = department;
+            bed->wardType = wardType;
+            bed->areaNumber = areaNumber;
+            bed->wardNumber = wardNumber;
+            bed->bedNumber = bedNumber;
+            bed->status = bedStatus::AVAILABLE;
+            bed->next = dm.getBedHead();
+            if (dm.getBedHead()) dm.getBedHead()->prev = bed;
+            dm.getBedHead() = bed;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(bed)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
     svr.Delete(R"(/api/admin/beds/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
                {
         setCORS(req, res);
@@ -1073,7 +1169,7 @@ void registerApiRoutes(httplib::Server &svr)
         std::lock_guard<std::mutex> lock(dm.getMutex());
         bedInfo *bed = findById(dm.getBedHead(), req.matches[1]);
         if (!bed) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
-        bed->isDeleted = true; dm.saveAll();
+        bed->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
     // 账号激活/封锁
@@ -1099,7 +1195,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (!user) { res.set_content(ApiResponse::notFound("用户不存在").dump(), "application/json"); return; }
             user->setIsAccountActive(activate);
             if (activate) user->setLoginAttempts(0);
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success(activate ? "激活成功" : "封锁成功").dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
@@ -1114,6 +1210,26 @@ void registerApiRoutes(httplib::Server &svr)
         Admin *cur = dm.getAdminHead();
         while (cur) { if (!cur->isDeleted) list.push_back(JsonHelper::userToJson(cur)); cur = cur->next; }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
+
+    // PUT /api/admin/profile - 修改管理员个人信息
+    svr.Put("/api/admin/profile", [&](const httplib::Request &req, httplib::Response &res)
+            {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        Admin *adm = findAdmin(dm.getAdminHead(), auth.userID);
+        if (!adm) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            if (body.contains("username")) adm->setUsername(body["username"]);
+            if (body.contains("gender")) adm->setGender(body["gender"]);
+            if (body.contains("age")) adm->setAge(body["age"]);
+            if (body.contains("telephone")) adm->setTelephone(body["telephone"]);
+            if (body.contains("email")) adm->setEmail(body["email"]);
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("", JsonHelper::userToJson(adm)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // ==================== 医生 API ====================
 
@@ -1167,8 +1283,53 @@ void registerApiRoutes(httplib::Server &svr)
             if (body.contains("status")) con->status = static_cast<ConsultationStatus>(body["status"].get<int>());
             if (body.contains("isHospitalizationRecommended")) con->isHospitalizationRecommended = body["isHospitalizationRecommended"];
             if (body.contains("note")) con->note = body["note"];
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::toJson(con)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // POST /api/doctor/consultations - 从挂号创建看诊记录
+    svr.Post("/api/doctor/consultations", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 2) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string registrationID = body.value("registrationID", "");
+            if (registrationID.empty()) { res.set_content(ApiResponse::badRequest("请提供挂号ID").dump(), "application/json"); return; }
+
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Registration *reg = findById(dm.getRegHead(), registrationID);
+            if (!reg || reg->doctorID != auth.userID) { res.set_content(ApiResponse::notFound("挂号记录不存在或不属于您").dump(), "application/json"); return; }
+            if (reg->status != RegistrationStatus::PAID) { res.set_content(ApiResponse::badRequest("该挂号未支付或已完成").dump(), "application/json"); return; }
+
+            std::string newID = generateID(6, dm.consultationCount());
+            Consultation *con = new Consultation();
+            con->consultationID = newID;
+            con->registrationID = registrationID;
+            con->patientID = reg->patientID;
+            con->doctorID = auth.userID;
+            con->department = reg->department;
+            con->consultationTime = MyTime::getInstance().getTime();
+            con->chiefComplaint = body.value("chiefComplaint", "#");
+            con->historyOfPresentIllness = body.value("historyOfPresentIllness", "#");
+            con->pastMedicalHistory = body.value("pastMedicalHistory", "#");
+            con->familyHistory = body.value("familyHistory", "#");
+            con->preliminaryDiagnosis = body.value("preliminaryDiagnosis", "#");
+            if (body.contains("examinationList") && body["examinationList"].is_array()) {
+                for (auto &item : body["examinationList"]) con->examinationlist.push_back(item);
+            }
+            con->isHospitalizationRecommended = body.value("isHospitalizationRecommended", false);
+            con->note = body.value("note", "#");
+            con->status = ConsultationStatus::PENDING;
+            con->next = dm.getConHead();
+            if (dm.getConHead()) dm.getConHead()->prev = con;
+            dm.getConHead() = con;
+
+            // 更新挂号状态为已完成
+            reg->status = RegistrationStatus::FINISHED;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("看诊创建成功", JsonHelper::toJson(con)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     svr.Get("/api/doctor/examinations", [&](const httplib::Request &req, httplib::Response &res)
@@ -1205,8 +1366,55 @@ void registerApiRoutes(httplib::Server &svr)
             if (body.contains("reportSummary")) exa->reportSummary = body["reportSummary"];
             if (body.contains("status")) exa->status = static_cast<ExaminationStatus>(body["status"].get<int>());
             if (body.contains("note")) exa->note = body["note"];
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::toJson(exa)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // POST /api/doctor/examinations - 从看诊批量创建检查记录
+    svr.Post("/api/doctor/examinations", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 2) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string consultationID = body.value("consultationID", "");
+            if (consultationID.empty()) { res.set_content(ApiResponse::badRequest("请提供看诊ID").dump(), "application/json"); return; }
+            if (!body.contains("items") || !body["items"].is_array() || body["items"].empty()) {
+                res.set_content(ApiResponse::badRequest("请选择至少一个检查项目").dump(), "application/json"); return;
+            }
+
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Consultation *con = findById(dm.getConHead(), consultationID);
+            if (!con || con->doctorID != auth.userID) { res.set_content(ApiResponse::notFound("看诊记录不存在或不属于您").dump(), "application/json"); return; }
+
+            Doctor *doc = findDoctor(dm.getDoctorHead(), auth.userID);
+            json created = json::array();
+            for (auto &item : body["items"]) {
+                std::string itemName = item;
+                std::string exaID = generateID(7, dm.examinationCount());
+                Examination *exa = new Examination();
+                exa->examinationID = exaID;
+                exa->consultationID = consultationID;
+                exa->patientID = con->patientID;
+                exa->doctorID = auth.userID;
+                exa->department = con->department;
+                exa->itemName = itemName;
+                exa->fee = doc ? doc->calculateExaminationFee(itemName) : 5.0;
+                exa->orderTime = MyTime::getInstance().getTime();
+                exa->status = ExaminationStatus::ORDERED;
+                exa->next = dm.getExamHead();
+                if (dm.getExamHead()) dm.getExamHead()->prev = exa;
+                dm.getExamHead() = exa;
+                created.push_back(JsonHelper::toJson(exa));
+
+                // 同步到看诊的检查列表
+                bool found = false;
+                for (auto &e : con->examinationlist) { if (e == itemName) { found = true; break; } }
+                if (!found) con->examinationlist.push_back(itemName);
+            }
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("检查创建成功", json({{"list", created}, {"total", created.size()}})).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // 医生个人信息
@@ -1219,6 +1427,26 @@ void registerApiRoutes(httplib::Server &svr)
         Doctor *doc = findDoctor(dm.getDoctorHead(), auth.userID);
         if (!doc) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         res.set_content(ApiResponse::success("", JsonHelper::userToJson(doc)).dump(), "application/json"); });
+
+    // PUT /api/doctor/profile - 修改医生个人信息
+    svr.Put("/api/doctor/profile", [&](const httplib::Request &req, httplib::Response &res)
+            {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 2) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        Doctor *doc = findDoctor(dm.getDoctorHead(), auth.userID);
+        if (!doc) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            if (body.contains("username")) doc->setUsername(body["username"]);
+            if (body.contains("gender")) doc->setGender(body["gender"]);
+            if (body.contains("age")) doc->setAge(body["age"]);
+            if (body.contains("telephone")) doc->setTelephone(body["telephone"]);
+            if (body.contains("email")) doc->setEmail(body["email"]);
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("", JsonHelper::userToJson(doc)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // ==================== 护士 API ====================
 
@@ -1258,9 +1486,148 @@ void registerApiRoutes(httplib::Server &svr)
             if (body.contains("bedNumber")) hos->bedNumber = body["bedNumber"];
             if (body.contains("admitTime")) hos->admitTime = body["admitTime"];
             if (body.contains("dischargeTime")) hos->dischargeTime = body["dischargeTime"];
-            dm.saveAll();
+            if (body.contains("deposit")) hos->deposit = body["deposit"];
+            if (body.contains("wardType")) hos->wardType = body["wardType"];
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::toJson(hos)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // POST /api/nurse/hospitalizations - 护士创建住院记录
+    svr.Post("/api/nurse/hospitalizations", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 3) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string consultationID = body.value("consultationID", "");
+            std::string wardType = body.value("wardType", "");
+            if (consultationID.empty()) { res.set_content(ApiResponse::badRequest("请提供看诊ID").dump(), "application/json"); return; }
+
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Consultation *con = findById(dm.getConHead(), consultationID);
+            if (!con || !con->isHospitalizationRecommended) { res.set_content(ApiResponse::badRequest("看诊记录不存在或未建议住院").dump(), "application/json"); return; }
+
+            std::string newID = generateID(8, dm.hospitalizationCount());
+            Hospitalization *hos = new Hospitalization();
+            hos->hospitalizationID = newID;
+            hos->consultationID = consultationID;
+            hos->patientID = con->patientID;
+            hos->doctorID = con->doctorID;
+            hos->nurseID = auth.userID;
+            hos->department = con->department;
+            hos->wardType = wardType.empty() ? "普通病房" : wardType;
+            hos->applyTime = MyTime::getInstance().getTime();
+            hos->deposit = body.value("deposit", 0.0);
+            hos->status = HospitalizationStatus::APPLIED;
+            hos->next = dm.getHosHead();
+            if (dm.getHosHead()) dm.getHosHead()->prev = hos;
+            dm.getHosHead() = hos;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("住院记录创建成功", JsonHelper::toJson(hos)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // POST /api/nurse/hospitalizations/:id/assign-bed - 分配床位
+    svr.Post(R"(/api/nurse/hospitalizations/(\d+)/assign-bed)", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 3) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string bedID = body.value("bedID", "");
+            if (bedID.empty()) { res.set_content(ApiResponse::badRequest("请选择床位").dump(), "application/json"); return; }
+
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Hospitalization *hos = findById(dm.getHosHead(), req.matches[1]);
+            if (!hos) { res.set_content(ApiResponse::notFound("住院记录不存在").dump(), "application/json"); return; }
+            if (hos->status != HospitalizationStatus::PAID && hos->status != HospitalizationStatus::APPLIED) {
+                res.set_content(ApiResponse::badRequest("该住院记录状态不允许分配床位").dump(), "application/json"); return;
+            }
+
+            bedInfo *bed = findById(dm.getBedHead(), bedID);
+            if (!bed || bed->status != bedStatus::AVAILABLE) { res.set_content(ApiResponse::badRequest("床位不可用").dump(), "application/json"); return; }
+
+            bed->status = bedStatus::OCCUPIED;
+            bed->patientID = hos->patientID;
+            bed->nurseID = auth.userID;
+            bed->useTimes++;
+            hos->bedNumber = bedID;
+            hos->status = HospitalizationStatus::ADMITTED;
+            hos->admitTime = MyTime::getInstance().getTime();
+            hos->nurseID = auth.userID;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("床位分配成功", JsonHelper::toJson(hos)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // POST /api/nurse/hospitalizations/:id/discharge - 出院办理
+    svr.Post(R"(/api/nurse/hospitalizations/(\d+)/discharge)", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 3) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Hospitalization *hos = findById(dm.getHosHead(), req.matches[1]);
+            if (!hos) { res.set_content(ApiResponse::notFound("住院记录不存在").dump(), "application/json"); return; }
+            if (hos->status != HospitalizationStatus::ADMITTED) { res.set_content(ApiResponse::badRequest("该住院记录状态不允许出院").dump(), "application/json"); return; }
+
+            // 计算住院费用
+            double dailyRate = 50.0;
+            if (hos->wardType == "隔离病房") dailyRate = 100.0;
+            else if (hos->wardType == "VIP病房") dailyRate = 200.0;
+            else if (hos->wardType == "ICU病房") dailyRate = 500.0;
+
+            // 简单天数计算
+            int days = 1;
+            if (!hos->admitTime.empty() && hos->admitTime != "#") {
+                // 从入院时间到当前的粗略天数
+                std::string now = MyTime::getInstance().getTime();
+                int admitDay = std::stoi(hos->admitTime.substr(8, 2));
+                int nowDay = std::stoi(now.substr(8, 2));
+                int admitMon = std::stoi(hos->admitTime.substr(5, 2));
+                int nowMon = std::stoi(now.substr(5, 2));
+                days = (nowMon - admitMon) * 30 + (nowDay - admitDay);
+                if (days < 1) days = 1;
+            }
+            hos->totalCost = dailyRate * days;
+
+            // 释放床位
+            if (!hos->bedNumber.empty() && hos->bedNumber != "#") {
+                bedInfo *bed = findById(dm.getBedHead(), hos->bedNumber);
+                if (bed) { bed->status = bedStatus::ClEANING; bed->patientID = "#"; bed->nurseID = "#"; bed->daysOccupied += days; }
+            }
+
+            hos->dischargeTime = MyTime::getInstance().getTime();
+            hos->status = HospitalizationStatus::DISCHARGED;
+
+            // 扣费或退还差额
+            Patient *pat = findPatient(dm.getPatientHead(), hos->patientID);
+            json data;
+            data["totalCost"] = hos->totalCost;
+            data["deposit"] = hos->deposit;
+            if (pat) {
+                double diff = hos->totalCost - hos->deposit;
+                if (diff > 0) { pat->balance -= diff; data["deducted"] = diff; }
+                else if (diff < 0) { pat->balance += (-diff); data["refunded"] = -diff; }
+                data["newBalance"] = pat->balance;
+            }
+            dm.saveAllUnsafe();
+            data["hospitalization"] = JsonHelper::toJson(hos);
+            res.set_content(ApiResponse::success("出院办理成功", data).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // DELETE /api/nurse/hospitalizations/:id
+    svr.Delete(R"(/api/nurse/hospitalizations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+               {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 3) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        Hospitalization *hos = findById(dm.getHosHead(), req.matches[1]);
+        if (!hos) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
+        hos->isDeleted = true; dm.saveAllUnsafe();
+        res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
     svr.Get("/api/nurse/examinations", [&](const httplib::Request &req, httplib::Response &res)
             {
@@ -1294,7 +1661,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (vs.contains("weight")) exa->vitalSigns.weight = vs["weight"];
             if (vs.contains("bmi")) exa->vitalSigns.bmi = vs["bmi"];
             if (vs.contains("bloodSugar")) exa->vitalSigns.bloodSugar = vs["bloodSugar"];
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::toJson(exa)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
@@ -1310,6 +1677,76 @@ void registerApiRoutes(httplib::Server &svr)
         while (cur) { if (!cur->isDeleted && (department.empty() || cur->department == department)) list.push_back(JsonHelper::toJson(cur)); cur = cur->next; }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
+    // POST /api/nurse/beds - 护士添加床位
+    svr.Post("/api/nurse/beds", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 3) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string department = body.value("department", "");
+            std::string wardType = body.value("wardType", "");
+            int areaNumber = body.value("areaNumber", 0);
+            int wardNumber = body.value("wardNumber", 0);
+            int bedNumber = body.value("bedNumber", 0);
+            if (department.empty() || wardType.empty() || areaNumber <= 0 || wardNumber <= 0 || bedNumber <= 0) {
+                res.set_content(ApiResponse::badRequest("请填写完整床位信息").dump(), "application/json"); return;
+            }
+            std::string dpt, type;
+            if (department == "内科") dpt = "N"; else if (department == "外科") dpt = "W";
+            else if (department == "妇产科") dpt = "F"; else if (department == "急诊科") dpt = "J";
+            else if (department == "儿科") dpt = "E"; else { res.set_content(ApiResponse::badRequest("无效科室").dump(), "application/json"); return; }
+            if (wardType == "普通病房") type = "P"; else if (wardType == "隔离病房") type = "G";
+            else if (wardType == "VIP病房") type = "V"; else if (wardType == "ICU病房") type = "I";
+            else { res.set_content(ApiResponse::badRequest("无效病房类型").dump(), "application/json"); return; }
+            char buffer[32];
+            snprintf(buffer, sizeof(buffer), "%s-%02d-%s-%03d-%02d", dpt.c_str(), areaNumber, type.c_str(), wardNumber, bedNumber);
+            std::string bedID(buffer);
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            bedInfo *cur = dm.getBedHead();
+            while (cur) { if (!cur->isDeleted && cur->bedID == bedID) { res.set_content(ApiResponse::badRequest("床位ID已存在").dump(), "application/json"); return; } cur = cur->next; }
+            bedInfo *bed = new bedInfo();
+            bed->bedID = bedID; bed->department = department; bed->wardType = wardType;
+            bed->areaNumber = areaNumber; bed->wardNumber = wardNumber; bed->bedNumber = bedNumber;
+            bed->status = bedStatus::AVAILABLE; bed->nurseID = auth.userID;
+            bed->next = dm.getBedHead();
+            if (dm.getBedHead()) dm.getBedHead()->prev = bed;
+            dm.getBedHead() = bed;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(bed)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // PUT /api/nurse/beds/:id - 修改床位信息
+    svr.Put(R"(/api/nurse/beds/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
+            {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 3) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        bedInfo *bed = findById(dm.getBedHead(), req.matches[1]);
+        if (!bed) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            if (body.contains("status")) bed->status = static_cast<bedStatus>(body["status"].get<int>());
+            if (body.contains("note")) bed->note = body["note"];
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("", JsonHelper::toJson(bed)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // DELETE /api/nurse/beds/:id
+    svr.Delete(R"(/api/nurse/beds/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
+               {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 3) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        bedInfo *bed = findById(dm.getBedHead(), req.matches[1]);
+        if (!bed) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
+        if (bed->status == bedStatus::OCCUPIED) { res.set_content(ApiResponse::badRequest("床位被占用，无法删除").dump(), "application/json"); return; }
+        bed->isDeleted = true; dm.saveAllUnsafe();
+        res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
+
     svr.Get("/api/nurse/profile", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
@@ -1319,6 +1756,26 @@ void registerApiRoutes(httplib::Server &svr)
         Nurse *nurse = findNurse(dm.getNurseHead(), auth.userID);
         if (!nurse) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         res.set_content(ApiResponse::success("", JsonHelper::userToJson(nurse)).dump(), "application/json"); });
+
+    // PUT /api/nurse/profile - 修改护士个人信息
+    svr.Put("/api/nurse/profile", [&](const httplib::Request &req, httplib::Response &res)
+            {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 3) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        Nurse *nurse = findNurse(dm.getNurseHead(), auth.userID);
+        if (!nurse) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            if (body.contains("username")) nurse->setUsername(body["username"]);
+            if (body.contains("gender")) nurse->setGender(body["gender"]);
+            if (body.contains("age")) nurse->setAge(body["age"]);
+            if (body.contains("telephone")) nurse->setTelephone(body["telephone"]);
+            if (body.contains("email")) nurse->setEmail(body["email"]);
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("", JsonHelper::userToJson(nurse)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // ==================== 药剂师 API ====================
 
@@ -1361,7 +1818,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (reviewStatus == 2) { // REJECTED
                 // 标记对应看诊记录的处方审核状态
             }
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::toJson(med)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
@@ -1389,7 +1846,7 @@ void registerApiRoutes(httplib::Server &svr)
         }
         med->status = MedicationStatus::DISPENSED;
         med->dispenseTime = MyTime::getInstance().getTime();
-        dm.saveAll();
+        dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("发药成功", JsonHelper::toJson(med)).dump(), "application/json"); });
 
     svr.Get("/api/pharmacist/medicines", [&](const httplib::Request &req, httplib::Response &res)
@@ -1416,7 +1873,7 @@ void registerApiRoutes(httplib::Server &svr)
             int delta = body.value("delta", 0);
             med->stock += delta;
             if (med->stock < 0) med->stock = 0;
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::toJson(med)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
@@ -1429,6 +1886,158 @@ void registerApiRoutes(httplib::Server &svr)
         Pharmacist *pha = findPharmacist(dm.getPharmacistHead(), auth.userID);
         if (!pha) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         res.set_content(ApiResponse::success("", JsonHelper::userToJson(pha)).dump(), "application/json"); });
+
+    // POST /api/pharmacist/medication-records - 从看诊创建用药记录
+    svr.Post("/api/pharmacist/medication-records", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 4) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string consultationID = body.value("consultationID", "");
+            if (consultationID.empty()) { res.set_content(ApiResponse::badRequest("请提供看诊ID").dump(), "application/json"); return; }
+
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Consultation *con = findById(dm.getConHead(), consultationID);
+            if (!con) { res.set_content(ApiResponse::notFound("看诊记录不存在").dump(), "application/json"); return; }
+            if (con->prescriptions.empty()) { res.set_content(ApiResponse::badRequest("该看诊无处方").dump(), "application/json"); return; }
+
+            std::string newID = generateID(9, dm.medicationRecordCount());
+            MedicationRecord *med = new MedicationRecord();
+            med->medRecordID = newID;
+            med->consultationID = consultationID;
+            med->doctorID = con->doctorID;
+            med->pharmacistID = auth.userID;
+            med->patientID = con->patientID;
+            med->department = con->department;
+            med->createTime = MyTime::getInstance().getTime();
+            med->reviewStatus = MedicationReviewStatus::PENDING_REVIEW;
+            med->status = MedicationStatus::UNPAID;
+            double totalCost = 0.0;
+            for (auto &pres : con->prescriptions) {
+                MedicationLine line;
+                line.medicineID = pres.medicineID;
+                line.medicineName = pres.name;
+                line.quantity = pres.quantity;
+                // 查找药品获取单价
+                Medicine *medItem = findById(dm.getMedHead(), pres.medicineID);
+                line.unitPrice = medItem ? medItem->salePrice : 0.0;
+                line.note = pres.dosage + " " + pres.frequency + " " + pres.duration;
+                totalCost += line.unitPrice * line.quantity;
+                med->lines.push_back(line);
+            }
+            med->totalCost = totalCost;
+            med->next = dm.getMedRecHead();
+            if (dm.getMedRecHead()) dm.getMedRecHead()->prev = med;
+            dm.getMedRecHead() = med;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("用药记录创建成功", JsonHelper::toJson(med)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // DELETE /api/pharmacist/medication-records/:id
+    svr.Delete(R"(/api/pharmacist/medication-records/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+               {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 4) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        MedicationRecord *med = findById(dm.getMedRecHead(), req.matches[1]);
+        if (!med) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
+        med->isDeleted = true; dm.saveAllUnsafe();
+        res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
+
+    // POST /api/pharmacist/medicines - 药剂师添加药品
+    svr.Post("/api/pharmacist/medicines", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 4) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string name = body.value("name", "");
+            if (name.empty()) { res.set_content(ApiResponse::badRequest("药品名称不能为空").dump(), "application/json"); return; }
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            std::string newID = generateID(8, dm.medicineCount());
+            Medicine *med = new Medicine();
+            med->medicineID = newID;
+            med->name = name;
+            med->specification = body.value("specification", "#");
+            med->manufacturer = body.value("manufacturer", "#");
+            med->purchasePrice = body.value("purchasePrice", 0.0);
+            med->salePrice = body.value("salePrice", 0.0);
+            med->stock = body.value("stock", 0);
+            med->safetyStock = body.value("safetyStock", 0);
+            med->productionDate = body.value("productionDate", "#");
+            med->expiryDate = body.value("expiryDate", "#");
+            med->department = body.value("department", "#");
+            med->note = body.value("note", "#");
+            med->status = MedicineStatus::NORMAL;
+            med->isSpecial = false;
+            med->next = dm.getMedHead();
+            if (dm.getMedHead()) dm.getMedHead()->prev = med;
+            dm.getMedHead() = med;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(med)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // PUT /api/pharmacist/medicines/:id - 药剂师编辑药品
+    svr.Put(R"(/api/pharmacist/medicines/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+            {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 4) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        Medicine *med = findById(dm.getMedHead(), req.matches[1]);
+        if (!med) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            if (body.contains("name")) med->name = body["name"];
+            if (body.contains("specification")) med->specification = body["specification"];
+            if (body.contains("manufacturer")) med->manufacturer = body["manufacturer"];
+            if (body.contains("purchasePrice")) med->purchasePrice = body["purchasePrice"];
+            if (body.contains("salePrice")) med->salePrice = body["salePrice"];
+            if (body.contains("safetyStock")) med->safetyStock = body["safetyStock"];
+            if (body.contains("productionDate")) med->productionDate = body["productionDate"];
+            if (body.contains("expiryDate")) med->expiryDate = body["expiryDate"];
+            if (body.contains("department")) med->department = body["department"];
+            if (body.contains("status")) med->status = static_cast<MedicineStatus>(body["status"].get<int>());
+            if (body.contains("note")) med->note = body["note"];
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("", JsonHelper::toJson(med)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // DELETE /api/pharmacist/medicines/:id
+    svr.Delete(R"(/api/pharmacist/medicines/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+               {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 4) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        Medicine *med = findById(dm.getMedHead(), req.matches[1]);
+        if (!med) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
+        med->isDeleted = true; dm.saveAllUnsafe();
+        res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
+
+    // PUT /api/pharmacist/profile - 修改药剂师个人信息
+    svr.Put("/api/pharmacist/profile", [&](const httplib::Request &req, httplib::Response &res)
+            {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 4) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        Pharmacist *pha = findPharmacist(dm.getPharmacistHead(), auth.userID);
+        if (!pha) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            if (body.contains("username")) pha->setUsername(body["username"]);
+            if (body.contains("gender")) pha->setGender(body["gender"]);
+            if (body.contains("age")) pha->setAge(body["age"]);
+            if (body.contains("telephone")) pha->setTelephone(body["telephone"]);
+            if (body.contains("email")) pha->setEmail(body["email"]);
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("", JsonHelper::userToJson(pha)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // ==================== 患者 API ====================
 
@@ -1471,7 +2080,7 @@ void registerApiRoutes(httplib::Server &svr)
             newReg->next = dm.getRegHead();
             if (dm.getRegHead()) dm.getRegHead()->prev = newReg;
             dm.getRegHead() = newReg;
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("预约成功", JsonHelper::toJson(newReg)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
@@ -1489,7 +2098,7 @@ void registerApiRoutes(httplib::Server &svr)
         if (pat->balance < reg->fee) { res.set_content(ApiResponse::badRequest("余额不足，请先充值").dump(), "application/json"); return; }
         pat->balance -= reg->fee;
         reg->status = RegistrationStatus::PAID;
-        dm.saveAll();
+        dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("支付成功", JsonHelper::toJson(reg)).dump(), "application/json"); });
 
     svr.Get("/api/patient/consultations", [&](const httplib::Request &req, httplib::Response &res)
@@ -1528,7 +2137,7 @@ void registerApiRoutes(httplib::Server &svr)
         if (pat->balance < exa->fee) { res.set_content(ApiResponse::badRequest("余额不足").dump(), "application/json"); return; }
         pat->balance -= exa->fee;
         exa->status = ExaminationStatus::PAID;
-        dm.saveAll();
+        dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("支付成功", JsonHelper::toJson(exa)).dump(), "application/json"); });
 
     svr.Get("/api/patient/medication-records", [&](const httplib::Request &req, httplib::Response &res)
@@ -1557,7 +2166,7 @@ void registerApiRoutes(httplib::Server &svr)
         pat->balance -= med->totalCost;
         med->status = MedicationStatus::PAID;
         med->paymentTime = MyTime::getInstance().getTime();
-        dm.saveAll();
+        dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("支付成功", JsonHelper::toJson(med)).dump(), "application/json"); });
 
     svr.Get("/api/patient/hospitalizations", [&](const httplib::Request &req, httplib::Response &res)
@@ -1570,6 +2179,33 @@ void registerApiRoutes(httplib::Server &svr)
         Hospitalization *cur = dm.getHosHead();
         while (cur) { if (!cur->isDeleted && cur->patientID == auth.userID) list.push_back(JsonHelper::toJson(cur)); cur = cur->next; }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
+
+    // PUT /api/patient/hospitalizations/:id/pay - 住院缴费
+    svr.Put(R"(/api/patient/hospitalizations/(\d+)/pay)", [&](const httplib::Request &req, httplib::Response &res)
+            {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 5) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        Hospitalization *hos = findById(dm.getHosHead(), req.matches[1]);
+        if (!hos || hos->patientID != auth.userID) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
+        if (hos->status != HospitalizationStatus::APPLIED) { res.set_content(ApiResponse::badRequest("该住院记录状态不允许缴费").dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            double deposit = body.value("deposit", 0.0);
+            if (deposit <= 0) { res.set_content(ApiResponse::badRequest("押金金额必须大于0").dump(), "application/json"); return; }
+            Patient *pat = findPatient(dm.getPatientHead(), auth.userID);
+            if (!pat) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
+            if (pat->balance < deposit) { res.set_content(ApiResponse::badRequest("余额不足，请先充值").dump(), "application/json"); return; }
+            pat->balance -= deposit;
+            hos->deposit = deposit;
+            hos->status = HospitalizationStatus::PAID;
+            dm.saveAllUnsafe();
+            json data;
+            data["deposit"] = deposit;
+            data["balance"] = pat->balance;
+            res.set_content(ApiResponse::success("缴费成功", data).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // 患者充值
     svr.Post("/api/patient/recharge", [&](const httplib::Request &req, httplib::Response &res)
@@ -1585,7 +2221,7 @@ void registerApiRoutes(httplib::Server &svr)
             Patient *pat = findPatient(dm.getPatientHead(), auth.userID);
             if (!pat) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
             pat->balance += amount;
-            dm.saveAll();
+            dm.saveAllUnsafe();
             json data;
             data["balance"] = pat->balance;
             data["amount"] = amount;
@@ -1621,7 +2257,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (body.contains("address")) pat->address = body["address"];
             if (body.contains("emergencyContactName")) pat->emergencyContactName = body["emergencyContactName"];
             if (body.contains("emergencyContactPhone")) pat->emergencyContactPhone = body["emergencyContactPhone"];
-            dm.saveAll();
+            dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::userToJson(pat)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
@@ -1653,4 +2289,26 @@ void registerApiRoutes(httplib::Server &svr)
             {"身高", 5}, {"体重", 5}, {"BMI", 5}, {"疼痛评分", 2}, {"腰围", 5},
             {"血糖", 20}, {"体脂率", 30}, {"尿酸", 25}, {"胆固醇", 25}};
         res.set_content(ApiResponse::success("", data).dump(), "application/json"); });
+
+    // 获取检查项目列表（含费用）
+    svr.Get("/api/examination-items", [&](const httplib::Request &req, httplib::Response &res)
+            {
+        setCORS(req, res);
+        json items = json::array();
+        // 必须与 User::calculateExaminationFee() 保持一致
+        items.push_back({{"name", "体温测量"}, {"fee", 5}});
+        items.push_back({{"name", "血压测量"}, {"fee", 8}});
+        items.push_back({{"name", "心率测量"}, {"fee", 5}});
+        items.push_back({{"name", "呼吸频率测量"}, {"fee", 5}});
+        items.push_back({{"name", "脉搏血氧测量"}, {"fee", 10}});
+        items.push_back({{"name", "身高测量"}, {"fee", 5}});
+        items.push_back({{"name", "体重测量"}, {"fee", 5}});
+        items.push_back({{"name", "BMI计算"}, {"fee", 5}});
+        items.push_back({{"name", "疼痛评分"}, {"fee", 2}});
+        items.push_back({{"name", "腰围测量"}, {"fee", 5}});
+        items.push_back({{"name", "血糖测量"}, {"fee", 20}});
+        items.push_back({{"name", "体脂测量"}, {"fee", 30}});
+        items.push_back({{"name", "尿酸测定"}, {"fee", 25}});
+        items.push_back({{"name", "血脂测定"}, {"fee", 25}});
+        res.set_content(ApiResponse::success("", json({{"list", items}})).dump(), "application/json"); });
 }
