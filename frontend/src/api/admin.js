@@ -1,0 +1,147 @@
+import request from './index'
+
+// 医生管理
+export function getDoctors(params) {
+  return request.get('/admin/doctors', { params })
+}
+export function getDoctor(id) {
+  return request.get(`/admin/doctors/${id}`)
+}
+export function updateDoctor(id, data) {
+  return request.put(`/admin/doctors/${id}`, data)
+}
+export function deleteDoctor(id) {
+  return request.delete(`/admin/doctors/${id}`)
+}
+
+// 护士管理
+export function getNurses(params) {
+  return request.get('/admin/nurses', { params })
+}
+export function getNurse(id) {
+  return request.get(`/admin/nurses/${id}`)
+}
+export function updateNurse(id, data) {
+  return request.put(`/admin/nurses/${id}`, data)
+}
+export function deleteNurse(id) {
+  return request.delete(`/admin/nurses/${id}`)
+}
+
+// 药剂师管理
+export function getPharmacists(params) {
+  return request.get('/admin/pharmacists', { params })
+}
+export function getPharmacist(id) {
+  return request.get(`/admin/pharmacists/${id}`)
+}
+export function updatePharmacist(id, data) {
+  return request.put(`/admin/pharmacists/${id}`, data)
+}
+export function deletePharmacist(id) {
+  return request.delete(`/admin/pharmacists/${id}`)
+}
+
+// 患者管理
+export function getPatients(params) {
+  return request.get('/admin/patients', { params })
+}
+export function getPatient(id) {
+  return request.get(`/admin/patients/${id}`)
+}
+export function updatePatient(id, data) {
+  return request.put(`/admin/patients/${id}`, data)
+}
+export function deletePatient(id) {
+  return request.delete(`/admin/patients/${id}`)
+}
+
+// 管理员列表
+export function getAdmins(params) {
+  return request.get('/admin/admins', { params })
+}
+
+// 挂号记录
+export function getRegistrations(params) {
+  return request.get('/admin/registrations', { params })
+}
+export function getRegistration(id) {
+  return request.get(`/admin/registrations/${id}`)
+}
+export function updateRegistrationStatus(id, status) {
+  return request.put(`/admin/registrations/${id}/status`, { status })
+}
+export function deleteRegistration(id) {
+  return request.delete(`/admin/registrations/${id}`)
+}
+
+// 看诊记录
+export function getConsultations(params) {
+  return request.get('/admin/consultations', { params })
+}
+export function getConsultation(id) {
+  return request.get(`/admin/consultations/${id}`)
+}
+export function updateConsultationStatus(id, status) {
+  return request.put(`/admin/consultations/${id}/status`, { status })
+}
+export function deleteConsultation(id) {
+  return request.delete(`/admin/consultations/${id}`)
+}
+
+// 检查记录
+export function getExaminations(params) {
+  return request.get('/admin/examinations', { params })
+}
+export function getExamination(id) {
+  return request.get(`/admin/examinations/${id}`)
+}
+export function deleteExamination(id) {
+  return request.delete(`/admin/examinations/${id}`)
+}
+
+// 住院记录
+export function getHospitalizations(params) {
+  return request.get('/admin/hospitalizations', { params })
+}
+export function getHospitalization(id) {
+  return request.get(`/admin/hospitalizations/${id}`)
+}
+export function deleteHospitalization(id) {
+  return request.delete(`/admin/hospitalizations/${id}`)
+}
+
+// 用药记录
+export function getMedicationRecords(params) {
+  return request.get('/admin/medication-records', { params })
+}
+export function deleteMedicationRecord(id) {
+  return request.delete(`/admin/medication-records/${id}`)
+}
+
+// 药品管理
+export function getMedicines(params) {
+  return request.get('/admin/medicines', { params })
+}
+export function getMedicine(id) {
+  return request.get(`/admin/medicines/${id}`)
+}
+export function updateMedicine(id, data) {
+  return request.put(`/admin/medicines/${id}`, data)
+}
+export function deleteMedicine(id) {
+  return request.delete(`/admin/medicines/${id}`)
+}
+
+// 床位管理
+export function getBeds(params) {
+  return request.get('/admin/beds', { params })
+}
+export function deleteBed(id) {
+  return request.delete(`/admin/beds/${id}`)
+}
+
+// 账号管理
+export function updateAccountStatus(id, role, active) {
+  return request.put(`/admin/account/${id}/status`, { role, active })
+}

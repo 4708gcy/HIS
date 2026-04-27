@@ -24,6 +24,33 @@ VS Code:
 - Clean: `Ctrl+Shift+P` → `Tasks: Run Task` → "CMake: build清理"
 - Debug: `F5` (MSVC debugger, external terminal via `.vscode/launch.json`)
 
+### REST API Server
+
+```bash
+# Build server
+cd build && cmake --build . --config Debug --target his_server
+
+# Run server (from build/ directory)
+cd build && ./Debug/his_server.exe
+# Listens on http://localhost:8080, Ctrl+C to save data and exit
+```
+
+### Frontend (Vue 3 + Element Plus)
+
+```bash
+# Install dependencies (first time only)
+cd frontend && npm install
+
+# Development server (port 3000, auto-proxies /api to localhost:8080)
+cd frontend && npm run dev
+
+# Production build
+cd frontend && npm run build
+# Output: frontend/dist/
+```
+
+**Full-stack development**: Start backend first (`his_server.exe` on 8080), then frontend (`npm run dev` on 3000).
+
 No test framework exists; testing is manual via interactive console.
 
 **Important:** The program MUST be launched from the `build/` directory because all data file paths use `../Data/` relative paths. Running from the project root will fail to find data files.
@@ -35,7 +62,6 @@ C++17 console application for a Hospital Information System. Windows-only (uses 
 ### Class Hierarchy
 
 ```text
-
 User (base class) — holds all shared auth, enums, fee calculators, status-to-string converters
   ├── Admin    — manages all records and all user types (7,775 lines, the largest file)
   ├── Doctor   — registration, consultation, examination
@@ -59,9 +85,10 @@ All records use **doubly-linked lists** (each node has `prev`/`next` pointers). 
 Plain text CSV files in `Data/` (relative paths from build directory via `../Data/`). Split into `UserData/` and `RecordData/` subdirectories. File paths are `#define` macros in `User.h`.
 
 **User data files:**
-| File | Path |
 
+| File | Path |
 |------|------|
+
 | Admin | `Data/UserData/AdminChainData/admin_users.txt` |
 | Doctor | `Data/UserData/DoctorChainData/doctor_users.txt` |
 | Nurse | `Data/UserData/NurseChainData/nurse_users.txt` |
@@ -69,9 +96,10 @@ Plain text CSV files in `Data/` (relative paths from build directory via `../Dat
 | Patient | `Data/UserData/PatientChainData/patient_users.txt` |
 
 **Record data files:**
-| File | Path |
 
+| File | Path |
 |------|------|
+
 | Registration | `Data/RecordData/RegistrationChainData/registrations.txt` |
 | Consultation | `Data/RecordData/ConsultationChainData/consultations.txt` |
 | Examination | `Data/RecordData/ExaminationChainData/examinations.txt` |
@@ -80,25 +108,20 @@ Plain text CSV files in `Data/` (relative paths from build directory via `../Dat
 | Medication Record | `Data/RecordData/MedicineChainData/medication_records.txt` |
 | Medicine | `Data/RecordData/MedicineChainData/medicines.txt` |
 
-Null/empty string fields use `"#"` as sentinel value.
-
-All deletions are **logical** (`isDeleted` flag), never physical removal.
+Null/empty string fields use `"#"` as sentinel value. All deletions are **logical** (`isDeleted` flag), never physical removal.
 
 ### Key Conventions
 
 - **Naming**: Headers = PascalCase (`Doctor.h`), functions = camelCase (`addDoctor()`), matching source file per header
-- **Password security**: SHA-256 with salt + 1,000 iterations. Stored format: `salt$hash`. Account locks after 5 failed attempts (`failedLoginLimit` constant in `User.h`).
+- **Password security**: SHA-256 with salt + 1,000 iterations. Stored format: `salt$hash`. Uses volatile XOR-based timing-safe comparison to prevent timing attacks. Account locks after 5 failed attempts (`failedLoginLimit` constant in `User.h`), resets on successful login.
 - **Time**: Use `MyTime` singleton from `GetTime.h` — format `YYYY-MM-DD hh:mm:ss`
 - **Departments**: 内科, 外科, 儿科, 妇产科, 急诊科
-- **Fee calculators**: `calculateRegistrationFee()` by doctor title (10-50 yuan), `calculateExaminationFee()` by item name (2-30 yuan), `calculateHospitalizationFee()` by ward type + days (50-500 yuan/day)
-  - Registration: INTERN=10, RESIDENT=20, ATTENDING=30, ASSOCIATE_CHIEF=40, CHIEF=50
-  - Hospitalization: 普通病房=50/天, 隔离病房=100/天, VIP=200/天, ICU=500/天
-  - Examination items: temperature=5, BP=8, heartRate=5, respiratoryRate=5, spo2=10, height=5, weight=5, bmi=5, painScore=2, waistCircumference=5, bloodSugar=20, bodyFat=30, uricAcid=25, cholesterol=25
+- **Fee calculators**: `calculateRegistrationFee()` by doctor title (10–50 yuan), `calculateExaminationFee()` by item name (2–30 yuan), `calculateHospitalizationFee()` by ward type + days (50–500 yuan/day). Exact prices defined in `User.h`.
 - **Generic programming**: `Login.h` has `AccountManageGeneric<UserType>` template for account activation/lockdown across all user types
 - **UI/input validation**: All console I/O and validation functions are in `UI.h`/`UI.cpp`
 - **Global ID counters**: `main.cpp` declares global counters (`adminIDCount`, `doctorIDCount`, etc.) that track the number of used IDs per role. These are populated during `load*Data()` calls and passed to `signUp()` methods to generate new unique IDs.
 
-### UI/UX Features (4.25+)
+### UI/UX Features
 
 - **Console color system**: `ConsoleColor` enum (RED, GREEN, YELLOW, CYAN, WHITE, DEFAULT) in `UI.h` with `setConsoleColor()`/`resetConsoleColor()`. Supports both Windows API (`SetConsoleTextAttribute`) and ANSI escape sequences.
 - **Pagination**: `printWithPagination()` for displaying long lists with page navigation (prev/next/jump to page). Uses `(std::min)` to avoid Windows `min` macro conflicts.
@@ -114,11 +137,6 @@ All deletions are **logical** (`isDeleted` flag), never physical removal.
 - Methods: `info()`, `warn()`, `error()`, `logOperation()` (structured: userId, role, operation type, details)
 - Persists to `Data/OperationLog/` directory
 - Format: `[YYYY-MM-DD hh:mm:ss] [LEVEL] message`
-
-### Security Details
-
-- **SHA-256 passwords**: salt + 1,000 iterations, stored as `salt$hash`. Uses volatile XOR-based timing-safe comparison (not `std::string` compare) to prevent timing attacks.
-- **Account lockout**: 5 failed attempts (`failedLoginLimit` in `User.h`), `loginAttempts` resets on successful login.
 
 ### Startup Flow
 
@@ -137,27 +155,7 @@ All deletions are **logical** (`isDeleted` flag), never physical removal.
 
 ### Planned: Frontend-Backend Separation (前后端分离)
 
-The console-based HIS is feature-complete. The next major task is splitting it into a C++ REST backend + web frontend. Full plan is in `DevelopLog.md` (section "4. 前后端分离架构落地方案"). Key decisions already made:
-
-**Phase 1 — C++ REST API server:**
-
-- Use cpp-httplib or Drogon as REST framework
-- Extract business logic from console I/O into API endpoints per role
-- Unified JSON response: `{ "code": 200, "message": "success", "data": {} }`
-- JWT for auth (replacing console login flow)
-- Keep CSV persistence initially; SQLite/MySQL migration optional
-
-**Phase 2 — Web frontend:**
-
-- Vue 3 + Element Plus (chosen for Chinese ecosystem fit)
-- `src/views/` per role, `src/api/` for backend calls (axios), `src/store/` (Pinia), `src/router/` (role-based routing)
-- Console features map directly: menus → sidebar, `printWithPagination` → `el-pagination`, breadcrumbs → `el-breadcrumb`, color alerts → `el-message`
-
-**Phase 3 — Integration & deploy:**
-
-- Mock data during frontend dev, then switch to real API
-- CORS or Nginx reverse proxy
-- Backend as standalone service, frontend static files via Nginx
+The console-based HIS is feature-complete. The next major task is splitting it into a C++ REST backend (cpp-httplib or Drogon, JWT auth, JSON API) + Vue 3 + Element Plus web frontend. Full plan is in `DevelopLog.md` (section "4. 前后端分离架构落地方案").
 
 **Recommended first step:** Build "login + admin view registrations" end-to-end to validate the architecture before migrating remaining features.
 

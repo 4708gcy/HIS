@@ -620,55 +620,6 @@
 - 新增 `Data/OperationLog/` 目录用于存储操作审计日志
 - `UI.h` 新增必要的头文件包含：`<fstream>`, `<mutex>`, `"../Head/GetTime.h"`
 
-### 5. 前端后端分离架构落地方案（待实施）
-
-> 以下是前后端打通的详细实施步骤，供后续开发参考：
-
-#### 第一阶段：后端 API 化（C++ REST 服务器
-
-1. 引入 REST 框架（推荐 cpp-httplib 或 Drogon），将现有的控制台交互逻辑与业务逻辑解耦
-2. 为每个角色（Admin/Doctor/Nurse/Pharmacist/Patient）的所有操作编写对应的 RESTful API 端点，例如：
-   - `POST /api/auth/login` — 登录
-   - `POST /api/auth/register` — 注册
-   - `GET /api/admin/registrations` — 管理员查看挂号记录
-   - `PUT /api/admin/registrations/{id}/status` — 修改挂号状态
-   - `POST /api/doctor/consultations` — 创建看诊记录
-   - `GET /api/patient/records` — 患者查看个人记录
-3. 设计统一的 JSON 响应格式：`{ "code": 200, "message": "success", "data": {} }`
-4. 引入 JWT (JSON Web Token) 进行身份认证和会话管理，替代当前的控制台交互式登录
-5. 保持现有的数据持久化层不变（CSV 文件），但可考虑迁移到 SQLite 或 MySQL 以支持并发访问
-
-#### 第二阶段：前端开发（Web 界面）
-
-1. 技术栈推荐：Vue 3 + Element Plus（中文生态好，适合医疗管理系统）或 React + Ant Design
-2. 前端项目结构：
-   - `src/views/` — 各角色页面（AdminDashboard, DoctorWorkspace, NurseWorkspace, PharmacistWorkspace, PatientPortal）
-   - `src/api/` — 封装所有后端 API 调用（axios 实例 + 拦截器）
-   - `src/store/` — Pinia 状态管理（用户信息、菜单权限、全局数据）
-   - `src/components/` — 复用组件（表格分页组件、表单组件、搜索过滤组件）
-   - `src/router/` — Vue Router 路由配置（按角色分流）
-3. 关键功能映射：
-   - 控制台菜单 → 侧边栏导航 + 路由
-   - 控制台输入 → HTML 表单 + 校验规则
-   - `printWithPagination` → 前端表格分页组件（Element Plus `el-pagination`）
-   - 面包屑导航 → Element Plus `el-breadcrumb`
-   - 颜色提示 → Element Plus `el-alert` / `el-message`
-   - 操作日志 → 前端操作记录页面 + 后端日志 API
-
-#### 第三阶段：前后端联调与部署
-
-1. 前端开发阶段使用 Mock 数据（Mock.js），并行开发不阻塞
-2. 后端 API 完成后，前端切换到真实 API 联调
-3. CORS 配置：后端设置允许的跨域来源，或前后端使用同一域名（Nginx 反向代理）
-4. 部署方案：
-   - 后端：C++ 可执行文件作为独立服务运行（守护进程 / systemd / PM2）
-   - 前端：`npm run build` 生成静态文件，由 Nginx 托管
-   - 数据库（可选）：从 CSV 迁移到 SQLite/MySQL，修改后端数据访问层
-5. 安全加固：HTTPS、输入校验、SQL 注入防护、XSS 防护、CSRF Token
-
-**具体落地第一步建议：**
-先选一个最小功能模块做验证，例如 "登录 + 管理员查看挂号记录"，搭建完整的 API → 前端调用 → 数据返回流程，验证架构可行性后再逐步迁移其余功能。
-
 ---
 
 ## 2026.4.26
@@ -734,51 +685,535 @@
 
 ---
 
-### 4. 前端后端分离架构落地方案（待实施）
+## 2026.4.27
 
-> 以下是前后端打通的详细实施步骤，供后续开发参考：
+### 1. 后端 API 化 — 全部完成
 
-#### 第一阶段 : 后端 API 化(C++ REST 服务器)
+将控制台 HIS 系统完整转换为 REST API 后端服务器，所有 5 种角色的核心业务功能均已完成 API 端点。**数据持久化方式不变**，继续使用现有的 txt CSV 文件（`LoadData`/`SaveData` 模块完全复用）。
 
-1. 引入 REST 框架（推荐 cpp-httplib 或 Drogon），将现有的控制台交互逻辑与业务逻辑解耦
-2. 为每个角色（Admin/Doctor/Nurse/Pharmacist/Patient）的所有操作编写对应的 RESTful API 端点，例如：
-   - `POST /api/auth/login` — 登录
-   - `POST /api/auth/register` — 注册
-   - `GET /api/admin/registrations` — 管理员查看挂号记录
-   - `PUT /api/admin/registrations/{id}/status` — 修改挂号状态
-   - `POST /api/doctor/consultations` — 创建看诊记录
-   - `GET /api/patient/records` — 患者查看个人记录
-3. 设计统一的 JSON 响应格式：`{ "code": 200, "message": "success", "data": {} }`
-4. 引入 JWT (JSON Web Token) 进行身份认证和会话管理，替代当前的控制台交互式登录
-5. 保持现有的数据持久化层不变（CSV 文件），但可考虑迁移到 SQLite 或 MySQL 以支持并发访问
+#### 1.1 引入第三方依赖
 
-#### 第二阶段 : 前端开发(Web 界面)
+- **cpp-httplib** (v0.18.3)：header-only 的 C++ HTTP 服务器库，通过 jsdelivr CDN 下载至 `Head/httplib.h`（10255 行），支持 Winsock2 在 Windows/MSVC 上运行
+- **nlohmann/json** (v3.11.3)：header-only 的 C++ JSON 库，下载至 `Head/json.hpp`（24765 行），用于所有 API 请求/响应的 JSON 序列化
 
-1. 技术栈推荐：Vue 3 + Element Plus（中文生态好，适合医疗管理系统）或 React + Ant Design
-2. 前端项目结构：
-   - `src/views/` — 各角色页面（AdminDashboard, DoctorWorkspace, NurseWorkspace, PharmacistWorkspace, PatientPortal）
-   - `src/api/` — 封装所有后端 API 调用（axios 实例 + 拦截器）
-   - `src/store/` — Pinia 状态管理（用户信息、菜单权限、全局数据）
-   - `src/components/` — 复用组件（表格分页组件、表单组件、搜索过滤组件）
-   - `src/router/` — Vue Router 路由配置（按角色分流）
-3. 关键功能映射：
-   - 控制台菜单 → 侧边栏导航 + 路由
-   - 控制台输入 → HTML 表单 + 校验规则
-   - `printWithPagination` → 前端表格分页组件（Element Plus `el-pagination`）
-   - 面包屑导航 → Element Plus `el-breadcrumb`
-   - 颜色提示 → Element Plus `el-alert` / `el-message`
-   - 操作日志 → 前端操作记录页面 + 后端日志 API
+#### 1.2 新增文件清单
 
-#### 第三阶段 : 前后端联调与部署
+| 文件 | 用途 |
+|------|------|
 
-1. 前端开发阶段使用 Mock 数据（Mock.js），并行开发不阻塞
-2. 后端 API 完成后，前端切换到真实 API 联调
-3. CORS 配置：后端设置允许的跨域来源，或前后端使用同一域名（Nginx 反向代理）
-4. 部署方案：
-   - 后端：C++ 可执行文件作为独立服务运行（守护进程 / systemd / PM2）
-   - 前端：`npm run build` 生成静态文件，由 Nginx 托管
-   - 数据库（可选）：从 CSV 迁移到 SQLite/MySQL，修改后端数据访问层
-5. 安全加固：HTTPS、输入校验、SQL 注入防护、XSS 防护、CSRF Token
+| `Head/ApiResponse.h` | 统一 API 响应格式 `{code, message, data}` |
+| `Head/JsonHelper.h` / `Source/JsonHelper.cpp` | 12 种数据结构/角色的 JSON 序列化 + 枚举转字符串 |
+| `Head/JWTAuth.h` / `Source/JWTAuth.cpp` | JWT 实现（Base64 URL + HMAC-SHA256 + 24h 时效） |
+| `Head/ApiServer.h` / `Source/ApiServer.cpp` | DataManager 单例 + 全部 REST 路由注册（~1500 行） |
+| `server_main.cpp` | REST 服务器入口（加载数据、注册路由、监听 8080 端口） |
 
-**具体落地第一步建议：**
-先选一个最小功能模块做验证，例如 "登录 + 管理员查看挂号记录"，搭建完整的 API → 前端调用 → 数据返回流程，验证架构可行性后再逐步迁移其余功能。
+#### 1.3 架构设计
+
+- **DataManager 单例**：线程安全（`std::mutex`），启动时 `LoadData` 加载全部数据，每次写操作后 `SaveData` 持久化
+- **JWT 认证**：`Base64(header).Base64(payload).Base64(HMAC-SHA256签名)`，payload 含 `{userID, role, iat, exp}`，24h 有效
+- **统一响应**：`{code, message, data}`，错误码 200/400/401/403/404/500
+- **CORS**：所有响应添加 `Access-Control-Allow-Origin: *`
+
+#### 1.4 API 端点总览（共 60+ 个端点）
+
+**认证（2）：** `POST /api/auth/login`（统一登录）、`POST /api/auth/register`（统一注册，5 种角色含特有属性）
+
+**管理员（30+）：**
+
+- 人员管理：`GET/PUT/DELETE /api/admin/{doctors,nurses,pharmacists,patients}` — CRUD + 过滤
+- 医疗记录：`GET/PUT/DELETE /api/admin/{registrations,consultations,examinations,hospitalizations,medication-records}` — 查看/状态修改/逻辑删除
+- 药品管理：`GET/PUT/DELETE /api/admin/medicines` — 含库存/价格/状态修改
+- 床位管理：`GET/DELETE /api/admin/beds`
+- 账号管理：`PUT /api/admin/account/:id/status` — 激活/封锁所有角色
+- 管理员列表：`GET /api/admin/admins`
+
+**医生（8）：** 挂号/看诊/检查记录的查看和修改 + 个人信息
+
+**护士（8）：** 住院记录管理 + 体征录入 + 床位列表 + 个人信息
+
+**药剂师（8）：** 用药记录审核/发药（自动扣库存）+ 药品库存调整 + 个人信息
+
+**患者（12）：** 预约挂号 + 余额支付挂号费/检查费/药费 + 充值 + 个人信息查看/修改 + 各类记录查看
+
+**通用（2）：** `GET /api/departments`（科室列表）、`GET /api/fee-standards`（费用标准）
+
+#### 1.5 构建与运行
+
+```bash
+# 构建服务器
+cd build && cmake --build . --config Debug --target his_server
+
+# 运行（从 build 目录启动）
+cd build && ./Debug/his_server.exe
+# 服务器监听 http://localhost:8080，Ctrl+C 优雅退出
+```
+
+**测试示例**：
+
+```bash
+# 获取科室列表（无需认证）
+curl http://localhost:8080/api/departments
+
+# 登录
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d "{\"userID\":\"000001\",\"password\":\"123456\",\"role\":1}"
+
+# 查看医生列表（需要管理员 token）
+curl http://localhost:8080/api/admin/doctors \
+  -H "Authorization: Bearer <token>"
+```
+
+#### 1.6 关键设计决策
+
+1. **零侵入**：不修改任何现有文件，API 层作为独立新代码添加
+2. **业务逻辑重写**：现有函数混合 console I/O，API 层直接操作链表数据结构
+3. **线程安全**：`DataManager` 用 `std::mutex` + `lock_guard` 保护所有操作
+4. **即时持久化**：每次写操作后 `saveAll()` 写回 txt 文件
+5. **ID 生成一致**：复用 6 位 ID 规则（首位角色 + 5 位递增）
+
+### 2. 前端 Web 界面 — Vue 3 + Element Plus 全部完成
+
+基于后端 REST API，使用 Vue 3 + Element Plus 构建了完整的前端 Web 管理界面，覆盖 5 种角色全部业务功能。
+
+#### 2.1 技术选型
+
+| 技术 | 版本 | 用途 |
+|------|------|------|
+
+| Vue 3 | ^3.5 | 前端框架（Composition API + `<script setup>`） |
+| Vite | ^6.0 | 构建工具（开发服务器 + 生产构建） |
+| Element Plus | ^2.9 | UI 组件库（中文 locale，el-table/el-form/el-dialog 等） |
+| Vue Router | ^4.5 | 路由管理（角色分流 + 路由守卫） |
+| Pinia | ^2.3 | 状态管理（用户登录态、JWT token） |
+| Axios | ^1.7 | HTTP 客户端（JWT 拦截器 + 错误处理） |
+
+**选择 Element Plus 而非 Ant Design 的原因**：
+
+- Element Plus 的中文生态更成熟（内置 `zh-cn` locale，日期/分页等组件原生中文支持）
+- `el-table`/`el-form`/`el-dialog` 等组件 API 设计简洁，适合表格密集型管理系统
+- `@element-plus/icons-vue` 提供丰富的图标，无需额外引入图标库
+
+#### 2.2 项目创建步骤
+
+**步骤 1:创建项目目录结构**
+
+```bash
+mkdir -p frontend/src/{api,store,router,styles,components}
+mkdir -p frontend/src/views/{admin,doctor,nurse,pharmacist,patient}
+```
+
+**步骤 2:创建 `package.json`**
+
+手动编写 `package.json`（不使用 `npm create vue` 交互式脚手架，便于理解和复现）：
+
+```json
+{
+  "name": "his-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0",
+    "pinia": "^2.3.0",
+    "axios": "^1.7.9",
+    "element-plus": "^2.9.1",
+    "@element-plus/icons-vue": "^2.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.0"
+  }
+}
+```
+
+**步骤 3：创建 `vite.config.js`（含 API 代理）**
+
+```js
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [vue()],
+  server: {
+    port: 3000,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',  // 后端 C++ 服务器地址
+        changeOrigin: true
+      }
+    }
+  }
+})
+```
+
+**关键点**：Vite 开发服务器的 `proxy` 配置将 `/api` 开头的请求代理到后端 `localhost:8080`，开发时无需手动处理 CORS。生产环境则通过 Nginx 反向代理实现。
+
+**步骤 4：创建 `index.html`（入口 HTML）**
+
+标准 Vue 3 SPA 入口，`<script type="module">` 指向 `src/main.js`。
+
+**步骤 5：创建 `src/main.js`（应用入口）**
+
+```js
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import App from './App.vue'
+import router from './router'
+
+const app = createApp(App)
+// 全局注册所有 Element Plus 图标
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component)
+}
+app.use(createPinia()).use(router).use(ElementPlus, { locale: zhCn }).mount('#app')
+```
+
+**步骤 6:安装依赖**
+
+```bash
+cd frontend
+npm install
+```
+
+#### 2.3 API 层设计（`src/api/`）
+
+**核心思路**：封装 axios 实例，自动附加 JWT token，统一错误处理。
+
+**`src/api/index.js`（axios 实例 + 拦截器）**：
+
+```js
+import axios from 'axios'
+import { useUserStore } from '../store/user'
+import router from '../router'
+
+const request = axios.create({
+  baseURL: '/api',
+  timeout: 10000
+})
+
+// 请求拦截器：自动附加 JWT token
+request.interceptors.request.use(config => {
+  const store = useUserStore()
+  if (store.token) {
+    config.headers.Authorization = `Bearer ${store.token}`
+  }
+  return config
+})
+
+// 响应拦截器：401 自动跳转登录页
+request.interceptors.response.use(
+  response => response.data,
+  error => {
+    if (error.response?.status === 401) {
+      const store = useUserStore()
+      store.logout()
+      router.push('/login')
+    }
+    return Promise.reject(error.response?.data || error)
+  }
+)
+
+export default request
+```
+
+**API 模块按角色拆分**：
+
+| 文件 | 封装的 API |
+|------|----------- |
+
+| `api/auth.js` | `login()`、`register()` |
+| `api/common.js` | `getDepartments()`、`getFeeStandards()` |
+| `api/admin.js` | 管理员全部 30+ 个端点（人员 CRUD、记录管理、账号管理） |
+| `api/doctor.js` | 医生 8 个端点（挂号/看诊/检查 + 个人信息） |
+| `api/nurse.js` | 护士 8 个端点（住院管理、体征录入、床位） |
+| `api/pharmacist.js` | 药剂师 8 个端点（审核/发药/库存） |
+| `api/patient.js` | 患者 12 个端点（挂号/支付/充值/个人信息） |
+
+**为什么按角色拆分而不是按资源拆分**：
+后端 API 本身按角色前缀隔离（`/api/admin/*`、`/api/doctor/*` 等），前端按角色拆分保持一致性，每个角色对应的页面只需 import 自己角色的 API 文件，代码更清晰。
+
+#### 2.4 状态管理（`src/store/user.js`）
+
+使用 Pinia 的 Composition API 风格（`defineStore` + `setup` 函数）：
+
+```js
+export const useUserStore = defineStore('user', () => {
+  const token = ref(localStorage.getItem('token') || '')
+  const userID = ref(localStorage.getItem('userID') || '')
+  const username = ref(localStorage.getItem('username') || '')
+  const role = ref(parseInt(localStorage.getItem('role') || '0'))
+
+  function setLogin(data) {
+    token.value = data.token
+    userID.value = data.userID
+    // ... 同时写入 localStorage 实现刷新页面不丢失登录态
+  }
+
+  function logout() {
+    // 清空所有状态 + localStorage
+  }
+
+  return { token, userID, username, role, isLoggedIn, roleName, setLogin, logout }
+})
+```
+
+**为什么用 localStorage 而不是 sessionStorage**：
+用户在同一标签页刷新时保持登录。JWT 本身有过期时间（24h）保护安全性。
+
+#### 2.5 路由设计（`src/router/index.js`）
+
+**路由守卫**：未登录用户访问任何页面 → 重定向到 `/login`；已登录用户访问 `/login` → 重定向到 `/dashboard`。
+
+**路由结构**：
+
+```text
+/login              → Login.vue（登录页）
+/register           → Register.vue（注册页）
+/                   → Layout.vue（主布局，requiresAuth）
+  /dashboard        → admin/Dashboard.vue（首页概览）
+  /admin/doctors    → admin/Doctors.vue（管理员 - 医生管理）
+  ... (管理员 11 个子页面)
+  /doctor/registrations → doctor/Registrations.vue（医生 - 挂号列表）
+  ... (医生 4 个子页面)
+  /nurse/hospitalizations → nurse/Hospitalizations.vue（护士 - 住院管理）
+  ... (护士 4 个子页面)
+  /pharmacist/medication-records → pharmacist/MedicationRecords.vue（药剂师 - 用药审核）
+  ... (药剂师 3 个子页面)
+  /patient/registrations → patient/Registrations.vue（患者 - 预约挂号）
+  ... (患者 6 个子页面)
+```
+
+**所有路由组件使用动态导入** `() => import(...)` 实现 Vue Router 的懒加载，减小首屏体积。
+
+#### 2.6 主布局设计（`src/views/Layout.vue`）
+
+采用 Element Plus 的 `el-container` 布局：
+
+```text
+┌──────────────────────────────────────────────────┐
+│  Header（面包屑 + 用户信息 + 退出按钮）            │
+├─────────┬────────────────────────────────────────┤
+│         │                                        │
+│ Sidebar │  Main Content（router-view）            │
+│ (菜单)  │                                        │
+│         │                                        │
+│         │                                        │
+└─────────┴────────────────────────────────────────┘
+```
+
+**侧边栏菜单按角色动态显示**：
+
+- 管理员看到：人员管理、医疗记录、资源管理 三大菜单组
+- 医生看到：挂号列表、看诊管理、检查记录、个人信息
+- 护士看到：住院管理、体征录入、床位管理、个人信息
+- 药剂师看到：用药审核、药品库存、个人信息
+- 患者看到：预约挂号、看诊记录、检查记录、用药记录、住院记录、个人信息
+
+**实现关键**：`v-if="store.role === X"` 控制菜单项的显示，`router` 属性让 `el-menu` 自动根据路由高亮当前菜单项。
+
+#### 2.7 登录/注册页面
+
+**Login.vue**：
+
+- `el-form` + `el-form-item` 表单布局
+- `el-select` 选择角色（管理员/医生/护士/药剂师/患者）
+- 表单校验规则（`el-form` 的 `rules` 属性）
+- 登录成功 → `store.setLogin(res.data)` 保存 JWT → `router.push('/dashboard')`
+
+**Register.vue**：
+
+- 根据选择的角色动态显示额外字段（医生显示科室+职称，患者显示地址等）
+- 密码确认校验（自定义 validator 比较两次输入）
+- 注册成功后自动登录并跳转
+
+#### 2.8 管理员页面（11 个子页面）
+
+**通用页面模式**（以 Doctors.vue 为代表）：
+
+1. **搜索栏**：`el-card` 包裹 `el-form :inline="true"`，支持按科室/姓名/职称筛选
+2. **数据表格**：`el-table` + `el-table-column`，支持 `v-loading` 加载状态
+3. **状态标签**：`el-tag` 显示在岗/锁定等状态，`:type` 动态切换颜色
+4. **操作按钮**：编辑、封锁/激活、删除，固定在表格右侧（`fixed="right"`）
+5. **分页**：前端分页（`list.slice(start, start + pageSize)`），显示总数和页码
+6. **编辑弹窗**：`el-dialog` + `el-form`，修改后调用 `PUT` API 并刷新列表
+
+**各页面功能**：
+
+| 页面 | 搜索/过滤 | 表格列 | 编辑弹窗 | 特殊功能 |
+|------|---------- | -------|--------- |--------- |
+
+| Doctors.vue | 科室/姓名/职称 | ID/姓名/性别/年龄/科室/职称/电话/在岗/状态 | 姓名/性别/年龄/电话/科室/职称/专长 | 账号封锁/激活 |
+| Nurses.vue | 科室 | ID/姓名/性别/年龄/科室/级别/电话/在岗/状态 | 姓名/性别/年龄/电话/科室/级别 | 账号封锁/激活 |
+| Pharmacists.vue | - | ID/姓名/性别/年龄/科室/级别/电话/状态 | 姓名/性别/年龄/电话/科室/级别 | 账号封锁/激活 |
+| Patients.vue | - | ID/姓名/性别/年龄/电话/余额/状态 | 姓名/性别/年龄/电话/紧急联系人 | 账号封锁/激活 |
+| Registrations.vue | 科室/患者ID/医生ID/状态 | ID/患者/医生/科室/费用/状态/时间 | - | 状态修改弹窗 |
+| Consultations.vue | 科室 | ID/患者/医生/科室/诊断/状态/时间 | - | 详情弹窗（el-descriptions） |
+| Examinations.vue | - | ID/患者/医生/项目/费用/状态/时间 | - | 逻辑删除 |
+| Hospitalizations.vue | - | ID/患者/医生/护士/病房/床位/状态/时间 | - | 逻辑删除 |
+| MedicationRecords.vue | - | ID/患者/医生/费用/缴费状态/审核状态/时间 | - | 逻辑删除 |
+| Medicines.vue | 科室 | ID/名称/规格/生产商/进价/售价/库存/安全库存/状态 | 全字段编辑 | - |
+| Beds.vue | 科室 | ID/科室/病房类型/床位号/状态/患者/日费用 | - | 逻辑删除 |
+
+**Dashboard.vue**：使用 `el-statistic` 组件展示 8 个统计数字（医生/护士/患者/挂号/看诊/检查/住院/药品总数），`Promise.all` 并行请求。
+
+#### 2.9 医生页面（4 个子页面）
+
+| 页面 | 功能 |
+|------|------|
+
+| Registrations.vue | 查看分配给自己的挂号列表（只读） |
+| Consultations.vue | 查看看诊列表 + 编辑弹窗（主诉/现病史/既往史/家族史/初步诊断/建议住院/状态/备注） |
+| Examinations.vue | 查看检查列表 + 编辑弹窗（报告摘要/状态/备注） |
+| Profile.vue | 个人信息展示（`el-descriptions` 组件） |
+
+#### 2.10 护士页面（4 个子页面）
+
+| 页面 | 功能 |
+|------|------|
+
+| Hospitalizations.vue | 查看所有住院记录 + 编辑弹窗（床位号/状态修改） |
+| Examinations.vue | 查看检查列表 + **体征录入弹窗**（体温/血压/心率/呼吸/血氧/身高/体重/血糖），自动计算 BMI |
+| Beds.vue | 按科室筛选查看床位状态 |
+| Profile.vue | 个人信息展示 |
+
+**体征录入弹窗**是护士端的核心功能，对应后端 `PUT /api/nurse/examinations/:id/vitals` 端点，一次性提交 10 项体征数据。
+
+#### 2.11 药剂师页面（3 个子页面）
+
+| 页面 | 功能 |
+|------|------|
+
+| MedicationRecords.vue | 用药记录审核 + 发药。通过/驳回按钮（`reviewStatus=2/3`），发药按钮（需审核通过+已缴费，自动扣库存） |
+| Medicines.vue | 药品库存管理。入库/出库按钮弹窗输入数量，调用 `PUT /api/pharmacist/medicines/:id/stock` |
+| Profile.vue | 个人信息展示 |
+
+#### 2.12 患者页面（6 个子页面）
+
+| 页面 | 功能 |
+|------|------|
+
+| Registrations.vue | **预约挂号**（选科室→选医生→确认）+ 查看挂号列表 + **支付挂号费** |
+| Consultations.vue | 查看看诊记录 + 详情弹窗 |
+| Examinations.vue | 查看检查记录 + **支付检查费** |
+| MedicationRecords.vue | 查看用药记录 + **支付药费**（需审核通过） |
+| Hospitalizations.vue | 查看住院记录（只读） |
+| Profile.vue | **个人信息编辑** + **账户充值**（`el-input-number` 输入金额，确认后调用 recharge API） |
+
+**预约挂号流程**：
+
+1. 点击"新建挂号" → 弹窗选择科室
+2. 选择科室后自动加载该科室医生列表（调用 `GET /api/admin/doctors?department=xxx`）
+3. 选择医生 → 确认 → 调用 `POST /api/patient/registrations` 创建挂号
+4. 新挂号状态为"已预约"，可点击"支付"按钮从余额扣除挂号费
+
+**支付流程**：
+
+1. 点击"支付" → `ElMessageBox.confirm` 确认
+2. 调用对应支付 API（挂号/检查/药费各有独立端点）
+3. 后端检查余额是否充足 → 扣款 → 修改状态为"已缴费"
+
+#### 2.13 构建与运行
+
+```bash
+# 安装依赖
+cd frontend && npm install
+
+# 开发模式（前端 3000 + 后端 8080，Vite 自动代理）
+cd frontend && npm run dev
+# 浏览器访问 http://localhost:3000
+
+# 生产构建
+cd frontend && npm run build
+# 输出到 frontend/dist/，可由 Nginx 托管
+```
+
+**联调启动步骤**：
+
+1. 先启动 C++ 后端：`cd build && ./Debug/his_server.exe`（监听 8080）
+2. 再启动前端开发服务器：`cd frontend && npm run dev`（监听 3000）
+3. 浏览器打开 `http://localhost:3000` → 进入登录页
+
+#### 2.14 新增文件清单
+
+```text
+frontend/
+├── index.html                    # SPA 入口
+├── package.json                  # 依赖声明
+├── vite.config.js                # Vite 配置（含 API 代理）
+├── src/
+│   ├── main.js                   # 应用入口（注册 Vue/Pinia/Router/ElementPlus）
+│   ├── App.vue                   # 根组件
+│   ├── styles/global.css         # 全局样式
+│   ├── api/
+│   │   ├── index.js              # axios 实例 + JWT 拦截器
+│   │   ├── auth.js               # 登录/注册 API
+│   │   ├── common.js             # 科室列表/费用标准
+│   │   ├── admin.js              # 管理员 API（30+ 端点）
+│   │   ├── doctor.js             # 医生 API（8 端点）
+│   │   ├── nurse.js              # 护士 API（8 端点）
+│   │   ├── pharmacist.js         # 药剂师 API（8 端点）
+│   │   └── patient.js            # 患者 API（12 端点）
+│   ├── store/
+│   │   └── user.js               # Pinia 用户状态（JWT/角色/登录态）
+│   ├── router/
+│   │   └── index.js              # Vue Router（角色分流 + 路由守卫）
+│   └── views/
+│       ├── Login.vue             # 登录页
+│       ├── Register.vue          # 注册页
+│       ├── Layout.vue            # 主布局（侧边栏 + 头部 + 内容区）
+│       ├── admin/
+│       │   ├── Dashboard.vue     # 管理员首页概览
+│       │   ├── Doctors.vue       # 医生管理（CRUD + 搜索过滤）
+│       │   ├── Nurses.vue        # 护士管理
+│       │   ├── Pharmacists.vue   # 药剂师管理
+│       │   ├── Patients.vue      # 患者管理
+│       │   ├── Registrations.vue # 挂号记录（搜索 + 状态修改）
+│       │   ├── Consultations.vue # 看诊记录（搜索 + 详情查看）
+│       │   ├── Examinations.vue  # 检查记录
+│       │   ├── Hospitalizations.vue # 住院记录
+│       │   ├── MedicationRecords.vue # 用药记录
+│       │   ├── Medicines.vue     # 药品管理（CRUD + 编辑弹窗）
+│       │   └── Beds.vue          # 床位管理
+│       ├── doctor/
+│       │   ├── Registrations.vue # 医生-挂号列表
+│       │   ├── Consultations.vue # 医生-看诊管理（编辑弹窗）
+│       │   ├── Examinations.vue  # 医生-检查记录（编辑弹窗）
+│       │   └── Profile.vue       # 医生-个人信息
+│       ├── nurse/
+│       │   ├── Hospitalizations.vue # 护士-住院管理
+│       │   ├── Examinations.vue  # 护士-体征录入（10项体征表单）
+│       │   ├── Beds.vue          # 护士-床位列表
+│       │   └── Profile.vue       # 护士-个人信息
+│       ├── pharmacist/
+│       │   ├── MedicationRecords.vue # 药剂师-用药审核/发药
+│       │   ├── Medicines.vue     # 药剂师-库存管理（入库/出库）
+│       │   └── Profile.vue       # 药剂师-个人信息
+│       └── patient/
+│           ├── Registrations.vue # 患者-预约挂号（选科室→选医生→支付）
+│           ├── Consultations.vue # 患者-看诊记录查看
+│           ├── Examinations.vue  # 患者-检查记录+支付
+│           ├── MedicationRecords.vue # 患者-用药记录+支付药费
+│           ├── Hospitalizations.vue # 患者-住院记录查看
+│           └── Profile.vue       # 患者-个人信息编辑+充值
+```
+
+**共计 39 个文件**（3 个配置 + 1 个 HTML + 9 个 JS 基础层 + 2 个公共页面 + 24 个角色页面）
+
+#### 2.15 关键设计决策
+
+1. **前端分页**：后端返回全量数据（`{list, total}`），前端 `slice()` 分页。原因是当前数据量较小（链表数据通常几十到几百条），前端分页避免增加后端复杂度
+2. **角色菜单隔离**：`v-if="store.role === X"` 控制侧边栏菜单显示，路由守卫只检查是否登录，具体权限由后端 JWT 中的 `role` 字段保证
+3. **API 代理而非 CORS**：开发时使用 Vite `proxy` 转发请求到后端，避免浏览器跨域限制；生产环境通过 Nginx 反向代理实现
+4. **无 Mock 数据**：由于后端 API 已完成，前端直接对接真实 API，无需 Mock.js 中间层
+5. **Element Plus 中文 locale**：`import zhCn from 'element-plus/es/locale/lang/zh-cn'` 确保 `el-pagination`、`el-table` 空数据等提示为中文

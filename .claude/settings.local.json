@@ -5,7 +5,18 @@
       "Bash(xxd)",
       "Bash(python fix_quotes.py)",
       "Bash(python -c ' *)",
-      "Bash(cmake ..)"
+      "Bash(cmake ..)",
+      "Bash(curl -sL -o Head/json.hpp https://github.com/nlohmann/json/releases/download/v3.11.3/json.hpp)",
+      "Bash(curl -sL -o Head/httplib.h https://raw.githubusercontent.com/yhirose/cpp-httplib/v0.18.3/httplib.h)",
+      "Bash(curl -L --connect-timeout 10 --max-time 120 -o Head/httplib.h \"https://github.com/yhirose/cpp-httplib/archive/refs/tags/v0.18.3.tar.gz\")",
+      "Bash(curl -L --connect-timeout 15 --max-time 60 -o Head/httplib.h \"https://ghgo.xyz/https://raw.githubusercontent.com/yhirose/cpp-httplib/v0.18.3/httplib.h\")",
+      "Bash(curl -L --connect-timeout 15 --max-time 180 -o Head/httplib.h \"https://cdn.jsdelivr.net/gh/yhirose/cpp-httplib@v0.18.3/httplib.h\")",
+      "Bash(cmake --build . --config Debug --target his_server)",
+      "Bash(cmake --build . --config Debug --target his)",
+      "Bash(timeout 5 ./Debug/his_server.exe)",
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "Bash(npx vite *)"
     ]
   }
 }
