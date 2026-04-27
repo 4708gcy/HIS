@@ -135,6 +135,32 @@ All deletions are **logical** (`isDeleted` flag), never physical removal.
 - `main.cpp` — menu system with nested while-loops per role
 - `CMakeLists.txt` — CMake config (C++17, MSVC `/utf-8`, include `Head/`)
 
+### Planned: Frontend-Backend Separation (前后端分离)
+
+The console-based HIS is feature-complete. The next major task is splitting it into a C++ REST backend + web frontend. Full plan is in `DevelopLog.md` (section "4. 前后端分离架构落地方案"). Key decisions already made:
+
+**Phase 1 — C++ REST API server:**
+
+- Use cpp-httplib or Drogon as REST framework
+- Extract business logic from console I/O into API endpoints per role
+- Unified JSON response: `{ "code": 200, "message": "success", "data": {} }`
+- JWT for auth (replacing console login flow)
+- Keep CSV persistence initially; SQLite/MySQL migration optional
+
+**Phase 2 — Web frontend:**
+
+- Vue 3 + Element Plus (chosen for Chinese ecosystem fit)
+- `src/views/` per role, `src/api/` for backend calls (axios), `src/store/` (Pinia), `src/router/` (role-based routing)
+- Console features map directly: menus → sidebar, `printWithPagination` → `el-pagination`, breadcrumbs → `el-breadcrumb`, color alerts → `el-message`
+
+**Phase 3 — Integration & deploy:**
+
+- Mock data during frontend dev, then switch to real API
+- CORS or Nginx reverse proxy
+- Backend as standalone service, frontend static files via Nginx
+
+**Recommended first step:** Build "login + admin view registrations" end-to-end to validate the architecture before migrating remaining features.
+
 ### Language
 
 Code comments, UI strings, documentation, and commit messages are primarily in Chinese. Commit messages use date-based versioning (e.g., "4.24.1").

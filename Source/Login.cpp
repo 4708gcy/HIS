@@ -7,8 +7,6 @@ Admin *adminLogin(Admin *&adminHead)
     Admin *current = adminHead;
     std::string id = inputIDCheck("请输入管理员用户ID: ");
 
-    // std::cout << id << std::endl;
-
     // 查找未删除的账户
     while (current != nullptr)
     {
@@ -25,17 +23,10 @@ Admin *adminLogin(Admin *&adminHead)
         return nullptr;
     }
 
-    // 最多重试3次密码输入
-    for (int attempt = 0; attempt < 3; ++attempt)
+    // SignIn内部已有完整的密码重试和账户锁定逻辑
+    if (current->adminSignIn())
     {
-        if (current->adminSignIn())
-        {
-            return current;
-        }
-        if (attempt < 2)
-        {
-            std::cout << "请重新输入密码（还剩 " << (2 - attempt) << " 次机会）: " << std::endl;
-        }
+        return current;
     }
     return nullptr;
 }
@@ -48,7 +39,7 @@ Doctor *doctorLogin(Doctor *&doctorHead)
 
     while (currentDoctor != nullptr)
     {
-        if (currentDoctor->getUserID() == id && !currentDoctor->isDeleted)
+        if (currentDoctor->getUserID() == id && !currentDoctor->getIsDeleted())
         {
             break;
         }
@@ -61,16 +52,9 @@ Doctor *doctorLogin(Doctor *&doctorHead)
         return nullptr;
     }
 
-    for (int attempt = 0; attempt < 3; ++attempt)
+    if (currentDoctor->doctorSignIn())
     {
-        if (currentDoctor->doctorSignIn())
-        {
-            return currentDoctor;
-        }
-        if (attempt < 2)
-        {
-            std::cout << "请重新输入密码（还剩 " << (2 - attempt) << " 次机会）: " << std::endl;
-        }
+        return currentDoctor;
     }
     return nullptr;
 }
@@ -83,7 +67,7 @@ Pharmacist *pharmacistLogin(Pharmacist *&pharmacistHead)
 
     while (currentPharmacist != nullptr)
     {
-        if (currentPharmacist->getUserID() == id && !currentPharmacist->isDeleted)
+        if (currentPharmacist->getUserID() == id && !currentPharmacist->getIsDeleted())
         {
             break;
         }
@@ -96,16 +80,9 @@ Pharmacist *pharmacistLogin(Pharmacist *&pharmacistHead)
         return nullptr;
     }
 
-    for (int attempt = 0; attempt < 3; ++attempt)
+    if (currentPharmacist->pharmacistSignIn())
     {
-        if (currentPharmacist->pharmacistSignIn())
-        {
-            return currentPharmacist;
-        }
-        if (attempt < 2)
-        {
-            std::cout << "请重新输入密码（还剩 " << (2 - attempt) << " 次机会）: " << std::endl;
-        }
+        return currentPharmacist;
     }
     return nullptr;
 }
@@ -118,7 +95,7 @@ Patient *patientLogin(Patient *&patientHead)
 
     while (currentPatient != nullptr)
     {
-        if (currentPatient->getUserID() == id && !currentPatient->isDeleted)
+        if (currentPatient->getUserID() == id && !currentPatient->getIsDeleted())
         {
             break;
         }
@@ -131,16 +108,9 @@ Patient *patientLogin(Patient *&patientHead)
         return nullptr;
     }
 
-    for (int attempt = 0; attempt < 3; ++attempt)
+    if (currentPatient->patientSignIn())
     {
-        if (currentPatient->patientSignIn())
-        {
-            return currentPatient;
-        }
-        if (attempt < 2)
-        {
-            std::cout << "请重新输入密码（还剩 " << (2 - attempt) << " 次机会）: " << std::endl;
-        }
+        return currentPatient;
     }
     return nullptr;
 }
@@ -153,7 +123,7 @@ Nurse *nurseLogin(Nurse *&nurseHead)
 
     while (currentNurse != nullptr)
     {
-        if (currentNurse->getUserID() == id && !currentNurse->isDeleted)
+        if (currentNurse->getUserID() == id && !currentNurse->getIsDeleted())
         {
             break;
         }
@@ -166,16 +136,9 @@ Nurse *nurseLogin(Nurse *&nurseHead)
         return nullptr;
     }
 
-    for (int attempt = 0; attempt < 3; ++attempt)
+    if (currentNurse->nurseSignIn())
     {
-        if (currentNurse->nurseSignIn())
-        {
-            return currentNurse;
-        }
-        if (attempt < 2)
-        {
-            std::cout << "请重新输入密码（还剩 " << (2 - attempt) << " 次机会）: " << std::endl;
-        }
+        return currentNurse;
     }
     return nullptr;
 }
@@ -191,11 +154,14 @@ void viewAllAdmins(Admin *&adminHead)
     lines.push_back("管理员列表：");
     while (current != nullptr)
     {
-        lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
-                  + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
-                  + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
-                  + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
-                  + ", 创建时间: " + current->getCreateTime());
+        if (!current->getIsDeleted())
+        {
+            lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
+                      + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
+                      + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
+                      + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
+                      + ", 创建时间: " + current->getCreateTime());
+        }
         current = current->next;
     }
     printWithPagination(lines, 10);
@@ -207,7 +173,7 @@ void viewAdminByID(Admin *&adminHead)
     std::string targetID = inputIDCheck("请输入要查看的管理员用户ID: ");
     while (current != nullptr)
     {
-        if (current->getUserID() == targetID)
+        if (current->getUserID() == targetID && !current->getIsDeleted())
         {
             std::cout << "用户ID: " << current->getUserID() << ", 姓名: " << current->getUsername()
                       << ", 性别: " << current->getGender() << ", 年龄: " << current->getAge()
@@ -231,7 +197,7 @@ void viewAdminsByName(Admin *&admin)
     bool found = false;
     while (current != nullptr)
     {
-        if (current->getUsername().find(targetName) != std::string::npos) // 模糊匹配
+        if (current->getUsername().find(targetName) != std::string::npos && !current->getIsDeleted()) // 模糊匹配
         {
             lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
                       + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
@@ -258,7 +224,7 @@ void viewAdminsByGender(Admin *&admin)
     bool found = false;
     while (current != nullptr)
     {
-        if (current->getGender() == targetGender)
+        if (current->getGender() == targetGender && !current->getIsDeleted())
         {
             lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
                       + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
@@ -295,7 +261,7 @@ void viewAdminsByAgeGroup(Admin *&admin)
     while (current != nullptr)
     {
         int age = current->getAge();
-        if (age >= minAge && age <= maxAge)
+        if (age >= minAge && age <= maxAge && !current->getIsDeleted())
         {
             lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
                       + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
@@ -335,7 +301,7 @@ void viewAdminsByContactInfo(Admin *&admin)
         lines.push_back("正在查找电话号码为 " + telephone + " 的管理员信息...");
         while (current != nullptr)
         {
-            if (current->getTelephone() == telephone)
+            if (current->getTelephone() == telephone && !current->getIsDeleted())
             {
                 lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
                           + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
@@ -359,7 +325,7 @@ void viewAdminsByContactInfo(Admin *&admin)
         lines.push_back("正在查找电子邮箱为 " + email + " 的管理员信息...");
         while (current != nullptr)
         {
-            if (current->getEmail() == email)
+            if (current->getEmail() == email && !current->getIsDeleted())
             {
                 lines.push_back("用户ID: " + current->getUserID() + ", 姓名: " + current->getUsername()
                           + ", 性别: " + current->getGender() + ", 年龄: " + std::to_string(current->getAge())
@@ -385,7 +351,7 @@ void modifyAdminName(Admin *&admin)
     bool found = false;
     while (current != nullptr)
     {
-        if (current->getUserID() == targetID)
+        if (current->getUserID() == targetID && !current->getIsDeleted())
         {
             std::cout << "现在的管理员姓名是: " << current->getUsername() << std::endl;
             std::string newName = inputStringCheck("请输入新的管理员姓名: ");
@@ -409,7 +375,7 @@ void modifyAdminGender(Admin *&admin)
     bool found = false;
     while (current != nullptr)
     {
-        if (current->getUserID() == targetID)
+        if (current->getUserID() == targetID && !current->getIsDeleted())
         {
             std::cout << "现在的管理员性别是: " << current->getGender() << std::endl;
             std::string newGender = inputGenderCheck("请输入新的管理员性别");
@@ -433,7 +399,7 @@ void modifyAdminAge(Admin *&admin)
     bool found = false;
     while (current != nullptr)
     {
-        if (current->getUserID() == targetID)
+        if (current->getUserID() == targetID && !current->getIsDeleted())
         {
             std::cout << "现在的管理员年龄是: " << current->getAge() << std::endl;
             int newAge = inputAgeCheck("请输入新的管理员年龄: ");
@@ -457,7 +423,7 @@ void modifyAdminTelephone(Admin *&admin)
     bool found = false;
     while (current != nullptr)
     {
-        if (current->getUserID() == targetID)
+        if (current->getUserID() == targetID && !current->getIsDeleted())
         {
             std::cout << "现在的管理员电话号码是: " << current->getTelephone() << std::endl;
             std::string newTelephone = inputTelephoneCheck("请输入新的管理员电话号码");
@@ -481,7 +447,7 @@ void modifyAdminEmail(Admin *&admin)
     bool found = false;
     while (current != nullptr)
     {
-        if (current->getUserID() == targetID)
+        if (current->getUserID() == targetID && !current->getIsDeleted())
         {
             std::cout << "现在的管理员电子邮箱是: " << current->getEmail() << std::endl;
             std::string newEmail = inputEmailCheck("请输入新的管理员电子邮箱");
@@ -505,7 +471,7 @@ void deleteAdmin(Admin *&admin)
     bool found = false;
     while (current != nullptr)
     {
-        if (current->getUserID() == targetID)
+        if (current->getUserID() == targetID && !current->getIsDeleted())
         {
             current->setIsDeleted(true);
             printSuccess("管理员账号已删除！");
@@ -516,7 +482,7 @@ void deleteAdmin(Admin *&admin)
     }
     if (!found)
     {
-        printError("未找到用户ID为 " + targetID + " 的管理员！");
+        printError("未找到用户ID为 " + targetID + " 的有效管理员！");
     }
 }
 // 添加管理员(通过注册流程创建新管理员账号，并插入到管理员链表中)

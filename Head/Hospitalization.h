@@ -79,7 +79,7 @@ struct Hospitalization
     std::string applyTime = "#";          // 申请时间
     std::string admitTime = "#";          // 实际入院时间
     std::string dischargeTime = "#";      // 出院时间
-    std::string availableAdmitTime = "# "; // 护士分床后给出的可入住时间
+    std::string availableAdmitTime = "#"; // 护士分床后给出的可入住时间
 
     double deposit = 0.0;   // 押金
     double totalCost = 0.0; // 总费用

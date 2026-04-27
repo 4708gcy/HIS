@@ -29,8 +29,6 @@ public:
     int bedManageCount = 0;   // 床位管理次数
     bool isOnDuty = false;    // 是否在岗
 
-    bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
-
     Nurse *next = nullptr; // 链表指针
     Nurse *prev = nullptr; // 双向链表前一个节点指针
 

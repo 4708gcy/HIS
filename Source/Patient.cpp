@@ -694,7 +694,7 @@ bool Patient::getAllConsultations(Consultation *&conHead)
                       << ", 初步诊断: " << current->preliminaryDiagnosis
                       << ", 检查项目数: " << current->examinationlist.size()
                       << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
@@ -751,7 +751,7 @@ bool Patient::getConsultationsByID(Consultation *&conHead)
                       << ", 初步诊断: " << current->preliminaryDiagnosis
                       << ", 检查项目数: " << current->examinationlist.size()
                       << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
@@ -808,7 +808,7 @@ bool Patient::getConsultationsByDoctorID(Consultation *&conHead)
                       << ", 初步诊断: " << current->preliminaryDiagnosis
                       << ", 检查项目数: " << current->examinationlist.size()
                       << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
@@ -867,7 +867,7 @@ bool Patient::getConsultationsByStatus(Consultation *&conHead)
                       << ", 初步诊断: " << current->preliminaryDiagnosis
                       << ", 检查项目数: " << current->examinationlist.size()
                       << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
@@ -926,7 +926,7 @@ bool Patient::getConsultationsByTimeRange(Consultation *&conHead)
                       << ", 初步诊断: " << current->preliminaryDiagnosis
                       << ", 检查项目数: " << current->examinationlist.size()
                       << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
@@ -983,7 +983,7 @@ bool Patient::getConsultationsByChiefComplaint(Consultation *&conHead)
                       << ", 初步诊断: " << current->preliminaryDiagnosis
                       << ", 检查项目数: " << current->examinationlist.size()
                       << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
@@ -1041,7 +1041,7 @@ bool Patient::getConsultationsByDepartment(Consultation *&conHead)
                       << ", 初步诊断: " << current->preliminaryDiagnosis
                       << ", 检查项目数: " << current->examinationlist.size()
                       << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
@@ -1476,7 +1476,7 @@ void Patient::manageExaminations(Examination *&examHead)
         }
         else if (choice == 2)
         {
-            bool ishave = getExaminationsByStatus(examHead, 0); // 查询已下单状态（0）的检查记录
+            bool ishave = getExaminationsByStatus(examHead, 1); // 查询已下单状态（ORDERED=1）的检查记录
             if (ishave)
             {
                 std::string examID = inputRecordIDCheck("请输入要缴纳费用的检查ID: ", {"exa"});
@@ -1703,7 +1703,7 @@ bool Patient::getMedicationsByTimeRange(MedicationRecord *&medHead)
     {
         std::string orderDate = current->createTime.substr(0, 10);
 
-        if (!current->isDeleted && current->patientID == this->patientID && current->createTime >= startTime && current->createTime <= endTime)
+        if (!current->isDeleted && current->patientID == this->patientID && orderDate >= startTime && orderDate <= endTime)
         {
             printMedicationRecord(current);
             found = true;
@@ -2097,7 +2097,7 @@ bool Patient::getHospitalizationsByConsultationID(Hospitalization *&hosHead)
 }
 void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
 {
-    getHospitalizationsByStatus(hosHead, 2); // 2 对应已入院状态
+    getHospitalizationsByStatus(hosHead, 3); // 3 对应已入院状态(ADMITTED=3)
 
     std::string hosID = inputRecordIDCheck("请输入您要申请出院的住院记录ID: ", {"hos"});
     Hospitalization *current = hosHead;
@@ -2199,7 +2199,7 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
 }
 void Patient::payHospitalizationDeposit(Hospitalization *&hosHead)
 {
-    bool ishave = getHospitalizationsByStatus(hosHead, 0); // 0 对应 APPLIED
+    bool ishave = getHospitalizationsByStatus(hosHead, 1); // 1 对应 APPLIED
     if (!ishave)
     {
         std::cout << "如果想为已入院的记录补交款，可以先联系护士或出院时一并结算" << std::endl;

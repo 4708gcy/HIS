@@ -49,7 +49,8 @@ bool User::signUp(int choice, int &idCounter)
     case 2:
     {
         role = UserRole::DOCTOR;
-        userID = "1" + std::to_string(idCounter++).insert(0, 5 - std::to_string(idCounter).length(), '0');
+        userID = "1" + std::to_string(idCounter).insert(0, 5 - std::to_string(idCounter).length(), '0');
+        idCounter++;
         salt = generateSalt();
         MyTime &myTime = MyTime::getInstance();
         createTime = myTime.getTime();
@@ -69,7 +70,8 @@ bool User::signUp(int choice, int &idCounter)
     case 3:
     {
         role = UserRole::NURSE;
-        userID = "2" + std::to_string(idCounter++).insert(0, 5 - std::to_string(idCounter).length(), '0');
+        userID = "2" + std::to_string(idCounter).insert(0, 5 - std::to_string(idCounter).length(), '0');
+        idCounter++;
         salt = generateSalt();
         MyTime &myTime = MyTime::getInstance();
         createTime = myTime.getTime();
@@ -87,7 +89,8 @@ bool User::signUp(int choice, int &idCounter)
     case 4:
     {
         role = UserRole::PHARMACIST;
-        userID = "3" + std::to_string(idCounter++).insert(0, 5 - std::to_string(idCounter).length(), '0');
+        userID = "3" + std::to_string(idCounter).insert(0, 5 - std::to_string(idCounter).length(), '0');
+        idCounter++;
         salt = generateSalt();
         MyTime &myTime = MyTime::getInstance();
         createTime = myTime.getTime();
@@ -105,7 +108,8 @@ bool User::signUp(int choice, int &idCounter)
     case 5:
     {
         role = UserRole::PATIENT;
-        userID = "4" + std::to_string(idCounter++).insert(0, 5 - std::to_string(idCounter).length(), '0');
+        userID = "4" + std::to_string(idCounter).insert(0, 5 - std::to_string(idCounter).length(), '0');
+        idCounter++;
         salt = generateSalt();
         MyTime &myTime = MyTime::getInstance();
         createTime = myTime.getTime();
@@ -402,7 +406,7 @@ std::string User::findVitalSignToString(Examination *exa)
         return "体重(" + std::to_string(vs.weight) + "kg)";
     if (itemName == "BMI计算")
         return "BMI(" + std::to_string(vs.bmi) + ")";
-    if (itemName == "疼痛评估")
+    if (itemName == "疼痛评分")
         return "疼痛评分(" + std::to_string(vs.painScore) + ")";
     if (itemName == "腰围测量")
         return "腰围(" + std::to_string(vs.waistCircumference) + "cm)";
@@ -547,11 +551,11 @@ double User::calculateExaminationFee(std::string itemName)
         return 5;
     if (itemName == "血压测量")
         return 8;
-    if (itemName == "心率测量" || itemName == "脉搏")
+    if (itemName == "心率测量")
         return 5;
     if (itemName == "呼吸频率测量")
         return 5;
-    if (itemName == "血氧饱和度" || itemName == "脉搏血氧测量")
+    if (itemName == "脉搏血氧测量")
         return 10;
     if (itemName == "身高测量")
         return 5;
@@ -565,11 +569,11 @@ double User::calculateExaminationFee(std::string itemName)
         return 5;
     if (itemName == "血糖测量")
         return 20;
-    if (itemName == "体脂率测量")
+    if (itemName == "体脂测量")
         return 30;
     if (itemName == "尿酸测定")
         return 25;
-    if (itemName == "总胆固醇" || itemName == "血脂测定")
+    if (itemName == "血脂测定")
         return 25;
     // 默认价格
     return 5;

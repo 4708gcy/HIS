@@ -116,19 +116,18 @@ protected:
     std::string salt;             // 密码盐值
     int loginAttempts = 0;        // 连续失败次数
     bool isAccountActive = false; // 账户是否被激活/未锁定
-    UserRole role;                // 角色类型
+    UserRole role = UserRole::ADMIN; // 角色类型
     std::string createTime;       // 账户创建时间字符串
     std::string gender;           // 性别
-    int age;                      // 年龄
+    int age = 0;                  // 年龄
     std::string telephone;        // 联系方式
     std::string email;            // 电子邮箱
-
-    bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
 
     static constexpr int kMaxLoginAttempts = failedLoginLimit; // 锁定门槛
     static constexpr int kHashIterations = hashIterations;     // 哈希迭代次数
 
 public:
+    bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
     // 注册新用户 : 1 - Admin, 2 - Doctor, 3 - Nurse, 4 - Pharmacist, 5 - Patient
     bool signUp(int choice, int &idCounter); // 注册新用户
 

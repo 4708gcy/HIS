@@ -199,11 +199,12 @@ Doctor *loadDoctorData(int &count)
             newDoctor->hospitalizationApplyCount = 0;
         }
         newDoctor->isOnDuty = (isOnDutyStr == "1");
-        newDoctor->isDeleted = (isDeletedStr == "1");
+        newDoctor->setIsDeleted(isDeletedStr == "1");
         newDoctor->setRole(UserRole::DOCTOR);
 
         // 插入链表头部
         newDoctor->next = doctorHead;
+        if (doctorHead != nullptr) doctorHead->prev = newDoctor;
         doctorHead = newDoctor;
     }
     inFile.close();
@@ -314,11 +315,12 @@ Nurse *loadNurseData(int &count)
             newNurse->bedManageCount = 0;
         }
         newNurse->isOnDuty = (isOnDutyStr == "1");
-        newNurse->isDeleted = (isDeletedStr == "1");
+        newNurse->setIsDeleted(isDeletedStr == "1");
         newNurse->setRole(UserRole::NURSE);
 
         // 插入链表头部
         newNurse->next = nurseHead;
+        if (nurseHead != nullptr) nurseHead->prev = newNurse;
         nurseHead = newNurse;
     }
     inFile.close();
@@ -438,11 +440,12 @@ Pharmacist *loadPharmacistData(int &count)
             newPharmacist->inventoryManageCount = 0;
         }
         newPharmacist->isOnDuty = (isOnDutyStr == "1");
-        newPharmacist->isDeleted = (isDeletedStr == "1");
+        newPharmacist->setIsDeleted(isDeletedStr == "1");
         newPharmacist->setRole(UserRole::PHARMACIST);
 
         // 插入链表头部
         newPharmacist->next = pharmacistHead;
+        if (pharmacistHead != nullptr) pharmacistHead->prev = newPharmacist;
         pharmacistHead = newPharmacist;
     }
     inFile.close();
@@ -591,11 +594,12 @@ Patient *loadPatientData(int &count)
             newPatient->balance = 0.0;
         }
         newPatient->isHospitalized = (isHospitalizedStr == "1");
-        newPatient->isDeleted = (isDeletedStr == "1");
+        newPatient->setIsDeleted(isDeletedStr == "1");
         newPatient->setRole(UserRole::PATIENT);
 
         // 插入链表头部
         newPatient->next = patientHead;
+        if (patientHead != nullptr) patientHead->prev = newPatient;
         patientHead = newPatient;
     }
     inFile.close();
@@ -754,7 +758,7 @@ Consultation *loadConsultations(int &count)
 
         std::istringstream iss(line);
         Consultation *newCon = new Consultation();
-        std::string isPrecriptionReviewedStr, isHospitalizationRecommendedStr, statusStr, isDeletedStr;
+        std::string isPrescriptionReviewedStr, isHospitalizationRecommendedStr, statusStr, isDeletedStr;
         std::getline(iss, newCon->consultationID, ',');
         std::getline(iss, newCon->registrationID, ',');
         std::getline(iss, newCon->patientID, ',');
@@ -766,13 +770,13 @@ Consultation *loadConsultations(int &count)
         std::getline(iss, newCon->pastMedicalHistory, ',');
         std::getline(iss, newCon->familyHistory, ',');
         std::getline(iss, newCon->preliminaryDiagnosis, ',');
-        std::getline(iss, isPrecriptionReviewedStr, ',');
+        std::getline(iss, isPrescriptionReviewedStr, ',');
         std::getline(iss, isHospitalizationRecommendedStr, ',');
         std::getline(iss, statusStr, ',');
         std::getline(iss, newCon->note, ',');
         std::getline(iss, isDeletedStr);
 
-        newCon->isPrecriptionReviewed = (isPrecriptionReviewedStr == "1");
+        newCon->isPrescriptionReviewed = (isPrescriptionReviewedStr == "1");
         newCon->isHospitalizationRecommended = (isHospitalizationRecommendedStr == "1");
         try
         {

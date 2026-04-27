@@ -274,7 +274,7 @@ void saveConsultations(Consultation *conHead, int count)
                 << current->familyHistory << ","
                 << current->preliminaryDiagnosis << ","
                 // examinationlist、prescriptions、attachments、relatedConsultationIDs 建议用分号拼接
-                << (current->isPrecriptionReviewed ? "1" : "0") << ","
+                << (current->isPrescriptionReviewed ? "1" : "0") << ","
                 << (current->isHospitalizationRecommended ? "1" : "0") << ","
                 << static_cast<int>(current->status) << ","
                 << (current->note.empty() ? "无备注" : current->note) << ","

@@ -618,7 +618,7 @@ bool Doctor::getAllConsultations(Consultation *&conHead)
                       << ", 初步诊断: " << current->preliminaryDiagnosis
                       << ", 检查项目数: " << current->examinationlist.size()
                       << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
@@ -660,7 +660,7 @@ bool Doctor::getConsultationsByStatus(Consultation *&conHead)
                       << ", 初步诊断: " << current->preliminaryDiagnosis
                       << ", 检查项目数: " << current->examinationlist.size()
                       << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
@@ -701,7 +701,7 @@ bool Doctor::getConsultationsByPatientID(Consultation *&conHead)
                       << ", 初步诊断: " << current->preliminaryDiagnosis
                       << ", 检查项目数: " << current->examinationlist.size()
                       << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
@@ -746,7 +746,7 @@ bool Doctor::getConsultationsByTimeRange(Consultation *&conHead)
                           << ", 初步诊断: " << current->preliminaryDiagnosis
                           << ", 检查项目数: " << current->examinationlist.size()
                           << ", 处方数: " << current->prescriptions.size()
-                          << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                          << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                           << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                           << ", 备注: " << current->note
                           << std::endl;
@@ -786,7 +786,7 @@ bool Doctor::getConsultationsByID(Consultation *&conHead)
                       << ", 初步诊断: " << current->preliminaryDiagnosis
                       << ", 检查项目数: " << current->examinationlist.size()
                       << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
@@ -1302,7 +1302,7 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                                   << ", 初步诊断: " << target->preliminaryDiagnosis
                                   << ", 检查项目数: " << target->examinationlist.size()
                                   << ", 处方数: " << target->prescriptions.size()
-                                  << ", 处方审核状态: " << (target->isPrecriptionReviewed ? "已审核" : "未审核")
+                                  << ", 处方审核状态: " << (target->isPrescriptionReviewed ? "已审核" : "未审核")
                                   << ", 住院建议: " << (target->isHospitalizationRecommended ? "是" : "否")
                                   << ", 备注: " << target->note
                                   << std::endl;
@@ -1420,7 +1420,7 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                               << ", 初步诊断: " << target->preliminaryDiagnosis
                               << ", 检查项目数: " << target->examinationlist.size()
                               << ", 处方数: " << target->prescriptions.size()
-                              << ", 处方审核状态: " << (target->isPrecriptionReviewed ? "已审核" : "未审核")
+                              << ", 处方审核状态: " << (target->isPrescriptionReviewed ? "已审核" : "未审核")
                               << ", 住院建议: " << (target->isHospitalizationRecommended ? "是" : "否")
                               << ", 备注: " << target->note
                               << std::endl;
@@ -1969,7 +1969,7 @@ bool Doctor::createExaminationByConsultation(Consultation *&conHead, Examination
     bool foundPendingCon = false;
     while (currentCon != nullptr)
     {
-        if (!currentCon->isDeleted && currentCon->department == this->department && currentCon->status == ConsultationStatus::IN_PROGRESS && !currentCon->examinationlist.empty())
+        if (!currentCon->isDeleted && currentCon->doctorID == this->doctorID && currentCon->status == ConsultationStatus::IN_PROGRESS && !currentCon->examinationlist.empty())
         {
             std::cout << "看诊ID: " << currentCon->consultationID
                       << ", 挂号ID: " << currentCon->registrationID
@@ -1984,7 +1984,7 @@ bool Doctor::createExaminationByConsultation(Consultation *&conHead, Examination
                       << ", 初步诊断: " << currentCon->preliminaryDiagnosis
                       << ", 检查项目数: " << currentCon->examinationlist.size()
                       << ", 处方数: " << currentCon->prescriptions.size()
-                      << ", 处方审核状态: " << (currentCon->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (currentCon->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (currentCon->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << currentCon->note
                       << std::endl;

@@ -33,8 +33,6 @@ public:
     int hospitalizationApplyCount = 0; // 累计发起住院申请次数
     bool isOnDuty = false;             // 当前是否在岗
 
-    bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
-
     Doctor *next = nullptr; // 链表指针
     Doctor *prev = nullptr; // 双向链表前向指针
 

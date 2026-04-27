@@ -32,7 +32,7 @@ void modifyAdminGender(Admin *&admin);            // 修改管理员性别
 void modifyAdminAge(Admin *&admin);               // 修改管理员年龄
 void modifyAdminTelephone(Admin *&admin);         // 修改管理员联系电话
 void modifyAdminEmail(Admin *&admin);             // 修改管理员邮箱地址
-void deleteAdmin(Admin *&admin);                  // 删除管理员信息（真实删除）
+void deleteAdmin(Admin *&admin);                  // 删除管理员信息（逻辑删除）
 void addAdmin(Admin *&admin, int &idCounter);     // 添加管理员信息（根据输入信息创建新的 Admin 对象，并插入到链表中）
 
 void AccountManagement(Admin *&adminHead, Doctor *&doctorHead, Nurse *&nurseHead, Pharmacist *&pharmacistHead, Patient *&patientHead); // 账号激活/封锁管理函数，允许管理员激活或封锁其他用户的账户
@@ -49,9 +49,12 @@ void AccountManageGeneric(UserType *&userHead, const std::string &roleName, cons
     std::cout << "正在查询" << roleName << "账户列表..." << std::endl;
     while (current != nullptr)
     {
-        std::cout << roleName << "ID: " << current->getUserID()
-                  << ", 姓名: " << current->getUsername()
-                  << ", 账户状态: " << (current->getIsAccountActive() ? "激活" : "锁定") << std::endl;
+        if (!current->getIsDeleted())
+        {
+            std::cout << roleName << "ID: " << current->getUserID()
+                      << ", 姓名: " << current->getUsername()
+                      << ", 账户状态: " << (current->getIsAccountActive() ? "激活" : "锁定") << std::endl;
+        }
         current = current->next;
     }
     std::string targetID = inputIDCheck(idPrompt);
@@ -59,7 +62,7 @@ void AccountManageGeneric(UserType *&userHead, const std::string &roleName, cons
     bool found = false;
     while (current != nullptr)
     {
-        if (current->getUserID() == targetID)
+        if (!current->getIsDeleted() && current->getUserID() == targetID)
         {
             std::cout << "当前" << roleName << "账户状态: " << (current->getIsAccountActive() ? "激活" : "锁定") << std::endl;
             std::cout << "请选择操作: " << std::endl;

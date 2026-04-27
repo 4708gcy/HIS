@@ -41,8 +41,6 @@ public:
 
     bool isHospitalized = false; // 是否住院中
 
-    bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
-
     Patient *next = nullptr; // 链表指针
     Patient *prev = nullptr; // 双向链表前一个节点指针
 

@@ -631,7 +631,7 @@ bool Admin::viewAllConsultations(Consultation *&con, const std::string &departme
             std::cout << exam << " ";
         }
         std::cout << std::endl;
-        std::cout << "  计划用药" << (c->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+        std::cout << "  计划用药" << (c->isPrescriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
         for (const auto &med : c->prescriptions)
         {
             std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
@@ -707,7 +707,7 @@ bool Admin::viewConsultationsByDoctor(Consultation *&con, const std::string &dep
             std::cout << exam << " ";
         }
         std::cout << std::endl;
-        std::cout << "  计划用药" << (c->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+        std::cout << "  计划用药" << (c->isPrescriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
         for (const auto &med : c->prescriptions)
         {
             std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
@@ -784,7 +784,7 @@ bool Admin::viewConsultationsByPatient(Consultation *&con, const std::string &de
         }
         std::cout << std::endl;
 
-        std::cout << "  计划用药" << (c->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+        std::cout << "  计划用药" << (c->isPrescriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
         for (const auto &med : c->prescriptions)
         {
             std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
@@ -838,7 +838,7 @@ bool Admin::viewConsultationsByStatus(Consultation *&con, const std::string &dep
                     std::cout << exam << " ";
                 }
                 std::cout << std::endl;
-                std::cout << "  计划用药" << (current->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+                std::cout << "  计划用药" << (current->isPrescriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
                 for (const auto &med : current->prescriptions)
                 {
                     std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
@@ -937,7 +937,7 @@ bool Admin::viewConsultationByRegistrationID(Consultation *&con, const std::stri
         }
         std::cout << std::endl;
 
-        std::cout << "  计划用药" << (c->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+        std::cout << "  计划用药" << (c->isPrescriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
         for (const auto &med : c->prescriptions)
         {
             std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
@@ -1100,7 +1100,7 @@ bool Admin::viewConsultationByID(Consultation *&con, const std::string &departme
             std::cout << exam << " ";
         }
         std::cout << std::endl;
-        std::cout << "  计划用药" << (c->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+        std::cout << "  计划用药" << (c->isPrescriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
         for (const auto &med : c->prescriptions)
         {
             std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
@@ -1217,7 +1217,7 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
                                 std::cout << exam << " ";
                             }
                             std::cout << std::endl;
-                            std::cout << "  计划用药" << (target->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+                            std::cout << "  计划用药" << (target->isPrescriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
                             for (const auto &med : target->prescriptions)
                             {
                                 std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
@@ -1310,7 +1310,7 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
                             std::cout << exam << " ";
                         }
                         std::cout << std::endl;
-                        std::cout << "  计划用药" << (target->isPrecriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
+                        std::cout << "  计划用药" << (target->isPrescriptionReviewed ? "（已审核）" : "（未审核）") << ": " << std::endl;
                         for (const auto &med : target->prescriptions)
                         {
                             std::cout << "药品ID: " << med.medicineID << ", 名称: " << med.name << ", 用量: " << med.dosage
@@ -3865,7 +3865,7 @@ bool Admin::addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Ph
     std::cout << "当前科室可以关联的看诊记录列表(还未审核处方的看诊记录): " << std::endl;
     while (currentCon != nullptr)
     {
-        if (!currentCon->isDeleted && !currentCon->prescriptions.empty() && !currentCon->isPrecriptionReviewed && currentCon->department == department)
+        if (!currentCon->isDeleted && !currentCon->prescriptions.empty() && !currentCon->isPrescriptionReviewed && currentCon->department == department)
         {
             std::cout << "看诊记录ID: " << currentCon->consultationID
                       << ", 患者ID: " << currentCon->patientID
@@ -3902,7 +3902,7 @@ bool Admin::addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Ph
                 delete newMedRec; // 释放之前创建的 MedicationRecord 对象，避免内存泄漏
                 return false;
             }
-            else if (currentCon->isPrecriptionReviewed)
+            else if (currentCon->isPrescriptionReviewed)
             {
                 std::cout << "选定的看诊记录的处方已经审核过了，无法再次创建用药记录！" << std::endl;
                 delete newMedRec; // 释放之前创建的 MedicationRecord 对象，避免内存泄漏
@@ -3995,7 +3995,7 @@ bool Admin::addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Ph
                 }
             }
 
-            currentCon->isPrecriptionReviewed = true; // 标记该看诊记录的处方已经审核过了，避免重复创建用药记录
+            currentCon->isPrescriptionReviewed = true; // 标记该看诊记录的处方已经审核过了，避免重复创建用药记录
 
             int newStatus = MedicationRecordReviewResultMenu(); // 选择新的审核状态
 

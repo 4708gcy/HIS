@@ -55,7 +55,7 @@ struct Consultation
     std::string preliminaryDiagnosis = "#";         // 初步诊断
     std::vector<std::string> examinationlist = {}; // 计划检查项目列表
     std::vector<Prescription> prescriptions = {};  // 处方列表（可包含多条医嘱）
-    bool isPrecriptionReviewed = false;       // 处方是否已审核（由药师或医生审核后设置为 true）
+    bool isPrescriptionReviewed = false;       // 处方是否已审核（由药师或医生审核后设置为 true）
 
     bool isHospitalizationRecommended = false; // 是否建议住院（根据病情严重程度等因素评估得出）
 

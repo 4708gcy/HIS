@@ -29,8 +29,6 @@ public:
     int inventoryManageCount = 0; // 库存管理次数
     bool isOnDuty = true;         // 是否在岗
 
-    bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
-
     Pharmacist *next = nullptr; // 链表指针
     Pharmacist *prev = nullptr; // 双向链表前一个节点指针
 

@@ -472,7 +472,7 @@ void Pharmacist::setMedicationRecordReviewStatus(MedicationRecord *&target, Cons
         return;
     }
 
-    if (con->isPrecriptionReviewed)
+    if (con->isPrescriptionReviewed)
     {
         printError("该用药记录对应的看诊记录中的处方已审核，不能修改审核状态！");
         return;
@@ -490,7 +490,7 @@ void Pharmacist::setMedicationRecordReviewStatus(MedicationRecord *&target, Cons
 
     if (target->reviewStatus == MedicationReviewStatus::APPROVED)
     {
-        con->isPrecriptionReviewed = true; // 审核通过时同步更新看诊记录中的处方审核状态
+        con->isPrescriptionReviewed = true; // 审核通过时同步更新看诊记录中的处方审核状态
     }
 
     increaseReviewCount();
@@ -718,7 +718,7 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
 
     while (con)
     {
-        if (!con->isDeleted && con->department == this->department && !con->prescriptions.empty() && !con->isPrecriptionReviewed)
+        if (!con->isDeleted && con->department == this->department && !con->prescriptions.empty() && !con->isPrescriptionReviewed)
         {
             std::cout << "看诊ID: " << con->consultationID
                       << ", 挂号ID: " << con->registrationID
@@ -733,7 +733,7 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
                       << ", 初步诊断: " << con->preliminaryDiagnosis
                       << ", 检查项目数: " << con->examinationlist.size()
                       << ", 处方数: " << con->prescriptions.size()
-                      << ", 处方审核状态: " << (con->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (con->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (con->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << con->note
                       << std::endl;
@@ -774,9 +774,10 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
 
     std::string conID = inputRecordIDCheck("请输入关联的看诊ID: ", {"con"});
 
+    con = conHead; // 重置指针到链表头部
     while (con != nullptr)
     {
-        if (!con->isDeleted && con->consultationID == conID && con->department == this->department && !con->prescriptions.empty() && !con->isPrecriptionReviewed)
+        if (!con->isDeleted && con->consultationID == conID && con->department == this->department && !con->prescriptions.empty() && !con->isPrescriptionReviewed)
         {
             break;
         }

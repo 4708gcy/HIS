@@ -863,6 +863,7 @@ bool Nurse::getHospitalizationsByAdmitTimeRange(Hospitalization *&hosHead)
     {
         if (!current->isDeleted && current->department == this->department)
         {
+            if (current->admitTime == "#" || current->admitTime.length() < 10) { current = current->next; continue; }
             std::string admitDate = current->admitTime.substr(0, 10);
             if (admitDate >= startDate && admitDate <= endDate)
             {
@@ -892,6 +893,7 @@ bool Nurse::getHospitalizationsByDischargeTimeRange(Hospitalization *&hosHead)
     {
         if (!current->isDeleted && current->department == this->department)
         {
+            if (current->dischargeTime == "#" || current->dischargeTime.length() < 10) { current = current->next; continue; }
             std::string dischargeDate = current->dischargeTime.substr(0, 10);
             if (dischargeDate >= startDate && dischargeDate <= endDate)
             {
@@ -1240,7 +1242,7 @@ void Nurse::createHospitalization(Hospitalization *&hosHead, Consultation *&conH
                       << ", 初步诊断: " << current->preliminaryDiagnosis
                       << ", 检查项目数: " << current->examinationlist.size()
                       << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrecriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
@@ -1282,6 +1284,10 @@ void Nurse::createHospitalization(Hospitalization *&hosHead, Consultation *&conH
     newHos->applyTime = MyTime::getInstance().getTime();
     newHos->hospitalizationID = "hos" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
     idCounter++;
+
+    std::string wardChoice = HospitalizationWardTypeMenu();
+    if (wardChoice == "0") { delete newHos; return; }
+    newHos->wardType = wardChoice;
 
     // 将新住院记录插入链表头部
     newHos->next = hosHead;
@@ -1729,13 +1735,13 @@ bool Nurse::createBed(bedInfo *&bedHead, int &idCounter)
 
     newBed->bedNumber = inputIntCheck("请输入新添加病房的床位号(0-10)：", 0, 10); // 输入床位号并检查格式，假设床位号在0-10之间
 
-    newBed->bedID = autoGenerateBedID(department, newBed->wardType, newBed->areaNumber, newBed->wardNumber, newBed->bedNumber); // 自动生成床位ID
+    newBed->bedID = autoGenerateBedID(newBed->department, newBed->wardType, newBed->areaNumber, newBed->wardNumber, newBed->bedNumber); // 自动生成床位ID
 
     bedInfo *current = bedHead;
     // 检查是否有重复的床位ID
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->bedID == newBed->bedID && current->department == department)
+        if (!current->isDeleted && current->bedID == newBed->bedID && current->department == newBed->department)
         {
 
 
