@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="fade-in">
     <!-- 搜索栏 -->
     <el-card style="margin-bottom: 16px">
       <el-form :inline="true" :model="query">

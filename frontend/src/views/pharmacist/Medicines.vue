@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="fade-in">
     <el-card>
       <template #header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -15,7 +15,7 @@
         <el-table-column prop="stock" label="库存" width="80" />
         <el-table-column prop="safetyStock" label="安全库存" width="90">
           <template #default="{ row }">
-            <span :style="{ color: row.stock <= row.safetyStock ? 'red' : '' }">{{ row.safetyStock }}</span>
+            <span :style="{ color: row.stock <= row.safetyStock ? 'var(--el-color-danger, #c62828)' : '' }">{{ row.safetyStock }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="purchasePrice" label="进价" width="80">

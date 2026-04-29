@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="fade-in">
     <el-card>
       <el-table :data="tableData" stripe v-loading="loading">
         <el-table-column prop="medRecordID" label="记录ID" width="100" />

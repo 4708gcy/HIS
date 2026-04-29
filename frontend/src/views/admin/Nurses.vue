@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="fade-in">
     <el-card style="margin-bottom: 16px">
       <el-form :inline="true" :model="query">
         <el-form-item label="科室">

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="fade-in">
     <el-row :gutter="20">
       <el-col :span="14">
         <el-card v-loading="loading">

@@ -1,13 +1,40 @@
 <template>
   <div class="login-container">
-    <el-card class="login-card" shadow="always">
-      <template #header>
-        <div class="card-header">
-          <h2>HIS 医院信息系统</h2>
-          <p>注册新账号</p>
+    <!-- Decorative background (same as Login) -->
+    <svg class="bg-pattern" viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#e3f2fd"/>
+          <stop offset="50%" stop-color="#f6f8fc"/>
+          <stop offset="100%" stop-color="#e8f5e9" stop-opacity="0.3"/>
+        </linearGradient>
+      </defs>
+      <rect width="1440" height="900" fill="url(#bg)"/>
+      <circle cx="300" cy="200" r="280" fill="#1e88e5" opacity="0.04"/>
+      <circle cx="1200" cy="700" r="350" fill="#1e88e5" opacity="0.03"/>
+      <circle cx="700" cy="100" r="180" fill="#1e88e5" opacity="0.025"/>
+      <g opacity="0.06" fill="#1e88e5">
+        <rect x="1300" y="150" width="12" height="36" rx="3"/>
+        <rect x="1294" y="162" width="24" height="12" rx="3"/>
+        <rect x="150" y="500" width="16" height="48" rx="3"/>
+        <rect x="142" y="516" width="32" height="16" rx="3"/>
+      </g>
+      <path d="M0 500 Q 500 350, 900 480 T 1440 300" stroke="#1e88e5" stroke-width="1.5" fill="none" opacity="0.08"/>
+    </svg>
+
+    <div class="login-card fade-in">
+      <div class="login-header">
+        <div class="logo-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="18" y="8" width="12" height="32" rx="3" fill="#1e88e5"/>
+            <rect x="8" y="18" width="32" height="12" rx="3" fill="#1e88e5"/>
+          </svg>
         </div>
-      </template>
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
+        <h2>HIS 医院信息系统</h2>
+        <p>注册新账号</p>
+      </div>
+
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px" class="login-form">
         <el-form-item label="角色" prop="role">
           <el-select v-model="form.role" placeholder="请选择角色" style="width: 100%">
             <el-option label="医生" :value="2" />
@@ -54,13 +81,12 @@
         <el-form-item>
           <el-button type="primary" :loading="loading" style="width: 100%" @click="handleRegister">注 册</el-button>
         </el-form-item>
-        <el-form-item>
-          <router-link to="/login">
-            <el-link type="primary">已有账号？返回登录</el-link>
-          </router-link>
-        </el-form-item>
+        <div class="login-link">
+          <span>已有账号？</span>
+          <router-link to="/login">返回登录</router-link>
+        </div>
       </el-form>
-    </el-card>
+    </div>
   </div>
 </template>
 
@@ -124,17 +150,115 @@ async function handleRegister() {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
 }
+
+.bg-pattern {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
 .login-card {
-  width: 480px;
-  border-radius: 12px;
+  position: relative;
+  z-index: 1;
+  width: 460px;
   max-height: 90vh;
   overflow-y: auto;
+  padding: 36px 36px 28px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(30, 136, 229, 0.1), 0 1px 2px rgba(30, 136, 229, 0.05);
 }
-.card-header {
+
+.login-card::-webkit-scrollbar {
+  width: 4px;
+}
+.login-card::-webkit-scrollbar-thumb {
+  background: var(--his-border);
+  border-radius: 4px;
+}
+
+.login-header {
   text-align: center;
+  margin-bottom: 28px;
 }
-.card-header h2 { margin: 0 0 8px; color: #303133; }
-.card-header p { color: #909399; margin: 0; }
+
+.logo-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+}
+
+.logo-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.login-header h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--his-text);
+  margin: 0 0 6px;
+  letter-spacing: 0.5px;
+}
+
+.login-header p {
+  color: var(--his-text-muted);
+  margin: 0;
+  font-size: 14px;
+}
+
+.login-form {
+  margin-top: 8px;
+}
+
+.login-form :deep(.el-form-item) {
+  margin-bottom: 18px;
+}
+
+.login-form :deep(.el-input__wrapper) {
+  border-radius: 8px;
+  padding: 4px 12px;
+  box-shadow: 0 0 0 1px var(--his-border) inset !important;
+  transition: box-shadow 0.2s;
+}
+
+.login-form :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--his-primary-hover) inset !important;
+}
+
+.login-form :deep(.el-button--primary) {
+  border-radius: 8px;
+  height: 42px;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--his-text-muted);
+}
+
+.login-link a {
+  color: var(--his-primary);
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 4px;
+  transition: color 0.2s;
+}
+
+.login-link a:hover {
+  color: var(--his-primary-dark);
+  text-decoration: underline;
+}
 </style>

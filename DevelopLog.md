@@ -1677,8 +1677,69 @@ README.md
 
 这次更新使 README.md 成为一份完整的用户指南，无论是新用户首次接触项目还是有经验的开发者需要快速启动，都能找到对应的操作说明。
 
-### 8. 代码统计
+### 8. 前端 UI 全面重构 — "Pure & Clinical" 简约医疗风
+
+对项目前端（33 个 Vue 文件）进行了全面的视觉 redesign，从默认的 Element Plus 紫色调/深色侧边栏风格转换为蓝白色主调的简约医疗风格。
+
+**主题系统构建（frontend/src/styles/global.css）：**
+
+- 从原来的 2 行 CSS Reset 扩展为 167 行的完整 CSS 变量主题系统
+- 定义核心设计 Token：`--his-primary`（#1e88e5）、`--his-bg`（#f6f8fc）、`--his-surface`（#ffffff）、`--his-text` 系列颜色变量
+- 定义阴影层次系统：`--his-shadow-sm/md/lg`，基于蓝色透明度的投影
+- Element Plus 组件全覆盖重写：按钮、标签、表格、输入框、分页、对话框、卡片
+- 新增动画关键帧：`fadeIn`、`slideIn`、`pulse`
+- 新增工具类：`fade-in`（页面入场动画）、`page-header`（带蓝色下划线的标题样式）
+
+**登录/注册页面重设计（Login.vue, Register.vue）：**
+
+- 移除原有的紫色渐变背景（`#667eea → #764ba2`）
+- 替换为蓝白渐变 SVG 背景，包含半透明圆形装饰、医疗十字符号、流动曲线
+- 卡片改为磨砂玻璃效果（`backdrop-filter: blur(12px)` + 半透明背景 + 柔和阴影）
+- 新增蓝色医疗十字 Logo 图标（内联 SVG）
+- 输入框边框改为蓝色聚焦态（focus 时 1px 蓝色内阴影）
+- 按钮改为圆角 8px、高度 42px、带字母间距
+
+**布局重设计（Layout.vue）：**
+
+- 深色侧边栏（`#304156`）→ 白色侧边栏 + 蓝色激活态背景（`--his-sidebar-active-bg: #e8f1fb`）
+- 侧边栏 Logo 从纯文字 "HIS 系统" 改为蓝色医疗十字 SVG + "HIS" 文字
+- 菜单项圆角 8px、hover 时浅蓝背景、激活时蓝色文字
+- Header 增加 `SwitchButton` 图标到退出按钮
+- `router-view` 包裹 `<transition name="fade-view">` 实现页面切换平滑动画
+
+**Dashboard 重设计（admin/Dashboard.vue）：**
+
+- 从 8 个纯 `el-statistic` 改为自定义悬浮卡片：图标 + 数值 + 标签
+- 每个统计卡片有独立主题色（医生蓝、护士绿、患者橙、诊断紫等）
+- 图标背景使用 `color-mix()` 生成对应半透明色
+- 卡片 hover 时上浮 2px + 阴影加深
+
+**全部 26 个 CRUD 页面统一样式：**
+
+- 所有页面根 `<div>` 添加 `fade-in` 动画类
+- 药剂师 Medicines.vue 中的内联 `color: 'red'` 替换为 CSS 变量 `var(--el-color-danger, #c62828)`
+
+**修改文件清单（共 30 个文件）：**
+
+| 类别 | 文件 | 变更 |
+| ------ | ------ | ------ |
+| 主题 | global.css | 2 行 → 167 行 |
+| 登录 | Login.vue | 101 行 → 225 行 |
+| 注册 | Register.vue | 140 行 → 264 行 |
+| 布局 | Layout.vue | 162 行 → 315 行 |
+| 仪表盘 | admin/Dashboard.vue | 59 行 → 145 行 |
+| 管理页面 | admin/*（12 个文件） | 各 +1 行 fade-in |
+| 医生页面 | doctor/*（4 个文件） | 各 +1 行 fade-in |
+| 护士页面 | nurse/*（4 个文件） | 各 +1 行 fade-in |
+| 药剂师页面 | pharmacist/*（3 个文件） | 各 +1 行 fade-in，Medicines.vue 额外修内联颜色 |
+| 患者页面 | patient/*（6 个文件） | 各 +1 行 fade-in |
+
+### 9. 代码统计
 
 ```text
 22 个文件变更，+1050 行新增 / -1031 行删除
+```
+
+```text
+前端 UI 重设计：30 个文件变更，+1032 行新增 / -400 行删除
 ```

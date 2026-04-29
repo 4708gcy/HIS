@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="fade-in">
     <el-card>
       <template #header>
         <div style="display: flex; justify-content: space-between; align-items: center">

@@ -1,26 +1,28 @@
 <template>
-  <el-container style="height: 100vh">
-    <!-- 侧边栏 -->
-    <el-aside :width="isCollapse ? '64px' : '220px'" style="transition: width 0.3s; background: #304156">
-      <div class="logo">
-        <span v-if="!isCollapse">HIS 系统</span>
-        <span v-else>H</span>
+  <el-container class="layout-container">
+    <!-- Sidebar -->
+    <el-aside :width="isCollapse ? '64px' : '240px'" class="sidebar">
+      <div class="logo" :class="{ 'logo--collapsed': isCollapse }">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="15" y="6" width="10" height="28" rx="2.5" fill="#1e88e5"/>
+          <rect x="6" y="15" width="28" height="10" rx="2.5" fill="#1e88e5"/>
+        </svg>
+        <span v-if="!isCollapse" class="logo-text">HIS</span>
       </div>
+
       <el-menu
         :default-active="$route.path"
         :collapse="isCollapse"
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409EFF"
+        class="sidebar-menu"
         router
         unique-opened
       >
-        <el-menu-item index="/dashboard">
+        <el-menu-item index="/dashboard" class="menu-item">
           <el-icon><DataAnalysis /></el-icon>
           <template #title>首页概览</template>
         </el-menu-item>
 
-        <!-- 管理员菜单 -->
+        <!-- Admin menu -->
         <template v-if="store.role === 1">
           <el-sub-menu index="admin-users">
             <template #title><el-icon><User /></el-icon><span>人员管理</span></template>
@@ -45,7 +47,7 @@
           <el-menu-item index="/admin/profile"><el-icon><User /></el-icon><template #title>个人信息</template></el-menu-item>
         </template>
 
-        <!-- 医生菜单 -->
+        <!-- Doctor menu -->
         <template v-if="store.role === 2">
           <el-menu-item index="/doctor/registrations"><el-icon><List /></el-icon><template #title>挂号列表</template></el-menu-item>
           <el-menu-item index="/doctor/consultations"><el-icon><ChatDotRound /></el-icon><template #title>看诊管理</template></el-menu-item>
@@ -53,7 +55,7 @@
           <el-menu-item index="/doctor/profile"><el-icon><User /></el-icon><template #title>个人信息</template></el-menu-item>
         </template>
 
-        <!-- 护士菜单 -->
+        <!-- Nurse menu -->
         <template v-if="store.role === 3">
           <el-menu-item index="/nurse/hospitalizations"><el-icon><House /></el-icon><template #title>住院管理</template></el-menu-item>
           <el-menu-item index="/nurse/examinations"><el-icon><Monitor /></el-icon><template #title>体征录入</template></el-menu-item>
@@ -61,14 +63,14 @@
           <el-menu-item index="/nurse/profile"><el-icon><User /></el-icon><template #title>个人信息</template></el-menu-item>
         </template>
 
-        <!-- 药剂师菜单 -->
+        <!-- Pharmacist menu -->
         <template v-if="store.role === 4">
           <el-menu-item index="/pharmacist/medication-records"><el-icon><Document /></el-icon><template #title>用药审核</template></el-menu-item>
           <el-menu-item index="/pharmacist/medicines"><el-icon><Box /></el-icon><template #title>药品库存</template></el-menu-item>
           <el-menu-item index="/pharmacist/profile"><el-icon><User /></el-icon><template #title>个人信息</template></el-menu-item>
         </template>
 
-        <!-- 患者菜单 -->
+        <!-- Patient menu -->
         <template v-if="store.role === 5">
           <el-menu-item index="/patient/registrations"><el-icon><Calendar /></el-icon><template #title>预约挂号</template></el-menu-item>
           <el-menu-item index="/patient/consultations"><el-icon><ChatDotRound /></el-icon><template #title>看诊记录</template></el-menu-item>
@@ -80,27 +82,34 @@
       </el-menu>
     </el-aside>
 
-    <!-- 右侧主区域 -->
-    <el-container>
-      <el-header style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e6e6e6; background: #fff">
-        <div style="display: flex; align-items: center; gap: 12px">
-          <el-icon :size="20" style="cursor: pointer" @click="isCollapse = !isCollapse">
+    <!-- Main area -->
+    <el-container class="main-area">
+      <el-header class="layout-header">
+        <div class="header-left">
+          <el-icon :size="20" class="collapse-btn" @click="isCollapse = !isCollapse">
             <Fold v-if="!isCollapse" /><Expand v-else />
           </el-icon>
-          <el-breadcrumb separator="/">
+          <el-breadcrumb separator-class="el-icon-arrow-right">
             <el-breadcrumb-item>{{ store.roleName }}</el-breadcrumb-item>
             <el-breadcrumb-item>{{ $route.meta.title || currentPageTitle }}</el-breadcrumb-item>
           </el-breadcrumb>
         </div>
-        <div style="display: flex; align-items: center; gap: 16px">
-          <el-tag type="info">{{ store.roleName }}</el-tag>
-          <span>{{ store.username }}（{{ store.userID }}）</span>
-          <el-button type="danger" text @click="handleLogout">退出登录</el-button>
+        <div class="header-right">
+          <el-tag type="info" size="small" effect="plain">{{ store.roleName }}</el-tag>
+          <span class="user-info">{{ store.username }}<span class="user-id">{{ store.userID }}</span></span>
+          <el-button type="danger" text @click="handleLogout">
+            <el-icon><SwitchButton /></el-icon>
+            退出
+          </el-button>
         </div>
       </el-header>
 
-      <el-main style="background: #f0f2f5; padding: 20px; overflow-y: auto">
-        <router-view />
+      <el-main class="layout-main">
+        <router-view v-slot="{ Component }">
+          <transition name="fade-view" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
       </el-main>
     </el-container>
   </el-container>
@@ -146,17 +155,161 @@ function handleLogout() {
 </script>
 
 <style scoped>
+.layout-container {
+  height: 100vh;
+  background: var(--his-bg);
+}
+
+/* === Sidebar === */
+.sidebar {
+  background: var(--his-sidebar-bg);
+  border-right: 1px solid var(--his-border);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 2px 0 8px rgba(30, 136, 229, 0.04);
+  overflow: hidden;
+}
+
 .logo {
-  height: 60px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  font-size: 20px;
-  font-weight: bold;
-  background: #263445;
+  gap: 10px;
+  background: var(--his-surface);
+  border-bottom: 1px solid var(--his-border);
+  transition: all 0.3s;
 }
-.el-menu {
-  border-right: none;
+
+.logo svg {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--his-primary);
+  letter-spacing: 1px;
+  transition: opacity 0.3s;
+}
+
+/* === Menu === */
+.sidebar-menu {
+  border-right: none !important;
+  background: transparent !important;
+}
+
+.sidebar-menu :deep(.el-menu-item) {
+  color: var(--his-sidebar-text) !important;
+  border-radius: 8px;
+  margin: 2px 8px;
+  transition: all 0.2s;
+}
+
+.sidebar-menu :deep(.el-menu-item:hover) {
+  background: var(--his-surface-alt) !important;
+  color: var(--his-primary) !important;
+}
+
+.sidebar-menu :deep(.el-menu-item.is-active) {
+  background: var(--his-sidebar-active-bg) !important;
+  color: var(--his-sidebar-active-text) !important;
+  font-weight: 500;
+}
+
+.sidebar-menu :deep(.el-sub-menu__title) {
+  color: var(--his-sidebar-text) !important;
+  border-radius: 8px;
+  margin: 2px 8px;
+}
+
+.sidebar-menu :deep(.el-sub-menu__title:hover) {
+  background: var(--his-surface-alt) !important;
+  color: var(--his-primary) !important;
+}
+
+.sidebar-menu :deep(.el-sub-menu .el-menu-item) {
+  margin: 1px 4px;
+  font-size: 13px;
+}
+
+/* === Header === */
+.layout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--his-surface);
+  border-bottom: 1px solid var(--his-border);
+  padding: 0 24px;
+  height: 56px;
+  box-shadow: 0 1px 4px rgba(30, 136, 229, 0.04);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.collapse-btn {
+  cursor: pointer;
+  color: var(--his-text-secondary);
+  transition: color 0.2s;
+}
+
+.collapse-btn:hover {
+  color: var(--his-primary);
+}
+
+.header-left :deep(.el-breadcrumb__item) {
+  color: var(--his-text-secondary);
+}
+
+.header-left :deep(.el-breadcrumb__item:last-child .el-breadcrumb__inner) {
+  color: var(--his-text);
+  font-weight: 500;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.user-info {
+  font-size: 14px;
+  color: var(--his-text);
+  font-weight: 500;
+}
+
+.user-id {
+  color: var(--his-text-muted);
+  font-weight: 400;
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+/* === Main === */
+.layout-main {
+  background: var(--his-bg);
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+
+/* === Page transition === */
+.fade-view-enter-active,
+.fade-view-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fade-view-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.fade-view-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>

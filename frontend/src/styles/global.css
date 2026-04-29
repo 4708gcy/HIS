@@ -1,3 +1,40 @@
+/* === HIS Theme: Pure & Clinical === */
+
+:root {
+  /* Primary palette — soft medical blue */
+  --his-primary: #1e88e5;
+  --his-primary-light: #e8f1fb;
+  --his-primary-dark: #1565c0;
+  --his-primary-hover: #1976d2;
+
+  /* Neutrals */
+  --his-bg: #f6f8fc;
+  --his-surface: #ffffff;
+  --his-surface-alt: #f0f4fa;
+  --his-border: #e4e9f2;
+  --his-text: #1a2b4a;
+  --his-text-secondary: #5a6e8a;
+  --his-text-muted: #96a3b8;
+
+  /* Shadows */
+  --his-shadow-sm: 0 1px 3px rgba(30, 136, 229, 0.06);
+  --his-shadow-md: 0 4px 12px rgba(30, 136, 229, 0.08);
+  --his-shadow-lg: 0 8px 24px rgba(30, 136, 229, 0.12);
+
+  /* Transitions */
+  --his-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Sidebar */
+  --his-sidebar-bg: #ffffff;
+  --his-sidebar-text: #3d5a80;
+  --his-sidebar-active-bg: #e8f1fb;
+  --his-sidebar-active-text: #1e88e5;
+  --his-sidebar-width-expanded: 240px;
+  --his-sidebar-width-collapsed: 64px;
+}
+
+/* === Reset === */
+
 * {
   margin: 0;
   padding: 0;
@@ -7,4 +44,123 @@
 html, body, #app {
   height: 100%;
   font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  color: var(--his-text);
+  background: var(--his-bg);
+}
+
+/* === Element Plus Theme Overrides === */
+
+.el-button--primary {
+  --el-button-bg-color: var(--his-primary) !important;
+  --el-button-border-color: var(--his-primary) !important;
+  --el-button-hover-bg-color: var(--his-primary-hover) !important;
+  --el-button-hover-border-color: var(--his-primary-hover) !important;
+  --el-button-active-bg-color: var(--his-primary-dark) !important;
+  --el-button-active-border-color: var(--his-primary-dark) !important;
+}
+
+.el-button--primary.is-plain {
+  --el-button-bg-color: var(--his-primary-light) !important;
+  --el-button-border-color: var(--his-primary) !important;
+  --el-button-text-color: var(--his-primary) !important;
+  --el-button-hover-bg-color: var(--his-primary) !important;
+  --el-button-hover-text-color: #fff !important;
+}
+
+.el-tag--success {
+  --el-tag-bg-color: #e8f5e9 !important;
+  --el-tag-border-color: #c8e6c9 !important;
+  --el-tag-text-color: #2e7d32 !important;
+}
+
+.el-tag--warning {
+  --el-tag-bg-color: #fff8e1 !important;
+  --el-tag-border-color: #ffe0b2 !important;
+  --el-tag-text-color: #f57c00 !important;
+}
+
+.el-tag--danger {
+  --el-tag-bg-color: #fce4ec !important;
+  --el-tag-border-color: #f8bbd0 !important;
+  --el-tag-text-color: #c62828 !important;
+}
+
+.el-tag--info {
+  --el-tag-bg-color: #f0f4fa !important;
+  --el-tag-border-color: var(--his-border) !important;
+  --el-tag-text-color: var(--his-text-secondary) !important;
+}
+
+.el-table {
+  --el-table-header-bg-color: var(--his-surface-alt) !important;
+  --el-table-border-color: var(--his-border) !important;
+  --el-table-row-hover-bg-color: var(--his-primary-light) !important;
+}
+
+.el-input__wrapper.is-focus {
+  --el-input-focus-border-color: var(--his-primary) !important;
+  box-shadow: 0 0 0 1px var(--his-primary) inset !important;
+}
+
+.el-pagination .el-pager li.is-active {
+  background-color: var(--his-primary) !important;
+  color: #fff !important;
+}
+
+.el-dialog {
+  border-radius: 12px !important;
+}
+
+.el-card {
+  border-radius: 10px !important;
+  border: 1px solid var(--his-border) !important;
+  transition: box-shadow var(--his-transition);
+}
+
+.el-card:hover {
+  box-shadow: var(--his-shadow-md);
+}
+
+/* === Utility Classes === */
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.page-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--his-text);
+}
+
+.page-header h2::after {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 3px;
+  background: var(--his-primary);
+  border-radius: 2px;
+  margin-top: 6px;
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
