@@ -8,6 +8,10 @@ export function getDoctors(params) {
   return request.get('/doctors', { params })
 }
 
+export function getPatients(params) {
+  return request.get('/admin/patients', { params })
+}
+
 export function getFeeStandards() {
   return request.get('/fee-standards')
 }

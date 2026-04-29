@@ -819,6 +819,151 @@ void registerApiRoutes(httplib::Server &svr)
         pat->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
+    // POST /api/admin/doctors - 创建医生
+    svr.Post("/api/admin/doctors", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string username = body.value("username", "");
+            std::string password = body.value("password", "");
+            if (username.empty() || password.empty()) { res.set_content(ApiResponse::badRequest("用户名和密码不能为空").dump(), "application/json"); return; }
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            std::string newID = generateID(1, dm.doctorIDCount());
+            std::string salt = generateSalt(16);
+            std::string storedHash = SHA256Encrypt(password, salt, hashIterations);
+            Doctor *doc = new Doctor();
+            doc->setUserID(newID); doc->setDoctorID(newID);
+            doc->setUsername(username); doc->setSalt(salt); doc->setStoredHash(storedHash);
+            doc->setIsAccountActive(true); doc->setRole(UserRole::DOCTOR);
+            doc->setCreateTime(MyTime::getInstance().getTime());
+            doc->setGender(body.value("gender", "#"));
+            doc->setAge(body.value("age", 0));
+            doc->setTelephone(body.value("telephone", "#"));
+            doc->setEmail(body.value("email", "#"));
+            doc->setDepartment(body.value("department", "急诊科"));
+            doc->setTitle(static_cast<DoctorTitle>(body.value("title", 1)));
+            doc->setSpecialty(body.value("specialty", "#"));
+            doc->setScheduleInfo(body.value("scheduleInfo", "#"));
+            doc->setIsOnDuty(body.value("isOnDuty", false));
+            doc->next = dm.getDoctorHead();
+            if (dm.getDoctorHead()) dm.getDoctorHead()->prev = doc;
+            dm.getDoctorHead() = doc;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::userToJson(doc)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // POST /api/admin/nurses - 创建护士
+    svr.Post("/api/admin/nurses", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string username = body.value("username", "");
+            std::string password = body.value("password", "");
+            if (username.empty() || password.empty()) { res.set_content(ApiResponse::badRequest("用户名和密码不能为空").dump(), "application/json"); return; }
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            std::string newID = generateID(2, dm.nurseIDCount());
+            std::string salt = generateSalt(16);
+            std::string storedHash = SHA256Encrypt(password, salt, hashIterations);
+            Nurse *nurse = new Nurse();
+            nurse->setUserID(newID); nurse->setNurseID(newID);
+            nurse->setUsername(username); nurse->setSalt(salt); nurse->setStoredHash(storedHash);
+            nurse->setIsAccountActive(true); nurse->setRole(UserRole::NURSE);
+            nurse->setCreateTime(MyTime::getInstance().getTime());
+            nurse->setGender(body.value("gender", "#"));
+            nurse->setAge(body.value("age", 0));
+            nurse->setTelephone(body.value("telephone", "#"));
+            nurse->setEmail(body.value("email", "#"));
+            nurse->setDepartment(body.value("department", "急诊科"));
+            nurse->setLevel(static_cast<NurseLevel>(body.value("level", 1)));
+            nurse->setScheduleInfo(body.value("scheduleInfo", "#"));
+            nurse->setIsOnDuty(body.value("isOnDuty", false));
+            nurse->next = dm.getNurseHead();
+            if (dm.getNurseHead()) dm.getNurseHead()->prev = nurse;
+            dm.getNurseHead() = nurse;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::userToJson(nurse)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // POST /api/admin/pharmacists - 创建药剂师
+    svr.Post("/api/admin/pharmacists", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string username = body.value("username", "");
+            std::string password = body.value("password", "");
+            if (username.empty() || password.empty()) { res.set_content(ApiResponse::badRequest("用户名和密码不能为空").dump(), "application/json"); return; }
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            std::string newID = generateID(3, dm.pharmacistIDCount());
+            std::string salt = generateSalt(16);
+            std::string storedHash = SHA256Encrypt(password, salt, hashIterations);
+            Pharmacist *ph = new Pharmacist();
+            ph->setUserID(newID); ph->setPharmacistID(newID);
+            ph->setUsername(username); ph->setSalt(salt); ph->setStoredHash(storedHash);
+            ph->setIsAccountActive(true); ph->setRole(UserRole::PHARMACIST);
+            ph->setCreateTime(MyTime::getInstance().getTime());
+            ph->setGender(body.value("gender", "#"));
+            ph->setAge(body.value("age", 0));
+            ph->setTelephone(body.value("telephone", "#"));
+            ph->setEmail(body.value("email", "#"));
+            ph->setDepartment(body.value("department", "急诊科"));
+            ph->setLevel(static_cast<PharmacistLevel>(body.value("level", 1)));
+            ph->setScheduleInfo(body.value("scheduleInfo", "#"));
+            ph->setIsOnDuty(body.value("isOnDuty", true));
+            ph->next = dm.getPharmacistHead();
+            if (dm.getPharmacistHead()) dm.getPharmacistHead()->prev = ph;
+            dm.getPharmacistHead() = ph;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::userToJson(ph)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // POST /api/admin/patients - 创建患者
+    svr.Post("/api/admin/patients", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string username = body.value("username", "");
+            std::string password = body.value("password", "");
+            if (username.empty() || password.empty()) { res.set_content(ApiResponse::badRequest("用户名和密码不能为空").dump(), "application/json"); return; }
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            std::string newID = generateID(4, dm.patientIDCount());
+            std::string salt = generateSalt(16);
+            std::string storedHash = SHA256Encrypt(password, salt, hashIterations);
+            Patient *pat = new Patient();
+            pat->setUserID(newID); pat->setPatientID(newID);
+            pat->setUsername(username); pat->setSalt(salt); pat->setStoredHash(storedHash);
+            pat->setIsAccountActive(true); pat->setRole(UserRole::PATIENT);
+            pat->setCreateTime(MyTime::getInstance().getTime());
+            pat->setGender(body.value("gender", "#"));
+            pat->setAge(body.value("age", 0));
+            pat->setTelephone(body.value("telephone", "#"));
+            pat->setEmail(body.value("email", "#"));
+            pat->department = body.value("department", "急诊科");
+            pat->address = body.value("address", "#");
+            pat->idCardNumber = body.value("idCardNumber", "#");
+            pat->emergencyContactName = body.value("emergencyContactName", "#");
+            pat->emergencyContactPhone = body.value("emergencyContactPhone", "#");
+            pat->allergyHistory = body.value("allergyHistory", "#");
+            pat->pastMedicalHistory = body.value("pastMedicalHistory", "#");
+            pat->maritalStatus = MaritalStatus::SINGLE;
+            pat->next = dm.getPatientHead();
+            if (dm.getPatientHead()) dm.getPatientHead()->prev = pat;
+            dm.getPatientHead() = pat;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::userToJson(pat)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
     // ===== 医疗记录管理 API =====
 
     // GET /api/admin/registrations - 挂号记录列表
@@ -888,6 +1033,39 @@ void registerApiRoutes(httplib::Server &svr)
         reg->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
+    // POST /api/admin/registrations - 管理员创建挂号
+    svr.Post("/api/admin/registrations", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string patientID = body.value("patientID", "");
+            std::string doctorID = body.value("doctorID", "");
+            std::string department = body.value("department", "急诊科");
+            if (patientID.empty() || doctorID.empty()) { res.set_content(ApiResponse::badRequest("患者ID和医生ID不能为空").dump(), "application/json"); return; }
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Doctor *doc = findDoctor(dm.getDoctorHead(), doctorID);
+            Patient *pat = findPatient(dm.getPatientHead(), patientID);
+            if (!doc) { res.set_content(ApiResponse::notFound("医生不存在").dump(), "application/json"); return; }
+            if (!pat) { res.set_content(ApiResponse::notFound("患者不存在").dump(), "application/json"); return; }
+            std::string newID = generateID(5, dm.registrationCount());
+            Registration *newReg = new Registration();
+            newReg->registrationID = newID;
+            newReg->patientID = patientID;
+            newReg->department = department;
+            newReg->doctorID = doctorID;
+            newReg->registerTime = MyTime::getInstance().getTime();
+            newReg->fee = doc->calculateRegistrationFee(doc->getTitle());
+            newReg->status = RegistrationStatus::BOOKED;
+            newReg->next = dm.getRegHead();
+            if (dm.getRegHead()) dm.getRegHead()->prev = newReg;
+            dm.getRegHead() = newReg;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(newReg)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
     // 看诊记录
     svr.Get("/api/admin/consultations", [&](const httplib::Request &req, httplib::Response &res)
             {
@@ -937,6 +1115,40 @@ void registerApiRoutes(httplib::Server &svr)
         con->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
+    // POST /api/admin/consultations - 管理员创建看诊
+    svr.Post("/api/admin/consultations", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string registrationID = body.value("registrationID", "");
+            if (registrationID.empty()) { res.set_content(ApiResponse::badRequest("挂号ID不能为空").dump(), "application/json"); return; }
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Registration *reg = findById(dm.getRegHead(), registrationID);
+            if (!reg) { res.set_content(ApiResponse::notFound("挂号记录不存在").dump(), "application/json"); return; }
+            std::string newID = generateID(6, dm.consultationCount());
+            Consultation *con = new Consultation();
+            con->consultationID = newID;
+            con->registrationID = registrationID;
+            con->patientID = reg->patientID;
+            con->doctorID = reg->doctorID;
+            con->department = reg->department;
+            con->consultationTime = MyTime::getInstance().getTime();
+            con->chiefComplaint = body.value("chiefComplaint", "#");
+            con->historyOfPresentIllness = body.value("historyOfPresentIllness", "#");
+            con->pastMedicalHistory = body.value("pastMedicalHistory", "#");
+            con->familyHistory = body.value("familyHistory", "#");
+            con->preliminaryDiagnosis = body.value("preliminaryDiagnosis", "#");
+            con->status = ConsultationStatus::IN_PROGRESS;
+            con->next = dm.getConHead();
+            if (dm.getConHead()) dm.getConHead()->prev = con;
+            dm.getConHead() = con;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(con)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
     // 检查记录
     svr.Get("/api/admin/examinations", [&](const httplib::Request &req, httplib::Response &res)
             {
@@ -969,6 +1181,39 @@ void registerApiRoutes(httplib::Server &svr)
         if (!exa) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         exa->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
+
+    // POST /api/admin/examinations - 管理员创建检查
+    svr.Post("/api/admin/examinations", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string consultationID = body.value("consultationID", "");
+            std::string itemName = body.value("itemName", "");
+            if (consultationID.empty() || itemName.empty()) { res.set_content(ApiResponse::badRequest("看诊ID和检查项目不能为空").dump(), "application/json"); return; }
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Consultation *con = findById(dm.getConHead(), consultationID);
+            if (!con) { res.set_content(ApiResponse::notFound("看诊记录不存在").dump(), "application/json"); return; }
+            Doctor *doc = findDoctor(dm.getDoctorHead(), con->doctorID);
+            std::string newID = generateID(7, dm.examinationCount());
+            Examination *exa = new Examination();
+            exa->examinationID = newID;
+            exa->consultationID = consultationID;
+            exa->patientID = con->patientID;
+            exa->doctorID = con->doctorID;
+            exa->department = con->department;
+            exa->itemName = itemName;
+            exa->fee = doc ? doc->calculateExaminationFee(itemName) : 5.0;
+            exa->orderTime = MyTime::getInstance().getTime();
+            exa->status = ExaminationStatus::ORDERED;
+            exa->next = dm.getExamHead();
+            if (dm.getExamHead()) dm.getExamHead()->prev = exa;
+            dm.getExamHead() = exa;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(exa)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // 住院记录
     svr.Get("/api/admin/hospitalizations", [&](const httplib::Request &req, httplib::Response &res)
@@ -1003,6 +1248,38 @@ void registerApiRoutes(httplib::Server &svr)
         hos->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
+    // POST /api/admin/hospitalizations - 管理员创建住院
+    svr.Post("/api/admin/hospitalizations", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string consultationID = body.value("consultationID", "");
+            if (consultationID.empty()) { res.set_content(ApiResponse::badRequest("看诊ID不能为空").dump(), "application/json"); return; }
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Consultation *con = findById(dm.getConHead(), consultationID);
+            if (!con) { res.set_content(ApiResponse::notFound("看诊记录不存在").dump(), "application/json"); return; }
+            std::string wardType = body.value("wardType", "普通病房");
+            std::string newID = generateID(8, dm.hospitalizationCount());
+            Hospitalization *hos = new Hospitalization();
+            hos->hospitalizationID = newID;
+            hos->consultationID = consultationID;
+            hos->patientID = con->patientID;
+            hos->doctorID = con->doctorID;
+            hos->department = con->department;
+            hos->wardType = wardType;
+            hos->applyTime = MyTime::getInstance().getTime();
+            hos->deposit = body.value("deposit", 0.0);
+            hos->status = HospitalizationStatus::APPLIED;
+            hos->next = dm.getHosHead();
+            if (dm.getHosHead()) dm.getHosHead()->prev = hos;
+            dm.getHosHead() = hos;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(hos)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
     // 用药记录
     svr.Get("/api/admin/medication-records", [&](const httplib::Request &req, httplib::Response &res)
             {
@@ -1025,6 +1302,36 @@ void registerApiRoutes(httplib::Server &svr)
         if (!med) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         med->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
+
+    // POST /api/admin/medication-records - 管理员创建用药记录
+    svr.Post("/api/admin/medication-records", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string consultationID = body.value("consultationID", "");
+            if (consultationID.empty()) { res.set_content(ApiResponse::badRequest("看诊ID不能为空").dump(), "application/json"); return; }
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Consultation *con = findById(dm.getConHead(), consultationID);
+            if (!con) { res.set_content(ApiResponse::notFound("看诊记录不存在").dump(), "application/json"); return; }
+            std::string newID = generateID(9, dm.medicationRecordCount());
+            MedicationRecord *med = new MedicationRecord();
+            med->medRecordID = newID;
+            med->consultationID = consultationID;
+            med->doctorID = con->doctorID;
+            med->patientID = con->patientID;
+            med->department = con->department;
+            med->createTime = MyTime::getInstance().getTime();
+            med->reviewStatus = MedicationReviewStatus::PENDING_REVIEW;
+            med->status = MedicationStatus::UNPAID;
+            med->next = dm.getMedRecHead();
+            if (dm.getMedRecHead()) dm.getMedRecHead()->prev = med;
+            dm.getMedRecHead() = med;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(med)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // 药品管理
     svr.Get("/api/admin/medicines", [&](const httplib::Request &req, httplib::Response &res)

@@ -1,266 +1,222 @@
-# C 语言课程设计 --- 医疗管理系统(HIS, Hospital Information System)
+# C 课程设计 —— 医疗管理系统 (HIS)
+
+C++17 医疗信息管理系统，支持两种运行模式：交互式控制台 和 REST API + Vue 3 前后端分离。
+
+---
 
 ## 公共约定
 
-1. 头文件命名采用**大驼峰命名法**(就是每个单词开头都是大写字母，例如 `Doctor.h`)，源文件的名字要和对应的头文件保持一致
-2. 函数方法的命名采用**小驼峰命名法**(就是只有第一个单词的首字母小写，后面的字母都是大写，例如 `addDoctor()`)
-3. 不同人物之间依据ID来区分，ID总长度为6位，第 1 位数字用来区分不同身份，后面 5 位数字用来区分同一个身份下的不同个体，规定：
-   **0** 开头表示管理员 `000001` 表示管理员1号
-   **1** 开头表示医生   `100001` 医生1号
-   **2** 开头表示护士   `200001` 护士1号
-   **3** 开头表示药剂师 `300001` 药剂师1号
-   **4** 开头表示患者   `400001` 患者1号
-   为了简化，就不使用ID来区分不同科室，而是在类的属性中添加一个表示 `科室` 的属性
-   这样命名也决定了在该系统中，每一个身份最多可以容纳 99999 个不同的个体
-4. 所有人物类的数据在从文件中读取时，采用链表的存储方式，也就是每一个类中都应该添加一个属性 `next` 来保存下一个结点
-   例如
+| 约定 | 规则 |
+| ------ | ------ |
+| **头文件** | 大驼峰命名，如 `Doctor.h`，配套同名 `.cpp` |
+| **函数** | 小驼峰命名，如 `addDoctor()` |
+| **ID 规则** | 6 位数字：首位区分身份（0=管理员, 1=医生, 2=护士, 3=药剂师, 4=患者），后 5 位递增序号 |
+| **数据结构** | 双向链表（`prev`/`next`），头插入 O(1) |
+| **继承** | 所有角色类继承自 `User`，医疗信息保存在基类中，按身份访问不同字段 |
+| **密码** | SHA-256 + 随机盐 + 1000 次迭代，存储格式 `salt$hash`，使用防时序攻击比较，5 次失败锁定 |
+| **空值** | 字符串空字段统一用 `"#"` 作哨兵值 |
+| **删除** | 逻辑删除（`isDeleted` 标志），不物理移除 |
+| **时间** | 统一调用 `GetTime.h`，格式 `YYYY-MM-DD hh:mm:ss` |
+| **科室** | 内科, 外科, 儿科, 妇产科, 急诊科 |
 
-   ```cpp
-   class Doctor{
-       public:
-       Doctor *next;
-   }
-   ```
+### 费用标准
 
-5. 所有人物类都应该继承自 User 类，否则每一个类都单独从文件中读取 "医疗信息" ，他们一旦对其中某一条信息进行修改，其他类很难获取到同步的信息，比如患者添加了一条挂号信息，但是由于类之间的独立，医生无法获取到该条信息，因此，只需要使用一个User类来保管所有的医疗信息，子类根据身份的不同来访问父类中的不同信息
-6. 所有人员的登录密码都需要调用SHA256加密算法进行加密，然后保存到数据库中，下面是头文件 `SHA-256.h`中的三个方法：
+| 类型 | 依据 | 价格 |
+| ------ | ------ | ------ |
+| 挂号费 | 医生职称 | 实习10 / 住院20 / 主治30 / 副高40 / 正高50 元 |
+| 检查费 | 项目名称 | 2–30 元（详见 `User.h`） |
+| 住院费 | 病房类型 × 天数 | 普通50 / 隔离100 / VIP200 / ICU500 元/天 |
 
-   ```cpp
-   // 获取随机盐(可以理解成密钥)，这个是验证密码的关键，所以每一个类中都需要添加一个属性 `Salt` 来存储密钥，写入文件的时候也需要将该属性写入
-   std::string generateSalt(unsigned int len = 16);
+### 数据持久化
 
-   // 密码加密，第一个参数password是明文密码，第二个参数salt是密钥，第三个参数iterations(该属性由管理员管理)是迭代次数
-   // 这里的返回结果字符串格式是 "密钥$密文"，这就是存储在文件中的密码
-   std::string SHA256Encrypt(const std::string &password, const std::string &salt, int iterations);
+纯文本 CSV 格式，存储于 `Data/` 目录（从 `build/` 启动时为 `../Data/`）。所有 `Data/` 子目录必须预先存在。
 
+| 角色/记录 | 文件路径 |
+| ----------- | --------- |
+| 管理员 | `Data/UserData/AdminChainData/admin_users.txt` |
+| 医生 | `Data/UserData/DoctorChainData/doctor_users.txt` |
+| 护士 | `Data/UserData/NurseChainData/nurse_users.txt` |
+| 药剂师 | `Data/UserData/PharmacistChainData/pharmacist_users.txt` |
+| 患者 | `Data/UserData/PatientChainData/patient_users.txt` |
+| 挂号 | `Data/RecordData/RegistrationChainData/registrations.txt` |
+| 看诊 | `Data/RecordData/ConsultationChainData/consultations.txt` |
+| 检查 | `Data/RecordData/ExaminationChainData/examinations.txt` |
+| 住院 | `Data/RecordData/HospitalizationChainData/hospitalizations.txt` |
+| 床位 | `Data/RecordData/HospitalizationChainData/bed_info.txt` |
+| 用药 | `Data/RecordData/MedicineChainData/medication_records.txt` |
+| 药品 | `Data/RecordData/MedicineChainData/medicines.txt` |
+| 操作日志 | `Data/OperationLog/his_YYYY_MM_DD.log` |
 
-   // 密码验证，第一个参数inputPassword是输入的密码，第二个参数storedHash是保存在文件中的密码，第三个参数iterations(该属性由管理员管理)是迭代次数
-   bool SHA256Verify(const std::string &inputPassword, const std::string &storedHash, int iterations);
-   ```
-
-7. 涉及到时间的属性，需要调用 `GetTime.h`以保证时间存储格式的一致，这里面既有返回 "2026-4-7 10:0:0" 格式的函数 `getTime()`
-   也有可以获取单个时间位置的函数 `getYear()`, `getMonth()`, `getDay()`, `getHour()`, `getMinute()`, `getSecond()`
-8. 数据持久化存储的框架应按照如下格式：
-
-```markdown
-
-C课设-HIS
-└── Data
-    ├── RecordData
-    │   ├── ConsultationChainData
-    │   ├── ExaminationChainData
-    │   ├── HospitalizationChainData
-    │   ├── MedicineChainData
-    │   └── RegistrationChainData
-    └── UserData
-        ├── AdminChainData
-        ├── DoctorChainData
-        ├── NurseChainData
-        ├── PatientChainData
-        └── PharmacistChainData
-
-```
-
-注意：上图中的名词全部都是文件夹的名称，而不是文件的名称，比如存储医生的相关信息的txt文件的路径是 `./Data/UserData/DoctorChainData/doctor_users.txt`
+---
 
 ## 运行方式
 
-1. 将整个项目文件夹克隆到本地
-2. 使用 Visual Studio Code 打开该项目文件夹
-3. 在 Visual Studio Code 中安装 C/C++ 插件
-4. 在 Visual Studio Code 使用快捷键 `Ctrl + Shift + P` 来打开命令面板，输入 `Tasks: Run Task` 按回车
-5. 在任务列表中选择"`CMake: 配置` : 进入 build 目录后执行 cmake ..命令，生成构建文件" 来配置项目环境
-6. 然后在任务列表中选择 "`CMake: 编译` : 进入 build 目录后执行 cmake --build . --config Debug 命令，编译项目" 来编译项目
-7. 最后打开终端，通过命令 `cd build` 进入到 build 目录
-8. 在 build 目录下的终端中输入命令 `./Debug/his.exe` 来运行项目
-9. 在运行完成之后，按照上面的操作重新打开运行任务列表，在运行任务中选择 "`CMake: build清理` : CMake模板清理任务" 来清理之前的编译文件
+### 模式一：控制台程序
+
+```bash
+# 1. 配置（或通过 VS Code 任务面板: CMake: 配置）
+cd build && cmake ..
+
+# 2. 编译（或: CMake: 编译）
+cd build && cmake --build . --config Debug
+
+# 3. 运行（必须从 build/ 目录启动）
+cd build && ./Debug/his.exe
+```
+
+> **重要：** 程序通过 `../Data/` 相对路径读取数据，**必须从 `build/` 目录运行**。首次运行会强制要求注册管理员账号。
+
+```text
+主菜单
+├── 1. 登录 → 选择角色 → 角色功能菜单
+├── 2. 注册 → 选择角色 → 填写信息
+└── 0. 退出 → 保存所有数据
+```
+
+### 模式二：REST API + Vue 前端
+
+**后端（C++ REST API，监听 8080）：**
+
+```bash
+# 编译（或: CMake: his_server编译）
+cd build && cmake --build . --config Debug --target his_server
+
+# 运行
+cd build && ./Debug/his_server.exe
+# Ctrl+C 优雅退出并自动保存数据
+```
+
+**前端（Vue 3 + Element Plus，端口 3000）：**
+
+```bash
+cd frontend
+
+# 首次安装依赖
+npm install
+
+# 开发服务器（自动代理 /api 到 localhost:8080）
+npm run dev
+
+# 生产构建
+npm run build
+
+# 预览生产构建
+npm run preview
+```
+
+**完整流程：** 先启动后端 → 再启动前端 → 浏览器访问 `http://localhost:3000` → 退出时先关前端再关后端。
+
+### 前后端角色映射
+
+| 前端（1-based） | 后端（0-based） | 角色 |
+| ----------------- | ----------------- | ------ |
+| 1 | 0 | 管理员 |
+| 2 | 1 | 医生 |
+| 3 | 2 | 护士 |
+| 4 | 3 | 药剂师 |
+| 5 | 4 | 患者 |
+
+---
 
 ## 调试方式
 
-在要调试的地方设置断点，然后使用快捷键 `F5` 来启动调试器
-
-## 两种运行模式
-
-本项目支持两种运行方式：**纯终端模式**（控制台程序）和 **前后端分离模式**（REST API + Vue 前端）。下面分别详细说明运行和调试方法。
+- **控制台程序**：设置断点 → `F5` 启动调试 → 外部终端运行 → 调试结束后自动清理 `build/`（`postDebugTask`）
+- **REST API 后端**：修改 `.vscode/launch.json` 的 `program` 指向 `his_server.exe` → 设置断点 → `F5` → 通过浏览器/Postman 触发
+- **前端**：浏览器 `F12`（Console / Network / Vue DevTools），或 VS Code 断点调试
 
 ---
 
-### 模式一：纯终端模式（Console）
-
-使用 `main.cpp` 编译链接，通过终端交互式操作。
-
-#### 编译
-
-```bash
-# 方法1：使用 CMake 命令行
-cd build && cmake .. && cmake --build . --config Debug
-
-# 方法2：VS Code 命令面板
-Ctrl+Shift+P → Tasks: Run Task → CMake: 编译
-```
-
-编译成功后，可执行文件位于 `build/Debug/his.exe`。
-
-#### 运行
-
-```bash
-# 必须先进入 build 目录（数据文件使用 ../Data/ 相对路径）
-cd build
-./Debug/his.exe
-```
-
-> **重要：** 必须从 `build/` 目录启动程序，否则数据文件路径 `../Data/` 无法正确解析。
-
-#### 调试
-
-1. 在代码中需要调试的位置设置断点（点击行号左侧）
-2. 按 `F5` 启动调试器（使用 `.vscode/launch.json` 中的配置）
-3. 程序会在外部终端中启动，断点触发时可查看变量、调用堆栈等
-4. 调试工具栏快捷键：
-   - `F10`：单步跳过
-   - `F11`：单步进入
-   - `Shift+F5`：停止调试
-
-> **注意：** `launch.json` 配置了 `postDebugTask`，调试结束后会自动清理 `build/` 目录。
-
-#### 操作流程
-
-程序启动后的交互流程：
+## 项目结构
 
 ```text
-系统主菜单
-├── 1. 登录
-│   ├── 管理员登录 → 管理员功能菜单
-│   ├── 医生登录 → 医生功能菜单
-│   ├── 护士登录 → 护士功能菜单
-│   ├── 药剂师登录 → 药剂师功能菜单
-│   └── 患者登录 → 患者功能菜单
-├── 2. 注册
-│   ├── 管理员注册
-│   ├── 医生注册
-│   ├── 护士注册
-│   ├── 药剂师注册
-│   └── 患者注册
-└── 0. 退出系统
+C课设-HIS/
+├── CMakeLists.txt              # 构建配置（C++17, MSVC /utf-8, 两个目标 his / his_server）
+├── main.cpp                    # 控制台程序入口
+├── server_main.cpp             # REST 服务器入口
+├── Head/                       # 头文件（24 个 .h）
+│   ├── User.h                  # 基类：枚举、费用计算、状态转换、SHA-256 盐值
+│   ├── Admin.h / Doctor.h / Nurse.h / Pharmacist.h / Patient.h  # 角色类
+│   ├── Registration.h / Consultation.h / Examination.h / Hospitalization.h / MedicationRecord.h / Medicine.h  # 记录结构
+│   ├── Login.h                 # 登录验证（含泛型账户管理）
+│   ├── LoadData.h / SaveData.h # 数据持久化
+│   ├── UI.h                    # 控制台 UI / 颜色 / 分页 / 日志
+│   ├── ApiServer.h             # DataManager 单例 + API 路由注册（~124 端点）
+│   ├── ApiResponse.h           # 统一响应格式 {code, message, data}
+│   ├── JWTAuth.h               # JWT 认证（HMAC-SHA256, 24h 有效）
+│   ├── JsonHelper.h            # 数据结构 → JSON 序列化
+│   ├── httplib.h / json.hpp    # 第三方依赖（header-only）
+│   └── GetTime.h / SHA-256.h   # 工具库
+├── Source/                     # 实现文件（15 个 .cpp）
+├── Data/                       # 持久化数据（见上方表格）
+└── frontend/                   # Vue 3 前端（33 个 .vue 文件）
+    ├── index.html
+    ├── package.json / vite.config.js
+    └── src/
+        ├── main.js             # 应用入口（Element Plus 中文 locale）
+        ├── App.vue
+        ├── styles/global.css   # 蓝白医疗主题 CSS 变量系统
+        ├── api/                # 8 个 API 模块（axios 实例 + JWT 拦截器）
+        ├── store/user.js       # Pinia 状态（token/角色/localStorage 持久化）
+        ├── router/index.js     # Vue Router（角色路由守卫）
+        └── views/
+            ├── Login.vue / Register.vue / Layout.vue
+            ├── admin/          # 13 个页面（Dashboard, 人员 CRUD, 记录管理, 药品, 床位, Profile）
+            ├── doctor/         # 4 个页面（挂号/看诊/检查, Profile）
+            ├── nurse/          # 4 个页面（住院/体征/床位, Profile）
+            ├── pharmacist/     # 3 个页面（用药审核/药品库存, Profile）
+            └── patient/        # 6 个页面（预约挂号/支付/查看记录/充值, Profile）
 ```
-
-首次运行时没有管理员数据，会强制要求注册管理员账号，否则系统无法启动。
 
 ---
 
-### 模式二：前后端分离模式（REST API + Vue 前端）
+## 后端 API 架构
 
-使用 `server_main.cpp` 编译链接启动后端 API 服务器，同时运行 Vue 前端进行浏览器访问。
+`DataManager` 单例替代全局变量，`std::mutex` 线程安全。每次写操作后 `saveAllUnsafe()` 持久化（**Caller must hold mutex**，"Unsafe" 指不可在无锁状态下调用）。
 
-#### 后端（C++ REST API）
+**认证**：`POST /api/auth/login`（统一登录）+ `POST /api/auth/register`（统一注册） → JWT Bearer Token。
 
-**编译：**
+**端点分组**：
 
-```bash
-# 方法1：使用 CMake 命令行
-cd build && cmake .. && cmake --build . --config Debug --target his_server
+| 分组 | 路径前缀 | 数量 | 说明 |
+| ------ | --------- | ------ | ------ |
+| 通用 | `/api/` | 4 | 登录/注册/修改密码/科室列表/费用标准/检查项目 |
+| 管理员 | `/api/admin/` | 30+ | 人员 CRUD、记录管理、药品/床位管理、账号状态 |
+| 医生 | `/api/doctor/` | 11 | 挂号/看诊/检查 CRUD、个人信息 |
+| 护士 | `/api/nurse/` | 11 | 住院管理/分配床位/出院/床位管理、个人信息 |
+| 药剂师 | `/api/pharmacist/` | 11 | 用药审核/发药/药品 CRUD、个人信息 |
+| 患者 | `/api/patient/` | 12 | 挂号/支付/充值/查看记录/个人信息 |
 
-# 方法2：VS Code 命令面板
-Ctrl+Shift+P → Tasks: Run Task → CMake: his_server编译
-```
+**统一响应**：`{ "code": 200, "message": "", "data": {} }`。错误码：200/400/401/403/404/500。
 
-编译成功后，可执行文件位于 `build/Debug/his_server.exe`。
+**CORS**：所有响应添加 `Access-Control-Allow-Origin: *`。
 
-**运行：**
+---
 
-```bash
-# 同样必须从 build/ 目录启动
-cd build
-./Debug/his_server.exe
-```
+## 前端架构
 
-服务器启动后会监听 `http://localhost:8080`，按 `Ctrl+C` 优雅退出并自动保存所有数据。
+| 技术 | 用途 |
+| ------ | ------ |
+| Vue 3 (Composition API) | 框架 |
+| Vite 6 | 构建工具 |
+| Element Plus (zh-cn) | UI 组件库 |
+| Pinia | 状态管理（localStorage 持久化） |
+| Vue Router | 路由（角色守卫 + 懒加载） |
+| Axios | HTTP（JWT 拦截器 + 401 自动跳转） |
 
-**后端调试：**
+**设计主题**："Pure & Clinical" 简约医疗风 —— 蓝白主色 (`#1e88e5`)、磨砂玻璃卡片、`fade-in` 页面动画、CSS 变量驱动。
 
-1. 在 `ApiServer.cpp`、`server_main.cpp` 等后端代码中设置断点
-2. 按 `F5` 启动调试器（默认调试配置指向 `his.exe`，如需调试服务器需修改 `.vscode/launch.json` 中的 `program` 字段为 `${workspaceFolder}/build/Debug/his_server.exe`）
-3. 可通过浏览器或 Postman 访问 `http://localhost:8080/api/...` 触发断点
+**路由守卫**：未登录 → `/login`；角色不匹配 → 自动重定向到角色默认页面。
 
-**API 测试示例：**
+---
 
-```bash
-# 测试科室列表接口
-curl http://localhost:8080/api/departments
+## 已知陷阱
 
-# 测试登录接口
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"role": 0, "userID": "000001", "password": "your_password"}'
-```
-
-#### 前端（Vue 3 + Element Plus）
-
-**安装依赖（仅首次需要）：**
-
-```bash
-cd frontend
-npm install
-```
-
-**运行开发服务器：**
-
-```bash
-cd frontend
-npm run dev
-```
-
-前端开发服务器默认运行在 `http://localhost:3000`，自动代理 `/api` 请求到后端 `localhost:8080`。
-
-**前端调试：**
-
-1. 浏览器打开 `http://localhost:3000`
-2. 使用浏览器开发者工具（`F12`）进行调试：
-   - **Console** 面板：查看 JavaScript 错误和 `console.log` 输出
-   - **Network** 面板：查看 API 请求/响应详情
-   - **Vue DevTools** 浏览器插件：查看组件树、Pinia 状态、路由信息
-3. 在 VS Code 中打开 `.vue` 文件设置断点，通过 `launch.json` 中的浏览器调试配置附加到浏览器
-
-**前端构建（生产环境）：**
-
-```bash
-cd frontend
-npm run build
-# 输出到 frontend/dist/ 目录
-```
-
-#### 完整开发流程
-
-1. **启动后端**（终端1）：
-
-   ```bash
-   cd build
-   ./Debug/his_server.exe
-   ```
-
-   等待看到 "服务器启动于 `http://localhost:8080`" 提示。
-2. **启动前端**（终端2）：
-
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-
-   等待看到 "Local: `http://localhost:3000/`" 提示。
-3. **访问应用**：浏览器打开 `http://localhost:3000`
-4. **退出**：
-
-   - 先关闭前端开发服务器（终端2 按 `Ctrl+C`）
-   - 再关闭后端服务器（终端1 按 `Ctrl+C`，数据会自动保存）
-
-#### 前后端角色映射
-
-| 前端角色编号 | 后端角色编号 | 角色名称 |
-| ------------ | ------------ | -------- |
-| 1            | 0            | 管理员   |
-| 2            | 1            | 医生     |
-| 3            | 2            | 护士     |
-| 4            | 3            | 药剂师   |
-| 5            | 4            | 患者     |
-
-前端使用 1-based 角色编号，后端 API 会自动进行转换。
+| 陷阱 | 说明 |
+| ------ | ------ |
+| `bedStatus` 命名 | 小写 `b`，非 `BedStatus` |
+| `ConsultationStatus` | 使用 `COMPLETED` 而非 `FINISHED` |
+| `Examination` | 报告字段为 `reportSummary` 非 `report` |
+| ID 前缀 | 用药记录 `mrd`，药品 `med`，床位用 `autoGenerateBedID()` 结构化生成 |
+| 链表插入 | 始终头插入（O(1)），尾插入曾为确认 bug |
+| `saveAllUnsafe()` | 调用方必须先持有锁，内部不加锁 |
+| `Admin` 结构 | 含 `prev` 指针（双向链表），与其他实体一致 |

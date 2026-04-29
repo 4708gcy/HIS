@@ -132,7 +132,8 @@ async function handleRegister() {
     if (res.code === 200) {
       store.setLogin(res.data)
       ElMessage.success(`注册成功，您的ID为 ${res.data.userID}`)
-      router.push('/dashboard')
+      const roleRedirects = { 1: '/dashboard', 2: '/doctor/registrations', 3: '/nurse/hospitalizations', 4: '/pharmacist/medication-records', 5: '/patient/registrations' }
+      router.push(roleRedirects[res.data.role] || '/dashboard')
     } else {
       ElMessage.error(res.message)
     }

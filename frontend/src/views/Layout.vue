@@ -293,7 +293,7 @@ function handleLogout() {
 /* === Main === */
 .layout-main {
   background: var(--his-bg);
-  padding: 20px 24px;
+  padding: 16px 20px;
   overflow-y: auto;
 }
 

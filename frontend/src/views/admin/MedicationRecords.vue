@@ -1,6 +1,10 @@
 <template>
   <div class="fade-in">
     <el-card>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 14px; color: var(--his-text-secondary);">共 {{ total }} 条记录</span>
+        <el-button type="primary" size="small" @click="showCreateDialog">新建用药记录</el-button>
+      </div>
       <el-table :data="tableData" stripe v-loading="loading">
         <el-table-column prop="medRecordID" label="记录ID" width="100" />
         <el-table-column prop="patientID" label="患者ID" width="100" />
@@ -21,24 +25,50 @@
           </template>
         </el-table-column>
       </el-table>
-      <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center">
-        <span>共 {{ total }} 条</span>
+      <div style="margin-top: 16px; display: flex; justify-content: flex-end">
         <el-pagination v-model:current-page="page" :page-size="pageSize" :total="total" layout="prev, pager, next" @current-change="loadData" />
       </div>
     </el-card>
+
+    <!-- Create Dialog -->
+    <el-dialog v-model="createVisible" title="新建用药记录" width="500px" destroy-on-close>
+      <el-form :model="createForm" label-width="80px">
+        <el-form-item label="看诊ID" required>
+          <el-select v-model="createForm.consultationID" filterable placeholder="请选择看诊记录" style="width: 100%">
+            <el-option v-for="c in consultations" :key="c.consultationID" :label="`${c.consultationID} - 患者${c.patientID}`" :value="c.consultationID" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="createVisible = false">取消</el-button>
+        <el-button type="primary" :loading="createLoading" @click="handleCreate">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMedicationRecords, deleteMedicationRecord } from '../../api/admin'
+import { getMedicationRecords, createMedicationRecord, deleteMedicationRecord, getConsultations } from '../../api/admin'
 
 const loading = ref(false)
 const tableData = ref([])
 const total = ref(0)
 const page = ref(1)
 const pageSize = 15
+
+const consultations = ref([])
+getConsultations().then(res => { consultations.value = res.data.list })
+
+const createVisible = ref(false)
+const createLoading = ref(false)
+const createForm = ref({ consultationID: '' })
+
+function showCreateDialog() {
+  createForm.value = { consultationID: '' }
+  createVisible.value = true
+}
 
 async function loadData() {
   loading.value = true
@@ -51,6 +81,15 @@ async function loadData() {
       tableData.value = list.slice(start, start + pageSize)
     }
   } finally { loading.value = false }
+}
+
+async function handleCreate() {
+  if (!createForm.value.consultationID) { ElMessage.warning('请选择看诊记录'); return }
+  createLoading.value = true
+  try {
+    const res = await createMedicationRecord(createForm.value)
+    if (res.code === 200) { ElMessage.success('创建成功'); createVisible.value = false; loadData() }
+  } catch (e) { ElMessage.error(e.message || '操作失败') } finally { createLoading.value = false }
 }
 
 async function handleDelete(row) {

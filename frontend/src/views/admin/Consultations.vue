@@ -12,6 +12,10 @@
     </el-card>
 
     <el-card>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 14px; color: var(--his-text-secondary);">共 {{ total }} 条记录</span>
+        <el-button type="primary" size="small" @click="showCreateDialog">新建看诊</el-button>
+      </div>
       <el-table :data="tableData" stripe v-loading="loading">
         <el-table-column prop="consultationID" label="看诊ID" width="100" />
         <el-table-column prop="patientID" label="患者ID" width="100" />
@@ -29,11 +33,28 @@
           </template>
         </el-table-column>
       </el-table>
-      <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center">
-        <span>共 {{ total }} 条</span>
+      <div style="margin-top: 16px; display: flex; justify-content: flex-end">
         <el-pagination v-model:current-page="page" :page-size="pageSize" :total="total" layout="prev, pager, next" @current-change="loadData" />
       </div>
     </el-card>
+
+    <!-- 新建弹窗 -->
+    <el-dialog v-model="createVisible" title="新建看诊" width="550px" destroy-on-close>
+      <el-form :model="createForm" label-width="100px">
+        <el-form-item label="挂号记录" required>
+          <el-select v-model="createForm.registrationID" filterable placeholder="请选择挂号记录" style="width: 100%">
+            <el-option v-for="r in registrations" :key="r.registrationID" :label="`${r.registrationID} - 患者${r.patientID} / 医生${r.doctorID}`" :value="r.registrationID" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="主诉"><el-input v-model="createForm.chiefComplaint" type="textarea" :rows="2" /></el-form-item>
+        <el-form-item label="现病史"><el-input v-model="createForm.historyOfPresentIllness" type="textarea" :rows="2" /></el-form-item>
+        <el-form-item label="初步诊断"><el-input v-model="createForm.preliminaryDiagnosis" type="textarea" :rows="2" /></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="createVisible = false">取消</el-button>
+        <el-button type="primary" :loading="createLoading" @click="handleCreate">确定</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="detailVisible" title="看诊详情" width="650px">
       <el-descriptions :column="2" border>
@@ -55,7 +76,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getConsultations, deleteConsultation } from '../../api/admin'
+import { getConsultations, createConsultation, updateConsultationStatus, deleteConsultation } from '../../api/admin'
+import { getRegistrations } from '../../api/admin'
 import { getDepartments } from '../../api/common'
 
 const departments = ref([])
@@ -70,6 +92,13 @@ const query = reactive({ department: '' })
 const detailVisible = ref(false)
 const detail = reactive({})
 
+const registrations = ref([])
+getRegistrations().then(res => { registrations.value = res.data.list })
+
+const createVisible = ref(false)
+const createLoading = ref(false)
+const createForm = reactive({ registrationID: '', chiefComplaint: '#', historyOfPresentIllness: '#', preliminaryDiagnosis: '#' })
+
 async function loadData() {
   loading.value = true
   try {
@@ -81,6 +110,22 @@ async function loadData() {
       tableData.value = list.slice(start, start + pageSize)
     }
   } finally { loading.value = false }
+}
+
+function showCreateDialog() {
+  Object.assign(createForm, { registrationID: '', chiefComplaint: '#', historyOfPresentIllness: '#', preliminaryDiagnosis: '#' })
+  createVisible.value = true
+}
+
+async function handleCreate() {
+  if (!createForm.registrationID) { ElMessage.warning('请选择挂号记录'); return }
+  createLoading.value = true
+  try {
+    const res = await createConsultation(createForm)
+    if (res.code === 200) { ElMessage.success('添加成功'); createVisible.value = false; loadData() }
+    else ElMessage.error(res.message)
+  } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '添加失败') }
+  finally { createLoading.value = false }
 }
 
 function viewDetail(row) { Object.assign(detail, row); detailVisible.value = true }

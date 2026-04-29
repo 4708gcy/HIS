@@ -7,6 +7,9 @@ export function getDoctors(params) {
 export function getDoctor(id) {
   return request.get(`/admin/doctors/${id}`)
 }
+export function createDoctor(data) {
+  return request.post('/admin/doctors', data)
+}
 export function updateDoctor(id, data) {
   return request.put(`/admin/doctors/${id}`, data)
 }
@@ -20,6 +23,9 @@ export function getNurses(params) {
 }
 export function getNurse(id) {
   return request.get(`/admin/nurses/${id}`)
+}
+export function createNurse(data) {
+  return request.post('/admin/nurses', data)
 }
 export function updateNurse(id, data) {
   return request.put(`/admin/nurses/${id}`, data)
@@ -35,6 +41,9 @@ export function getPharmacists(params) {
 export function getPharmacist(id) {
   return request.get(`/admin/pharmacists/${id}`)
 }
+export function createPharmacist(data) {
+  return request.post('/admin/pharmacists', data)
+}
 export function updatePharmacist(id, data) {
   return request.put(`/admin/pharmacists/${id}`, data)
 }
@@ -48,6 +57,9 @@ export function getPatients(params) {
 }
 export function getPatient(id) {
   return request.get(`/admin/patients/${id}`)
+}
+export function createPatient(data) {
+  return request.post('/admin/patients', data)
 }
 export function updatePatient(id, data) {
   return request.put(`/admin/patients/${id}`, data)
@@ -68,6 +80,9 @@ export function getRegistrations(params) {
 export function getRegistration(id) {
   return request.get(`/admin/registrations/${id}`)
 }
+export function createRegistration(data) {
+  return request.post('/admin/registrations', data)
+}
 export function updateRegistrationStatus(id, status) {
   return request.put(`/admin/registrations/${id}/status`, { status })
 }
@@ -81,6 +96,9 @@ export function getConsultations(params) {
 }
 export function getConsultation(id) {
   return request.get(`/admin/consultations/${id}`)
+}
+export function createConsultation(data) {
+  return request.post('/admin/consultations', data)
 }
 export function updateConsultationStatus(id, status) {
   return request.put(`/admin/consultations/${id}/status`, { status })
@@ -96,6 +114,9 @@ export function getExaminations(params) {
 export function getExamination(id) {
   return request.get(`/admin/examinations/${id}`)
 }
+export function createExamination(data) {
+  return request.post('/admin/examinations', data)
+}
 export function deleteExamination(id) {
   return request.delete(`/admin/examinations/${id}`)
 }
@@ -107,6 +128,9 @@ export function getHospitalizations(params) {
 export function getHospitalization(id) {
   return request.get(`/admin/hospitalizations/${id}`)
 }
+export function createHospitalization(data) {
+  return request.post('/admin/hospitalizations', data)
+}
 export function deleteHospitalization(id) {
   return request.delete(`/admin/hospitalizations/${id}`)
 }
@@ -114,6 +138,9 @@ export function deleteHospitalization(id) {
 // 用药记录
 export function getMedicationRecords(params) {
   return request.get('/admin/medication-records', { params })
+}
+export function createMedicationRecord(data) {
+  return request.post('/admin/medication-records', data)
 }
 export function deleteMedicationRecord(id) {
   return request.delete(`/admin/medication-records/${id}`)

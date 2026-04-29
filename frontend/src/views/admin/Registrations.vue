@@ -20,6 +20,10 @@
     </el-card>
 
     <el-card>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 14px; color: var(--his-text-secondary);">共 {{ total }} 条记录</span>
+        <el-button type="primary" size="small" @click="showCreateDialog">新建挂号</el-button>
+      </div>
       <el-table :data="tableData" stripe v-loading="loading">
         <el-table-column prop="registrationID" label="挂号ID" width="100" />
         <el-table-column prop="patientID" label="患者ID" width="100" />
@@ -41,11 +45,35 @@
           </template>
         </el-table-column>
       </el-table>
-      <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center">
-        <span>共 {{ total }} 条</span>
+      <div style="margin-top: 16px; display: flex; justify-content: flex-end">
         <el-pagination v-model:current-page="page" :page-size="pageSize" :total="total" layout="prev, pager, next" @current-change="loadData" />
       </div>
     </el-card>
+
+    <!-- 新建弹窗 -->
+    <el-dialog v-model="createVisible" title="新建挂号" width="500px" destroy-on-close>
+      <el-form :model="createForm" label-width="80px">
+        <el-form-item label="患者" required>
+          <el-select v-model="createForm.patientID" filterable placeholder="请选择患者" style="width: 100%">
+            <el-option v-for="p in patients" :key="p.userID" :label="`${p.username} (${p.userID})`" :value="p.userID" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="医生" required>
+          <el-select v-model="createForm.doctorID" filterable placeholder="请选择医生" style="width: 100%">
+            <el-option v-for="d in doctors" :key="d.userID" :label="`${d.username} (${d.userID})`" :value="d.userID" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="科室">
+          <el-select v-model="createForm.department" style="width: 100%">
+            <el-option v-for="d in departments" :key="d" :label="d" :value="d" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="createVisible = false">取消</el-button>
+        <el-button type="primary" :loading="createLoading" @click="handleCreate">确定</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="statusVisible" title="修改挂号状态" width="400px">
       <el-form label-width="80px">
@@ -68,11 +96,19 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getRegistrations, updateRegistrationStatus, deleteRegistration } from '../../api/admin'
-import { getDepartments } from '../../api/common'
+import { getRegistrations, createRegistration, updateRegistrationStatus, deleteRegistration } from '../../api/admin'
+import { getDepartments, getDoctors, getPatients } from '../../api/common'
 
 const departments = ref([])
 getDepartments().then(res => { departments.value = res.data.list }).catch(e => { if (e !== 'cancel' && e?.message !== 'cancel') console.error('获取科室失败', e) })
+
+const doctors = ref([])
+const patients = ref([])
+Promise.all([getDoctors(), getPatients()]).then(([d, p]) => { doctors.value = d.data.list; patients.value = p.data.list })
+
+const createVisible = ref(false)
+const createLoading = ref(false)
+const createForm = reactive({ patientID: '', doctorID: '', department: '急诊科' })
 
 const loading = ref(false)
 const tableData = ref([])
@@ -99,6 +135,22 @@ async function loadData() {
       tableData.value = list.slice(start, start + pageSize)
     }
   } finally { loading.value = false }
+}
+
+function showCreateDialog() {
+  Object.assign(createForm, { patientID: '', doctorID: '', department: '急诊科' })
+  createVisible.value = true
+}
+
+async function handleCreate() {
+  if (!createForm.patientID || !createForm.doctorID) { ElMessage.warning('请选择患者和医生'); return }
+  createLoading.value = true
+  try {
+    const res = await createRegistration(createForm)
+    if (res.code === 200) { ElMessage.success('添加成功'); createVisible.value = false; loadData() }
+    else ElMessage.error(res.message)
+  } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '添加失败') }
+  finally { createLoading.value = false }
 }
 
 function openStatusDialog(row) { Object.assign(currentReg, row); newStatus.value = row.status; statusVisible.value = true }

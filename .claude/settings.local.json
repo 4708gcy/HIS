@@ -19,7 +19,8 @@
       "Bash(npx vite *)",
       "Bash(git diff *)",
       "Read(//d/D-vscode编程练习c/**)",
-      "Bash(grep -c \"\\\\.Get\\\\|\\\\.Post\\\\|\\\\.Put\\\\|\\\\.Delete\" Source/ApiServer.cpp)"
+      "Bash(grep -c \"\\\\.Get\\\\|\\\\.Post\\\\|\\\\.Put\\\\|\\\\.Delete\" Source/ApiServer.cpp)",
+      "Bash(npm run *)"
     ]
   }
 }

@@ -95,7 +95,8 @@ async function handleLogin() {
     if (res.code === 200) {
       store.setLogin(res.data)
       ElMessage.success('登录成功')
-      router.push('/dashboard')
+      const roleRedirects = { 1: '/dashboard', 2: '/doctor/registrations', 3: '/nurse/hospitalizations', 4: '/pharmacist/medication-records', 5: '/patient/registrations' }
+      router.push(roleRedirects[res.data.role] || '/dashboard')
     } else {
       ElMessage.error(res.message)
     }

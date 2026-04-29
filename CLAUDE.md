@@ -51,6 +51,9 @@ cd frontend && npm run dev
 # Production build
 cd frontend && npm run build
 # Output: frontend/dist/
+
+# Preview production build locally
+cd frontend && npm run preview
 ```
 
 **Full-stack development**: Start backend first (`his_server.exe` on 8080), then frontend (`npm run dev` on 3000).
@@ -67,7 +70,7 @@ C++17 console application for a Hospital Information System. Windows-only (uses 
 
 ```text
 User (base class) — holds all shared auth, enums, fee calculators, status-to-string converters
-  ├── Admin    — manages all records and all user types (7,775 lines, the largest file)
+  ├── Admin    — manages all records and all user types (~7,785 lines, the largest file)
   ├── Doctor   — registration, consultation, examination
   ├── Nurse    — examination, hospitalization, bed management
   ├── Pharmacist — medication records, medicine inventory
@@ -86,33 +89,9 @@ All records use **doubly-linked lists** (each node has `prev`/`next` pointers). 
 
 ### Data Persistence
 
-Plain text CSV files in `Data/` (relative paths from build directory via `../Data/`). Split into `UserData/` and `RecordData/` subdirectories. File paths are `#define` macros in `User.h`.
-
-**User data files:**
-
-| File | Path |
-| ------ | ------ |
-| Admin | `Data/UserData/AdminChainData/admin_users.txt` |
-| Doctor | `Data/UserData/DoctorChainData/doctor_users.txt` |
-| Nurse | `Data/UserData/NurseChainData/nurse_users.txt` |
-| Pharmacist | `Data/UserData/PharmacistChainData/pharmacist_users.txt` |
-| Patient | `Data/UserData/PatientChainData/patient_users.txt` |
-
-**Record data files:**
-
-| File | Path |
-| ------ | ------ |
-| Registration | `Data/RecordData/RegistrationChainData/registrations.txt` |
-| Consultation | `Data/RecordData/ConsultationChainData/consultations.txt` |
-| Examination | `Data/RecordData/ExaminationChainData/examinations.txt` |
-| Hospitalization | `Data/RecordData/HospitalizationChainData/hospitalizations.txt` |
-| Bed Info | `Data/RecordData/HospitalizationChainData/bed_info.txt` |
-| Medication Record | `Data/RecordData/MedicineChainData/medication_records.txt` |
-| Medicine | `Data/RecordData/MedicineChainData/medicines.txt` |
-
-Null/empty string fields use `"#"` as sentinel value. All deletions are **logical** (`isDeleted` flag), never physical removal.
-
-**Important:** All `Data/` subdirectories must exist before the program runs. The program does not create directories automatically; missing directories cause silent load failures.
+Plain text CSV in `Data/` (relative path `../Data/` from build). Split into `UserData/` and `RecordData/` subdirectories. File paths are `#define` macros in `User.h`.
+Null/empty fields use `"#"` sentinel. All deletions are logical (`isDeleted`), never physical.
+**Important:** All `Data/` subdirectories must exist before the program runs — missing directories cause silent load failures.
 
 ### Zero External Build Dependencies
 
@@ -128,73 +107,54 @@ Third-party libraries (`httplib.h`, `json.hpp`) are bundled directly in `Head/`.
 - **Generic programming**: `Login.h` has `AccountManageGeneric<UserType>` template for account activation/lockdown across all user types
 - **UI/input validation**: All console I/O and validation functions are in `UI.h`/`UI.cpp`
 - **Global ID counters**: `main.cpp` declares global counters (`adminIDCount`, `doctorIDCount`, etc.) that track the number of used IDs per role. These are populated during `load*Data()` calls and passed to `signUp()` methods to generate new unique IDs.
+- **`saveAllUnsafe()` naming convention**: In `DataManager`, `saveAllUnsafe()` saves all data without acquiring the mutex. Callers must hold the mutex before calling it (e.g., `std::lock_guard<std::mutex> lock(dm.getMutex()); dm.saveAllUnsafe();`). The "Unsafe" suffix means "unsafe to call without mutex held", not "unsafe for production". This pattern appears ~74 times in `ApiServer.cpp`.
 
 ### UI/UX Features
 
-- **Console color system**: `ConsoleColor` enum (RED, GREEN, YELLOW, CYAN, WHITE, DEFAULT) in `UI.h` with `setConsoleColor()`/`resetConsoleColor()`. Supports both Windows API (`SetConsoleTextAttribute`) and ANSI escape sequences.
-- **Pagination**: `printWithPagination()` for displaying long lists with page navigation (prev/next/jump to page). Uses `(std::min)` to avoid Windows `min` macro conflicts.
-- **Breadcrumb navigation**: `pause()` accepts a `breadcrumb` parameter to show current path in pause prompt.
-- **Hidden password input**: `inputHiddenPwdCheck()` uses Windows `ReadFile` API for masked password entry during login.
-- **Quick print helpers**: `printTitle()`, `printSuccess()` (green), `printError()` (red), `printWarning()` (yellow).
+Console I/O uses colored output (`ConsoleColor` enum in `UI.h`), pagination (`printWithPagination()`), breadcrumb navigation (`pause()` with `breadcrumb` param), and hidden password input (`inputHiddenPwdCheck()` via Windows `ReadFile` API).
 
 ### Operation Logging
 
-`LogManager` singleton class in `UI.h`/`UI.cpp`:
-
-- Thread-safe via `std::mutex`
-- Methods: `info()`, `warn()`, `error()`, `logOperation()` (structured: userId, role, operation type, details)
-- Persists to `Data/OperationLog/` directory
-- Format: `[YYYY-MM-DD hh:mm:ss] [LEVEL] message`
-
-### Startup Flow
-
-1. Load admin data first; if none exists, force admin registration before system starts
-2. Load all other user data (doctor, nurse, pharmacist, patient) and all record data
-3. Enter main loop: login/register selection → role selection → role-specific menu
-4. On exit, save all data back to files (both user data and record data)
+`LogManager` singleton in `UI.h`/`UI.cpp` — thread-safe, structured operation logs persisted to `Data/OperationLog/his_YYYY_MM_DD.log`.
 
 ### File Layout
 
-- `Head/` — all header files (23 .h files, including `httplib.h` and `json.hpp` third-party headers)
-- `Source/` — implementations (15 .cpp files)
-- `Data/` — persistent storage (user data in `UserData/`, record data in `RecordData/`, operation logs in `OperationLog/`)
-- `main.cpp` — console app entry point with nested while-loops per role
+- `Head/` — 23 .h + json.hpp (including `httplib.h`)
+- `Source/` — 15 .cpp files
+- `Data/` — persistent storage (`UserData/`, `RecordData/`, `OperationLog/`)
+- `main.cpp` — console entry point
 - `server_main.cpp` — REST server entry point
-- `frontend/` — Vue 3 web frontend
-- `CMakeLists.txt` — CMake config (C++17, MSVC `/utf-8`, include `Head/`). Two targets: `his` (console) and `his_server` (REST)
+- `frontend/` — Vue 3 web frontend (34 .vue, 8 API modules, TUTORIAL.md)
+- `CMakeLists.txt` — C++17, MSVC `/utf-8`, two targets: `his` + `his_server`
 
 ### REST API Server Architecture
 
-C++ REST backend using cpp-httplib (single-header, in `Head/httplib.h`) + nlohmann/json (single-header, in `Head/json.hpp`).
+cpp-httplib + nlohmann/json (both single-header in `Head/`). `DataManager` singleton replaces global variables, `std::mutex` thread safety. 124 route registrations. Response: `{ "code": int, "message": string, "data": object }`.
 
 | File | Purpose |
 | ------ | --------- |
-| `server_main.cpp` | Entry point. Loads data, starts server on port 8080, Ctrl+C handler saves data |
-| `Head/ApiServer.h` | `DataManager` singleton (thread-safe via mutex, owns all linked list heads + ID counters) + `registerApiRoutes()` + `authenticateRequest()` |
-| `Head/ApiResponse.h` | Unified JSON response builder: `success()`, `error()`, `badRequest()`, `unauthorized()`, `forbidden()`, `notFound()`, `serverError()` |
-| `Head/JWTAuth.h` | JWT token generation/validation, Bearer token extraction |
-| `Head/JsonHelper.h` | All struct-to-JSON converters + enum-to-string converters |
-| `Source/ApiServer.cpp` | All route handlers (115+ route registrations) |
-| `Source/JWTAuth.cpp` | JWT implementation |
-| `Source/JsonHelper.cpp` | JSON serialization implementation |
+| `server_main.cpp` | Entry point, port 8080, Ctrl+C saves data |
+| `Head/ApiServer.h` | DataManager singleton + route registration |
+| `Head/ApiResponse.h` | JSON response builders |
+| `Head/JWTAuth.h` | JWT (HMAC-SHA256, 24h validity) |
+| `Head/JsonHelper.h` | Struct-to-JSON + enum-to-string |
+| `Source/ApiServer.cpp` | All ~125 route handlers |
 
-`DataManager` replaces the console app's global variables and `main.cpp` global ID counters, wrapping everything in a `std::mutex` for thread safety. API response format: `{ "code": int, "message": string, "data": object }`.
-
-Key API endpoint groups: `/api/auth/*` (login/register), `/api/admin/*` (CRUD all entities), `/api/doctor/*`, `/api/nurse/*`, `/api/patient/*`, `/api/pharmacist/*` (role-specific), `/api/departments`, `/api/fee-standards`, `/api/examination-items` (reference data).
+Endpoint groups: `/api/auth/*` (login/register/change-pwd), `/api/admin/*` (30+, CRUD all entities), `/api/doctor/*` (11), `/api/nurse/*` (11), `/api/pharmacist/*` (11), `/api/patient/*` (12), `/api/departments`, `/api/fee-standards`, `/api/examination-items`.
 
 ### Frontend Architecture
 
-Vue 3 + Vite 6 + Pinia (state) + Vue Router (routing) + Element Plus (UI, `zh-cn` locale) + Axios (HTTP). Dev server on port 3000, proxies `/api` to `localhost:8080`.
+Vue 3 + Vite 6 + Pinia (localStorage) + Vue Router (role guards) + Element Plus (zh-cn) + Axios (JWT interceptor). Port 3000, proxies `/api` → 8080. 33 Vue files, 8 API modules.
 
 | Directory | Purpose |
 | ----------- | --------- |
-| `frontend/src/api/` | 8 modules: `index.js` (Axios with Bearer token interceptor + 401 redirect), `auth.js`, `admin.js`, `doctor.js`, `nurse.js`, `patient.js`, `pharmacist.js`, `common.js` (shared helpers including `getDoctors` for any-role access) |
-| `frontend/src/store/` | Pinia user store (`user.js`) — token, userID, username, role persisted to localStorage |
-| `frontend/src/router/` | Vue Router with role-based route groups + navigation guard |
-| `frontend/src/views/` | 33 `.vue` files: `admin/` (13 — includes Dashboard, all entity CRUD, Profile), `doctor/` (4), `nurse/` (4), `pharmacist/` (3), `patient/` (6), plus `Layout.vue`, `Login.vue`, `Register.vue` |
-| `frontend/src/styles/` | `global.css` (reset, Microsoft YaHei font) |
+| `api/` | 8 modules — `index.js` (axios + Bearer + 401 redirect), role-specific modules, `common.js` (shared) |
+| `store/user.js` | Pinia — token/userID/role, localStorage persisted |
+| `router/index.js` | Role-based route groups + navigation guard |
+| `views/` | 33 `.vue` files: `admin/`(13), `doctor/`(4), `nurse/`(4), `pharmacist/`(3), `patient/`(6), plus Layout/Login/Register |
+| `styles/global.css` | 167-line CSS variable theme ("Pure & Clinical", blue/white medical) |
 
-**Role number discrepancy:** The C++ console app uses 0-based roles in IDs (0=Admin, 1=Doctor, 2=Nurse, 3=Pharmacist, 4=Patient). The frontend Pinia store uses 1-based role mapping (1=管理员, 2=医生, 3=护士, 4=药剂师, 5=患者). The API server bridges these.
+**Role number discrepancy:** C++ uses 0-based roles (0=Admin...4=Patient). Frontend uses 1-based (1=管理员...5=患者). API server bridges these.
 
 ### Known Gotchas
 

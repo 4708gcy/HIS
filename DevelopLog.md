@@ -2,1744 +2,317 @@
 
 ---
 
-## 2026.4.8
+## 2026.4.8 — 项目初始化
 
-### 1. 类与数据结构设计
-
-- 创建了3个医疗信息类
-  - Registration    - 挂号信息类
-  - Consultation    - 看诊信息类
-  - Examination     - 检查信息类
-
-### 2. 用户交互界面
-
-- 创建了用户交互界面的头文件 `UI.h`，并完成了 6 个界面的初步设计
-  - int beginUI();                          - 启动界面，显示欢迎信息和主菜单
-  - int adminMenu();                        - 管理员菜单，提供账户管理和医疗记录管理选项
-  - std::string adminDepartmentMenu();      - 管理员科室管理菜单
-  - int adminMedicalRecordMenu();           - 管理员医疗记录管理菜单
-  - int adminRegistrationManagementMenu();  - 管理员挂号记录管理菜单
-  - int adminRegistrationViewMenu()         - 管理员挂号记录查看方式选择菜单
-
-### 3. 管理员相关功能
-
-- 完成了管理员的 `注册账号`函数
-- 完成了管理员的 `登录账号`函数
-- 完成了管理员的 `解锁/封禁账号`函数（使用泛函编程的方式实现）
-
-### 4. 挂号信息管理
-
-- 完成了挂号信息管理中的 3 个功能
-  - 查看某一个科室的挂号信息（支持全部检索，按照挂号信息的状态检索，按照患者ID检索，按照医生ID进行检索）
-  - 修改某一个科室的挂号信息的状态（已预约/已支付/已取消/已完成）
-  - 删除某一个科室中的某一条挂号信息
+- 创建核心医疗信息类：`Registration`、`Consultation`、`Examination`
+- 创建 `UI.h` 并完成 6 个控制台菜单界面（主菜单、管理员菜单、科室/记录管理菜单）
+- 实现管理员注册、登录、账号解锁/封禁（泛型方式）
+- 实现挂号记录的查看（按科室/状态/患者ID/医生ID检索）、状态修改、逻辑删除
 
 ---
 
-## 2026.4.9
+## 2026.4.9 — 输入校验与数据持久化
 
-### 1. 输入校验与数据录入
-
-- 在 `UI.h` 中添加并实现了 6 个输入校验函数
-  - int selectIntCheck(const int min, const int max); // 检查输入的选择是否在指定范围内
-  - double inputFeeCheck(); // 检查输入的费用是否为有效的正数
-  - std::string inputStringCheck(const std::string &prompt); // 检查输入的字符串是否符合要求（如非空等）
-  - std::string inputIDCheck(const std::string &prompt); // 检查输入的用户ID是否符合格式要求（如长度、前缀等）
-  - std::string inputRecordIDCheck(const std::string &prompt); // 检查输入的记录ID是否符合格式要求（如长度、前缀等）
-  - std::string inputPwdCheck(const std::string &prompt); // 检查输入的密码是否符合安全要求（如长度、复杂度等）
-
-### 2. 挂号信息管理优化
-
-- 将昨天的挂号信息管理中查看操作的 4 种视图还有修改和删除挂号信息的代码全部封装成单独的函数，提高可读性
-- 添加了创建挂号信息的函数：
-  - void addRegistration(Registration *&reg, const std::string &department); // 添加挂号记录（根据输入信息创建新的 Registration 对象，并插入到链表中）
-
-### 3. 数据持久化与加载
-
-- 创建了从文件中加载数据的头文件 `LoadData.h`，并实现了管理员信息的加载函数
-  - Admin *loadAdminData(); // 从文件中加载管理员数据并返回管理员链表的头指针
-- 创建了实现数据持久化的头文件 `SaveData.h`，并实现了管理员信息的存储函数，以及 4 种医疗信息（挂号/看诊/检查/住院）记录的存储函数
-  - void saveAdminData(Admin *adminHead); // 将管理员数据保存到文件中
-  - void saveRegistrations(Registration *regHead); // 将挂号记录保存到文件中
-  - void saveConsultations(Consultation*conHead); // 将看诊记录保存到文件中
-  - void saveExaminations(Examination *examHead); // 将检查记录保存到文件中
-  - void saveHospitalizations(Hospitalization*hosHead); // 将住院记录保存到文件中
-
-### 4. 登录功能
-
-- 创建了可以实现登录功能的头文件 `Login.h`，并实现了管理员的登录验证函数
-  - Admin*adminLogin(Admin*&adminHead); // 管理员登录函数，验证管理员身份并返回登录结果
-
-### 5. 状态转字符串工具
-
-- 在 User 基类中添加并实现了 6 个将医疗记录的状态转为可识别字符串的函数，提高了后序代码的可读性，降低了编写难度
-  - std::string regStatusToString(RegistrationStatus status); // 将挂号状态枚举转换为字符串表示
-  - std::string examStatusToString(ExaminationStatus status);  // 将检查状态枚举转换为字符串表示
-  - std::string hosStatusToString(HospitalizationStatus status); // 将住院状态枚举转换为字符串表示
-  - std::string medicationStatusToString(MedicationStatus status); // 将用药状态枚举转换为字符串表示
-  - std::string medicationReviewStatusToString(MedicationReviewStatus status); // 将用药审核状态枚举转换为字符串表示
-  - std::string medicineStatusToString(MedicineStatus status); // 将药品状态枚举转换为字符串表示
-
-### 6. 主程序框架与调试经验
-
-- 在 main.cpp 文件中编写了系统的大体运行框架，将不同的功能简单地串联了一下，并且测试了管理员的注册和登录功能，都可以正常运行
-- 在测试过程中踩的最大的坑就是 `Admin` 类中的 "**next**" 指针一定不能是野指针，必须要初始化为 nullptr，一开始没有注意，程序莫名其妙崩了好几次
-- 后来通过网上学习了配置 `launch.json` 和 `tasks.json`，进行一步步调试才发现程序是因为野指针崩溃的，这是一个教训，不过也让我学会了在 VSCode 中如何配置调试文件
+- 在 `UI.h` 中实现 6 个输入校验函数（范围选择、费用、字符串、ID、记录ID、密码）
+- 封装挂号管理操作为独立函数，新增 `addRegistration()` 创建挂号记录
+- 创建 `LoadData.h` / `SaveData.h`，实现管理员数据及 4 种医疗记录（挂号/看诊/检查/住院）的加载与保存
+- 创建 `Login.h`，实现管理员登录验证
+- 在 `User` 基类中添加 6 个状态枚举转字符串工具函数
+- 搭建 `main.cpp` 主程序框架；修复 `Admin::next` 指针野指针导致的崩溃
 
 ---
 
-## 2026.4.10
+## 2026.4.10 — VS Code 调试配置与看诊管理
 
-### 1. 任务与调试配置
-
-- 将昨天的`tasks.json`文件新增了两个任务("cmake环境配置"和"build文件夹清理")，并为"cmake编译"添加了依赖:"cmake环境配置"，将`launch.json`文件添加了调试之后自动调用任务"build文件夹清理"
-
-### 2. 挂号记录加载函数
-
-- 在`LoadData.h`中添加了挂号记录的加载函数
-  - Registration *loadRegistrations(int& count); // 从文件中加载挂号记录并返回挂号链表的头指针
-
-### 3. 看诊记录属性扩展
-
-- 给`Consultation.h`中的看诊记录添加了两个新属性
-  - bool isHospitalizationRecommended = false; // 是否建议住院（根据病情严重程度等因素评估得出）
-  - bool isPrecriptionReviewed = false; // 处方是否已审核（由药师或医生审核后设置为 true）
-
-### 4. 管理员看诊信息管理功能
-
-- 在`Admin.h`中添加并实现了管理员医疗记录管理功能中的看诊信息管理，总共拆分为 9 个函数
-  - void manageConsultations(Consultation *&con, const std::string &department, Registration*reg, int &conCounter);               // 管理看诊记录（查看、修改诊断结果等）
-  - void viewAllConsultations(Consultation *&con, const std::string &department);                                            // 查看所有看诊记录（可按患者ID、医生ID、状态过滤）
-  - void viewConsultationsByDoctor(Consultation*&con, const std::string &department);                                       // 查看指定医生的看诊记录
-  - void viewConsultationsByPatient(Consultation *&con, const std::string &department);                                      // 查看指定患者的看诊记录
-  - void viewConsultationsByStatus(Consultation*&con, const std::string &department);                                       // 查看指定状态的看诊记录
-  - void viewConsultationByRegistrationID(Consultation *&con, const std::string &department);                                // 根据挂号ID查看看诊记录
-  - void modifyConsultation(Consultation*&con, const std::string &department);                                              // 修改看诊记录（如修改诊断结果、添加医生备注等）
-  - void deleteConsultation(Consultation *&con, const std::string &department);                                              // 删除看诊记录（逻辑删除，设置 isDeleted 标志）
-  - void addConsultation(Consultation*&con, const std::string &department, Registration*reg, int &conCounter); // 添加看诊记录（根据输入信息创建新的 Consultation 对象，并插入到链表中）
-
-### 5. 管理员看诊记录管理UI
-
-- 在`UI.h`中添加并实现了管理员管理看诊记录的UI交互界面函数，共 2 个
-  - int adminConsultationManagementMenu(); // 管理员看诊记录管理菜单
-  - int adminConsultationViewMenu(); // 管理员看诊记录查看方式选择菜单
-
-### 6. 输入处理辅助函数
-
-- 在`UI.h`中又添加并实现了一个好用的输入处理函数
-  - std::string trim(const std::string &str); // 去除字符串首尾空格的辅助函数
-
-### 7. 看诊记录状态转字符串
-
-- 在`User.h`中补充了看诊记录信息的状态转字符串函数
-  - std::string conStatusToString(ConsultationStatus status); // 将看诊状态枚举转换为字符串表示
-
-### 8. ID变量存储策略调整
-
-- 废除了原来各个人物和各类医疗管理信息的可用ID变量存储到`User`基类中的策略，改用全局变量存储可用ID变量
-
-### 9. 看诊记录枚举修正
-
-- 修正了看诊记录中的枚举类型变量，让其更贴合实际
+- 完善 `.vscode/tasks.json`（CMake 配置、build 清理）和 `launch.json`（调试后自动清理、外部终端）
+- 实现挂号记录加载函数
+- `Consultation` 新增 `isHospitalizationRecommended` 和 `isPrecriptionReviewed` 属性
+- 实现管理员看诊信息管理（9 个函数：查看/过滤/修改/删除/添加），配套 2 个 UI 菜单
+- 新增 `trim()` 辅助函数和 `conStatusToString()` 状态转换
+- **策略变更**：ID 计数器从 `User` 基类移至全局变量
 
 ---
 
-## 2026.4.11
+## 2026.4.11-4.12 — 检查/住院/床位管理
 
-### 1. 看诊记录的持久化
-
-- 补全了 `LoadData.cpp` 中的看诊记录加载函数
-- 补全了 `LoadData.cpp` 中检查记录的加载函数
-- 补全了 `SaveData.cpp` 中的看诊记录保存函数
-- 补全了 `SaveData.cpp` 中的检查记录保存函数
-
-### 2. 检查记录相关 UI
-
-- 在 `UI.h` 中添加了 3 个界面函数
-  - 管理员的检查记录界面函数
-  - 查询检查记录的不同方式的界面函数
-  - 检查项目的选择界面函数
-
-### 3. 体征信息转字符串
-
-- 在 `User.h` 中添加了将检查记录中的生命体征结构体数据转为字符串的函数
-
-### 4. 记录查找功能补充
-
-- 对前两天的代码补充了 2 个函数
-  - 根据挂号ID查找挂号记录的函数
-  - 根据检查ID查找检查记录的函数
-
-### 5. 检查记录管理功能
-
-- 在 `Admin.h` 中添加了关于检查记录的 9 个功能函数
-- 这些函数相互结合实现了管理检查记录的功能
+- 补全看诊、检查、住院、床位信息的 `LoadData` / `SaveData` 函数
+- 新增 `bedInfo` 结构体，实现床位状态转字符串
+- 实现管理员检查记录管理（9 个函数）和住院记录管理（11 个函数），配套 UI 菜单
+- 实现床位信息管理（11 个函数：增删查改），配套 3 个 UI 菜单和床位 ID 校验
 
 ---
 
-## 2026.4.12
+## 2026.4.13-4.14 — 用药/药品/用户属性扩展
 
-### 1. 住院记录与床位管理功能完善
-
-- 在 `UI.h` 中添加并实现了 3 个界面函数：
-  - 管理员住院记录管理菜单
-  - 管理员住院记录查看方式选择菜单
-  - 住院记录病房类型选择菜单
-- 在 `UI.h` 中添加并实现了 1 个床位ID输入校验函数
-- 在 `Hospitalization.h` 中新增了 `bedInfo` 结构体，用于保存每一个床位的具体信息
-- 在 `Admin.h` 中添加并实现了 11 个管理住院信息的功能函数，涵盖住院信息的增删查改等完整流程
-- 在 `SaveData.h` 中添加了住院信息保存函数和床位信息保存函数
-- 在 `LoadData.h` 中添加了住院信息加载函数和床位信息加载函数
-- 在 `User.h` 中添加并实现了床位状态转字符串的函数
+- 实现用药记录管理（13 个函数）和药品信息管理（21 个函数，覆盖所有属性的增删改查）
+- `User` 新增性别、年龄、电话、邮箱属性，同步修改注册/保存/加载函数
+- **Bug 修复**：CSV 分隔符冲突 — 备注字段中的英文逗号导致解析崩溃，优化 `inputStringCheck` 禁止输入英文逗号
+- 完善药品结构体属性，新增 4 个药品管理 UI 菜单
 
 ---
 
-## 2026.4.13-4.14
+## 2026.4.15-4.16 — 人员管理全面实现 & 费用规则
 
-### 1. 住院床位管理功能完善
-
-- 在 `Hospitalization.h` 中新增 `bedInfo` 结构体，用于存储每一个床位的具体信息，便于后续护士对床位进行细节操作
-- 在 `UI.h` 中添加并实现了以下界面函数：
-  - 病房类型选择菜单
-  - 床位信息管理菜单
-  - 床位信息查看方式选择菜单
-- 在 `Admin.h` 中编写了 11 个管理床位信息的功能函数，实现了床位信息的增删查改等管理流程
-- 在 `SaveData.h` 中添加并实现了床位信息保存函数
-- 在 `LoadData.h` 中添加并实现了床位信息加载函数
-- 在 `User.h` 中添加了床位状态转字符串的函数
-
-### 2. 用药记录管理功能完善
-
-- 在 `UI.h` 中添加并实现了以下界面函数：
-  - 用药记录管理菜单
-  - 用药记录查看方式选择菜单
-  - 用药记录审核状态选择菜单
-  - 用药记录发药状态选择菜单
-- 在 `Admin.h` 中编写了 13 个管理用药记录信息的功能函数，实现了用药记录的增删查改及审核、发药等流程
-- 在 `SaveData.h` 中添加并实现了用药记录保存函数
-- 在 `LoadData.h` 中添加并实现了用药记录加载函数
-
-### 3. 用户信息属性扩展
-
-- 在 `User.h` 中新增了性别、年龄、电话号、邮箱属性
-- 修改了 `User.h` 中的注册函数以支持新属性
-- 修改了 `SaveData.h` 中的管理员信息保存函数以支持新属性
-- 修改了 `LoadData.h` 中的管理员信息加载函数以支持新属性
-
-### 4. 药品信息管理功能完善
-
-- 对 `Medicine.h` 中的药品结构体中的属性进行了整理，删除一些多余的属性，增加了一些实用的属性
-- 再 `UI.h` 中添加并实现了以下界面函数:
-  - 药品管理界面
-  - 药品查看方式选择菜单
-  - 药品状态设置菜单
-  - 修改药品信息菜单
-- 在 `Admin.h` 中编写了 21 个管理药品信息的功能函数，实现了药品信息的增删改查，尤其是 "改" 的操作函数详细化了，之前的几个医疗信息的 "改" 操作只能修改记录的状态，其他的信息都无法修改，今天的药品信息的改操作覆盖了药品类含有的所有属性
-- 在 `SaveData.h` 中添加并实现了药品信息的保存函数
-- 在 `LoadData.h` 中添加并实现了药品信息的加载函数
-- 今天还发现了一个 Bug，那就是我保存和读取函数都是使用 英文中的逗号 "," 分隔信息的，但是忘了诸如备注属性中也可能存在英文逗号，这样很可能导致程序崩溃，因此我对 `UI.h` 中的字符串输入检查函数(`inputStringCheck`)进行了优化，直接禁止在医疗信息和人物属性中输入英文逗号
+- 实现医生（22 个函数）、护士（22 个）、药剂师（20 个）、患者（27 个）的增删改查
+- 实现各角色类的 setter/getter、数据持久化（保存/加载）
+- 在 `Login.h` 中实现管理员账户管理（14 个函数，含泛型激活/封锁）
+- **费用规则制定**（`User.h`）：
+  - 挂号费：按医生职称（实习10 / 住院20 / 主治30 / 副高40 / 正高50 元）
+  - 检查费：按项目名称（5-30 元，共 14 项）
+  - 住院费：按病房类型×天数（普通50 / 隔离100 / VIP200 / ICU500 元/天）
 
 ---
 
-## 2026.4.15
+## 2026.4.17-4.18 — 医生功能 & 全面重构优化
 
-### 1. 人物类头文件完善
-
-- 拉取了 4 个人物类的头文件，并进行了部分修正。
-
-### 2. 管理员医生信息管理功能
-
-- 在 `Admin.h` 中添加并实现了 22 个管理员管理医生信息的函数，实现了医生信息的增删改查功能。
-
-### 3. 管理员相关 UI 菜单
-
-- 在 `UI.h` 中添加并实现了以下菜单界面：
-  - 管理员用户（医生/护士/药剂师/患者）管理菜单
-  - 管理员医生信息管理菜单
-  - 管理员医生信息查看方式选择菜单
-  - 医生职称选择菜单
-  - 管理员医生信息修改菜单
-
-### 4. 医生信息数据持久化
-
-- 在 `SaveData.h` 和 `LoadData.h` 中分别添加并实现了医生信息保存函数和加载函数。
-
-### 5. 费用计算规则与实现
-
-- 制定了挂号费用依据医生职称、检查费用依据检查项目名称、住院费用依据床位类型和住院天数的规定。
-- 在 `User.h` 中添加并实现了 3 个对应的价格转换函数：
-
-  ```cpp
-  double calculateRegistrationFee(DoctorTitle title);                 // 根据医生职称计算挂号费用
-  double calculateHospitalizationFee(std::string wardType, int days); // 根据床位类型和住院天数计算住院费用
-  double calculateExaminationFee(std::string itemName);               // 根据检查项目名称计算检查费用
-  ```
-
-#### 具体价格规定
-
-- 医生职称与挂号费用：
-
-  ```cpp
-  enum class DoctorTitle
-  {
-      INTERN = 1,      // 实习医生    挂号费用：10元
-      RESIDENT,        // 住院医师    挂号费用：20元
-      ATTENDING,       // 主治医师    挂号费用：30元
-      ASSOCIATE_CHIEF, // 副主任医师  挂号费用：40元
-      CHIEF            // 主任医师    挂号费用：50元
-  };
-  ```
-
-- 检查项目价格表（单位：元）：
-
-  | 检查项目         | 代码/名称                 | 价格 |
-  | :--------------- | :------------------------ | ---: |
-  | 体温测量         | temperatureC              |   5  |
-  | 血压测量         | systolicBP/diastolicBP    |   8  |
-  | 心率测量/脉搏    | heartRate                 |   5  |
-  | 呼吸频率测量     | respiratoryRate           |   5  |
-  | 血氧饱和度       | spo2                      |  10  |
-  | 身高测量         | height                    |   5  |
-  | 体重测量         | weight                    |   5  |
-  | BMI计算          | bmi                       |   5  |
-  | 疼痛评分         | painScore                 |   2  |
-  | 腰围测量         | waistCircumference        |   5  |
-  | 血糖测量         | bloodSugar                |  20  |
-  | 体脂率测量       | bodyFat                   |  30  |
-  | 尿酸测定         | uricAcid                  |  25  |
-  | 总胆固醇         | cholesterol               |  25  |
-
-- 住院费用：
-  - 普通病房 50元/天
-  - 隔离病房 100元/天
-  - VIP病房 200元/天
-  - ICU病房 500元/天
+- 实现医生挂号（9 个函数）、看诊（19 个）、检查（16 个）管理，配套 UI 菜单
+- 重构 `Admin.h` 中全部 8 个管理模块（检查/住院/用药/药品/医生/护士/药剂师/患者），优化 152 个函数
+- 修正各角色注册函数返回值设计
+- **规范**：所有结构体 String 类型空值统一使用 `"#"` 哨兵
+- 实现医生/管理员个人信息管理（查看/修改），配套 UI 菜单
+- `Login.h` 使用泛型编程统一实现各角色账户激活/封锁
 
 ---
 
-## 2026.4.16
+## 2026.4.20-4.22 — 患者/药剂师/护士功能完善
 
-### 1. 管理员管理功能完善
-
-- 在 `Admin.h` 中添加并实现了 22 个有关管理护士信息的函数，将它们相互组合封装，实现了对护士信息的增删改查功能。
-- 添加并实现了 20 个有关管理药剂师信息的函数，将它们相互组合封装，实现了对药剂师信息的增删改查功能。
-- 添加并实现了 27 个有关管理患者信息的函数，将它们组合封装，实现了对患者信息的增删改查功能。
-
-### 2. 人物类特殊属性方法完善
-
-- 将 `Nurse.h`、`Doctor.h`、`Pharmacist.h` 和 `Patient.h` 中的特殊属性的基础 **setter** 和 **getter** 函数全部实现。
-
-### 3. 人员与医疗记录持久化
-
-- 在 `SaveData.h` 和 `LoadData.h` 中将护士、药剂师和患者的保存与加载函数全部实现，至此，所有人员信息和所有医疗记录信息的持久化功能全部实现。
-
-### 4. 管理员账户管理功能
-
-- 在 `Login.h` 中添加并实现了 14 个有关管理管理员账户的功能函数，将它们相互组合封装，实现了对管理员信息的增删改查功能。
-
-### 5. 管理员主功能框架
-
-- 在 `main.h` 中将管理员的全部功能（普通人员账户管理、医疗信息管理、药品管理、床位管理、管理员账户管理）的框架彻底搭建成功，但尚未进行 bug 测试。
+- 实现患者全部功能：挂号（10 个）、看诊（8 个）、检查（9 个）、用药（10 个）、住院（13 个）管理，新增 `balance` 属性
+- 实现患者、药剂师登录函数
+- 集成小组成员的 `Nurse` / `Pharmacist` 代码
+- 实现药剂师用药/药品管理、护士住院/检查/床位管理，配套全部 UI 菜单
+- 修正枚举类型起始值（全部从 1 开始）
+- 修复床位 ID 唯一性校验漏洞
+- 调试配置优化：`launch.json` 设置 `cwd` 和 `externalTerminal`
 
 ---
 
-## 2026.4.17
+## 2026.4.24 — 数据初始化 & UI 优化
 
-### 1. 管理员功能测试
-
-- 编译测试了管理员的功能，目前来看可以正常运行。
-
-### 2. 医生菜单与界面实现
-
-- 在 `UI.h` 中添加并实现了以下医生相关菜单界面函数：
-  - 医生菜单
-  - 医生挂号信息管理菜单
-  - 医生挂号信息查看方式选择菜单
-  - 医生看诊记录管理菜单
-  - 医生看诊记录查看方式选择菜单
-  - 医生看诊记录修改菜单
-
-### 3. 医生信息管理功能
-
-- 在 `Doctor.h` 中：
-  - 添加并实现了 9 个挂号信息管理相关函数，组合封装实现了医生的挂号信息增删改查基本功能。
-  - 添加并实现了 19 个看诊信息管理相关函数，组合封装实现了医生的看诊信息增删改查基本功能。
-
-### 4. 管理员功能重构优化
-
-- 发现了原来管理员功能中的修改各个医疗记录的功能设计不合理且冗余，今天将 `Admin.h` 中原来的挂号记录管理模块和看诊记录管理模块进行了重构优化。
+- 批量生成 100 条测试药品数据，为 5 个科室各初始化 60 条床位数据
+- 修复 `main.cpp` 中药品管理科室选择循环的死循环 Bug（缺失 `break`）
+- 统一优化控制台交互界面格式
 
 ---
 
-## 2026.4.18
+## 2026.4.25 — 全面代码审核（35+ Bug 修复）
 
-### 1. 管理员管理模块重构与优化
+**Critical：**
 
-- 修正并重构了 `Admin.h` 中检查记录管理、住院记录管理、用药记录管理、药品信息管理、医生信息管理、护士信息管理、药剂师信息管理、患者信息管理等模块，优化了函数设计，共计优化 152 个函数。
+- `Login.cpp` 遍历链表缺失 `current = current->next` 导致死循环
+- `pharmacistLogin` 硬编码 `if (id == "0")` 绕过登录
+- `SHA-256.cpp` 时序攻击漏洞 — 改用 volatile XOR 逐字节比较
+- `User.cpp` ID 生成未定义行为（同一表达式修改和读取变量）
+- 所有角色登录成功后未重置 `loginAttempts` 计数器
 
-### 2. 注册函数返回值设计优化
+**High：**
 
-- 在优化上述模块过程中，发现 `Doctor.h`、`Nurse.h`、`Pharmacist.h`、`Patient.h` 和 `Admin.h` 的注册函数返回值设计不合理，对这些注册函数进行了修正。
+- `Admin.cpp` 约 50 处 modify 函数传错指针（头指针 vs 目标指针）
+- `Admin.cpp` `modifyMedicationRecordReviewStatus` 用错字段（`status` vs `reviewStatus`）
+- `Doctor.cpp` `while(true)` 无限循环、处方显示错误（"药品名称"→"药品ID"）、费用计算用错对象
+- `Pharmacist.cpp` 变量遮蔽导致状态过滤失效
+- `Patient.cpp` 密码修改 `this->salt` → `this->storedHash`
 
-### 3. 医生检查记录管理功能完善
+**Medium/Low：**
 
-- 在 `Doctor.h` 中新增并实现了 16 个医生操作检查记录相关的功能函数，组合封装实现了医生的检查记录管理模块。
-
-### 4. 医生检查记录管理相关 UI
-
-- 在 `UI.h` 中添加并实现了医生检查记录管理菜单、医生检查记录查看方式选择菜单和医生检查记录修改菜单。
-
-### 5. 结构体空值表示规范
-
-- 制定新规定：对 `Registration.h`、`Consultation.h`、`Examination.h`、`Hospitalization.h`、`MedicationRecord.h`、`Medicine.h` 中各类结构体和类的 **String** 类型属性，赋值为 **"#"** 表示空（无值）。
-
-### 6. 个人信息管理功能完善
-
-- 在 `Doctor.h` 中添加并实现了医生的个人信息管理函数。
-- 在 `Admin.h` 中补充了管理员的个人信息管理函数。
-- 在 `UI.h` 中添加并实现了医生的个人信息管理菜单、医生的个人信息查看菜单、医生的个人信息修改菜单、管理员的个人信息管理菜单、管理员的个人信息查看菜单、管理员的个人信息修改菜单；完善了管理员的总功能菜单，新增了管理员个人信息管理功能和账户管理功能（激活/封锁账户）。
-
-### 7. 账户激活/封锁功能泛型化
-
-- 在 `Login.h` 中使用泛型编程实现了对各个身份账户的激活/封锁功能，并通过 `AccountManagement` 函数统一调度各身份的泛型调用，实现了管理员对所有账户的激活/封锁管理。
-
-### 8. 主功能完善
-
-- 在 `main.h` 中完善了管理员的全部功能，并初步完成了医生的模块。
+- 拼写修正 `AdminPersionalInfo` → `AdminPersonalInfo`
+- `deleteAdmin` 从物理删除改为逻辑删除
+- `selectIntCheck` 范围修正
 
 ---
 
-## 2026.4.20
+## 2026.4.25（续）— 终端体验 & 操作日志
 
-### 1. 患者功能管理菜单完善
-
-- 在 `UI.h` 新增并实现了患者相关的各类功能菜单，包括：
-  - 患者主功能管理菜单
-  - 挂号、看诊、检查、用药、住院信息的管理菜单及其查看方式选择菜单
-
-### 2. 患者信息管理功能扩展
-
-- 在 `Patient.h` 新增并实现了以下功能：
-  - 10 个挂号信息管理函数
-  - 8 个看诊信息管理函数
-  - 9 个检查信息管理函数
-  - 10 个用药信息管理函数
-- 初步完善了患者的挂号、看诊、检查、用药信息的管理功能。
-
-### 3. 患者账户余额属性支持
-
-- 在 `Patient.h` 新增 `balance` 属性，表示患者账户余额。
-- 修正了 `SaveData.cpp` 和 `LoadData.cpp` 中患者信息的保存与加载函数，实现余额的持久化。
-
-### 4. 患者住院信息管理功能完善
-
-- 在 `UI.h` 新增并实现了患者住院信息管理菜单及查看方式选择菜单。
-- 在 `Patient.h` 新增并实现了患者住院信息管理相关的 13 个函数，涵盖住院信息的查询、押金缴纳、出院结算等完整业务流程，完善了患者的住院信息管理功能。
+- **颜色系统**：新增 `ConsoleColor` 枚举 + `printSuccess()` / `printError()` / `printWarning()` + 标题美化
+- **分页显示**：`printWithPagination()` 支持上一页/下一页/跳转
+- **面包屑导航**：`pause()` 新增 `breadcrumb` 参数（如 "管理员 > 医疗记录 > 挂号管理"）
+- **隐藏密码输入**：`inputHiddenPwdCheck()` 使用 Windows `ReadFile` API
+- **操作日志**：`LogManager` 单例类，线程安全，结构化日志持久化到 `Data/OperationLog/his_YYYY_MM_DD.log`
 
 ---
 
-## 2026.4.21
+## 2026.4.26 — 新功能全面接入 & 6 项关键 Bug 修复
 
-### 1. 患者功能完善
+**接入：**
 
-- 在 `Patient.h` 中新增并实现了患者个人信息管理功能，包括“查看个人信息”和“修改个人信息”两部分，进一步完善了患者的个人信息管理模块。
-- 对昨日实现的患者住院信息管理功能进行了优化。
+- 250+ 处裸 `std::cout` 替换为彩色打印函数
+- 300+ 处 `pause()` 添加面包屑路径
+- 全部角色登录/注册接入操作日志
+- 管理员用户列表接入分页显示
 
-### 2. 登录功能扩展
+**Critical Bug：**
 
-- 在 `Login.h` 中新增并实现了患者和药剂师的登录函数，完善了患者和药剂师的登录功能。
+- `Admin.cpp` `addHospitalization`：`bedFound = true` 在 `break` 之后（死代码），床位分配始终失败
+- `Admin.cpp` `viewConsultationByID`：链表遍历缺失推进语句，死循环
+- 用药记录 11 处状态显示错误：`statusStr`（缴费状态）误用于审核状态列
+- 5 个登录函数不检查 `isDeleted` 标志，已删除账户仍可登录
+- `Patient.cpp` `applyForDischarge`：日期计算改用 `std::mktime` + `std::difftime` 精确计算
 
-### 3. 患者主功能框架
+**High/Medium Bug：**
 
-- 在 `main.cpp` 中完善了患者模块，初步搭建了患者主功能框架。
-
-### 4. 用户注册模块
-
-- 在 `main.cpp` 中初步完成了用户注册模块，实现了管理员、医生、护士、药剂师、患者的注册功能。
-
-### 5. 患者个人信息管理菜单
-
-- 在 `UI.h` 中新增并实现了患者个人信息管理菜单、个人信息查看菜单和个人信息修改菜单。
-
-### 6. 小组成员代码集成
-
-- 拉取并集成了小组成员的 `Nurse.h`、`Nurse.cpp`、`Pharmacist.h`、`Pharmacist.cpp` 到本地项目。
-
-### 7. 药剂师主功能框架
-
-- 在 `main.cpp` 中初步完善了药剂师模块，搭建了药剂师主功能框架。
-
-### 8. 药剂师相关菜单与功能
-
-- 在 `UI.h` 中新增并实现了药剂师管理菜单、用药信息管理菜单、用药信息查看方式选择菜单、个人信息管理菜单、个人信息查看菜单、个人信息修改菜单、药品信息管理菜单、药品信息查看方式选择菜单、药品信息修改菜单。
-- 根据上述菜单，补充完善了 `Pharmacist.h` 中药剂师的用药信息管理、个人信息管理和药品信息管理等功能的实现。
-
-### 9. 护士相关菜单与功能
-
-- 在 `UI.h` 中新增并实现了护士管理菜单、住院信息管理菜单、住院信息查看方式选择菜单、个人信息管理菜单、个人信息查看菜单、个人信息修改菜单、检查信息管理菜单、检查信息查看方式选择菜单、检查信息修改菜单。
-- 根据上述菜单，补充完善了 `Nurse.h` 中护士的住院信息管理和检查信息管理功能的实现。
-
-### 10. 枚举类型修正
-
-- 修正了检查记录和住院记录中的枚举类型，将其全部设置为从 1 开始。
+- 5 个登录函数缺少密码重试机制（改为 3 次重试）
+- `LoadData.cpp` `loadBedInfos`：`std::stoi` 缺少 try-catch
+- `Doctor.cpp` 处方数量上限 `INT_MAX` → 10000
+- `main.cpp` 退出时新增 12 条链表完整内存清理
 
 ---
 
-## 2026.4.22
+## 2026.4.27 — REST API 后端 + Vue 3 前端全面实现
 
-### 1. 护士床位信息与个人信息管理功能完善
+### 后端 API 化
 
-- 在 `Nurse.h` 和 `Nurse.cpp` 中补充并完善了护士的床位信息管理功能及个人信息管理功能的实现。
+**新增文件：** `ApiResponse.h`、`JsonHelper.h/cpp`、`JWTAuth.h/cpp`、`ApiServer.h/cpp`、`server_main.cpp`
 
-### 2. 护士登录功能完善
+**架构：**
 
-- 在 `Login.h` 中补充并完善了护士的登录函数实现。
+- 引入 cpp-httplib（header-only）和 nlohmann/json（header-only），零外部构建依赖
+- `DataManager` 单例 + `std::mutex` 线程安全
+- JWT 认证（HMAC-SHA256，24h 有效）
+- 统一响应格式 `{code, message, data}`，CORS `Access-Control-Allow-Origin: *`
+- 60+ API 端点，覆盖 5 种角色核心业务
 
-### 3. 护士主功能框架完善
+**关键设计：** 零侵入现有代码，API 层作为独立模块，直接操作链表数据结构，写操作后立即持久化
 
-- 在 main.cpp 中完善了护士模块，搭建了护士主功能框架。
+### 前端 Web 界面（Vue 3 + Element Plus）
 
-### 4. 护士相关菜单修正
+**技术栈：** Vue 3 + Vite 6 + Pinia + Vue Router + Element Plus (zh-cn) + Axios (JWT 拦截器)
 
-- 在 `UI.h` 中修正了护士的床位信息管理相关菜单和个人信息管理相关菜单。
+**架构：**
 
-### 5. 床位ID唯一性校验修复
+- `api/` 按角色拆分 8 个模块（axios 实例 + JWT 拦截器 + 401 自动跳转）
+- `store/user.js` Pinia 状态（token/角色/localStorage 持久化）
+- `router/index.js` 角色路由守卫 + 组件懒加载
+- `Layout.vue` el-container 布局（侧边栏菜单按角色动态显示）
+- 39 个文件：3 配置 + 1 HTML + 9 JS 基础层 + 2 公共页面 + 24 角色页面
 
-- 在 `Admin.cpp` 中修复了管理员创建床位时未检测床位ID是否已存在的漏洞。
+**角色页面分布：**
 
-### 6. 调试配置优化
+| 角色 | 页面数 | 核心功能 |
+| ------ | -------- | --------- |
+| 管理员 | 12 | Dashboard + 人员/记录/药品/床位 CRUD |
+| 医生 | 4 | 挂号/看诊/检查 + Profile |
+| 护士 | 4 | 住院/体征录入/床位 + Profile |
+| 药剂师 | 3 | 用药审核/药品库存 + Profile |
+| 患者 | 6 | 预约挂号/支付/查看记录/充值 + Profile |
 
-- 修改了 `launch.json` 文件中的 `cwd` 路径为 `"cwd": "${workspaceFolder}/build"`，确保调试时的工作目录正确，避免因目录错误导致的文件读取失败问题。
-- 新增了 `console` 配置项 `"console": "externalTerminal"`，使调试时使用外部终端，便于查看输入输出，解决了之前无法输入的问题。
+### 关键 Bug：互斥锁死锁
 
----
+**根因**：API handler 持有 `std::mutex` 锁后调用 `saveAll()`，而 `saveAll()` 内部对同一非递归互斥锁再次加锁
 
-## 2026.4.24
-
-### 1. 基础数据初始化
-
-- 借助大语言模型批量生成了 100 条基础测试药品信息。
-- 为系统内的每个科室分别初始化了 60 条床位信息（包含 20 条普通病房、20 条隔离病房、10 条 VIP 病房以及 10 条 ICU 病房），并将这些初始化数据成功持久化保存至对应文件中。
-
-### 2. 死循环 Bug 修复
-
-- 修复了 `main.cpp` 中由于缺失 `break` 语句而导致的一个严重 Bug：在管理员进行药品管理的科室选择循环中，由于没有跳出条件，导致程序陷入死循环无法返回上级菜单，现该问题已解决。
-
-### 3. UI 界面优化升级
-
-- 对 `UI.cpp` 中所有的控制台交互界面函数进行了统一的格式排版与视觉优化，使系统界面呈现更加美观清晰，进一步提升了用户的交互体验。
-
----
-
-## 2026.4.25
-
-### 1. 全面代码审核与 Bug 修复
-
-对项目进行了全面的代码审核，发现并修复了 35+ 个 Bug，覆盖管理员、医生、护士、药剂师、患者以及登录注册系统：
-
-**严重级别（Critical）：**
-
-- 修复 `Login.cpp` 中 `viewAdminsByGender` 函数的无限循环 Bug：缺少 `current = current->next;` 导致遍历时陷入死循环
-- 修复 `Login.cpp` 中 `pharmacistLogin` 函数硬编码绕过问题：`if (id == "0") return nullptr;` 导致 ID 为 "0" 的药剂师无法登录
-- 修复 `SHA-256.cpp` 中的时序攻击漏洞：使用标准 `std::string` 比较密码 hash，攻击者可通过响应时间推断密码正确性，改为使用 volatile XOR 逐字节比较的时序安全比较函数
-- 修复 `User.cpp` 中 ID 生成的未定义行为：`"0" + std::to_string(idCounter++).insert(...)` 在同一表达式中修改和读取变量，分离为两条独立语句
-- 修复所有角色（Admin/Doctor/Nurse/Pharmacist/Patient）的登录成功后未重置 `loginAttempts` 计数器的问题，导致登录失败次数累计异常
-
-**高级别（High）：**
-
-- 修复 `Admin.cpp` 中约 50 个 modify 函数调用：错误地传递了链表头指针而非目标指针，导致修改操作作用于错误对象
-- 修复 `Admin.cpp` 中 `modifyMedicationRecordReviewStatus`：错误使用 `target->status` 而非 `target->reviewStatus`
-- 修复 `Admin.cpp` 中 `deletePharmacist` 和 `deletePatient`：传递头指针而非目标指针，导致删除了错误的记录
-- 修复 `Admin.cpp` 中医生排班检查：从 `doc == nullptr` 改为检查是否有在岗医生
-- 修复 `Admin.cpp` 中 5 处 ID 生成的未定义行为
-- 修复 `Admin.cpp` 中管理员密码修改：错误地使用 `this->salt` 存储新盐值，改为 `this->storedHash`
-- 修复 `Doctor.cpp` 中 `while(true)` 无限循环：改为 `while(currentReg != nullptr)` 防止崩溃
-- 修复 `Doctor.cpp` 中 `createExaminationByConsultation`：错误使用 `currentCon->` 而非 `targetCon->`
-- 修复 `Doctor.cpp` 中取消功能不可达：使用 `selectIntCheck(0, 2)` 正确处理值班状态选择
-- 修复 `Doctor.cpp` 中处方显示错误：将 "药品名称" 修正为 "药品ID"（3 处）
-- 修复 `Doctor.cpp` 中密码修改流程问题
-- 修复 `Doctor.cpp` 中费用计算错误：从 `this->title` 改为 `doc->title`
-- 修复 `Doctor.cpp` 中 3 处 ID 生成的未定义行为
-
-**中等级别（Medium）：**
-
-- 修复 `Nurse.cpp` 中 ID 生成的未定义行为
-- 修复 `Pharmacist.cpp` 中 `getMedicinesByStatus` 的变量遮蔽问题：内部变量覆盖外部变量导致状态过滤失效
-- 修复 `Pharmacist.cpp` 中 `setMedicationRecordReviewStatus`：缺少 `!con->isDeleted` 检查，可能操作已删除记录
-- 修复 `Pharmacist.cpp` 中 `isPrecriptionReviewed` 设置逻辑：仅在审核通过时设置，拒绝时不应设置
-- 修复 `Pharmacist.cpp` 中 2 处 ID 生成的未定义行为
-- 修复 `Patient.cpp` 中密码修改：`this->salt` 改为 `this->storedHash`
-- 修复 `Patient.cpp` 中 `selectIntCheck` 范围：移除 `-1` 使其与枚举值匹配
-- 修复 `Admin.cpp` 和 `main.cpp` 中的拼写错误：`AdminPersionalInfo` 改为 `AdminPersonalInfo`
-
-**低级别（Low）：**
-
-- 修复 `Login.cpp` 中 `deleteAdmin`：从物理删除改为逻辑删除（设置 `setIsDeleted`），保持与其他删除操作的一致性
-- 修正所有角色密码修改流程中的密码确认逻辑
-
-### 2. 终端交互体验优化
-
-**控制台颜色系统（`UI.h` / `UI.cpp`）：**
-
-- 新增 `ConsoleColor` 枚举（RED, GREEN, YELLOW, CYAN, WHITE, DEFAULT）
-- 实现 `setConsoleColor()` / `resetConsoleColor()`：支持 Windows API (`SetConsoleTextAttribute`) 和 ANSI 转义序列双模式，确保跨平台兼容
-- 实现 4 个快捷打印函数：
-  - `printTitle()`：打印带分隔线的标题
-  - `printSuccess()`：绿色成功消息
-  - `printError()`：红色错误消息
-  - `printWarning()`：黄色警告消息
-- 为 `printMenuBorder()` 和 `printMenuTitle()` 添加颜色增强
-
-**分页显示功能（`UI.h` / `UI.cpp`）：**
-
-- 实现 `printWithPagination()`：分页打印长列表，支持上一页/下一页/跳转到指定页/退出等导航操作
-- 使用 `(std::min)` 避免 Windows `min` 宏冲突
-
-**面包屑导航（`UI.h` / `UI.cpp`）：**
-
-- 增强 `pause()` 函数：支持 `breadcrumb` 参数，在暂停提示中显示当前导航路径
-- 管理员密码修改流程优化：改进密码确认步骤，先比较密码再执行修改
-
-**隐藏密码输入（`UI.h` / `UI.cpp`）：**
-
-- 实现 `inputHiddenPwdCheck()`：使用 Windows `ReadFile` API 实现终端密码隐藏输入（不回显），用于登录场景
-- 注册时仍使用普通密码输入（用户需要确认注册的密码内容）
-
-### 3. 操作日志系统（`UI.h` / `UI.cpp`）
-
-- 实现 `LogManager` 单例类：
-  - `info()` / `warn()` / `error()`：记录不同级别的操作日志
-  - `logOperation()`：记录结构化操作日志（用户ID、角色、操作类型、详细信息）
-  - 日志文件持久化存储到 `Data/OperationLog/` 目录
-  - 线程安全（使用 `std::mutex` 保护写入）
-  - 日志格式：`[YYYY-MM-DD hh:mm:ss] [LEVEL] message`
-
-### 4. 代码架构优化
-
-- 将 `LogManager` 设计为单例模式，全局统一的日志入口
-- 新增 `Data/OperationLog/` 目录用于存储操作审计日志
-- `UI.h` 新增必要的头文件包含：`<fstream>`, `<mutex>`, `"../Head/GetTime.h"`
+**修复**：新增 `saveAllUnsafe()`（不加锁版本），33 处写操作端点替换调用
 
 ---
 
-## 2026.4.26
+## 2026.4.27（续）— 前端功能全面补全
 
-### 1. 4.25 功能全面接入
+### 后端新增 18 个端点
 
-**彩色打印函数接入（5 个业务文件 + main.cpp）：**
+| 角色 | 端点数 | 核心功能 |
+| ------ | -------- | --------- |
+| 通用 | 1 | 检查项目列表 |
+| 管理员 | 3 | 添加药品/床位、编辑个人信息 |
+| 医生 | 3 | 从挂号创建看诊、从看诊批量创建检查、编辑个人信息 |
+| 护士 | 8 | 创建住院、分配床位、出院办理、床位 CRUD、编辑个人信息 |
+| 药剂师 | 5 | 创建用药记录、药品 CRUD、编辑个人信息 |
+| 患者 | 1 | 住院押金缴纳 |
 
-- 将 Admin.cpp、Doctor.cpp、Nurse.cpp、Pharmacist.cpp、Patient.cpp、Login.cpp 中所有裸 `std::cout` 成功/错误/警告消息替换为 `printSuccess()`（绿色）、`printError()`（红色）、`printWarning()`（黄色）
-- 共计替换 250+ 处消息
+### 前端 13 个页面更新
 
-**操作日志系统接入：**
+- **医生 Registrations.vue 重写**：开始看诊对话框（主诉/病史/诊断/检查项目多选/建议住院）
+- **护士 Hospitalizations.vue 重写**：创建住院/分配床位/出院办理完整流程
+- **药剂师 MedicationRecords.vue 重写**：从看诊处方自动创建用药记录 + 药品行明细子表格
+- **患者页面增强**：Consultations 完整详情（处方子表格）、Examinations 生命体征区块、Hospitalizations 缴纳押金
+- **所有角色 Profile.vue**：统一新增编辑/查看切换功能
 
-- 在所有角色（Admin/Doctor/Nurse/Pharmacist/Patient）登录成功时添加 `LogManager::logOperation()` 记录
-- 在所有角色注册成功时添加日志记录
-- 在 `main.cpp` 系统退出时添加 `LogManager::info("系统退出，所有数据已保存")`
-- 日志实时写入 `Data/OperationLog/his_YYYY_MM_DD.log`
+### 前端设计决策
 
-**面包屑导航接入：**
-
-- 为 300+ 处 `pause()` 调用添加了面包屑路径参数，例如 `"管理员 > 医疗记录管理 > 挂号记录管理"`、`"医生 > 看诊管理"`、`"护士 > 床位管理"` 等
-- 覆盖所有角色的全部业务操作模块
-
-**分页显示接入：**
-
-- 在 `Login.cpp` 的 `viewAllAdmins`、`viewAdminsByName`、`viewAdminsByGender`、`viewAdminsByAgeGroup`、`viewAdminsByContactInfo` 函数中，将直接打印改为收集到 `vector<string>` 后用 `printWithPagination()` 分页打印
-- 超过 10 条记录时自动分页，支持上一页/下一页/跳转/退出等导航操作
-
----
-
-### 2. 关键 Bug 修复（6 项）
-
-**严重级别（Critical）：**
-
-- 修复 `Admin.cpp` 中 `addHospitalization` 函数的 `bedFound = true;` 死代码 Bug：该语句位于 `break;` 之后，永远不会执行，导致床位分配始终报告失败，无法正常添加住院记录
-- 修复 `Admin.cpp` 中 `viewConsultationByID` 函数的无限循环 Bug：while 循环缺少 `current = current->next;` 推进语句，当目标 ID 不在链表头部时会陷入死循环
-- 修复 `Admin.cpp` 中用药记录管理模块的 11 处 "审核状态" 显示错误：将 `statusStr`（缴费/发药状态）改为 `reviewStatusStr`（审核状态），涉及 `viewAllMedicationRecords`、`viewMedicationRecordsByPatient`、`viewMedicationRecordsByDoctor` 等多个查看和修改函数
-- 修复 `Pharmacist.cpp` 中 `printMedicationRecord` 函数的同一问题：`reviewStatusStr` 变量已声明但未使用，实际输出的是 `statusStr`（缴费状态）
-- 修复 `Login.cpp` 中全部 5 个登录函数（admin/doctor/nurse/pharmacist/patient）不检查 `isDeleted` 标志的问题：已逻辑删除的账户仍可正常登录，改为在查找循环中添加 `!isDeleted` 条件过滤
-- 修复 `Patient.cpp` 中 `applyForDischarge` 函数的日期计算公式错误：原来使用 `月 * 30 + 日` 的粗略算法（如 1月31日 到 2月28日 会算成 27 天而非 28 天），改用 `std::mktime` + `std::difftime` 进行精确的日历日期差计算
-
-**高级别（High）：**
-
-- 修复 `main.cpp` 中药剂师退出后缺少 `pause()` 的问题：所有角色退出后都有暂停提示，唯独药剂师缺失，导致用户看不到退出信息
-- 修复 `Login.cpp` 中全部 5 个登录函数缺少密码重试机制的问题：原逻辑密码错误一次就返回角色选择菜单，用户需重新导航，改为 3 次重试循环，每次提示剩余机会次数
-- 修复 `LoadData.cpp` 中 `loadBedInfos` 函数的 `std::stoi` 缺少 try-catch 保护的问题：与其他所有 load 函数不一致，损坏的 count 行会导致未捕获异常崩溃
-- 修复 `Admin.cpp` 中 `viewPatientsByContactInfo` 函数的邮箱搜索 `found` 变量遮蔽问题：内部重新声明了 `bool found` 导致外部变量始终为 false，即使找到匹配也会报告"未找到"
-- 修复 `Admin.cpp` 中 4 处看诊记录详情显示循环（`viewAllConsultations`、`viewConsultationsByDoctor`、`viewConsultationsByPatient`、`viewConsultationByRegistrationID`）中的 `current->` 误用 Bug：在 `for (Consultation *c : temp)` 循环中引用了已变为 nullptr 的 `current` 指针而非循环变量 `c`，属于未定义行为
-
-**中等级别（Medium）：**
-
-- 修复 `UI.cpp` 中 `LogManager::writeLog` 函数的线程安全问题：已 include `<mutex>` 但未实际使用，添加 `std::lock_guard<std::mutex>` 保护日志写入
-- 修复 `Doctor.cpp` 中处方数量上限 `INT_MAX` 的问题：理论上用户可输入 21 亿颗药，改为合理的上限 10000
-- 修复 `Patient.cpp` 中多处 C 风格 `(int)` 枚举转换：统一改为 `static_cast<int>()` 提升类型安全性
-- 在 `main.cpp` 系统退出流程中添加了 12 条链表（Admin/Doctor/Nurse/Pharmacist/Patient/Registration/Consultation/Examination/Hospitalization/MedicationRecord/Medicine/bedInfo）的完整内存清理逻辑，消除程序退出时的内存泄漏
+- 前端分页（数据量小，`slice()` 避免后端复杂度）
+- 角色菜单隔离（`v-if="store.role === X"`，后端 JWT 保证权限）
+- Vite proxy 代理开发环境 CORS，生产环境 Nginx 反向代理
+- 直接对接真实 API，无 Mock 数据
 
 ---
 
-### 3. 终端交互体验优化
+## 2026.4.29 — 代码质量审查 & 前端全面优化
 
-- 为 `pause()` 函数全面接入面包屑导航参数，用户在任意深层菜单操作后都能看到完整的导航路径提示（如 "管理员 > 医疗记录管理 > 看诊记录管理"）
-- 为长列表查看功能接入分页显示，管理员查看用户列表时超过 10 条记录自动分页
+### 1. /simplify 代码审查（4 项修复）
+
+- **死代码清理**：删除 `checkRoleAuth()` / `checkAuth()` 未调用函数（25 行）
+- **修改密码重构**：10 次 O(n) 遍历 → 单次遍历 + 缓存 `User*` 指针，SHA256 计算 2 次 → 1 次
+- **床位 ID 去重**：17 行手动 if/else → 调用已有 `autoGenerateBedID()` 工具函数
+- **药品 ID 溢出防护**：缓存 `to_string` 结果，显式判断长度后再零填充
+
+### 2. CLAUDE.md 文档优化（85 → 92 分）
+
+- 补充 VS Code 任务、`postDebugTask` 陷阱、零外部构建依赖
+- 新增 REST API 架构、前端架构、角色编号差异说明
+- 新增 Known Gotchas、`"#"` 哨兵值规范章节
+
+### 3. 前端路由权限控制
+
+- 全部 28 个子路由添加 `meta: { roles: [...] }` 角色限制
+- 路由守卫新增角色校验，不匹配时自动重定向到角色默认页面
+- Axios 拦截器细分 401/403/404/超时错误处理
+
+### 4. 后端 API 补全
+
+- `PUT /api/auth/change-password` 支持 5 种角色修改密码
+
+### 5. 控制台代码精简
+
+- `main.cpp` 管理员账户管理模块简化（-425 行冗余嵌套循环）
+
+### 6. README.md 大幅扩充
+
+- 新增两种运行模式的完整编译/运行/调试说明
+- 前后端联调启动步骤、API 测试示例
+- 角色编号映射表
+
+### 7. 前端 UI 全面重构 — "Pure & Clinical" 风格
+
+- `global.css` 2 行 → 167 行 CSS 变量主题系统（蓝白主色 `#1e88e5`、磨砂玻璃、阴影层次）
+- Login/Register：蓝白渐变 SVG 背景 + 医疗十字 Logo + 磨砂玻璃卡片
+- Layout：深色侧边栏 → 白色侧边栏 + 蓝色激活态 + 页面切换动画
+- Dashboard：自定义悬浮卡片（图标 + 数值 + 独立主题色）
+- 全部 26 个 CRUD 页面添加 `fade-in` 动画
+
+**UI 重设计统计：** 30 个文件变更，+1032 / -400 行
 
 ---
 
-## 2026.4.27
+## 2026.4.29（续）— 权限修复 & 管理员 CRUD
 
-### 1. 后端 API 化 — 全部完成
+### 10. 前端权限路由修复
 
-将控制台 HIS 系统完整转换为 REST API 后端服务器，所有 5 种角色的核心业务功能均已完成 API 端点。**数据持久化方式不变**，继续使用现有的 txt CSV 文件（`LoadData`/`SaveData` 模块完全复用）。
+**问题**：非管理员登录 Dashboard 显示 "无权限"（调用了管理员专属 API）
 
-#### 1.1 引入第三方依赖
+**修复**：
 
-- **cpp-httplib** (v0.18.3)：header-only 的 C++ HTTP 服务器库，通过 jsdelivr CDN 下载至 `Head/httplib.h`（10255 行），支持 Winsock2 在 Windows/MSVC 上运行
-- **nlohmann/json** (v3.11.3)：header-only 的 C++ JSON 库，下载至 `Head/json.hpp`（24765 行），用于所有 API 请求/响应的 JSON 序列化
+- `/dashboard` 限制 `meta: { roles: [1] }`，仅管理员可访问
+- Login/Register 按角色重定向（管理员→Dashboard，医生→挂号列表，护士→住院管理，药剂师→用药审核，患者→预约挂号）
 
-#### 1.2 新增文件清单
+### 11. 布局空白修复
 
-| 文件 | 用途 |
-|------|------|
+- `Layout.vue` `el-main` padding 从 20px → `16px 20px`
 
-| `Head/ApiResponse.h` | 统一 API 响应格式 `{code, message, data}` |
-| `Head/JsonHelper.h` / `Source/JsonHelper.cpp` | 12 种数据结构/角色的 JSON 序列化 + 枚举转字符串 |
-| `Head/JWTAuth.h` / `Source/JWTAuth.cpp` | JWT 实现（Base64 URL + HMAC-SHA256 + 24h 时效） |
-| `Head/ApiServer.h` / `Source/ApiServer.cpp` | DataManager 单例 + 全部 REST 路由注册（~1500 行） |
-| `server_main.cpp` | REST 服务器入口（加载数据、注册路由、监听 8080 端口） |
-
-#### 1.3 架构设计
-
-- **DataManager 单例**：线程安全（`std::mutex`），启动时 `LoadData` 加载全部数据，每次写操作后 `SaveData` 持久化
-- **JWT 认证**：`Base64(header).Base64(payload).Base64(HMAC-SHA256签名)`，payload 含 `{userID, role, iat, exp}`，24h 有效
-- **统一响应**：`{code, message, data}`，错误码 200/400/401/403/404/500
-- **CORS**：所有响应添加 `Access-Control-Allow-Origin: *`
-
-#### 1.4 API 端点总览（共 60+ 个端点）
-
-**认证（2）：** `POST /api/auth/login`（统一登录）、`POST /api/auth/register`（统一注册，5 种角色含特有属性）
-
-**管理员（30+）：**
-
-- 人员管理：`GET/PUT/DELETE /api/admin/{doctors,nurses,pharmacists,patients}` — CRUD + 过滤
-- 医疗记录：`GET/PUT/DELETE /api/admin/{registrations,consultations,examinations,hospitalizations,medication-records}` — 查看/状态修改/逻辑删除
-- 药品管理：`GET/PUT/DELETE /api/admin/medicines` — 含库存/价格/状态修改
-- 床位管理：`GET/DELETE /api/admin/beds`
-- 账号管理：`PUT /api/admin/account/:id/status` — 激活/封锁所有角色
-- 管理员列表：`GET /api/admin/admins`
-
-**医生（8）：** 挂号/看诊/检查记录的查看和修改 + 个人信息
-
-**护士（8）：** 住院记录管理 + 体征录入 + 床位列表 + 个人信息
-
-**药剂师（8）：** 用药记录审核/发药（自动扣库存）+ 药品库存调整 + 个人信息
-
-**患者（12）：** 预约挂号 + 余额支付挂号费/检查费/药费 + 充值 + 个人信息查看/修改 + 各类记录查看
-
-**通用（2）：** `GET /api/departments`（科室列表）、`GET /api/fee-standards`（费用标准）
-
-#### 1.5 构建与运行
-
-```bash
-# 构建服务器
-cd build && cmake --build . --config Debug --target his_server
-
-# 运行（从 build 目录启动）
-cd build && ./Debug/his_server.exe
-# 服务器监听 http://localhost:8080，Ctrl+C 优雅退出
-```
-
-**测试示例**：
-
-```bash
-# 获取科室列表（无需认证）
-curl http://localhost:8080/api/departments
-
-# 登录
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d "{\"userID\":\"000001\",\"password\":\"123456\",\"role\":1}"
-
-# 查看医生列表（需要管理员 token）
-curl http://localhost:8080/api/admin/doctors \
-  -H "Authorization: Bearer <token>"
-```
-
-#### 1.6 关键设计决策
-
-1. **零侵入**：不修改任何现有文件，API 层作为独立新代码添加
-2. **业务逻辑重写**：现有函数混合 console I/O，API 层直接操作链表数据结构
-3. **线程安全**：`DataManager` 用 `std::mutex` + `lock_guard` 保护所有操作
-4. **即时持久化**：每次写操作后 `saveAll()` 写回 txt 文件
-5. **ID 生成一致**：复用 6 位 ID 规则（首位角色 + 5 位递增）
-
-### 2. 前端 Web 界面 — Vue 3 + Element Plus 全部完成
-
-基于后端 REST API，使用 Vue 3 + Element Plus 构建了完整的前端 Web 管理界面，覆盖 5 种角色全部业务功能。
-
-#### 2.1 技术选型
-
-| 技术 | 版本 | 用途 |
-|------|------|------|
-
-| Vue 3 | ^3.5 | 前端框架（Composition API + `<script setup>`） |
-| Vite | ^6.0 | 构建工具（开发服务器 + 生产构建） |
-| Element Plus | ^2.9 | UI 组件库（中文 locale，el-table/el-form/el-dialog 等） |
-| Vue Router | ^4.5 | 路由管理（角色分流 + 路由守卫） |
-| Pinia | ^2.3 | 状态管理（用户登录态、JWT token） |
-| Axios | ^1.7 | HTTP 客户端（JWT 拦截器 + 错误处理） |
-
-**选择 Element Plus 而非 Ant Design 的原因**：
-
-- Element Plus 的中文生态更成熟（内置 `zh-cn` locale，日期/分页等组件原生中文支持）
-- `el-table`/`el-form`/`el-dialog` 等组件 API 设计简洁，适合表格密集型管理系统
-- `@element-plus/icons-vue` 提供丰富的图标，无需额外引入图标库
-
-#### 2.2 项目创建步骤
-
-**步骤 1:创建项目目录结构**
-
-```bash
-mkdir -p frontend/src/{api,store,router,styles,components}
-mkdir -p frontend/src/views/{admin,doctor,nurse,pharmacist,patient}
-```
-
-**步骤 2:创建 `package.json`**
-
-手动编写 `package.json`（不使用 `npm create vue` 交互式脚手架，便于理解和复现）：
-
-```json
-{
-  "name": "his-frontend",
-  "private": true,
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0",
-    "pinia": "^2.3.0",
-    "axios": "^1.7.9",
-    "element-plus": "^2.9.1",
-    "@element-plus/icons-vue": "^2.3.1"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.1",
-    "vite": "^6.0.0"
-  }
-}
-```
-
-**步骤 3：创建 `vite.config.js`（含 API 代理）**
-
-```js
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-
-export default defineConfig({
-  plugins: [vue()],
-  server: {
-    port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8080',  // 后端 C++ 服务器地址
-        changeOrigin: true
-      }
-    }
-  }
-})
-```
-
-**关键点**：Vite 开发服务器的 `proxy` 配置将 `/api` 开头的请求代理到后端 `localhost:8080`，开发时无需手动处理 CORS。生产环境则通过 Nginx 反向代理实现。
-
-**步骤 4：创建 `index.html`（入口 HTML）**
-
-标准 Vue 3 SPA 入口，`<script type="module">` 指向 `src/main.js`。
-
-**步骤 5：创建 `src/main.js`（应用入口）**
-
-```js
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
-import zhCn from 'element-plus/es/locale/lang/zh-cn'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-import App from './App.vue'
-import router from './router'
-
-const app = createApp(App)
-// 全局注册所有 Element Plus 图标
-for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component)
-}
-app.use(createPinia()).use(router).use(ElementPlus, { locale: zhCn }).mount('#app')
-```
-
-**步骤 6:安装依赖**
-
-```bash
-cd frontend
-npm install
-```
-
-#### 2.3 API 层设计（`src/api/`）
-
-**核心思路**：封装 axios 实例，自动附加 JWT token，统一错误处理。
-
-**`src/api/index.js`（axios 实例 + 拦截器）**：
-
-```js
-import axios from 'axios'
-import { useUserStore } from '../store/user'
-import router from '../router'
-
-const request = axios.create({
-  baseURL: '/api',
-  timeout: 10000
-})
-
-// 请求拦截器：自动附加 JWT token
-request.interceptors.request.use(config => {
-  const store = useUserStore()
-  if (store.token) {
-    config.headers.Authorization = `Bearer ${store.token}`
-  }
-  return config
-})
-
-// 响应拦截器：401 自动跳转登录页
-request.interceptors.response.use(
-  response => response.data,
-  error => {
-    if (error.response?.status === 401) {
-      const store = useUserStore()
-      store.logout()
-      router.push('/login')
-    }
-    return Promise.reject(error.response?.data || error)
-  }
-)
-
-export default request
-```
-
-**API 模块按角色拆分**：
-
-| 文件 | 封装的 API |
-|------|----------- |
-
-| `api/auth.js` | `login()`、`register()` |
-| `api/common.js` | `getDepartments()`、`getFeeStandards()` |
-| `api/admin.js` | 管理员全部 30+ 个端点（人员 CRUD、记录管理、账号管理） |
-| `api/doctor.js` | 医生 8 个端点（挂号/看诊/检查 + 个人信息） |
-| `api/nurse.js` | 护士 8 个端点（住院管理、体征录入、床位） |
-| `api/pharmacist.js` | 药剂师 8 个端点（审核/发药/库存） |
-| `api/patient.js` | 患者 12 个端点（挂号/支付/充值/个人信息） |
-
-**为什么按角色拆分而不是按资源拆分**：
-后端 API 本身按角色前缀隔离（`/api/admin/*`、`/api/doctor/*` 等），前端按角色拆分保持一致性，每个角色对应的页面只需 import 自己角色的 API 文件，代码更清晰。
-
-#### 2.4 状态管理（`src/store/user.js`）
-
-使用 Pinia 的 Composition API 风格（`defineStore` + `setup` 函数）：
-
-```js
-export const useUserStore = defineStore('user', () => {
-  const token = ref(localStorage.getItem('token') || '')
-  const userID = ref(localStorage.getItem('userID') || '')
-  const username = ref(localStorage.getItem('username') || '')
-  const role = ref(parseInt(localStorage.getItem('role') || '0'))
-
-  function setLogin(data) {
-    token.value = data.token
-    userID.value = data.userID
-    // ... 同时写入 localStorage 实现刷新页面不丢失登录态
-  }
-
-  function logout() {
-    // 清空所有状态 + localStorage
-  }
-
-  return { token, userID, username, role, isLoggedIn, roleName, setLogin, logout }
-})
-```
-
-**为什么用 localStorage 而不是 sessionStorage**：
-用户在同一标签页刷新时保持登录。JWT 本身有过期时间（24h）保护安全性。
-
-#### 2.5 路由设计（`src/router/index.js`）
-
-**路由守卫**：未登录用户访问任何页面 → 重定向到 `/login`；已登录用户访问 `/login` → 重定向到 `/dashboard`。
-
-**路由结构**：
-
-```text
-/login              → Login.vue（登录页）
-/register           → Register.vue（注册页）
-/                   → Layout.vue（主布局，requiresAuth）
-  /dashboard        → admin/Dashboard.vue（首页概览）
-  /admin/doctors    → admin/Doctors.vue（管理员 - 医生管理）
-  ... (管理员 11 个子页面)
-  /doctor/registrations → doctor/Registrations.vue（医生 - 挂号列表）
-  ... (医生 4 个子页面)
-  /nurse/hospitalizations → nurse/Hospitalizations.vue（护士 - 住院管理）
-  ... (护士 4 个子页面)
-  /pharmacist/medication-records → pharmacist/MedicationRecords.vue（药剂师 - 用药审核）
-  ... (药剂师 3 个子页面)
-  /patient/registrations → patient/Registrations.vue（患者 - 预约挂号）
-  ... (患者 6 个子页面)
-```
-
-**所有路由组件使用动态导入** `() => import(...)` 实现 Vue Router 的懒加载，减小首屏体积。
-
-#### 2.6 主布局设计（`src/views/Layout.vue`）
-
-采用 Element Plus 的 `el-container` 布局：
-
-```text
-┌──────────────────────────────────────────────────┐
-│  Header（面包屑 + 用户信息 + 退出按钮）            │
-├─────────┬────────────────────────────────────────┤
-│         │                                        │
-│ Sidebar │  Main Content（router-view）            │
-│ (菜单)  │                                        │
-│         │                                        │
-│         │                                        │
-└─────────┴────────────────────────────────────────┘
-```
-
-**侧边栏菜单按角色动态显示**：
-
-- 管理员看到：人员管理、医疗记录、资源管理 三大菜单组
-- 医生看到：挂号列表、看诊管理、检查记录、个人信息
-- 护士看到：住院管理、体征录入、床位管理、个人信息
-- 药剂师看到：用药审核、药品库存、个人信息
-- 患者看到：预约挂号、看诊记录、检查记录、用药记录、住院记录、个人信息
-
-**实现关键**：`v-if="store.role === X"` 控制菜单项的显示，`router` 属性让 `el-menu` 自动根据路由高亮当前菜单项。
-
-#### 2.7 登录/注册页面
-
-**Login.vue**：
-
-- `el-form` + `el-form-item` 表单布局
-- `el-select` 选择角色（管理员/医生/护士/药剂师/患者）
-- 表单校验规则（`el-form` 的 `rules` 属性）
-- 登录成功 → `store.setLogin(res.data)` 保存 JWT → `router.push('/dashboard')`
-
-**Register.vue**：
-
-- 根据选择的角色动态显示额外字段（医生显示科室+职称，患者显示地址等）
-- 密码确认校验（自定义 validator 比较两次输入）
-- 注册成功后自动登录并跳转
-
-#### 2.8 管理员页面（11 个子页面）
-
-**通用页面模式**（以 Doctors.vue 为代表）：
-
-1. **搜索栏**：`el-card` 包裹 `el-form :inline="true"`，支持按科室/姓名/职称筛选
-2. **数据表格**：`el-table` + `el-table-column`，支持 `v-loading` 加载状态
-3. **状态标签**：`el-tag` 显示在岗/锁定等状态，`:type` 动态切换颜色
-4. **操作按钮**：编辑、封锁/激活、删除，固定在表格右侧（`fixed="right"`）
-5. **分页**：前端分页（`list.slice(start, start + pageSize)`），显示总数和页码
-6. **编辑弹窗**：`el-dialog` + `el-form`，修改后调用 `PUT` API 并刷新列表
-
-**各页面功能**：
-
-| 页面 | 搜索/过滤 | 表格列 | 编辑弹窗 | 特殊功能 |
-|------|---------- | -------|--------- |--------- |
-
-| Doctors.vue | 科室/姓名/职称 | ID/姓名/性别/年龄/科室/职称/电话/在岗/状态 | 姓名/性别/年龄/电话/科室/职称/专长 | 账号封锁/激活 |
-| Nurses.vue | 科室 | ID/姓名/性别/年龄/科室/级别/电话/在岗/状态 | 姓名/性别/年龄/电话/科室/级别 | 账号封锁/激活 |
-| Pharmacists.vue | - | ID/姓名/性别/年龄/科室/级别/电话/状态 | 姓名/性别/年龄/电话/科室/级别 | 账号封锁/激活 |
-| Patients.vue | - | ID/姓名/性别/年龄/电话/余额/状态 | 姓名/性别/年龄/电话/紧急联系人 | 账号封锁/激活 |
-| Registrations.vue | 科室/患者ID/医生ID/状态 | ID/患者/医生/科室/费用/状态/时间 | - | 状态修改弹窗 |
-| Consultations.vue | 科室 | ID/患者/医生/科室/诊断/状态/时间 | - | 详情弹窗（el-descriptions） |
-| Examinations.vue | - | ID/患者/医生/项目/费用/状态/时间 | - | 逻辑删除 |
-| Hospitalizations.vue | - | ID/患者/医生/护士/病房/床位/状态/时间 | - | 逻辑删除 |
-| MedicationRecords.vue | - | ID/患者/医生/费用/缴费状态/审核状态/时间 | - | 逻辑删除 |
-| Medicines.vue | 科室 | ID/名称/规格/生产商/进价/售价/库存/安全库存/状态 | 全字段编辑 | - |
-| Beds.vue | 科室 | ID/科室/病房类型/床位号/状态/患者/日费用 | - | 逻辑删除 |
-
-**Dashboard.vue**：使用 `el-statistic` 组件展示 8 个统计数字（医生/护士/患者/挂号/看诊/检查/住院/药品总数），`Promise.all` 并行请求。
-
-#### 2.9 医生页面（4 个子页面）
-
-| 页面 | 功能 |
-|------|------|
-
-| Registrations.vue | 查看分配给自己的挂号列表（只读） |
-| Consultations.vue | 查看看诊列表 + 编辑弹窗（主诉/现病史/既往史/家族史/初步诊断/建议住院/状态/备注） |
-| Examinations.vue | 查看检查列表 + 编辑弹窗（报告摘要/状态/备注） |
-| Profile.vue | 个人信息展示（`el-descriptions` 组件） |
-
-#### 2.10 护士页面（4 个子页面）
-
-| 页面 | 功能 |
-|------|------|
-
-| Hospitalizations.vue | 查看所有住院记录 + 编辑弹窗（床位号/状态修改） |
-| Examinations.vue | 查看检查列表 + **体征录入弹窗**（体温/血压/心率/呼吸/血氧/身高/体重/血糖），自动计算 BMI |
-| Beds.vue | 按科室筛选查看床位状态 |
-| Profile.vue | 个人信息展示 |
-
-**体征录入弹窗**是护士端的核心功能，对应后端 `PUT /api/nurse/examinations/:id/vitals` 端点，一次性提交 10 项体征数据。
-
-#### 2.11 药剂师页面（3 个子页面）
-
-| 页面 | 功能 |
-|------|------|
-
-| MedicationRecords.vue | 用药记录审核 + 发药。通过/驳回按钮（`reviewStatus=2/3`），发药按钮（需审核通过+已缴费，自动扣库存） |
-| Medicines.vue | 药品库存管理。入库/出库按钮弹窗输入数量，调用 `PUT /api/pharmacist/medicines/:id/stock` |
-| Profile.vue | 个人信息展示 |
-
-#### 2.12 患者页面（6 个子页面）
-
-| 页面 | 功能 |
-|------|------|
-
-| Registrations.vue | **预约挂号**（选科室→选医生→确认）+ 查看挂号列表 + **支付挂号费** |
-| Consultations.vue | 查看看诊记录 + 详情弹窗 |
-| Examinations.vue | 查看检查记录 + **支付检查费** |
-| MedicationRecords.vue | 查看用药记录 + **支付药费**（需审核通过） |
-| Hospitalizations.vue | 查看住院记录（只读） |
-| Profile.vue | **个人信息编辑** + **账户充值**（`el-input-number` 输入金额，确认后调用 recharge API） |
-
-**预约挂号流程**：
-
-1. 点击"新建挂号" → 弹窗选择科室
-2. 选择科室后自动加载该科室医生列表（调用 `GET /api/admin/doctors?department=xxx`）
-3. 选择医生 → 确认 → 调用 `POST /api/patient/registrations` 创建挂号
-4. 新挂号状态为"已预约"，可点击"支付"按钮从余额扣除挂号费
-
-**支付流程**：
-
-1. 点击"支付" → `ElMessageBox.confirm` 确认
-2. 调用对应支付 API（挂号/检查/药费各有独立端点）
-3. 后端检查余额是否充足 → 扣款 → 修改状态为"已缴费"
-
-#### 2.13 构建与运行
-
-```bash
-# 安装依赖
-cd frontend && npm install
-
-# 开发模式（前端 3000 + 后端 8080，Vite 自动代理）
-cd frontend && npm run dev
-# 浏览器访问 http://localhost:3000
-
-# 生产构建
-cd frontend && npm run build
-# 输出到 frontend/dist/，可由 Nginx 托管
-```
-
-**联调启动步骤**：
-
-1. 先启动 C++ 后端：`cd build && ./Debug/his_server.exe`（监听 8080）
-2. 再启动前端开发服务器：`cd frontend && npm run dev`（监听 3000）
-3. 浏览器打开 `http://localhost:3000` → 进入登录页
-
-#### 2.14 新增文件清单
-
-```text
-frontend/
-├── index.html                    # SPA 入口
-├── package.json                  # 依赖声明
-├── vite.config.js                # Vite 配置（含 API 代理）
-├── src/
-│   ├── main.js                   # 应用入口（注册 Vue/Pinia/Router/ElementPlus）
-│   ├── App.vue                   # 根组件
-│   ├── styles/global.css         # 全局样式
-│   ├── api/
-│   │   ├── index.js              # axios 实例 + JWT 拦截器
-│   │   ├── auth.js               # 登录/注册 API
-│   │   ├── common.js             # 科室列表/费用标准
-│   │   ├── admin.js              # 管理员 API（30+ 端点）
-│   │   ├── doctor.js             # 医生 API（8 端点）
-│   │   ├── nurse.js              # 护士 API（8 端点）
-│   │   ├── pharmacist.js         # 药剂师 API（8 端点）
-│   │   └── patient.js            # 患者 API（12 端点）
-│   ├── store/
-│   │   └── user.js               # Pinia 用户状态（JWT/角色/登录态）
-│   ├── router/
-│   │   └── index.js              # Vue Router（角色分流 + 路由守卫）
-│   └── views/
-│       ├── Login.vue             # 登录页
-│       ├── Register.vue          # 注册页
-│       ├── Layout.vue            # 主布局（侧边栏 + 头部 + 内容区）
-│       ├── admin/
-│       │   ├── Dashboard.vue     # 管理员首页概览
-│       │   ├── Doctors.vue       # 医生管理（CRUD + 搜索过滤）
-│       │   ├── Nurses.vue        # 护士管理
-│       │   ├── Pharmacists.vue   # 药剂师管理
-│       │   ├── Patients.vue      # 患者管理
-│       │   ├── Registrations.vue # 挂号记录（搜索 + 状态修改）
-│       │   ├── Consultations.vue # 看诊记录（搜索 + 详情查看）
-│       │   ├── Examinations.vue  # 检查记录
-│       │   ├── Hospitalizations.vue # 住院记录
-│       │   ├── MedicationRecords.vue # 用药记录
-│       │   ├── Medicines.vue     # 药品管理（CRUD + 编辑弹窗）
-│       │   └── Beds.vue          # 床位管理
-│       ├── doctor/
-│       │   ├── Registrations.vue # 医生-挂号列表
-│       │   ├── Consultations.vue # 医生-看诊管理（编辑弹窗）
-│       │   ├── Examinations.vue  # 医生-检查记录（编辑弹窗）
-│       │   └── Profile.vue       # 医生-个人信息
-│       ├── nurse/
-│       │   ├── Hospitalizations.vue # 护士-住院管理
-│       │   ├── Examinations.vue  # 护士-体征录入（10项体征表单）
-│       │   ├── Beds.vue          # 护士-床位列表
-│       │   └── Profile.vue       # 护士-个人信息
-│       ├── pharmacist/
-│       │   ├── MedicationRecords.vue # 药剂师-用药审核/发药
-│       │   ├── Medicines.vue     # 药剂师-库存管理（入库/出库）
-│       │   └── Profile.vue       # 药剂师-个人信息
-│       └── patient/
-│           ├── Registrations.vue # 患者-预约挂号（选科室→选医生→支付）
-│           ├── Consultations.vue # 患者-看诊记录查看
-│           ├── Examinations.vue  # 患者-检查记录+支付
-│           ├── MedicationRecords.vue # 患者-用药记录+支付药费
-│           ├── Hospitalizations.vue # 患者-住院记录查看
-│           └── Profile.vue       # 患者-个人信息编辑+充值
-```
-
-**共计 39 个文件**（3 个配置 + 1 个 HTML + 9 个 JS 基础层 + 2 个公共页面 + 24 个角色页面）
-
-#### 2.15 关键设计决策
-
-1. **前端分页**：后端返回全量数据（`{list, total}`），前端 `slice()` 分页。原因是当前数据量较小（链表数据通常几十到几百条），前端分页避免增加后端复杂度
-2. **角色菜单隔离**：`v-if="store.role === X"` 控制侧边栏菜单显示，路由守卫只检查是否登录，具体权限由后端 JWT 中的 `role` 字段保证
-3. **API 代理而非 CORS**：开发时使用 Vite `proxy` 转发请求到后端，避免浏览器跨域限制；生产环境通过 Nginx 反向代理实现
-4. **无 Mock 数据**：由于后端 API 已完成，前端直接对接真实 API，无需 Mock.js 中间层
-5. **Element Plus 中文 locale**：`import zhCn from 'element-plus/es/locale/lang/zh-cn'` 确保 `el-pagination`、`el-table` 空数据等提示为中文
-
----
-
-### 3. 关键 Bug 修复：互斥锁死锁问题
-
-**问题现象**：前端所有修改操作（编辑、删除、激活等）均报错 `resource deadlock would occur`，导致系统无法进行任何写操作。
-
-**根因分析**：所有 API 处理函数先通过 `std::lock_guard<std::mutex> lock(dm.getMutex())` 获取互斥锁，然后调用 `dm.saveAll()` 持久化数据。但 `saveAll()` 内部又对**同一个** `std::mutex mtx`（非递归锁）执行 `std::lock_guard<std::mutex> lock(mtx)`。同一个线程对非递归互斥锁重复加锁，C++ 标准库抛出 `resource_deadlock_would_occur` 异常。
-
-**影响范围**：全部 33 个写操作端点（POST/PUT/DELETE）均受影响。GET 端点不调用 `saveAll()`，因此不受影响。
-
-**修复方案**：
-
-1. 新增 `DataManager::saveAllUnsafe()` 方法——保存逻辑与 `saveAll()` 完全相同，但**不加锁**，供已持有锁的 API 处理函数调用
-2. 原 `saveAll()`（带锁）保留给 `server_main.cpp` 中的信号处理和退出保存（这些场景不在锁内）
-3. 将 `ApiServer.cpp` 中全部 33 处 `dm.saveAll()` 替换为 `dm.saveAllUnsafe()`
-
-```cpp
-// 修改前（死锁）
-void DataManager::saveAll() {
-    std::lock_guard<std::mutex> lock(mtx);  // ← 二次加锁，死锁！
-    saveAdminData(adminHead, adminIDCount_);
-    // ... 其他保存
-}
-
-// 修改后
-void DataManager::saveAllUnsafe() {         // 不加锁版本
-    saveAdminData(adminHead, adminIDCount_);
-    // ... 其他保存
-}
-void DataManager::saveAll() {
-    std::lock_guard<std::mutex> lock(mtx);  // 加锁后调用 unsafe 版本
-    saveAllUnsafe();
-}
-```
-
----
-
-### 4. 前端功能全面补全 — 所有角色核心业务闭环
-
-修复死锁后，对系统进行了全面审计，发现前端虽有基本框架，但大量创建/编辑/详情查看功能缺失。本轮补全了以下所有核心功能。
-
-#### 4.1 新增通用 API 端点
+### 12. 管理员创建功能（9 个 POST 端点）
 
 | 端点 | 功能 |
 |------|------|
 
-| `GET /api/examination-items` | 返回 14 种检查项目名称及对应费用（体温测量5元、血压测量8元...），与 `User::calculateExaminationFee()` 保持一致。无需认证。 |
+| `POST /api/admin/{doctors,nurses,pharmacists,patients}` | 添加人员（含 SHA-256 密码加密） |
+| `POST /api/admin/{registrations,consultations,examinations,hospitalizations,medication-records}` | 添加医疗记录 |
 
-#### 4.2 管理员功能补全
+**前端**：12 个 Admin Vue 文件新增 "新建" 按钮 + 创建对话框 + `handleCreate()` 逻辑
 
-**后端新增端点（4 个）：**
+### 13. CLAUDE.md 二次优化
 
-| 端点 | 功能 |
-| ------ | ------ |
-| `POST /api/admin/medicines` | 添加药品（name/specification/manufacturer/价格/库存/日期/科室），自动生成 `medicineID`（`generateID(8, ...)`），默认状态 `NORMAL` |
-| `POST /api/admin/beds` | 添加床位（科室/病房类型/区号/病房号/床位号），自动生成结构化床位ID（格式 `Dpt-Area-Type-Ward-Bed`，如 `N-02-P-005-03`），检查ID重复，默认状态 `AVAILABLE` |
-| `PUT /api/admin/profile` | 管理员编辑个人信息（username/gender/age/telephone/email） |
-| `POST /api/admin/medicines` ID 生成 | 使用 `generateID(8, dm.medicineCount())`，首位数字 8 代表药品 |
+- 新增 `npm run preview` 命令、路由数量更新（~124）、`saveAllUnsafe()` 命名约定说明
 
-**床位ID生成规则（复用控制台 `autoGenerateBedID` 逻辑）：**
+### 14. 代码统计
 
 ```text
-格式：{科室代码}-{区号:02d}-{病房类型代码}-{病房号:03d}-{床位号:02d}
-科室代码：内科→N, 外科→W, 妇产科→F, 急诊科→J, 儿科→E
-病房类型：普通病房→P, 隔离病房→G, VIP病房→V, ICU病房→I
-示例：N-02-P-005-03 = 内科-2区-普通病房-5号房-3号床
-```
-
-**前端页面更新：**
-
-- **Medicines.vue**：新增"添加药品"按钮 + 创建对话框（11 个表单字段，包含 `el-date-picker` 选择生产日期/有效期，`el-input-number` 输入价格/库存）
-- **Beds.vue**：新增"添加床位"按钮 + 创建对话框（科室选择、病房类型选择、区号/病房号/床位号数字输入）
-- **Profile.vue**：新增编辑/查看切换（参照患者 `Profile.vue` 模式，卡片头"编辑"按钮切换 `el-descriptions` 和 `el-form`）
-
-#### 4.3 医生功能补全 — 完整诊疗工作流
-
-**后端新增端点（3 个）：**
-
-| 端点 | 功能 |
-| ------ | ------ |
-| `POST /api/doctor/consultations` | 从挂号创建看诊记录。验证挂号属于该医生且状态为 `PAID(1)`，生成 `consultationID`，填充挂号关联信息，接受主诉/病史/检查项目列表/建议住院等字段，**同时将挂号状态更新为 `FINISHED(3)`** 防止重复看诊 |
-| `POST /api/doctor/examinations` | 从看诊批量创建检查记录。接受 `consultationID` + `items[]`（检查项目名数组），为每个项目创建一条 `Examination` 记录，自动计算费用（`doc->calculateExaminationFee(itemName)`），同步更新看诊的 `examinationlist` |
-| `PUT /api/doctor/profile` | 医生编辑个人信息（username/gender/age/telephone/email） |
-
-**ID 数字分配规则：**
-
-```text
-0=Admin, 1=Doctor, 2=Nurse, 3=Pharmacist, 4=Patient（用户）
-5=Registration, 6=Consultation, 7=Examination（医疗记录）
-8=Medicine, 9=MedicationRecord, 床位使用结构化ID
-```
-
-**前端页面更新：**
-
-- **Registrations.vue**（重写）：
-  - 新增状态筛选下拉菜单（全部/已预约/已支付/已完成）
-  - 新增操作列：已支付状态的挂号显示"开始看诊"按钮
-  - 新增看诊创建对话框（`width=700px`）：
-    - 只读字段：挂号ID、患者ID（自动填充）
-    - 文本域：主诉、现病史、既往史、备注
-    - 输入框：家族史、初步诊断
-    - `el-checkbox-group`：检查项目多选（14 项，4 列网格布局，数据从 `GET /api/examination-items` 加载）
-    - `el-switch`：建议住院
-  - 提交后自动刷新列表，挂号状态变为"已完成"
-
-- **Consultations.vue**（增强）：
-  - 新增"开具检查"按钮列
-  - 新增检查创建对话框：顶部 `el-descriptions` 显示看诊摘要（ID/患者/诊断），中部 `el-checkbox-group` 选择检查项（显示名称和费用），底部确认按钮
-  - 提交调用 `createExaminations({ consultationID, items })`
-
-- **Profile.vue**（增强）：新增编辑/查看切换，可编辑 username/gender/age/telephone/email
-
-#### 4.4 护士功能补全 — 住院全流程 + 床位管理
-
-**后端新增端点（7 个）：**
-
-| 端点 | 功能 |
-| ------ | ------ |
-| `POST /api/nurse/hospitalizations` | 创建住院记录。从看诊创建（需 `isHospitalizationRecommended=true`），护士选择病房类型，设置押金，初始状态 `APPLIED(1)` |
-| `POST /api/nurse/hospitalizations/:id/assign-bed` | 分配床位（核心业务）。原子操作：验证住院记录状态为 `APPLIED/PAID` → 查找空闲床位 → 床位状态改为 `OCCUPIED` → 关联 patientID/nurseID → 住院记录状态改为 `ADMITTED(3)` → 记录入院时间 |
-| `POST /api/nurse/hospitalizations/:id/discharge` | 出院办理。根据病房类型计算住院费用（普通50/隔离100/VIP200/ICU500 元/天），释放床位（设为 `ClEANING` 状态），比较押金与总费用扣费或退还差额，状态改为 `DISCHARGED(4)` |
-| `DELETE /api/nurse/hospitalizations/:id` | 逻辑删除住院记录 |
-| `POST /api/nurse/beds` | 护士添加床位（与管理员相同的结构化ID生成逻辑） |
-| `PUT /api/nurse/beds/:id` | 修改床位状态（已占用/清洁中/可分配/不可用）和备注 |
-| `DELETE /api/nurse/beds/:id` | 删除床位（被占用时拒绝删除） |
-
-**已有端点增强：**
-
-- `PUT /api/nurse/hospitalizations/:id`：新增 `deposit`（押金）和 `wardType`（病房类型）字段支持
-
-**前端页面更新：**
-
-- **Hospitalizations.vue**（重写）：
-  - "新建住院"按钮 + 创建对话框（看诊ID输入、病房类型选择、押金输入）
-  - "分配床位"按钮（仅 APPLIED/PAID 状态显示）：弹出对话框，根据住院记录的病房类型筛选空闲床位列表，选择后调用 `assignBed` API
-  - "办理出院"按钮（仅 ADMITTED 状态显示）：确认后调用 `dischargePatient`，后端自动计算费用并显示结果
-  - "删除"按钮 + 确认对话框
-  - 状态标签颜色：申请中=info，已缴费=warning，已入院=success，已出院=default，已作废=danger
-
-- **Beds.vue**（重写）：
-  - "添加床位"按钮 + 创建对话框（科室/病房类型/区号/病房号/床位号）
-  - "编辑"按钮 + 编辑对话框（状态下拉选择：已占用/清洁中/可分配/不可用 + 备注输入）
-  - "删除"按钮（被占用时禁用）+ 确认对话框
-  - 新增病房类型筛选下拉菜单
-  - 状态标签颜色：已占用=danger，清洁中=warning，可分配=success，不可用=info
-
-#### 4.5 药剂师功能补全 — 用药记录创建 + 药品管理
-
-**后端新增端点（5 个）：**
-
-| 端点 | 功能 |
-| ------ | ------ |
-| `POST /api/pharmacist/medication-records` | 从看诊处方创建用药记录。查找看诊的 `prescriptions` 数组，为每条处方创建 `MedicationLine`（查找药品获取 `salePrice` 计算单价），汇总 `totalCost`，初始 `reviewStatus=PENDING_REVIEW`，`status=UNPAID` |
-| `DELETE /api/pharmacist/medication-records/:id` | 逻辑删除用药记录 |
-| `POST /api/pharmacist/medicines` | 药剂师添加药品（与管理员/护士相同的字段） |
-| `PUT /api/pharmacist/medicines/:id` | 编辑药品详情（11 个字段：name/specification/manufacturer/价格/safetyStock/日期/department/status/note） |
-| `DELETE /api/pharmacist/medicines/:id` | 逻辑删除药品 |
-
-**用药记录创建逻辑详解：**
-
-```text
-输入：consultationID
-1. 查找 Consultation，验证存在且有 prescriptions
-2. 生成 medRecordID = generateID(9, dm.medicationRecordCount())
-3. 遍历 consultation.prescriptions：
-   - 每条 Prescription → MedicationLine
-   - medicineID/name/quantity 从处方复制
-   - unitPrice 从 Medicine 链表查找 salePrice
-   - note = dosage + frequency + duration
-   - totalCost += unitPrice * quantity
-4. 设置 doctorID/patientID/department 从看诊复制
-5. pharmacistID = 当前登录药剂师
-6. 初始状态：reviewStatus=PENDING_REVIEW, status=UNPAID
-7. 链表头插入 → saveAllUnsafe()
-```
-
-**前端页面更新：**
-
-- **MedicationRecords.vue**（重写）：
-  - "新建用药记录"按钮 + 创建对话框（输入看诊ID，提交后自动从处方生成药品行明细）
-  - "查看详情"按钮 + 详情对话框：显示全部字段 + **药品行明细子表格**（药品名称/数量/单价/小计）
-  - "删除"按钮 + 确认对话框
-  - 保留原有审核通过/驳回/发药功能
-
-- **Medicines.vue**（重写）：
-  - "添加药品"按钮 + 创建对话框（11 个字段，创建时显示库存输入）
-  - "编辑"按钮 + 编辑对话框（11 个字段，编辑时隐藏库存，通过入库/出库调整）
-  - "删除"按钮 + 确认对话框
-  - 表格新增列：生产商、进价、科室
-  - 保留原有入库/出库功能
-
-#### 4.6 患者功能补全 — 详情查看 + 住院缴费
-
-**后端新增端点（1 个）：**
-
-| 端点 | 功能 |
-|------|------|
-
-| `PUT /api/patient/hospitalizations/:id/pay` | 住院押金缴纳。验证住院记录状态为 `APPLIED(1)`，从患者余额扣除押金，更新住院记录 `deposit` 字段，状态改为 `PAID(2)` |
-
-**前端页面更新：**
-
-- **Consultations.vue**（增强）：
-  - 详情对话框大幅扩充（宽度 `800px`），新增显示：挂号ID、科室、看诊时间、既往史、家族史、备注、处方审核状态、建议住院
-  - **检查项目列表**：`el-tag` 标签组显示 `examinationList` 数组
-  - **处方子表格**：`el-table` 嵌套显示 `prescriptions` 数组（药品名称/数量/剂量/频率/疗程）
-
-- **Examinations.vue**（增强）：
-  - 新增"查看详情"按钮 + 详情对话框
-  - 显示全部字段：检查ID、看诊ID、医生ID、科室、项目名称、下单时间、报告时间、报告摘要、费用、状态、备注
-  - **生命体征区块**：体温(°C)、收缩压/舒张压(mmHg)、心率(次/分)、呼吸频率(次/分)、血氧(%)、身高(cm)、体重(kg)、BMI、血糖(mmol/L)
-
-- **MedicationRecords.vue**（增强）：
-  - 新增"查看详情"按钮 + 详情对话框
-  - 显示全部字段：记录ID、看诊ID、医生ID、药剂师ID、科室、创建时间、总费用、审核状态、缴费状态、缴费时间、发药时间
-  - **药品行明细子表格**：药品名称、数量、单价、小计、用法备注
-
-- **Hospitalizations.vue**（增强）：
-  - 新增"查看详情"按钮 + 详情对话框（住院ID、看诊ID、医生/护士ID、科室、病房类型、床位号、申请/入院/出院时间、押金、总费用、状态）
-  - 新增"缴纳押金"按钮（仅 APPLIED 状态显示）：输入押金金额，从余额扣除，状态变为已缴费
-  - 状态标签颜色：申请中=warning，已缴费=info，已入院=success，已出院=default，已作废=danger
-
-#### 4.7 各角色个人信息编辑统一补全
-
-所有角色 `Profile.vue` 统一新增编辑/查看切换功能：
-
-- 卡片头右侧"编辑"/"取消编辑"按钮
-- 查看模式：`el-descriptions` 显示全部字段
-- 编辑模式：`el-form` 可修改 username/gender(radio)/age(input-number)/telephone/email
-- 保存调用各角色对应的 `PUT /api/{role}/profile` 端点
-
-新增的 PUT profile 端点：
-
-| 端点 | 角色 |
-| ------ | ------ |
-| `PUT /api/admin/profile` | 管理员 |
-| `PUT /api/doctor/profile` | 医生 |
-| `PUT /api/nurse/profile` | 护士 |
-| `PUT /api/pharmacist/profile` | 药剂师 |
-
-（患者 `PUT /api/patient/profile` 已在前期实现）
-
-#### 4.8 前端 API 文件更新汇总
-
-| 文件 | 新增函数 |
-| ------ | --------- |
-| `api/common.js` | `getExaminationItems()` |
-| `api/doctor.js` | `updateProfile()`、`createConsultation()`、`createExaminations()` |
-| `api/admin.js` | `createMedicine()`、`createBed()`、`updateAdminProfile()` |
-| `api/nurse.js` | `createHospitalization()`、`deleteHospitalization()`、`assignBed()`、`dischargePatient()`、`createBed()`、`updateBed()`、`deleteBed()`、`updateProfile()` |
-| `api/pharmacist.js` | `createMedicationRecord()`、`deleteMedicationRecord()`、`createMedicine()`、`updateMedicine()`、`deleteMedicine()`、`updateProfile()` |
-| `api/patient.js` | `payHospitalization()` |
-
-#### 4.9 后端新增端点完整清单（共 18 个）
-
-```text
-通用：
-  GET  /api/examination-items                     检查项目列表
-
-管理员：
-  POST /api/admin/medicines                       添加药品
-  POST /api/admin/beds                            添加床位
-  PUT  /api/admin/profile                         编辑个人信息
-
-医生：
-  POST /api/doctor/consultations                  从挂号创建看诊
-  POST /api/doctor/examinations                   从看诊批量创建检查
-  PUT  /api/doctor/profile                        编辑个人信息
-
-护士：
-  POST   /api/nurse/hospitalizations              创建住院记录
-  POST   /api/nurse/hospitalizations/:id/assign-bed  分配床位
-  POST   /api/nurse/hospitalizations/:id/discharge    出院办理
-  DELETE /api/nurse/hospitalizations/:id           删除住院记录
-  POST   /api/nurse/beds                          添加床位
-  PUT    /api/nurse/beds/:id                      修改床位
-  DELETE /api/nurse/beds/:id                      删除床位
-  PUT    /api/nurse/profile                       编辑个人信息
-
-药剂师：
-  POST   /api/pharmacist/medication-records       创建用药记录
-  DELETE /api/pharmacist/medication-records/:id    删除用药记录
-  POST   /api/pharmacist/medicines                添加药品
-  PUT    /api/pharmacist/medicines/:id             编辑药品
-  DELETE /api/pharmacist/medicines/:id             删除药品
-  PUT    /api/pharmacist/profile                   编辑个人信息
-
-患者：
-  PUT  /api/patient/hospitalizations/:id/pay      住院押金缴纳
-```
-
-#### 4.10 本轮新增/修改文件清单
-
-```text
-后端（2 个文件）：
-  Source/ApiServer.cpp    新增 18 个 API 端点 + saveAllUnsafe() 方法
-  Head/ApiServer.h        新增 saveAllUnsafe() 声明
-
-前端 API（6 个文件）：
-  src/api/common.js       新增 getExaminationItems()
-  src/api/doctor.js       新增 3 个函数
-  src/api/admin.js        新增 3 个函数
-  src/api/nurse.js        新增 8 个函数
-  src/api/pharmacist.js   新增 6 个函数
-  src/api/patient.js      新增 1 个函数
-
-前端页面（13 个文件）：
-  views/admin/Medicines.vue     新增添加药品对话框
-  views/admin/Beds.vue          新增添加床位对话框
-  views/admin/Profile.vue       新增编辑切换
-  views/doctor/Registrations.vue  重写：开始看诊对话框
-  views/doctor/Consultations.vue  增强：开具检查对话框
-  views/doctor/Profile.vue       新增编辑切换
-  views/nurse/Hospitalizations.vue 重写：创建住院/分配床位/出院
-  views/nurse/Beds.vue           重写：添加/编辑/删除床位
-  views/nurse/Profile.vue        新增编辑切换
-  views/pharmacist/MedicationRecords.vue 重写：创建/详情/删除
-  views/pharmacist/Medicines.vue  重写：添加/编辑/删除药品
-  views/pharmacist/Profile.vue    新增编辑切换
-  views/patient/Consultations.vue  增强：完整详情对话框
-  views/patient/Examinations.vue   增强：详情对话框+生命体征
-  views/patient/MedicationRecords.vue 增强：详情对话框+药品行
-  views/patient/Hospitalizations.vue 增强：详情对话框+缴纳押金
-```
-
----
-
-## 2026.4.29
-
-### 1. 代码质量审查与优化（/simplify 代码审查）
-
-使用 `/simplify` 技能对项目进行了全面的代码质量审查，发现并修复了 4 个高优先级问题：
-
-**死代码清理（Source/ApiServer.cpp）：**
-
-- 删除了 `checkRoleAuth()` 和 `checkAuth()` 两个从未被调用的辅助函数（25 行），所有权限验证逻辑都在路由 handler 内联实现
-
-**修改密码 handler 重构（Source/ApiServer.cpp）：**
-
-- 原实现：两个独立的 switch 块（验证旧密码 + 更新密码），5 个角色分支各遍历一次链表，共 10 次 O(n) 遍历，SHA256 哈希计算 2 次
-- 重构后：单个 switch 块，缓存 `User*` 指针，SHA256 只计算 1 次，复用 `User::getStoredHash()` / `User::setStoredHash()` 多态接口
-- 新增"新密码不能与旧密码相同"校验
-
-**床位 ID 生成去重（Source/ApiServer.cpp）：**
-
-- 原实现：17 行手动 if/else 映射科室代码（内科→"N"、外科→"W"…）和病房类型代码（普通→"P"、隔离→"G"…）
-- 重构后：调用已有的 `autoGenerateBedID()` 工具函数，17 行 → 1 行
-
-**药品 ID 零填充溢出防护（Source/ApiServer.cpp）：**
-
-- 原实现：`"med" + std::to_string(count).insert(0, 6 - std::to_string(count).length(), '0')`，同一表达式中多次调用 `to_string(count)`，当 count > 999999 时 `insert` 第一个参数为负数导致未定义行为
-- 修复后：缓存 `to_string` 结果，显式判断长度后再填充
-
-**中优先级问题记录（未修复）：**
-
-- 5 个单记录 GET 端点（`/api/admin/doctors/:id` 等）逻辑几乎相同，可提取模板 helper，但当前代码规模下抽象收益不高
-- 日期验证错误消息相同（"日期格式无效"），交互式控制台场景影响较小
-- 前端 router 中角色到路径的硬编码映射（仅 5 个条目，提取为配置对象无功能性收益）
-
-### 2. CLAUDE.md 文档优化（/claude-md-improver 审计）
-
-使用 `/claude-md-improver` 技能对 `CLAUDE.md` 进行了质量审计（评分 85/100 → 92/100），主要更新：
-
-- **VS Code 任务补充**：添加了 CMake 配置、his_server 编译等 VS Code 快捷任务说明
-- **`launch.json` 陷阱提示**：补充 `postDebugTask` 会在每次调试后清空 `build/` 目录的注意事项
-- **数据文件表格格式化**：修复空行导致的表格渲染问题
-- **子目录必须存在**：补充 `Data/` 子目录必须提前创建的重要提示
-- **零外部构建依赖**：新增"Zero External Build Dependencies"章节，说明第三方库（httplib.h、json.hpp）的引入方式
-- **文件布局更新**：从 18 个头文件/12 个源文件更新为 23 个头文件/15 个源文件，新增 `server_main.cpp` 和 `frontend/` 说明
-- **REST API 架构文档**：新增完整的后端架构章节（DataManager 单例、JWT 认证、统一响应格式、API 端点分组）
-- **前端架构文档**：新增前端架构章节（Vue 3 技术栈、目录结构、Pinia 状态管理、路由设计、33 个视图文件分布）
-- **角色编号差异说明**：记录 C++ 后端 0-based 角色编号与前端 1-based 角色映射的对应关系
-- **已知陷阱（Known Gotchas）**：新增枚举命名陷阱、链表头插入规范、条件嵌套 bug、指针复用 bug、ID 前缀差异、Admin 双向链表等高频踩坑点
-- **`"#"` 哨兵值规范**：新增专门章节说明所有空字符串字段使用 `"#"` 作为哨兵值的约定
-
-### 3. 前端路由权限控制增强
-
-**路由守卫角色校验（frontend/src/router/index.js）：**
-
-- 为全部 28 个子路由添加 `meta: { roles: [...] }` 角色限制（1=管理员, 2=医生, 3=护士, 4=药剂师, 5=患者）
-- 路由守卫新增角色校验逻辑：角色不匹配时自动重定向到对应角色的默认页面
-- 角色重定向映射：管理员→`/dashboard`、医生→`/doctor/registrations`、护士→`/nurse/hospitalizations`、药剂师→`/pharmacist/medication-records`、患者→`/patient/registrations`
-
-**Axios 响应拦截器增强（frontend/src/api/index.js）：**
-
-- 引入 `ElMessage` 统一错误提示
-- 业务错误处理：后端 `code !== 200` 时弹出错误消息并拒绝 Promise
-- HTTP 状态码细分：401→登录过期跳转、404→资源不存在、403→权限不足、超时→网络错误提示
-
-### 4. 后端 API 功能补全
-
-**修改密码端点（PUT /api/auth/change-password）：**
-
-- 支持全部 5 种角色修改密码，JWT 认证后查找对应角色用户
-- 验证旧密码 → 检查新旧密码不同 → 计算新哈希 → 更新存储 → 持久化
-- 前端 `auth.js` 新增 `changePassword()` 函数，管理员 Profile 页面已接入修改密码表单
-
-### 5. 控制台代码精简（main.cpp）
-
-- 大幅简化 `main.cpp` 中管理员账户管理模块的嵌套 while 循环（-425 行）
-- 去除冗余的科室选择循环和重复的用户管理菜单逻辑
-- 保留核心运行框架（登录 → 角色选择 → 角色菜单 → 退出保存）
-
-### 6. 其他修复
-
-- **Source/UI.cpp**：输入校验相关修正（+37 行）
-- **Source/LoadData.cpp**：数据加载逻辑微调（+4 行）
-- **Source/Admin.cpp**：管理员功能修复（+26 行）
-- **Source/Nurse.cpp**：护士功能修复（+4 行）
-- **Source/Patient.cpp**：患者功能修复（+2 行）
-- **Source/Pharmacist.cpp**：药剂师功能修复（+45 行）
-- **Head/Admin.h**：新增函数声明（+1 行）
-- **数据文件重排**：bed_info.txt 和 medicines.txt 数据顺序调整
-
-### 7. README.md 文档补充 — 两种运行模式详细说明
-
-对 `README.md` 进行了大幅扩充，新增了完整的运行指南章节，覆盖项目的两种运行方式：
-
-**模式一：纯终端模式（Console）：**
-
-- 详细说明了控制台程序的编译方式（CMake 命令行 + VS Code 任务面板两种方法）
-- 运行步骤及重要提示：必须从 `build/` 目录启动程序（数据文件使用 `../Data/` 相对路径）
-- 调试说明：F5 启动调试器、断点设置、调试工具栏快捷键（F10/F11/Shift+F5）
-- `launch.json` 的 `postDebugTask` 会在调试结束后自动清理 `build/` 目录
-- 系统交互流程图：主菜单 → 登录/注册 → 角色选择 → 角色专属功能菜单
-- 首次运行强制要求注册管理员账号的说明
-
-**模式二：前后端分离模式（REST API + Vue 前端）：**
-
-- 后端编译运行说明：`--target his_server` 编译、`http://localhost:8080` 监听、Ctrl+C 优雅退出并自动保存数据
-- 后端调试说明：在 `ApiServer.cpp`/`server_main.cpp` 中设置断点，需临时修改 `launch.json` 的 `program` 字段指向 `his_server.exe`
-- API 测试示例：curl 命令测试科室列表接口和登录接口
-- 前端安装依赖、运行开发服务器（`npm run dev`，端口 3000）、生产构建（`npm run build`）
-- 前端调试说明：浏览器开发者工具（Console/Network/Vue DevTools）、VS Code 断点调试
-- 完整开发流程：先启动后端 → 再启动前端 → 浏览器访问 → 按顺序退出
-- 前后端角色编号映射表：前端 1-based（1=管理员...5=患者）对应后端 0-based（0=管理员...4=患者）
-
-**文档结构：**
-
-```markdown
-README.md
-├── 公共约定（头文件命名、函数命名、ID 规则、链表结构、User 继承、SHA-256 加密、时间格式、数据持久化框架）
-├── 运行方式（基础说明）
-├── 调试方式（基础说明）
-├── 两种运行模式
-│   ├── 模式一：纯终端模式（Console）
-│   │   ├── 编译
-│   │   ├── 运行
-│   │   ├── 调试
-│   │   └── 操作流程
-│   └── 模式二：前后端分离模式（REST API + Vue 前端）
-│       ├── 后端（C++ REST API）
-│       ├── 前端（Vue 3 + Element Plus）
-│       ├── 完整开发流程
-│       └── 前后端角色映射
-```
-
-这次更新使 README.md 成为一份完整的用户指南，无论是新用户首次接触项目还是有经验的开发者需要快速启动，都能找到对应的操作说明。
-
-### 8. 前端 UI 全面重构 — "Pure & Clinical" 简约医疗风
-
-对项目前端（33 个 Vue 文件）进行了全面的视觉 redesign，从默认的 Element Plus 紫色调/深色侧边栏风格转换为蓝白色主调的简约医疗风格。
-
-**主题系统构建（frontend/src/styles/global.css）：**
-
-- 从原来的 2 行 CSS Reset 扩展为 167 行的完整 CSS 变量主题系统
-- 定义核心设计 Token：`--his-primary`（#1e88e5）、`--his-bg`（#f6f8fc）、`--his-surface`（#ffffff）、`--his-text` 系列颜色变量
-- 定义阴影层次系统：`--his-shadow-sm/md/lg`，基于蓝色透明度的投影
-- Element Plus 组件全覆盖重写：按钮、标签、表格、输入框、分页、对话框、卡片
-- 新增动画关键帧：`fadeIn`、`slideIn`、`pulse`
-- 新增工具类：`fade-in`（页面入场动画）、`page-header`（带蓝色下划线的标题样式）
-
-**登录/注册页面重设计（Login.vue, Register.vue）：**
-
-- 移除原有的紫色渐变背景（`#667eea → #764ba2`）
-- 替换为蓝白渐变 SVG 背景，包含半透明圆形装饰、医疗十字符号、流动曲线
-- 卡片改为磨砂玻璃效果（`backdrop-filter: blur(12px)` + 半透明背景 + 柔和阴影）
-- 新增蓝色医疗十字 Logo 图标（内联 SVG）
-- 输入框边框改为蓝色聚焦态（focus 时 1px 蓝色内阴影）
-- 按钮改为圆角 8px、高度 42px、带字母间距
-
-**布局重设计（Layout.vue）：**
-
-- 深色侧边栏（`#304156`）→ 白色侧边栏 + 蓝色激活态背景（`--his-sidebar-active-bg: #e8f1fb`）
-- 侧边栏 Logo 从纯文字 "HIS 系统" 改为蓝色医疗十字 SVG + "HIS" 文字
-- 菜单项圆角 8px、hover 时浅蓝背景、激活时蓝色文字
-- Header 增加 `SwitchButton` 图标到退出按钮
-- `router-view` 包裹 `<transition name="fade-view">` 实现页面切换平滑动画
-
-**Dashboard 重设计（admin/Dashboard.vue）：**
-
-- 从 8 个纯 `el-statistic` 改为自定义悬浮卡片：图标 + 数值 + 标签
-- 每个统计卡片有独立主题色（医生蓝、护士绿、患者橙、诊断紫等）
-- 图标背景使用 `color-mix()` 生成对应半透明色
-- 卡片 hover 时上浮 2px + 阴影加深
-
-**全部 26 个 CRUD 页面统一样式：**
-
-- 所有页面根 `<div>` 添加 `fade-in` 动画类
-- 药剂师 Medicines.vue 中的内联 `color: 'red'` 替换为 CSS 变量 `var(--el-color-danger, #c62828)`
-
-**修改文件清单（共 30 个文件）：**
-
-| 类别 | 文件 | 变更 |
-| ------ | ------ | ------ |
-| 主题 | global.css | 2 行 → 167 行 |
-| 登录 | Login.vue | 101 行 → 225 行 |
-| 注册 | Register.vue | 140 行 → 264 行 |
-| 布局 | Layout.vue | 162 行 → 315 行 |
-| 仪表盘 | admin/Dashboard.vue | 59 行 → 145 行 |
-| 管理页面 | admin/*（12 个文件） | 各 +1 行 fade-in |
-| 医生页面 | doctor/*（4 个文件） | 各 +1 行 fade-in |
-| 护士页面 | nurse/*（4 个文件） | 各 +1 行 fade-in |
-| 药剂师页面 | pharmacist/*（3 个文件） | 各 +1 行 fade-in，Medicines.vue 额外修内联颜色 |
-| 患者页面 | patient/*（6 个文件） | 各 +1 行 fade-in |
-
-### 9. 代码统计
-
-```text
-22 个文件变更，+1050 行新增 / -1031 行删除
-```
-
-```text
-前端 UI 重设计：30 个文件变更，+1032 行新增 / -400 行删除
+后端：+200 行（9 个 POST 端点）
+前端 API：+9 个 create 函数（admin.js）
+前端页面：12 个 Admin 文件各 +40~80 行
+修复：3 个文件 +20 行（router/Login/Register）
 ```

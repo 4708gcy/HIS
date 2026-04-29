@@ -18,7 +18,7 @@ const routes = [
     redirect: '/dashboard',
     meta: { requiresAuth: true },
     children: [
-      { path: 'dashboard', name: 'Dashboard', component: () => import('../views/admin/Dashboard.vue') },
+      { path: 'dashboard', name: 'Dashboard', component: () => import('../views/admin/Dashboard.vue'), meta: { roles: [1] } },
       // 管理员路由
       ...[
         { path: 'admin/doctors', name: 'AdminDoctors', component: () => import('../views/admin/Doctors.vue'), meta: { roles: [1] } },
