@@ -30,6 +30,7 @@ mkdir -p frontend/src/views/{admin,doctor,nurse,pharmacist,patient}
 目录职责：
 
 | 目录 | 用途 |
+
 |------|------|
 | `src/api/` | 封装所有 HTTP 请求（axios 实例 + 各角色 API 模块） |
 | `src/store/` | Pinia 状态管理（用户登录态、JWT token、角色信息） |
@@ -79,6 +80,7 @@ npm install
 **各包作用：**
 
 | 包 | 用途 |
+
 |----|------|
 | `vue` | 前端框架（Composition API + `<script setup>`） |
 | `vite` | 构建工具，提供开发服务器（热更新）和生产构建 |
@@ -89,6 +91,7 @@ npm install
 | `@element-plus/icons-vue` | Element Plus 图标库 |
 
 **为什么选择 Element Plus？**
+
 - 内置 `zh-cn` locale，日期/分页等组件原生中文支持
 - `el-table`/`el-form`/`el-dialog` API 简洁，适合表格密集型管理系统
 - 图标库开箱即用，无需额外引入
@@ -177,6 +180,7 @@ app.mount('#app')
 ```
 
 **关键点：**
+
 - 全局注册所有图标：后续页面中可以直接使用 `<User />`、`<Delete />` 等标签，无需每个页面单独 import
 - `locale: zhCn`：确保 `el-pagination`、`el-date-picker` 等组件显示中文
 - `size: 'default'`：设置 Element Plus 组件默认尺寸
@@ -344,6 +348,7 @@ export default request
 ```
 
 **拦截器的价值：**
+
 - **请求拦截器**：每次请求自动带 JWT token，业务代码不需要手动处理认证
 - **响应拦截器**：
   - 自动解包 `response.data`，业务代码直接拿到 `{code, message, data}`
@@ -555,6 +560,7 @@ export const useUserStore = defineStore('user', () => {
 ```
 
 **关键点：**
+
 - **5 个状态字段**：`token`、`userID`、`username`、`role`（数字）、`roleStr`（字符串）
 - `role` 是前端 1-based 数字（1=管理员...5=患者），与后端 0-based 不同，由后端 API 转换
 - `localStorage` 持久化：刷新页面不丢失登录态，JWT 24h 过期保护安全性
@@ -669,6 +675,7 @@ export default router
 ```
 
 **关键点：**
+
 - `...[]` 展开语法：将同角色路由分组，便于阅读和维护
 - `meta: { roles: [...] }`：路由级别的角色权限控制
 - `redirect: '/'` → `/dashboard`：根路径默认跳转到 Dashboard
@@ -685,7 +692,7 @@ export default router
 
 采用 Element Plus 的 `el-container` 布局，侧边栏可折叠：
 
-```
+```text
 ┌──────────────────────────────────────────────────┐
 │  Header（折叠按钮 + 面包屑 | 角色标签 用户名 退出） │
 ├─────────┬────────────────────────────────────────┤
@@ -697,6 +704,7 @@ export default router
 ```
 
 **核心功能：**
+
 - **侧边栏折叠**：`isCollapse` 状态控制宽度（240px ↔ 64px），菜单项只显示图标
 - **角色菜单隔离**：`v-if="store.role === X"` 控制不同角色看到不同菜单
 - **面包屑导航**：Header 左侧显示角色名 + 当前页面名
@@ -800,6 +808,7 @@ function handleLogout() {
 ```
 
 **CSS 关键点：**
+
 - 白色侧边栏 + 蓝色激活态背景（`--his-sidebar-active-bg: #e8f1fb`）
 - 菜单项圆角 8px、hover 浅蓝背景、激活时蓝色文字
 - Header 高度 56px，带底部阴影
@@ -915,7 +924,8 @@ async function handleLogin() {
 
 **登录流程梳理（前后端打通的完整链路）：**
 
-```
+```text
+
 1. 用户输入 userID(6位) + 密码 + 选择角色(1-5)
 2. 点击登录 → formRef.validate() 校验表单
 3. 调用 login(form) 函数
@@ -942,7 +952,7 @@ async function handleLogin() {
 
 ## 十五、前后端数据流总结
 
-```
+```text
 用户操作（点击按钮/提交表单）
         ↓
 Vue 组件调用 API 函数（如 login(form)）
@@ -981,6 +991,7 @@ cd frontend && npm run dev
 ```
 
 **调试技巧：**
+
 - **Network 面板**：F12 → Network，查看每个请求的 URL、请求头（Bearer token）、响应体（JSON）
 - **Console 面板**：查看 axios 拦截器的错误消息输出
 - **Vue DevTools**：浏览器插件，查看 Pinia store 状态（token/role/userName）、组件树、路由信息
