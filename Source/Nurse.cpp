@@ -1284,6 +1284,8 @@ void Nurse::createHospitalization(Hospitalization *&hosHead, Consultation *&conH
     newHos->applyTime = MyTime::getInstance().getTime();
     newHos->hospitalizationID = "hos" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
     idCounter++;
+    newHos->availableAdmitTime = "#";
+    newHos->admitTime = "#";
 
     std::string wardChoice = HospitalizationWardTypeMenu();
     if (wardChoice == "0") { delete newHos; return; }
@@ -1753,8 +1755,6 @@ bool Nurse::createBed(bedInfo *&bedHead, int &idCounter)
     }
 
     newBed->note = inputStringCheck("请输入备注信息: ");
-
-   idCounter++;
 
     newBed->next = bedHead;
     if (bedHead)

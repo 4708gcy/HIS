@@ -336,17 +336,19 @@ void Admin::modifyRegistrationDoctor(Registration *&target, Doctor *&doc, const 
 {
     std::cout << "可用医生列表:" << std::endl;
     Doctor *currentDoc = doc;
+    bool hasOnDutyDoctor = false;
     while (currentDoc != nullptr)
     {
         if (!currentDoc->isDeleted && currentDoc->department == department && currentDoc->isOnDuty)
         {
             std::cout << "医生ID: " << currentDoc->getUserID() << ", 姓名: " << currentDoc->getUsername() << ", 擅长领域：" << currentDoc->specialty << ", 职称：" << doctorTitleToString(currentDoc->title) << ", 联系方式：" << currentDoc->getTelephone() << " / " << currentDoc->getEmail()
                       << std::endl;
+            hasOnDutyDoctor = true;
         }
         currentDoc = currentDoc->next;
     }
 
-    if (doc == nullptr)
+    if (!hasOnDutyDoctor)
     {
         std::cout << "该科室暂无医生可选！" << std::endl;
         return;
@@ -1356,17 +1358,17 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
                     std::cout << "未找到指定的看诊记录！" << std::endl;
                     pause("管理员 > 医疗记录管理 > 看诊记录管理");
                 }
-            }
-            else if (choice == 4)
-            {
-                addConsultation(con, department, reg, conCounter);
-                pause("管理员 > 医疗记录管理 > 看诊记录管理");
-            }
-            else
-            {
-                printError("无效的选择! 请重新选择。");
-                pause("管理员 > 医疗记录管理 > 看诊记录管理");
-            }
+            } // end if (ishave) for choice 3
+        } // end else if (choice == 3)
+        else if (choice == 4)
+        {
+            addConsultation(con, department, reg, conCounter);
+            pause("管理员 > 医疗记录管理 > 看诊记录管理");
+        }
+        else
+        {
+            printError("无效的选择! 请重新选择。");
+            pause("管理员 > 医疗记录管理 > 看诊记录管理");
         }
     }
 }

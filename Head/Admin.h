@@ -25,6 +25,7 @@ private:
 
 public:
     Admin *next = nullptr; // 管理员链表的下一个节点指针
+    Admin *prev = nullptr; // 管理员链表的上一个节点指针
 
     Admin();
 

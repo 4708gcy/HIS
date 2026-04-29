@@ -4,6 +4,10 @@ export function getDepartments() {
   return request.get('/departments')
 }
 
+export function getDoctors(params) {
+  return request.get('/doctors', { params })
+}
+
 export function getFeeStandards() {
   return request.get('/fee-standards')
 }

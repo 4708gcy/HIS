@@ -1542,3 +1542,98 @@ void DataManager::saveAll() {
   views/patient/MedicationRecords.vue 增强：详情对话框+药品行
   views/patient/Hospitalizations.vue 增强：详情对话框+缴纳押金
 ```
+
+---
+
+## 2026.4.29
+
+### 1. 代码质量审查与优化（/simplify 代码审查）
+
+使用 `/simplify` 技能对项目进行了全面的代码质量审查，发现并修复了 4 个高优先级问题：
+
+**死代码清理（Source/ApiServer.cpp）：**
+
+- 删除了 `checkRoleAuth()` 和 `checkAuth()` 两个从未被调用的辅助函数（25 行），所有权限验证逻辑都在路由 handler 内联实现
+
+**修改密码 handler 重构（Source/ApiServer.cpp）：**
+
+- 原实现：两个独立的 switch 块（验证旧密码 + 更新密码），5 个角色分支各遍历一次链表，共 10 次 O(n) 遍历，SHA256 哈希计算 2 次
+- 重构后：单个 switch 块，缓存 `User*` 指针，SHA256 只计算 1 次，复用 `User::getStoredHash()` / `User::setStoredHash()` 多态接口
+- 新增"新密码不能与旧密码相同"校验
+
+**床位 ID 生成去重（Source/ApiServer.cpp）：**
+
+- 原实现：17 行手动 if/else 映射科室代码（内科→"N"、外科→"W"…）和病房类型代码（普通→"P"、隔离→"G"…）
+- 重构后：调用已有的 `autoGenerateBedID()` 工具函数，17 行 → 1 行
+
+**药品 ID 零填充溢出防护（Source/ApiServer.cpp）：**
+
+- 原实现：`"med" + std::to_string(count).insert(0, 6 - std::to_string(count).length(), '0')`，同一表达式中多次调用 `to_string(count)`，当 count > 999999 时 `insert` 第一个参数为负数导致未定义行为
+- 修复后：缓存 `to_string` 结果，显式判断长度后再填充
+
+**中优先级问题记录（未修复）：**
+
+- 5 个单记录 GET 端点（`/api/admin/doctors/:id` 等）逻辑几乎相同，可提取模板 helper，但当前代码规模下抽象收益不高
+- 日期验证错误消息相同（"日期格式无效"），交互式控制台场景影响较小
+- 前端 router 中角色到路径的硬编码映射（仅 5 个条目，提取为配置对象无功能性收益）
+
+### 2. CLAUDE.md 文档优化（/claude-md-improver 审计）
+
+使用 `/claude-md-improver` 技能对 `CLAUDE.md` 进行了质量审计（评分 85/100 → 92/100），主要更新：
+
+- **VS Code 任务补充**：添加了 CMake 配置、his_server 编译等 VS Code 快捷任务说明
+- **`launch.json` 陷阱提示**：补充 `postDebugTask` 会在每次调试后清空 `build/` 目录的注意事项
+- **数据文件表格格式化**：修复空行导致的表格渲染问题
+- **子目录必须存在**：补充 `Data/` 子目录必须提前创建的重要提示
+- **零外部构建依赖**：新增"Zero External Build Dependencies"章节，说明第三方库（httplib.h、json.hpp）的引入方式
+- **文件布局更新**：从 18 个头文件/12 个源文件更新为 23 个头文件/15 个源文件，新增 `server_main.cpp` 和 `frontend/` 说明
+- **REST API 架构文档**：新增完整的后端架构章节（DataManager 单例、JWT 认证、统一响应格式、API 端点分组）
+- **前端架构文档**：新增前端架构章节（Vue 3 技术栈、目录结构、Pinia 状态管理、路由设计、33 个视图文件分布）
+- **角色编号差异说明**：记录 C++ 后端 0-based 角色编号与前端 1-based 角色映射的对应关系
+- **已知陷阱（Known Gotchas）**：新增枚举命名陷阱、链表头插入规范、条件嵌套 bug、指针复用 bug、ID 前缀差异、Admin 双向链表等高频踩坑点
+- **`"#"` 哨兵值规范**：新增专门章节说明所有空字符串字段使用 `"#"` 作为哨兵值的约定
+
+### 3. 前端路由权限控制增强
+
+**路由守卫角色校验（frontend/src/router/index.js）：**
+
+- 为全部 28 个子路由添加 `meta: { roles: [...] }` 角色限制（1=管理员, 2=医生, 3=护士, 4=药剂师, 5=患者）
+- 路由守卫新增角色校验逻辑：角色不匹配时自动重定向到对应角色的默认页面
+- 角色重定向映射：管理员→`/dashboard`、医生→`/doctor/registrations`、护士→`/nurse/hospitalizations`、药剂师→`/pharmacist/medication-records`、患者→`/patient/registrations`
+
+**Axios 响应拦截器增强（frontend/src/api/index.js）：**
+
+- 引入 `ElMessage` 统一错误提示
+- 业务错误处理：后端 `code !== 200` 时弹出错误消息并拒绝 Promise
+- HTTP 状态码细分：401→登录过期跳转、404→资源不存在、403→权限不足、超时→网络错误提示
+
+### 4. 后端 API 功能补全
+
+**修改密码端点（PUT /api/auth/change-password）：**
+
+- 支持全部 5 种角色修改密码，JWT 认证后查找对应角色用户
+- 验证旧密码 → 检查新旧密码不同 → 计算新哈希 → 更新存储 → 持久化
+- 前端 `auth.js` 新增 `changePassword()` 函数，管理员 Profile 页面已接入修改密码表单
+
+### 5. 控制台代码精简（main.cpp）
+
+- 大幅简化 `main.cpp` 中管理员账户管理模块的嵌套 while 循环（-425 行）
+- 去除冗余的科室选择循环和重复的用户管理菜单逻辑
+- 保留核心运行框架（登录 → 角色选择 → 角色菜单 → 退出保存）
+
+### 6. 其他修复
+
+- **Source/UI.cpp**：输入校验相关修正（+37 行）
+- **Source/LoadData.cpp**：数据加载逻辑微调（+4 行）
+- **Source/Admin.cpp**：管理员功能修复（+26 行）
+- **Source/Nurse.cpp**：护士功能修复（+4 行）
+- **Source/Patient.cpp**：患者功能修复（+2 行）
+- **Source/Pharmacist.cpp**：药剂师功能修复（+45 行）
+- **Head/Admin.h**：新增函数声明（+1 行）
+- **数据文件重排**：bed_info.txt 和 medicines.txt 数据顺序调整
+
+### 7. 代码统计
+
+```text
+22 个文件变更，+1050 行新增 / -1031 行删除
+```

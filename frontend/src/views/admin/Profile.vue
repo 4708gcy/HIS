@@ -131,14 +131,23 @@ async function handleSave() {
 }
 
 async function handleChangePassword() {
-  await pwdFormRef.value.validate()
+  try {
+    await pwdFormRef.value.validate()
+  } catch { return }
   await ElMessageBox.confirm('确定修改密码？修改后需要重新登录', '确认')
   changingPwd.value = true
   try {
-    // 密码修改需要后端支持，当前提示用户
-    ElMessage.warning('密码修改功能需要后端增加对应 API 端点')
+    const { changePassword } = await import('../../api/auth')
+    const res = await changePassword(pwdForm.oldPassword, pwdForm.newPassword)
+    if (res.code === 200) {
+      ElMessage.success('密码修改成功，请重新登录')
+      store.logout()
+      router.push('/login')
+    } else {
+      ElMessage.error(res.message)
+    }
   } catch (e) {
-    if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error('操作失败')
+    if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '操作失败')
   } finally {
     changingPwd.value = false
   }

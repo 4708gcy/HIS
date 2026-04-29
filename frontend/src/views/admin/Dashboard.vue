@@ -46,14 +46,14 @@ onMounted(async () => {
       getDoctors(), getNurses(), getPatients(), getRegistrations(),
       getConsultations(), getExaminations(), getHospitalizations(), getMedicines()
     ])
-    stats.doctors = d.data.total
-    stats.nurses = n.data.total
-    stats.patients = p.data.total
-    stats.registrations = r.data.total
-    stats.consultations = c.data.total
-    stats.examinations = e.data.total
-    stats.hospitalizations = h.data.total
-    stats.medicines = m.data.total
-  } catch (e) { /* ignore */ }
+    stats.doctors = d.data?.total ?? d.data?.list?.length ?? 0
+    stats.nurses = n.data?.total ?? n.data?.list?.length ?? 0
+    stats.patients = p.data?.total ?? p.data?.list?.length ?? 0
+    stats.registrations = r.data?.total ?? r.data?.list?.length ?? 0
+    stats.consultations = c.data?.total ?? c.data?.list?.length ?? 0
+    stats.examinations = e.data?.total ?? e.data?.list?.length ?? 0
+    stats.hospitalizations = h.data?.total ?? h.data?.list?.length ?? 0
+    stats.medicines = m.data?.total ?? m.data?.list?.length ?? 0
+  } catch (e) { console.error('Dashboard 数据加载失败:', e) }
 })
 </script>

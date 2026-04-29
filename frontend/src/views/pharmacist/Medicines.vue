@@ -133,8 +133,8 @@ async function loadData() {
 async function loadDepartments() {
   try {
     const res = await getDepartments()
-    if (res.code === 200) departments.value = res.data
-  } catch (e) { /* ignore */ }
+    if (res.code === 200) departments.value = res.data?.list ?? res.data ?? []
+  } catch (e) { console.error('科室列表加载失败:', e) }
 }
 
 function showCreateDialog() {

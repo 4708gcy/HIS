@@ -52,8 +52,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getMyRegistrations, createRegistration, payRegistration } from '../../api/patient'
-import { getDepartments } from '../../api/common'
-import { getDoctors } from '../../api/admin'
+import { getDepartments, getDoctors } from '../../api/common'
 import { useUserStore } from '../../store/user'
 
 const store = useUserStore()

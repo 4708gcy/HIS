@@ -82,428 +82,57 @@ int main()
                             int adminChoice = adminMenu();
                             if (adminChoice == 1) // 账户管理
                             {
-                                while (true) // 科室选择循环，直到用户选择返回上级菜单
+                                while (true)
                                 {
                                     std::string department = adminDepartmentMenu();
-                                    if (department == "内科")
+                                    if (department == "0") break;
+                                    while (true)
                                     {
-                                        while (true)
-                                        {
-                                            int userChoice = adminUserManagementMenu();
-                                            if (userChoice == 1)
-                                            {
-                                                client->manageDoctors(docHead, department, doctorIDCount);
-                                            }
-                                            else if (userChoice == 2)
-                                            {
-                                                client->manageNurses(nurseHead, department, nurseIDCount);
-                                            }
-                                            else if (userChoice == 3)
-                                            {
-                                                client->managePharmacists(phaHead, department, pharmacistIDCount);
-                                            }
-                                            else if (userChoice == 4)
-                                            {
-                                                client->managePatients(patientHead, department, patientIDCount);
-                                            }
-                                            else if (userChoice == 0)
-                                            {
-                                                break; // 返回上级菜单
-                                            }
-                                            else
-                                            {
-                                                std::cout << "无效的选择! 请重新选择。" << std::endl;
-                                            }
-                                        }
-                                    }
-                                    else if (department == "外科")
-                                    {
-                                        while (true)
-                                        {
-                                            int userChoice = adminUserManagementMenu();
-                                            if (userChoice == 1)
-                                            {
-                                                client->manageDoctors(docHead, department, doctorIDCount);
-                                            }
-                                            else if (userChoice == 2)
-                                            {
-                                                client->manageNurses(nurseHead, department, nurseIDCount);
-                                            }
-                                            else if (userChoice == 3)
-                                            {
-                                                client->managePharmacists(phaHead, department, pharmacistIDCount);
-                                            }
-                                            else if (userChoice == 4)
-                                            {
-                                                client->managePatients(patientHead, department, patientIDCount);
-                                            }
-                                            else if (userChoice == 0)
-                                            {
-                                                break; // 返回上级菜单
-                                            }
-                                            else
-                                            {
-                                                std::cout << "无效的选择! 请重新选择。" << std::endl;
-                                            }
-                                        }
-                                    }
-                                    else if (department == "妇产科")
-                                    {
-                                        while (true)
-                                        {
-                                            int userChoice = adminUserManagementMenu();
-                                            if (userChoice == 1)
-                                            {
-                                                client->manageDoctors(docHead, department, doctorIDCount);
-                                            }
-                                            else if (userChoice == 2)
-                                            {
-                                                client->manageNurses(nurseHead, department, nurseIDCount);
-                                            }
-                                            else if (userChoice == 3)
-                                            {
-                                                client->managePharmacists(phaHead, department, pharmacistIDCount);
-                                            }
-                                            else if (userChoice == 4)
-                                            {
-                                                client->managePatients(patientHead, department, patientIDCount);
-                                            }
-                                            else if (userChoice == 0)
-                                            {
-                                                break; // 返回上级菜单
-                                            }
-                                            else
-                                            {
-                                                std::cout << "无效的选择! 请重新选择。" << std::endl;
-                                            }
-                                        }
-                                    }
-                                    else if (department == "急诊科")
-                                    {
-                                        while (true)
-                                        {
-                                            int userChoice = adminUserManagementMenu();
-                                            if (userChoice == 1)
-                                            {
-                                                client->manageDoctors(docHead, department, doctorIDCount);
-                                            }
-                                            else if (userChoice == 2)
-                                            {
-                                                client->manageNurses(nurseHead, department, nurseIDCount);
-                                            }
-                                            else if (userChoice == 3)
-                                            {
-                                                client->managePharmacists(phaHead, department, pharmacistIDCount);
-                                            }
-                                            else if (userChoice == 4)
-                                            {
-                                                client->managePatients(patientHead, department, patientIDCount);
-                                            }
-                                            else if (userChoice == 0)
-                                            {
-                                                break; // 返回上级菜单
-                                            }
-                                            else
-                                            {
-                                                std::cout << "无效的选择! 请重新选择。" << std::endl;
-                                            }
-                                        }
-                                    }
-                                    else if (department == "儿科")
-                                    {
-                                        while (true)
-                                        {
-                                            int userChoice = adminUserManagementMenu();
-                                            if (userChoice == 1)
-                                            {
-                                                client->manageDoctors(docHead, department, doctorIDCount);
-                                            }
-                                            else if (userChoice == 2)
-                                            {
-                                                client->manageNurses(nurseHead, department, nurseIDCount);
-                                            }
-                                            else if (userChoice == 3)
-                                            {
-                                                client->managePharmacists(phaHead, department, pharmacistIDCount);
-                                            }
-                                            else if (userChoice == 4)
-                                            {
-                                                client->managePatients(patientHead, department, patientIDCount);
-                                            }
-                                            else if (userChoice == 0)
-                                            {
-                                                break; // 返回上级菜单
-                                            }
-                                            else
-                                            {
-                                                std::cout << "无效的选择! 请重新选择。" << std::endl;
-                                            }
-                                        }
-                                    }
-                                    else if (department == "0")
-                                    {
-                                        break;
+                                        int userChoice = adminUserManagementMenu();
+                                        if (userChoice == 1) client->manageDoctors(docHead, department, doctorIDCount);
+                                        else if (userChoice == 2) client->manageNurses(nurseHead, department, nurseIDCount);
+                                        else if (userChoice == 3) client->managePharmacists(phaHead, department, pharmacistIDCount);
+                                        else if (userChoice == 4) client->managePatients(patientHead, department, patientIDCount);
+                                        else if (userChoice == 0) break;
+                                        else std::cout << "无效的选择! 请重新选择。" << std::endl;
                                     }
                                 }
                             }
                             else if (adminChoice == 2) // 医疗记录管理
                             {
-                                while (true) // 科室选择循环，直到用户选择返回上级菜单
+                                while (true)
                                 {
                                     std::string department = adminDepartmentMenu();
-                                    if (department == "内科")
+                                    if (department == "0") break;
+                                    while (true)
                                     {
-                                        while (true) // 医疗记录管理菜单循环，直到用户选择返回上级菜单
-                                        {
-                                            int recordChoice = adminMedicalRecordMenu();
-                                            if (recordChoice == 1)
-                                            {
-                                                client->manageRegistrations(regHead, docHead, department, registrationCount);
-                                            }
-                                            else if (recordChoice == 2)
-                                            {
-                                                client->manageConsultations(conHead, department, regHead, consultationCount);
-                                            }
-                                            else if (recordChoice == 3)
-                                            {
-                                                client->manageExaminations(examHead, department, conHead, examinationCount);
-                                            }
-                                            else if (recordChoice == 4)
-                                            {
-                                                client->manageHospitalizations(hosHead, nurseHead, department, conHead, bedHead, hospitalizationCount);
-                                            }
-                                            else if (recordChoice == 5)
-                                            {
-                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, medHead, department, medicationRecordCount);
-                                            }
-                                            else if (recordChoice == 0)
-                                            {
-                                                break; // 返回上级菜单
-                                            }
-                                            else
-                                            {
-                                                std::cout << "无效的选择! 请重新选择。" << std::endl;
-                                            }
-                                        }
-                                    }
-                                    else if (department == "外科")
-                                    {
-                                        while (true) // 医疗记录管理菜单循环，直到用户选择返回上级菜单
-                                        {
-                                            int recordChoice = adminMedicalRecordMenu();
-                                            if (recordChoice == 1)
-                                            {
-                                                client->manageRegistrations(regHead, docHead, department, registrationCount);
-                                            }
-                                            else if (recordChoice == 2)
-                                            {
-                                                client->manageConsultations(conHead, department, regHead, consultationCount);
-                                            }
-                                            else if (recordChoice == 3)
-                                            {
-                                                client->manageExaminations(examHead, department, conHead, examinationCount);
-                                            }
-                                            else if (recordChoice == 4)
-                                            {
-                                                client->manageHospitalizations(hosHead, nurseHead, department, conHead, bedHead, hospitalizationCount);
-                                            }
-                                            else if (recordChoice == 5)
-                                            {
-                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, medHead, department, medicationRecordCount);
-                                            }
-                                            else if (recordChoice == 0)
-                                            {
-                                                break; // 返回上级菜单
-                                            }
-                                            else
-                                            {
-                                                std::cout << "无效的选择! 请重新选择。" << std::endl;
-                                            }
-                                        }
-                                    }
-                                    else if (department == "妇产科")
-                                    {
-                                        while (true) // 医疗记录管理菜单循环，直到用户选择返回上级菜单
-                                        {
-                                            int recordChoice = adminMedicalRecordMenu();
-                                            if (recordChoice == 1)
-                                            {
-                                                client->manageRegistrations(regHead, docHead, department, registrationCount);
-                                            }
-                                            else if (recordChoice == 2)
-                                            {
-                                                client->manageConsultations(conHead, department, regHead, consultationCount);
-                                            }
-                                            else if (recordChoice == 3)
-                                            {
-                                                client->manageExaminations(examHead, department, conHead, examinationCount);
-                                            }
-                                            else if (recordChoice == 4)
-                                            {
-                                                client->manageHospitalizations(hosHead, nurseHead, department, conHead, bedHead, hospitalizationCount);
-                                            }
-                                            else if (recordChoice == 5)
-                                            {
-                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, medHead, department, medicationRecordCount);
-                                            }
-                                            else if (recordChoice == 0)
-                                            {
-                                                break; // 返回上级菜单
-                                            }
-                                            else
-                                            {
-                                                std::cout << "无效的选择! 请重新选择。" << std::endl;
-                                            }
-                                        }
-                                    }
-                                    else if (department == "急诊科")
-                                    {
-                                        while (true) // 医疗记录管理菜单循环，直到用户选择返回上级菜单
-                                        {
-                                            int recordChoice = adminMedicalRecordMenu();
-                                            if (recordChoice == 1)
-                                            {
-                                                client->manageRegistrations(regHead, docHead, department, registrationCount);
-                                            }
-                                            else if (recordChoice == 2)
-                                            {
-                                                client->manageConsultations(conHead, department, regHead, consultationCount);
-                                            }
-                                            else if (recordChoice == 3)
-                                            {
-                                                client->manageExaminations(examHead, department, conHead, examinationCount);
-                                            }
-                                            else if (recordChoice == 4)
-                                            {
-                                                client->manageHospitalizations(hosHead, nurseHead, department, conHead, bedHead, hospitalizationCount);
-                                            }
-                                            else if (recordChoice == 5)
-                                            {
-                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, medHead, department, medicationRecordCount);
-                                            }
-                                            else if (recordChoice == 0)
-                                            {
-                                                break; // 返回上级菜单
-                                            }
-                                            else
-                                            {
-                                                std::cout << "无效的选择! 请重新选择。" << std::endl;
-                                            }
-                                        }
-                                    }
-                                    else if (department == "儿科")
-                                    {
-                                        while (true) // 医疗记录管理菜单循环，直到用户选择返回上级菜单
-                                        {
-                                            int recordChoice = adminMedicalRecordMenu();
-                                            if (recordChoice == 1)
-                                            {
-                                                client->manageRegistrations(regHead, docHead, department, registrationCount);
-                                            }
-                                            else if (recordChoice == 2)
-                                            {
-                                                client->manageConsultations(conHead, department, regHead, consultationCount);
-                                            }
-                                            else if (recordChoice == 3)
-                                            {
-                                                client->manageExaminations(examHead, department, conHead, examinationCount);
-                                            }
-                                            else if (recordChoice == 4)
-                                            {
-                                                client->manageHospitalizations(hosHead, nurseHead, department, conHead, bedHead, hospitalizationCount);
-                                            }
-                                            else if (recordChoice == 5)
-                                            {
-                                                client->manageMedicationRecords(medRecHead, conHead, phaHead, medHead, department, medicationRecordCount);
-                                            }
-                                            else if (recordChoice == 0)
-                                            {
-                                                break; // 返回上级菜单
-                                            }
-                                            else
-                                            {
-                                                std::cout << "无效的选择! 请重新选择。" << std::endl;
-                                            }
-                                        }
-                                    }
-                                    else if (department == "0")
-                                    {
-                                        break; // 返回上级菜单
-                                    }
-                                    else
-                                    {
-                                        std::cout << "无效的选择! 请重新选择。" << std::endl;
+                                        int recordChoice = adminMedicalRecordMenu();
+                                        if (recordChoice == 1) client->manageRegistrations(regHead, docHead, department, registrationCount);
+                                        else if (recordChoice == 2) client->manageConsultations(conHead, department, regHead, consultationCount);
+                                        else if (recordChoice == 3) client->manageExaminations(examHead, department, conHead, examinationCount);
+                                        else if (recordChoice == 4) client->manageHospitalizations(hosHead, nurseHead, department, conHead, bedHead, hospitalizationCount);
+                                        else if (recordChoice == 5) client->manageMedicationRecords(medRecHead, conHead, phaHead, medHead, department, medicationRecordCount);
+                                        else if (recordChoice == 0) break;
+                                        else std::cout << "无效的选择! 请重新选择。" << std::endl;
                                     }
                                 }
                             }
                             else if (adminChoice == 3) // 药品管理
                             {
-                                while (true) // 科室选择循环，直到用户选择返回上级菜单
+                                while (true)
                                 {
                                     std::string department = adminDepartmentMenu();
-                                    if (department == "内科")
-                                    {
-                                        client->manageMedicines(medHead, department, medicineCount);
-                                    }
-                                    else if (department == "外科")
-                                    {
-                                        client->manageMedicines(medHead, department, medicineCount);
-                                    }
-                                    else if (department == "妇产科")
-                                    {
-                                        client->manageMedicines(medHead, department, medicineCount);
-                                    }
-                                    else if (department == "急诊科")
-                                    {
-                                        client->manageMedicines(medHead, department, medicineCount);
-                                    }
-                                    else if (department == "儿科")
-                                    {
-                                        client->manageMedicines(medHead, department, medicineCount);
-                                    }
-                                    else if (department == "0")
-                                    {
-                                        break; // 返回上级菜单
-                                    }
-                                    else
-                                    {
-                                        std::cout << "无效的选择! 请重新选择。" << std::endl;
-                                    }
+                                    if (department == "0") break;
+                                    client->manageMedicines(medHead, department, medicineCount);
                                 }
                             }
                             else if (adminChoice == 4) // 床位管理
                             {
-                                while (true) // 科室选择循环，直到用户选择返回上级菜单
+                                while (true)
                                 {
                                     std::string department = adminDepartmentMenu();
-                                    if (department == "内科")
-                                    {
-                                        client->manageBedInfo(bedHead, hosHead, department);
-                                    }
-                                    else if (department == "外科")
-                                    {
-                                        client->manageBedInfo(bedHead, hosHead, department);
-                                    }
-                                    else if (department == "妇产科")
-                                    {
-                                        client->manageBedInfo(bedHead, hosHead, department);
-                                    }
-                                    else if (department == "急诊科")
-                                    {
-                                        client->manageBedInfo(bedHead, hosHead, department);
-                                    }
-                                    else if (department == "儿科")
-                                    {
-                                        client->manageBedInfo(bedHead, hosHead, department);
-                                    }
-                                    else if (department == "0")
-                                    {
-                                        break; // 返回上级菜单
-                                    }
-                                    else
-                                    {
-                                        std::cout << "无效的选择! 请重新选择。" << std::endl;
-                                    }
+                                    if (department == "0") break;
+                                    client->manageBedInfo(bedHead, hosHead, department);
                                 }
                             }
                             else if (adminChoice == 5)

@@ -76,8 +76,10 @@ Admin *loadAdminData(int &count)
         newAdmin->setIsDeleted(isDeletedStr == "1");
         newAdmin->setRole(UserRole::ADMIN);
 
-        // 插入链表
+        // 插入链表（头插法，维护双向指针）
         newAdmin->next = adminHead;
+        if (adminHead != nullptr)
+            adminHead->prev = newAdmin;
         adminHead = newAdmin;
     }
     inFile.close();

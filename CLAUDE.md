@@ -20,9 +20,13 @@ Remove-Item build\* -Recurse -Force
 
 VS Code:
 
+- Configure: `Ctrl+Shift+P` → `Tasks: Run Task` → "CMake: 配置"
 - Build: `Ctrl+Shift+P` → `Tasks: Run Task` → "CMake: 编译"
+- Build server: `Ctrl+Shift+P` → `Tasks: Run Task` → "CMake: his_server编译"
 - Clean: `Ctrl+Shift+P` → `Tasks: Run Task` → "CMake: build清理"
 - Debug: `F5` (MSVC debugger, external terminal via `.vscode/launch.json`)
+
+**Caveat:** `launch.json` has a `postDebugTask` that clears the entire `build/` directory after every debug session.
 
 ### REST API Server
 
@@ -87,8 +91,7 @@ Plain text CSV files in `Data/` (relative paths from build directory via `../Dat
 **User data files:**
 
 | File | Path |
-|------|------|
-
+| ------ | ------ |
 | Admin | `Data/UserData/AdminChainData/admin_users.txt` |
 | Doctor | `Data/UserData/DoctorChainData/doctor_users.txt` |
 | Nurse | `Data/UserData/NurseChainData/nurse_users.txt` |
@@ -98,8 +101,7 @@ Plain text CSV files in `Data/` (relative paths from build directory via `../Dat
 **Record data files:**
 
 | File | Path |
-|------|------|
-
+| ------ | ------ |
 | Registration | `Data/RecordData/RegistrationChainData/registrations.txt` |
 | Consultation | `Data/RecordData/ConsultationChainData/consultations.txt` |
 | Examination | `Data/RecordData/ExaminationChainData/examinations.txt` |
@@ -109,6 +111,12 @@ Plain text CSV files in `Data/` (relative paths from build directory via `../Dat
 | Medicine | `Data/RecordData/MedicineChainData/medicines.txt` |
 
 Null/empty string fields use `"#"` as sentinel value. All deletions are **logical** (`isDeleted` flag), never physical removal.
+
+**Important:** All `Data/` subdirectories must exist before the program runs. The program does not create directories automatically; missing directories cause silent load failures.
+
+### Zero External Build Dependencies
+
+Third-party libraries (`httplib.h`, `json.hpp`) are bundled directly in `Head/`. No vcpkg, Conan, or FetchContent needed — only a C++17 compiler. Note that `his_server` compiles all `Source/*.cpp` files including console UI code (`UI.cpp`, etc.), so the server binary carries console-specific code that is simply unused at runtime.
 
 ### Key Conventions
 
@@ -147,17 +155,64 @@ Null/empty string fields use `"#"` as sentinel value. All deletions are **logica
 
 ### File Layout
 
-- `Head/` — all header files (18 .h files)
-- `Source/` — implementations (12 .cpp files)
+- `Head/` — all header files (23 .h files, including `httplib.h` and `json.hpp` third-party headers)
+- `Source/` — implementations (15 .cpp files)
 - `Data/` — persistent storage (user data in `UserData/`, record data in `RecordData/`, operation logs in `OperationLog/`)
-- `main.cpp` — menu system with nested while-loops per role
-- `CMakeLists.txt` — CMake config (C++17, MSVC `/utf-8`, include `Head/`)
+- `main.cpp` — console app entry point with nested while-loops per role
+- `server_main.cpp` — REST server entry point
+- `frontend/` — Vue 3 web frontend
+- `CMakeLists.txt` — CMake config (C++17, MSVC `/utf-8`, include `Head/`). Two targets: `his` (console) and `his_server` (REST)
 
-### Planned: Frontend-Backend Separation (前后端分离)
+### REST API Server Architecture
 
-The console-based HIS is feature-complete. The next major task is splitting it into a C++ REST backend (cpp-httplib or Drogon, JWT auth, JSON API) + Vue 3 + Element Plus web frontend. Full plan is in `DevelopLog.md` (section "4. 前后端分离架构落地方案").
+C++ REST backend using cpp-httplib (single-header, in `Head/httplib.h`) + nlohmann/json (single-header, in `Head/json.hpp`).
 
-**Recommended first step:** Build "login + admin view registrations" end-to-end to validate the architecture before migrating remaining features.
+| File | Purpose |
+| ------ | --------- |
+| `server_main.cpp` | Entry point. Loads data, starts server on port 8080, Ctrl+C handler saves data |
+| `Head/ApiServer.h` | `DataManager` singleton (thread-safe via mutex, owns all linked list heads + ID counters) + `registerApiRoutes()` + `authenticateRequest()` |
+| `Head/ApiResponse.h` | Unified JSON response builder: `success()`, `error()`, `badRequest()`, `unauthorized()`, `forbidden()`, `notFound()`, `serverError()` |
+| `Head/JWTAuth.h` | JWT token generation/validation, Bearer token extraction |
+| `Head/JsonHelper.h` | All struct-to-JSON converters + enum-to-string converters |
+| `Source/ApiServer.cpp` | All route handlers (115+ route registrations) |
+| `Source/JWTAuth.cpp` | JWT implementation |
+| `Source/JsonHelper.cpp` | JSON serialization implementation |
+
+`DataManager` replaces the console app's global variables and `main.cpp` global ID counters, wrapping everything in a `std::mutex` for thread safety. API response format: `{ "code": int, "message": string, "data": object }`.
+
+Key API endpoint groups: `/api/auth/*` (login/register), `/api/admin/*` (CRUD all entities), `/api/doctor/*`, `/api/nurse/*`, `/api/patient/*`, `/api/pharmacist/*` (role-specific), `/api/departments`, `/api/fee-standards`, `/api/examination-items` (reference data).
+
+### Frontend Architecture
+
+Vue 3 + Vite 6 + Pinia (state) + Vue Router (routing) + Element Plus (UI, `zh-cn` locale) + Axios (HTTP). Dev server on port 3000, proxies `/api` to `localhost:8080`.
+
+| Directory | Purpose |
+| ----------- | --------- |
+| `frontend/src/api/` | 8 modules: `index.js` (Axios with Bearer token interceptor + 401 redirect), `auth.js`, `admin.js`, `doctor.js`, `nurse.js`, `patient.js`, `pharmacist.js`, `common.js` (shared helpers including `getDoctors` for any-role access) |
+| `frontend/src/store/` | Pinia user store (`user.js`) — token, userID, username, role persisted to localStorage |
+| `frontend/src/router/` | Vue Router with role-based route groups + navigation guard |
+| `frontend/src/views/` | 33 `.vue` files: `admin/` (13 — includes Dashboard, all entity CRUD, Profile), `doctor/` (4), `nurse/` (4), `pharmacist/` (3), `patient/` (6), plus `Layout.vue`, `Login.vue`, `Register.vue` |
+| `frontend/src/styles/` | `global.css` (reset, Microsoft YaHei font) |
+
+**Role number discrepancy:** The C++ console app uses 0-based roles in IDs (0=Admin, 1=Doctor, 2=Nurse, 3=Pharmacist, 4=Patient). The frontend Pinia store uses 1-based role mapping (1=管理员, 2=医生, 3=护士, 4=药剂师, 5=患者). The API server bridges these.
+
+### Known Gotchas
+
+**Enums:** `bedStatus` uses lowercase 'b' (not `BedStatus`). `ConsultationStatus` has `COMPLETED` (not `FINISHED`). `Examination` has `reportSummary` field (not `report`).
+
+**Linked lists:** Always use head-insertion (`newNode->next = head; if(head) head->prev = newNode; head = newNode;`) for O(1). Tail-insertion with while-loop is O(n) and was a confirmed bug.
+
+**Conditional nesting:** Watch for `else if` blocks accidentally nested inside `if` branches of a preceding `else if`. This caused menu choice 4 to be unreachable in `Admin::manageConsultations`.
+
+**Pointer reuse:** When checking "are there any X available?", use a boolean flag set during iteration. Checking if the original head pointer is `nullptr` after iteration is always false (head is never modified by read-only iteration).
+
+**ID prefixes:** Medication record IDs use `"mrd"` prefix, not `"med"`. Medicine IDs use `"med"` prefix. Bed IDs use `autoGenerateBedID()` format.
+
+**Admin struct:** Has `prev` pointer (doubly-linked). All entities use doubly-linked lists.
+
+### `"#"` Sentinel Convention
+
+All null/empty string fields use `"#"` as sentinel (not empty string or `null`). This applies to every text field across all data files — gender, telephone, email, department, note, productionDate, expiryDate, etc. API handlers and console code both check `field == "#"` to determine emptiness and convert `"#"` to display-friendly strings.
 
 ### Language
 

@@ -841,21 +841,11 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
 
     newRecord->totalCost = total;
 
-    // 插入链表尾部
-    if (medRecHead == nullptr)
-    {
-        medRecHead = newRecord;
-    }
-    else
-    {
-        MedicationRecord *temp = medRecHead;
-        while (temp->next != nullptr)
-        {
-            temp = temp->next;
-        }
-        temp->next = newRecord;
-        newRecord->prev = temp;
-    }
+    // 插入链表头部（与其他实体一致）
+    newRecord->next = medRecHead;
+    if (medRecHead != nullptr)
+        medRecHead->prev = newRecord;
+    medRecHead = newRecord;
 
     printSuccess("用药记录创建成功！记录ID: " + newRecord->medRecordID);
 }
@@ -1389,11 +1379,6 @@ void Pharmacist::reduceMedicineStock(Medicine *&target)
     }
 
     increaseInventoryManageCount();
-    if (target->stock <= target->safetyStock && target->status == MedicineStatus::NORMAL)
-    {
-        target->status = MedicineStatus::LOW_STOCK;
-        printWarning("警告：药品库存已低至安全阈值及以下，状态更新为LOW_STOCK！");
-    }
     printSuccess("库存减少成功！当前库存: " + std::to_string(target->stock));
 }
 // 添加新药品信息
@@ -1417,21 +1402,11 @@ void Pharmacist::addNewMedicine(Medicine *&medHead, int &idCounter)
     newMed->status = newMed->stock < newMed->safetyStock ? MedicineStatus::LOW_STOCK : MedicineStatus::NORMAL;
     newMed->note = inputStringCheck("请输入备注信息: ");
 
-    // 插入链表尾部
-    if (medHead == nullptr)
-    {
-        medHead = newMed;
-    }
-    else
-    {
-        Medicine *temp = medHead;
-        while (temp->next != nullptr)
-        {
-            temp = temp->next;
-        }
-        temp->next = newMed;
-        newMed->prev = temp;
-    }
+    // 插入链表头部（与其他实体一致）
+    newMed->next = medHead;
+    if (medHead != nullptr)
+        medHead->prev = newMed;
+    medHead = newMed;
 
     printSuccess("新药品信息添加成功！药品ID: " + newMed->medicineID);
 }

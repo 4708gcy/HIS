@@ -4,6 +4,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#include <ctime>
 #include <fstream>
 #include <mutex>
 
@@ -649,7 +650,7 @@ int inputAgeCheck(const std::string &prompt)
         }
     }
 }
-// 12. 安全日期输入
+// 12. 安全日期输入（含语义验证）
 std::string inputDateCheck(const std::string &prompt)
 {
     std::string date;
@@ -659,16 +660,40 @@ std::string inputDateCheck(const std::string &prompt)
         std::getline(std::cin, date);
         date = trim(date);
 
-        if (date.length() == 10 && date[4] == '-' && date[7] == '-' &&
-            std::all_of(date.begin(), date.end(), [](char c)
-                        { return std::isdigit(c) || c == '-'; }))
-        {
-            break;
-        }
-        else
+        if (date.length() != 10 || date[4] != '-' || date[7] != '-' ||
+            !std::all_of(date.begin(), date.end(), [](char c)
+                         { return std::isdigit(c) || c == '-'; }))
         {
             std::cout << "输入无效，请重新输入！" << std::endl;
+            continue;
         }
+
+        // 语义验证：检查年月日是否合法
+        int year = std::stoi(date.substr(0, 4));
+        int month = std::stoi(date.substr(5, 2));
+        int day = std::stoi(date.substr(8, 2));
+
+        if (year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31)
+        {
+            std::cout << "输入无效，请重新输入！" << std::endl;
+            continue;
+        }
+
+        // 使用 mktime 验证日期有效性（自动处理闰年、月份天数等）
+        std::tm timeInfo = {};
+        timeInfo.tm_year = year - 1900;
+        timeInfo.tm_mon = month - 1;
+        timeInfo.tm_mday = day;
+        timeInfo.tm_hour = 12; // 避免时区边界问题
+        std::mktime(&timeInfo);
+
+        if (timeInfo.tm_mon != month - 1 || timeInfo.tm_mday != day)
+        {
+            std::cout << "输入无效，请重新输入！" << std::endl;
+            continue;
+        }
+
+        break;
     }
     return date;
 }

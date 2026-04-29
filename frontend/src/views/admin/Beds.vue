@@ -45,13 +45,13 @@
     </el-card>
 
     <el-dialog v-model="addVisible" title="添加床位" width="500px">
-      <el-form :model="addForm" label-width="80px">
-        <el-form-item label="科室">
+      <el-form ref="addFormRef" :model="addForm" :rules="addRules" label-width="80px">
+        <el-form-item label="科室" prop="department">
           <el-select v-model="addForm.department" clearable placeholder="请选择科室" style="width: 100%">
             <el-option v-for="d in departments" :key="d" :label="d" :value="d" />
           </el-select>
         </el-form-item>
-        <el-form-item label="病房类型">
+        <el-form-item label="病房类型" prop="wardType">
           <el-select v-model="addForm.wardType" placeholder="请选择病房类型" style="width: 100%">
             <el-option label="普通病房" value="普通病房" />
             <el-option label="隔离病房" value="隔离病房" />
@@ -59,9 +59,9 @@
             <el-option label="ICU病房" value="ICU病房" />
           </el-select>
         </el-form-item>
-        <el-form-item label="区号"><el-input-number v-model="addForm.areaNumber" :min="1" :max="99" /></el-form-item>
-        <el-form-item label="病房号"><el-input-number v-model="addForm.wardNumber" :min="1" :max="999" /></el-form-item>
-        <el-form-item label="床位号"><el-input-number v-model="addForm.bedNumber" :min="1" :max="99" /></el-form-item>
+        <el-form-item label="区号" prop="areaNumber"><el-input-number v-model="addForm.areaNumber" :min="1" :max="99" /></el-form-item>
+        <el-form-item label="病房号" prop="wardNumber"><el-input-number v-model="addForm.wardNumber" :min="1" :max="999" /></el-form-item>
+        <el-form-item label="床位号" prop="bedNumber"><el-input-number v-model="addForm.bedNumber" :min="1" :max="99" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="addVisible = false">取消</el-button>
@@ -89,6 +89,7 @@ const pageSize = 15
 const query = reactive({ department: '' })
 
 // -- 添加床位 --
+const addFormRef = ref(null)
 const addVisible = ref(false)
 const addForm = reactive({
   department: '',
@@ -97,6 +98,13 @@ const addForm = reactive({
   wardNumber: 1,
   bedNumber: 1
 })
+const addRules = {
+  department: [{ required: true, message: '请选择科室', trigger: 'change' }],
+  wardType: [{ required: true, message: '请选择病房类型', trigger: 'change' }],
+  areaNumber: [{ required: true, message: '请输入区号', trigger: 'blur' }],
+  wardNumber: [{ required: true, message: '请输入病房号', trigger: 'blur' }],
+  bedNumber: [{ required: true, message: '请输入床位号', trigger: 'blur' }]
+}
 
 function openAdd() {
   Object.assign(addForm, { department: '', wardType: '', areaNumber: 1, wardNumber: 1, bedNumber: 1 })
@@ -104,6 +112,9 @@ function openAdd() {
 }
 
 async function handleAdd() {
+  try {
+    await addFormRef.value?.validate()
+  } catch { return }
   addSaving.value = true
   try {
     const res = await createBed(addForm)

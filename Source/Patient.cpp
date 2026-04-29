@@ -1822,7 +1822,7 @@ void Patient::manageMedications(MedicationRecord *&medHead)
             bool ishave = getMedicationsByStatus(medHead, 1); // 1 对应 UNPAID 未缴费状态
             if (ishave)
             {
-                std::string medID = inputRecordIDCheck("请输入要缴纳费用的用药记录ID: ", {"med"});
+                std::string medID = inputRecordIDCheck("请输入要缴纳费用的用药记录ID: ", {"mrd"});
                 MedicationRecord *current = medHead;
                 while (current != nullptr)
                 {
