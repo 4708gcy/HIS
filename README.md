@@ -79,3 +79,191 @@ C课设-HIS
 ## 调试方式
 
 在要调试的地方设置断点，然后使用快捷键 `F5` 来启动调试器
+
+## 两种运行模式
+
+本项目支持两种运行方式：**纯终端模式**（控制台程序）和 **前后端分离模式**（REST API + Vue 前端）。下面分别详细说明运行和调试方法。
+
+---
+
+### 模式一：纯终端模式（Console）
+
+使用 `main.cpp` 编译链接，通过终端交互式操作。
+
+#### 编译
+
+```bash
+# 方法1：使用 CMake 命令行
+cd build && cmake .. && cmake --build . --config Debug
+
+# 方法2：VS Code 命令面板
+Ctrl+Shift+P → Tasks: Run Task → CMake: 编译
+```
+
+编译成功后，可执行文件位于 `build/Debug/his.exe`。
+
+#### 运行
+
+```bash
+# 必须先进入 build 目录（数据文件使用 ../Data/ 相对路径）
+cd build
+./Debug/his.exe
+```
+
+> **重要：** 必须从 `build/` 目录启动程序，否则数据文件路径 `../Data/` 无法正确解析。
+
+#### 调试
+
+1. 在代码中需要调试的位置设置断点（点击行号左侧）
+2. 按 `F5` 启动调试器（使用 `.vscode/launch.json` 中的配置）
+3. 程序会在外部终端中启动，断点触发时可查看变量、调用堆栈等
+4. 调试工具栏快捷键：
+   - `F10`：单步跳过
+   - `F11`：单步进入
+   - `Shift+F5`：停止调试
+
+> **注意：** `launch.json` 配置了 `postDebugTask`，调试结束后会自动清理 `build/` 目录。
+
+#### 操作流程
+
+程序启动后的交互流程：
+
+```text
+系统主菜单
+├── 1. 登录
+│   ├── 管理员登录 → 管理员功能菜单
+│   ├── 医生登录 → 医生功能菜单
+│   ├── 护士登录 → 护士功能菜单
+│   ├── 药剂师登录 → 药剂师功能菜单
+│   └── 患者登录 → 患者功能菜单
+├── 2. 注册
+│   ├── 管理员注册
+│   ├── 医生注册
+│   ├── 护士注册
+│   ├── 药剂师注册
+│   └── 患者注册
+└── 0. 退出系统
+```
+
+首次运行时没有管理员数据，会强制要求注册管理员账号，否则系统无法启动。
+
+---
+
+### 模式二：前后端分离模式（REST API + Vue 前端）
+
+使用 `server_main.cpp` 编译链接启动后端 API 服务器，同时运行 Vue 前端进行浏览器访问。
+
+#### 后端（C++ REST API）
+
+**编译：**
+
+```bash
+# 方法1：使用 CMake 命令行
+cd build && cmake .. && cmake --build . --config Debug --target his_server
+
+# 方法2：VS Code 命令面板
+Ctrl+Shift+P → Tasks: Run Task → CMake: his_server编译
+```
+
+编译成功后，可执行文件位于 `build/Debug/his_server.exe`。
+
+**运行：**
+
+```bash
+# 同样必须从 build/ 目录启动
+cd build
+./Debug/his_server.exe
+```
+
+服务器启动后会监听 `http://localhost:8080`，按 `Ctrl+C` 优雅退出并自动保存所有数据。
+
+**后端调试：**
+
+1. 在 `ApiServer.cpp`、`server_main.cpp` 等后端代码中设置断点
+2. 按 `F5` 启动调试器（默认调试配置指向 `his.exe`，如需调试服务器需修改 `.vscode/launch.json` 中的 `program` 字段为 `${workspaceFolder}/build/Debug/his_server.exe`）
+3. 可通过浏览器或 Postman 访问 `http://localhost:8080/api/...` 触发断点
+
+**API 测试示例：**
+
+```bash
+# 测试科室列表接口
+curl http://localhost:8080/api/departments
+
+# 测试登录接口
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"role": 0, "userID": "000001", "password": "your_password"}'
+```
+
+#### 前端（Vue 3 + Element Plus）
+
+**安装依赖（仅首次需要）：**
+
+```bash
+cd frontend
+npm install
+```
+
+**运行开发服务器：**
+
+```bash
+cd frontend
+npm run dev
+```
+
+前端开发服务器默认运行在 `http://localhost:3000`，自动代理 `/api` 请求到后端 `localhost:8080`。
+
+**前端调试：**
+
+1. 浏览器打开 `http://localhost:3000`
+2. 使用浏览器开发者工具（`F12`）进行调试：
+   - **Console** 面板：查看 JavaScript 错误和 `console.log` 输出
+   - **Network** 面板：查看 API 请求/响应详情
+   - **Vue DevTools** 浏览器插件：查看组件树、Pinia 状态、路由信息
+3. 在 VS Code 中打开 `.vue` 文件设置断点，通过 `launch.json` 中的浏览器调试配置附加到浏览器
+
+**前端构建（生产环境）：**
+
+```bash
+cd frontend
+npm run build
+# 输出到 frontend/dist/ 目录
+```
+
+#### 完整开发流程
+
+1. **启动后端**（终端1）：
+
+   ```bash
+   cd build
+   ./Debug/his_server.exe
+   ```
+
+   等待看到 "服务器启动于 `http://localhost:8080`" 提示。
+
+2. **启动前端**（终端2）：
+
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+   等待看到 "Local: `http://localhost:3000/`" 提示。
+
+3. **访问应用**：浏览器打开 `http://localhost:3000`
+
+4. **退出**：
+   - 先关闭前端开发服务器（终端2 按 `Ctrl+C`）
+   - 再关闭后端服务器（终端1 按 `Ctrl+C`，数据会自动保存）
+
+#### 前后端角色映射
+
+| 前端角色编号 | 后端角色编号 | 角色名称 |
+| ------------- | ------------- | --------- |
+| 1 | 0 | 管理员 |
+| 2 | 1 | 医生 |
+| 3 | 2 | 护士 |
+| 4 | 3 | 药剂师 |
+| 5 | 4 | 患者 |
+
+前端使用 1-based 角色编号，后端 API 会自动进行转换。
