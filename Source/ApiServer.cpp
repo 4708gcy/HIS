@@ -35,6 +35,7 @@ void DataManager::init()
     hosHead = loadHospitalizations(hospitalizationCount_);
     medRecHead = loadMedicationRecords(medicationRecordCount_);
     medHead = loadMedicines(medicineCount_);
+    medFlowHead = loadMedicineFlows(medicineFlowCount_);
     bedHead = loadBedInfos(bedCount_);
 }
 
@@ -51,6 +52,7 @@ void DataManager::saveAllUnsafe()
     saveHospitalizations(hosHead, hospitalizationCount_);
     saveMedicationRecords(medRecHead, medicationRecordCount_);
     saveMedicines(medHead, medicineCount_);
+    saveMedicineFlows(medFlowHead, medicineFlowCount_);
     saveBedInfos(bedHead, bedCount_);
 }
 

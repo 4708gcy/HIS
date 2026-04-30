@@ -281,10 +281,14 @@ void viewAdminsByAgeGroup(Admin *&admin)
 // 根据联系方式查看管理员信息
 void viewAdminsByContactInfo(Admin *&admin)
 {
-    std::cout << "请选择联系方式类型: " << std::endl;
-    std::cout << "1. 电话号码" << std::endl;
-    std::cout << "2. 电子邮箱" << std::endl;
-    std::cout << "0. 返回上一级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("联系方式类型");
+    printMenuBottom();
+    printMenuItem(1, "电话号码");
+    printMenuItem(2, "电子邮箱");
+    printMenuItem(0, "返回上一级菜单");
+    printMenuBottom();
     int contactChoice = selectIntCheck(0, 2);
 
     if (contactChoice == 0)
@@ -492,6 +496,7 @@ void addAdmin(Admin *&admin, int &idCounter)
     if (newAdmin->adminSignUp(idCounter) && newAdmin->getIsAccountActive()) // 调用管理员注册方法创建新管理员账号，并检查是否成功注册且账户激活
     {
         newAdmin->next = admin; // 将新管理员插入到链表头部
+        if (admin != nullptr) admin->prev = newAdmin;
         admin = newAdmin;
         printSuccess("新管理员账号已添加！");
     }

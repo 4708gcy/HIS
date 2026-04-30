@@ -27,6 +27,7 @@ Examination *loadExaminations(int &count);           // 从文件中加载检查
 Hospitalization *loadHospitalizations(int &count);   // 从文件中加载住院记录并返回住院链表的头指针
 MedicationRecord *loadMedicationRecords(int &count); // 从文件中加载用药记录并返回用药链表的头指针
 Medicine *loadMedicines(int &count);                 // 从文件中加载药品信息并返回药品链表的头指针
+MedicineFlow *loadMedicineFlows(int &count);         // 从文件中加载药品流水记录
 bedInfo *loadBedInfos(int &count);                   // 从文件中加载床位信息并返回床位链表的头指针
 
 #endif // LOADDATA_H

@@ -1,24 +1,13 @@
 #include "../Head/Admin.h"
+#include "../Head/DataAnalysis.h"
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <iomanip>
+#include <sstream>
 
 Admin::Admin()
 {
-}
-
-double &Admin::getTotalRevenue()
-{
-    return totalRevenue;
-}
-
-double &Admin::getTotalExpenses()
-{
-    return totalExpenses;
-}
-
-double &Admin::getNetProfit()
-{
-    return netProfit;
 }
 
 bool Admin::adminSignUp(int &idCounter)
@@ -91,7 +80,7 @@ bool Admin::viewAllRegistrations(Registration *&reg, const std::string &departme
 
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department)
+        if (!current->isDeleted && deptMatch(current->department, department))
         {
             std::string statusStr = regStatusToString(current->status);
             std::cout << "ID: " << current->registrationID
@@ -124,7 +113,7 @@ bool Admin::viewRegistrationsByDoctor(Registration *&reg, const std::string &dep
     std::cout << "正在查找医生ID: " << doctorID << " 的挂号记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->doctorID == doctorID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->doctorID == doctorID)
         {
             std::string statusStr = regStatusToString(current->status);
             std::cout << "ID: " << current->registrationID
@@ -157,7 +146,7 @@ bool Admin::viewRegistrationsByPatient(Registration *&reg, const std::string &de
     std::cout << "正在查找患者ID: " << patientID << " 的挂号记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->patientID == patientID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->patientID == patientID)
         {
             std::string statusStr = regStatusToString(current->status);
             std::cout << "ID: " << current->registrationID
@@ -182,7 +171,15 @@ bool Admin::viewRegistrationsByPatient(Registration *&reg, const std::string &de
 // 查看指定状态的挂号记录
 bool Admin::viewRegistrationsByStatus(Registration *&reg, const std::string &department)
 {
-    std::cout << "请输入要过滤的挂号状态 (0 - 已预约, 1 - 已支付, 2 - 已取消, 3 - 已完成): ";
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择挂号状态");
+    printMenuItem(0, "已预约");
+    printMenuItem(1, "已支付");
+    printMenuItem(2, "已取消");
+    printMenuItem(3, "已完成");
+    printMenuBottom();
+
     int statusFilter = selectIntCheck(0, 3);
 
     bool found = false;
@@ -193,7 +190,7 @@ bool Admin::viewRegistrationsByStatus(Registration *&reg, const std::string &dep
     std::cout << "正在查找状态为: " << regStatusToString(filterStatus) << " 的挂号记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->status == filterStatus)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->status == filterStatus)
         {
             std::string statusStr = regStatusToString(current->status);
             std::cout << "ID: " << current->registrationID
@@ -218,7 +215,15 @@ bool Admin::viewRegistrationsByStatus(Registration *&reg, const std::string &dep
 // 修改挂号记录状态（如支付、取消等）
 void Admin::modifyRegistrationStatus(Registration *&target, const std::string &department)
 {
-    std::cout << "请输入新的挂号状态 (0 - 已预约, 1 - 已支付, 2 - 已取消, 3 - 已完成): ";
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择挂号状态");
+    printMenuItem(0, "已预约");
+    printMenuItem(1, "已支付");
+    printMenuItem(2, "已取消");
+    printMenuItem(3, "已完成");
+    printMenuBottom();
+
     int newStatus = selectIntCheck(0, 3);
     target->status = static_cast<RegistrationStatus>(newStatus);
     std::cout << "挂号记录状态已更新！" << std::endl;
@@ -242,7 +247,7 @@ bool Admin::addRegistration(Registration *&reg, Doctor *&doc, const std::string 
     bool hasOnDutyDoctor = false;
     while (currentDoc != nullptr)
     {
-        if (!currentDoc->isDeleted && currentDoc->department == department && currentDoc->isOnDuty) // 只显示在岗的医生
+        if (!currentDoc->isDeleted && deptMatch(currentDoc->department, department) && currentDoc->isOnDuty) // 只显示在岗的医生
         {
             std::cout << "医生ID: " << currentDoc->getUserID() << ", 姓名: " << currentDoc->getUsername() << ", 擅长领域：" << currentDoc->specialty << ", 职称：" << doctorTitleToString(currentDoc->title) << ", 联系方式：" << currentDoc->getTelephone() << " / " << currentDoc->getEmail()
                       << std::endl;
@@ -264,7 +269,7 @@ bool Admin::addRegistration(Registration *&reg, Doctor *&doc, const std::string 
     bool doctorExists = false;
     while (currentDoc != nullptr)
     {
-        if (!currentDoc->isDeleted && currentDoc->getUserID() == newDoctorID && currentDoc->department == department)
+        if (!currentDoc->isDeleted && currentDoc->getUserID() == newDoctorID && deptMatch(currentDoc->department, department))
         {
             doctorExists = true;
             newReg->doctorID = newDoctorID; // 更新医生ID
@@ -283,7 +288,7 @@ bool Admin::addRegistration(Registration *&reg, Doctor *&doc, const std::string 
     newReg->fee = calculateRegistrationFee(currentDoc->title);
 
     // 生成唯一的挂号ID（可以根据实际需求改为更复杂的生成方式）
-    newReg->registrationID = "reg" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    newReg->registrationID = "reg" + padId(idCounter, 6);
     idCounter++;
     MyTime &t = MyTime::getInstance();
     newReg->registerTime = t.getTime(); // 获取当前时间字符串
@@ -308,7 +313,7 @@ bool Admin::viewRegistrationsByID(Registration *&reg, const std::string &departm
     std::cout << "正在查找挂号记录ID: " << regID << " 的挂号记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->registrationID == regID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->registrationID == regID)
         {
             std::string statusStr = regStatusToString(current->status);
             std::cout << "ID: " << current->registrationID
@@ -339,7 +344,7 @@ void Admin::modifyRegistrationDoctor(Registration *&target, Doctor *&doc, const 
     bool hasOnDutyDoctor = false;
     while (currentDoc != nullptr)
     {
-        if (!currentDoc->isDeleted && currentDoc->department == department && currentDoc->isOnDuty)
+        if (!currentDoc->isDeleted && deptMatch(currentDoc->department, department) && currentDoc->isOnDuty)
         {
             std::cout << "医生ID: " << currentDoc->getUserID() << ", 姓名: " << currentDoc->getUsername() << ", 擅长领域：" << currentDoc->specialty << ", 职称：" << doctorTitleToString(currentDoc->title) << ", 联系方式：" << currentDoc->getTelephone() << " / " << currentDoc->getEmail()
                       << std::endl;
@@ -360,7 +365,7 @@ void Admin::modifyRegistrationDoctor(Registration *&target, Doctor *&doc, const 
     bool doctorExists = false;
     while (currentDoc != nullptr)
     {
-        if (currentDoc->getUserID() == newDoctorID && currentDoc->department == department)
+        if (currentDoc->getUserID() == newDoctorID && deptMatch(currentDoc->department, department))
         {
             if (currentDoc->isDeleted)
             {
@@ -447,7 +452,7 @@ void Admin::manageRegistrations(Registration *&reg, Doctor *&doc, const std::str
                 Registration *target = reg;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->department == department && target->registrationID == regID)
+                    if (!target->isDeleted && deptMatch(target->department, department) && target->registrationID == regID)
                     {
                         break;
                     }
@@ -470,10 +475,13 @@ void Admin::manageRegistrations(Registration *&reg, Doctor *&doc, const std::str
                                   << ", 备注: " << target->note
                                   << std::endl;
 
-                        std::cout << "请选择要修改的内容: " << std::endl;
-                        std::cout << "1 - 看诊医生ID" << std::endl;
-                        std::cout << "2 - 挂号状态" << std::endl;
-                        std::cout << "0 - 返回上级菜单" << std::endl;
+                        clearScreen();
+                        printMenuBorder();
+                        printMenuTitle("修改挂号记录");
+                        printMenuItem(1, "看诊医生ID");
+                        printMenuItem(2, "挂号状态");
+                        printMenuItem(0, "返回上级菜单");
+                        printMenuBottom();
 
                         int modifyChoice = selectIntCheck(0, 2);
                         if (modifyChoice == 0)
@@ -511,7 +519,7 @@ void Admin::manageRegistrations(Registration *&reg, Doctor *&doc, const std::str
                 Registration *target = reg;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->department == department && target->registrationID == regID)
+                    if (!target->isDeleted && deptMatch(target->department, department) && target->registrationID == regID)
                     {
                         break;
                     }
@@ -532,9 +540,12 @@ void Admin::manageRegistrations(Registration *&reg, Doctor *&doc, const std::str
                               << ", 备注: " << target->note
                               << std::endl;
 
-                    std::cout << "确认要删除这条挂号记录吗？: " << std::endl;
-                    std::cout << "1. 确认" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除挂号记录");
+                    printMenuItem(1, "确认");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int confirmChoice = selectIntCheck(0, 1);
 
@@ -582,7 +593,7 @@ bool Admin::viewAllConsultations(Consultation *&con, const std::string &departme
 
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department)
+        if (!current->isDeleted && deptMatch(current->department, department))
         {
             std::string statusStr = conStatusToString(current->status);
             std::cout << "ID: " << current->consultationID
@@ -659,7 +670,7 @@ bool Admin::viewConsultationsByDoctor(Consultation *&con, const std::string &dep
     std::cout << "正在查找医生ID: " << doctorID << " 的看诊记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->doctorID == doctorID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->doctorID == doctorID)
         {
             std::string statusStr = conStatusToString(current->status);
             std::cout << "ID: " << current->consultationID
@@ -735,7 +746,7 @@ bool Admin::viewConsultationsByPatient(Consultation *&con, const std::string &de
     std::cout << "正在查找患者ID: " << patientID << " 的看诊记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->patientID == patientID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->patientID == patientID)
         {
             std::string statusStr = conStatusToString(current->status);
             std::cout << "ID: " << current->consultationID
@@ -803,7 +814,15 @@ bool Admin::viewConsultationsByPatient(Consultation *&con, const std::string &de
 // 查看指定状态的看诊记录
 bool Admin::viewConsultationsByStatus(Consultation *&con, const std::string &department)
 {
-    std::cout << "请输入要过滤的看诊状态 (0 - 待处理, 1 - 正在处理, 2 - 已完成, 3 - 已作废): ";
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择看诊状态");
+    printMenuItem(0, "待处理");
+    printMenuItem(1, "正在处理");
+    printMenuItem(2, "已完成");
+    printMenuItem(3, "已作废");
+    printMenuBottom();
+
     int statusFilter = selectIntCheck(0, 3);
 
     bool found = false;
@@ -814,7 +833,7 @@ bool Admin::viewConsultationsByStatus(Consultation *&con, const std::string &dep
     std::cout << "正在查找状态为: " << conStatusToString(filterStatus) << " 的看诊记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->status == filterStatus)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->status == filterStatus)
         {
             std::string statusStr = conStatusToString(current->status);
 
@@ -888,7 +907,7 @@ bool Admin::viewConsultationByRegistrationID(Consultation *&con, const std::stri
     std::cout << "正在查找挂号ID: " << registrationID << " 的看诊记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->registrationID == registrationID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->registrationID == registrationID)
         {
             std::string statusStr = conStatusToString(current->status);
             std::cout << "ID: " << current->consultationID
@@ -956,7 +975,15 @@ bool Admin::viewConsultationByRegistrationID(Consultation *&con, const std::stri
 // 修改看诊记录的状态
 void Admin::modifyConsultationStatus(Consultation *&target, const std::string &department)
 {
-    std::cout << "请输入新的看诊状态 (0 - 待就诊, 1 - 正在处理, 2 - 已结束, 3 - 已作废 ): ";
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择看诊状态");
+    printMenuItem(0, "待就诊");
+    printMenuItem(1, "正在处理");
+    printMenuItem(2, "已结束");
+    printMenuItem(3, "已作废");
+    printMenuBottom();
+
     int newStatus = selectIntCheck(0, 3);
     target->status = static_cast<ConsultationStatus>(newStatus);
     std::cout << "看诊记录状态已更新！" << std::endl;
@@ -977,7 +1004,7 @@ bool Admin::addConsultation(Consultation *&con, const std::string &department, R
     Registration *currentReg = reg;
     while (currentReg != nullptr)
     { // 只显示当前科室的挂号记录，并且状态为已支付的记录
-        if (!currentReg->isDeleted && currentReg->status == RegistrationStatus::PAID && currentReg->department == department)
+        if (!currentReg->isDeleted && currentReg->status == RegistrationStatus::PAID && deptMatch(currentReg->department, department))
         {
             std::string statusStr = regStatusToString(currentReg->status);
             std::cout << "ID: " << currentReg->registrationID
@@ -997,7 +1024,7 @@ bool Admin::addConsultation(Consultation *&con, const std::string &department, R
     currentReg = reg;
     while (currentReg != nullptr)
     {
-        if (!currentReg->isDeleted && currentReg->registrationID == regID && currentReg->department == department)
+        if (!currentReg->isDeleted && currentReg->registrationID == regID && deptMatch(currentReg->department, department))
         {
             if (currentReg->status != RegistrationStatus::PAID)
             {
@@ -1022,7 +1049,8 @@ bool Admin::addConsultation(Consultation *&con, const std::string &department, R
     }
 
     // 生成唯一的看诊ID（可以根据实际需求改为更复杂的生成方式）
-    newCon->consultationID = "con" + std::to_string(conCounter++).insert(0, 6 - std::to_string(conCounter).length(), '0');
+    newCon->consultationID = "con" + padId(conCounter, 6);
+    conCounter++;
     MyTime &t = MyTime::getInstance();
     newCon->consultationTime = t.getTime(); // 获取当前时间字符串
 
@@ -1048,7 +1076,7 @@ bool Admin::viewConsultationByID(Consultation *&con, const std::string &departme
     std::vector<Consultation *> temp; // 用于存储正在处理状态的看诊记录，方便后续详细信息展示
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->consultationID == conID && current->department == department)
+        if (!current->isDeleted && current->consultationID == conID && deptMatch(current->department, department))
         {
             std::string statusStr = conStatusToString(current->status);
             if (statusStr == "正在处理")
@@ -1183,7 +1211,7 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
                 Consultation *target = con;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->consultationID == conID && target->department == department)
+                    if (!target->isDeleted && target->consultationID == conID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -1243,9 +1271,12 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
                                       << std::endl;
                         }
 
-                        std::cout << "请选择你的操作：" << std::endl;
-                        std::cout << "1. 修改看诊状态" << std::endl;
-                        std::cout << "0. 返回上级菜单" << std::endl;
+                        clearScreen();
+                        printMenuBorder();
+                        printMenuTitle("看诊记录操作");
+                        printMenuItem(1, "修改看诊状态");
+                        printMenuItem(0, "返回上级菜单");
+                        printMenuBottom();
 
                         int actionChoice = selectIntCheck(0, 1);
 
@@ -1277,7 +1308,7 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
                 Consultation *target = con;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->consultationID == conID && target->department == department)
+                    if (!target->isDeleted && target->consultationID == conID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -1336,9 +1367,12 @@ void Admin::manageConsultations(Consultation *&con, const std::string &departmen
                                   << std::endl;
                     }
 
-                    std::cout << "确认要删除该看诊记录吗？: " << std::endl;
-                    std::cout << "1. 确认" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除看诊记录");
+                    printMenuItem(1, "确认");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int confirm = selectIntCheck(0, 1);
 
@@ -1385,7 +1419,7 @@ bool Admin::viewAllExaminations(Examination *&exam, const std::string &departmen
 
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department)
+        if (!current->isDeleted && deptMatch(current->department, department))
         {
             std::string statusStr = examStatusToString(current->status);
             std::cout << "ID: " << current->examinationID
@@ -1447,7 +1481,7 @@ bool Admin::viewExaminationsByDoctor(Examination *&exam, const std::string &depa
     std::cout << "正在查找医生ID: " << doctorID << " 的检查记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->doctorID == doctorID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->doctorID == doctorID)
         {
             std::string statusStr = examStatusToString(current->status);
             std::cout << "ID: " << current->examinationID
@@ -1509,7 +1543,7 @@ bool Admin::viewExaminationsByPatient(Examination *&exam, const std::string &dep
     std::cout << "正在查找患者ID: " << patientID << " 的检查记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->patientID == patientID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->patientID == patientID)
         {
             std::string statusStr = examStatusToString(current->status);
             std::cout << "ID: " << current->examinationID
@@ -1562,14 +1596,17 @@ bool Admin::viewExaminationsByPatient(Examination *&exam, const std::string &dep
 // 查看指定状态的检查记录
 bool Admin::viewExaminationsByStatus(Examination *&exam, const std::string &department)
 {
-    std::cout << "请输入要过滤的检查状态: ";
-    std::cout << "1. 已下单" << std::endl;
-    std::cout << "2. 已支付" << std::endl;
-    std::cout << "3. 检查中" << std::endl;
-    std::cout << "4. 检查完成" << std::endl;
-    std::cout << "5. 报告已出" << std::endl;
-    std::cout << "6. 已作废" << std::endl;
-    std::cout << "0. 返回上级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择检查状态");
+    printMenuItem(1, "已下单");
+    printMenuItem(2, "已支付");
+    printMenuItem(3, "检查中");
+    printMenuItem(4, "检查完成");
+    printMenuItem(5, "报告已出");
+    printMenuItem(6, "已作废");
+    printMenuItem(0, "返回上级菜单");
+    printMenuBottom();
 
     int statusFilter = selectIntCheck(0, 6);
 
@@ -1586,7 +1623,7 @@ bool Admin::viewExaminationsByStatus(Examination *&exam, const std::string &depa
     std::cout << "正在查找状态为: " << examStatusToString(filterStatus) << " 的检查记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->status == filterStatus)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->status == filterStatus)
         {
             std::string statusStr = examStatusToString(current->status);
 
@@ -1635,14 +1672,17 @@ bool Admin::viewExaminationsByStatus(Examination *&exam, const std::string &depa
 // 修改检查记录的状态
 void Admin::modifyExaminationStatus(Examination *&target, const std::string &department)
 {
-    std::cout << "请输入新的检查状态: ";
-    std::cout << "1. 已下单" << std::endl;
-    std::cout << "2. 已支付" << std::endl;
-    std::cout << "3. 检查中" << std::endl;
-    std::cout << "4. 检查完成" << std::endl;
-    std::cout << "5. 报告已出" << std::endl;
-    std::cout << "6. 已作废" << std::endl;
-    std::cout << "0. 返回上级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择检查状态");
+    printMenuItem(1, "已下单");
+    printMenuItem(2, "已支付");
+    printMenuItem(3, "检查中");
+    printMenuItem(4, "检查完成");
+    printMenuItem(5, "报告已出");
+    printMenuItem(6, "已作废");
+    printMenuItem(0, "返回上级菜单");
+    printMenuBottom();
 
     int newStatus = selectIntCheck(0, 6);
 
@@ -1669,7 +1709,7 @@ bool Admin::addExamination(Examination *&exam, const std::string &department, Co
     Consultation *currentCon = con;
     while (currentCon != nullptr)
     { // 只显示当前科室的看诊记录，并且状态为正在处理的记录
-        if (!currentCon->isDeleted && currentCon->status == ConsultationStatus::IN_PROGRESS && currentCon->department == department)
+        if (!currentCon->isDeleted && currentCon->status == ConsultationStatus::IN_PROGRESS && deptMatch(currentCon->department, department))
         {
             std::string statusStr = conStatusToString(currentCon->status);
             std::cout << "ID: " << currentCon->consultationID
@@ -1689,7 +1729,7 @@ bool Admin::addExamination(Examination *&exam, const std::string &department, Co
 
     while (currentCon != nullptr)
     {
-        if (!currentCon->isDeleted && currentCon->consultationID == conID && currentCon->department == department)
+        if (!currentCon->isDeleted && currentCon->consultationID == conID && deptMatch(currentCon->department, department))
         {
 
             if (currentCon->status != ConsultationStatus::IN_PROGRESS)
@@ -1719,7 +1759,7 @@ bool Admin::addExamination(Examination *&exam, const std::string &department, Co
 
                 newExam->itemName = itemName; // 设置检查项目名称
                 // 生成唯一的检查ID（可以根据实际需求改为更复杂的生成方式）
-                newExam->examinationID = "exa" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+                newExam->examinationID = "exa" + padId(idCounter, 6);
                 idCounter++;
                 MyTime &t = MyTime::getInstance();
                 newExam->orderTime = t.getTime(); // 获取当前时间字符串
@@ -1757,7 +1797,7 @@ bool Admin::viewExaminationByID(Examination *&exam, const std::string &departmen
     std::cout << "正在查找检查记录ID: " << examID << " 的检查记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->examinationID == examID && current->department == department)
+        if (!current->isDeleted && current->examinationID == examID && deptMatch(current->department, department))
         {
             std::string statusStr = examStatusToString(current->status);
 
@@ -1864,7 +1904,7 @@ void Admin::manageExaminations(Examination *&exam, const std::string &department
                 Examination *target = exam;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->examinationID == examID && target->department == department)
+                    if (!target->isDeleted && target->examinationID == examID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -1909,9 +1949,12 @@ void Admin::manageExaminations(Examination *&exam, const std::string &department
                                       << std::endl;
                         }
 
-                        std::cout << "请选择你的操作：" << std::endl;
-                        std::cout << "1. 修改检查状态" << std::endl;
-                        std::cout << "0. 返回上级菜单" << std::endl;
+                        clearScreen();
+                        printMenuBorder();
+                        printMenuTitle("检查记录操作");
+                        printMenuItem(1, "修改检查状态");
+                        printMenuItem(0, "返回上级菜单");
+                        printMenuBottom();
 
                         int modifyChoice = selectIntCheck(0, 1);
 
@@ -1944,7 +1987,7 @@ void Admin::manageExaminations(Examination *&exam, const std::string &department
                 Examination *target = exam;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->examinationID == examID && target->department == department)
+                    if (!target->isDeleted && target->examinationID == examID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -1986,9 +2029,12 @@ void Admin::manageExaminations(Examination *&exam, const std::string &department
                                   << std::endl;
                     }
 
-                    std::cout << "确认要删除该检查记录吗？: " << std::endl;
-                    std::cout << "1. 确认" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除检查记录");
+                    printMenuItem(1, "确认");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int confirm = selectIntCheck(0, 1);
 
@@ -2035,7 +2081,7 @@ bool Admin::viewAllHospitalizations(Hospitalization *&hos, const std::string &de
 
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department)
+        if (!current->isDeleted && deptMatch(current->department, department))
         {
             std::string statusStr = hosStatusToString(current->status);
             std::string wardTypeStr = current->wardType;
@@ -2077,7 +2123,7 @@ bool Admin::viewHospitalizationsByPatient(Hospitalization *&hos, const std::stri
     std::cout << "正在查找患者ID: " << patientID << " 的住院记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->patientID == patientID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->patientID == patientID)
         {
             std::string statusStr = hosStatusToString(current->status);
             std::string wardTypeStr = current->wardType;
@@ -2119,7 +2165,7 @@ bool Admin::viewHospitalizationsByDoctor(Hospitalization *&hos, const std::strin
     std::cout << "正在查找医生ID: " << doctorID << " 的住院记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->doctorID == doctorID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->doctorID == doctorID)
         {
             std::string statusStr = hosStatusToString(current->status);
             std::string wardTypeStr = current->wardType;
@@ -2161,7 +2207,7 @@ bool Admin::viewHospitalizationByNurse(Hospitalization *&hos, const std::string 
     std::cout << "正在查找负责护士ID: " << nurseID << " 的住院记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->nurseID == nurseID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->nurseID == nurseID)
         {
             std::string statusStr = hosStatusToString(current->status);
             std::string wardTypeStr = current->wardType;
@@ -2203,7 +2249,7 @@ bool Admin::viewHospitalizationByID(Hospitalization *&hos, const std::string &de
     std::cout << "正在查找住院记录ID: " << hosID << " 的住院记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->hospitalizationID == hosID && current->department == department)
+        if (!current->isDeleted && current->hospitalizationID == hosID && deptMatch(current->department, department))
         {
             std::string statusStr = hosStatusToString(current->status);
             std::string wardTypeStr = current->wardType;
@@ -2238,13 +2284,16 @@ bool Admin::viewHospitalizationByID(Hospitalization *&hos, const std::string &de
 // 根据住院状态查看住院记录
 bool Admin::viewHospitalizationsByStatus(Hospitalization *&hos, const std::string &department)
 {
-    std::cout << "请输入要过滤的住院记录状态: ";
-    std::cout << "1. 申请中" << std::endl;
-    std::cout << "2. 已缴费待分床" << std::endl;
-    std::cout << "3. 已入院" << std::endl;
-    std::cout << "4. 已出院" << std::endl;
-    std::cout << "5. 已作废" << std::endl;
-    std::cout << "0. 返回上级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择住院状态");
+    printMenuItem(1, "申请中");
+    printMenuItem(2, "已缴费待分床");
+    printMenuItem(3, "已入院");
+    printMenuItem(4, "已出院");
+    printMenuItem(5, "已作废");
+    printMenuItem(0, "返回上级菜单");
+    printMenuBottom();
 
     int statusFilter = selectIntCheck(0, 5);
 
@@ -2262,7 +2311,7 @@ bool Admin::viewHospitalizationsByStatus(Hospitalization *&hos, const std::strin
     std::cout << "正在查找状态为: " << hosStatusToString(filterStatus) << " 的住院记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->status == filterStatus)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->status == filterStatus)
         {
             std::string statusStr = hosStatusToString(current->status);
             std::string wardTypeStr = current->wardType;
@@ -2304,7 +2353,7 @@ bool Admin::viewHospitalizationByWardType(Hospitalization *&hos, const std::stri
     std::cout << "正在查找病房类型为: " << wardTypeStr << " 的住院记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->wardType == wardTypeStr)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->wardType == wardTypeStr)
         {
             std::string statusStr = hosStatusToString(current->status);
             std::cout << "ID: " << current->hospitalizationID
@@ -2344,16 +2393,19 @@ void Admin::modifyHospitalizationStatus(Hospitalization *&hos, const std::string
     Hospitalization *current = hos;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->hospitalizationID == hosID && current->department == department)
+        if (!current->isDeleted && current->hospitalizationID == hosID && deptMatch(current->department, department))
         {
 
-            std::cout << "请输入新的住院记录状态: ";
-            std::cout << "1. 申请中" << std::endl;
-            std::cout << "2. 已缴费待分床" << std::endl;
-            std::cout << "3. 已入院" << std::endl;
-            std::cout << "4. 已出院" << std::endl;
-            std::cout << "5. 已作废" << std::endl;
-            std::cout << "0. 返回上级菜单" << std::endl;
+            clearScreen();
+            printMenuBorder();
+            printMenuTitle("选择住院状态");
+            printMenuItem(1, "申请中");
+            printMenuItem(2, "已缴费待分床");
+            printMenuItem(3, "已入院");
+            printMenuItem(4, "已出院");
+            printMenuItem(5, "已作废");
+            printMenuItem(0, "返回上级菜单");
+            printMenuBottom();
 
             int newStatus = selectIntCheck(0, 5);
 
@@ -2386,7 +2438,7 @@ void Admin::deleteHospitalization(Hospitalization *&hos, const std::string &depa
     Hospitalization *current = hos;
     while (current != nullptr)
     {
-        if (current->hospitalizationID == hosID && current->department == department)
+        if (current->hospitalizationID == hosID && deptMatch(current->department, department))
         {
             current->isDeleted = true; // 逻辑删除
             std::cout << "ID: " << current->hospitalizationID << " " << "住院记录已删除！" << std::endl;
@@ -2407,7 +2459,7 @@ bool Admin::addHospitalization(Hospitalization *&hos, Nurse *nurse, const std::s
     std::cout << department << " 当前待处理的关联的看诊记录列表:" << std::endl;
     while (currentCon != nullptr)
     { // 只显示当前科室的看诊记录，并且状态为正在处理的记录
-        if (!currentCon->isDeleted && currentCon->status == ConsultationStatus::IN_PROGRESS && currentCon->isHospitalizationRecommended && currentCon->department == department)
+        if (!currentCon->isDeleted && currentCon->status == ConsultationStatus::IN_PROGRESS && currentCon->isHospitalizationRecommended && deptMatch(currentCon->department, department))
         {
             std::string statusStr = conStatusToString(currentCon->status);
             std::cout << "ID: " << currentCon->consultationID
@@ -2429,7 +2481,7 @@ bool Admin::addHospitalization(Hospitalization *&hos, Nurse *nurse, const std::s
     currentCon = con;
     while (currentCon != nullptr)
     {
-        if (!currentCon->isDeleted && currentCon->consultationID == conID && currentCon->department == department)
+        if (!currentCon->isDeleted && currentCon->consultationID == conID && deptMatch(currentCon->department, department))
         {
 
             if (currentCon->status != ConsultationStatus::IN_PROGRESS)
@@ -2474,7 +2526,7 @@ bool Admin::addHospitalization(Hospitalization *&hos, Nurse *nurse, const std::s
     std::cout << "正在检查病房类型为: " << newHos->wardType << " 的空闲床位..." << std::endl;
     while (b != nullptr)
     {
-        if (!b->isDeleted && b->status == bedStatus::AVAILABLE && b->department == department && b->wardType == newHos->wardType)
+        if (!b->isDeleted && b->status == bedStatus::AVAILABLE && deptMatch(b->department, department) && b->wardType == newHos->wardType)
         {
             std::cout << "区域：" << b->areaNumber << "病房号：" << b->wardNumber << "床位号：" << b->bedNumber << " 空闲" << std::endl;
             bedFound = true;
@@ -2496,7 +2548,7 @@ bool Admin::addHospitalization(Hospitalization *&hos, Nurse *nurse, const std::s
     b = bed;
     while (b != nullptr)
     {
-        if (!b->isDeleted && b->department == department && b->wardType == newHos->wardType && b->bedID == newHos->bedNumber)
+        if (!b->isDeleted && deptMatch(b->department, department) && b->wardType == newHos->wardType && b->bedID == newHos->bedNumber)
         {
             if (b->status == bedStatus::OCCUPIED)
             {
@@ -2541,7 +2593,7 @@ bool Admin::addHospitalization(Hospitalization *&hos, Nurse *nurse, const std::s
     std::cout << "当前科室可以分配的护士列表:" << std::endl;
     while (n != nullptr)
     {
-        if (!n->isDeleted && n->department == department && n->isOnDuty)
+        if (!n->isDeleted && deptMatch(n->department, department) && n->isOnDuty)
         {
             std::cout << "护士ID: " << n->getUserID() << ", 姓名: " << n->getUsername() << ", 是否在岗: " << (n->isOnDuty ? "是" : "否") << std::endl;
         }
@@ -2553,7 +2605,7 @@ bool Admin::addHospitalization(Hospitalization *&hos, Nurse *nurse, const std::s
     bool nurseFound = false;
     while (n != nullptr)
     {
-        if (!n->isDeleted && n->getUserID() == newHos->nurseID && n->department == department)
+        if (!n->isDeleted && n->getUserID() == newHos->nurseID && deptMatch(n->department, department))
         {
             if (!n->isOnDuty)
             {
@@ -2575,7 +2627,7 @@ bool Admin::addHospitalization(Hospitalization *&hos, Nurse *nurse, const std::s
         return false;
     }
 
-    newHos->hospitalizationID = "hos" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0'); // 生成住院记录ID，格式为 "hos" + 6位数字
+    newHos->hospitalizationID = "hos" + padId(idCounter, 6); // 生成住院记录ID，格式为 "hos" + 6位数字
     idCounter++;
     MyTime &t = MyTime::getInstance();
     newHos->applyTime = t.getTime(); // 设置申请时间为当前时间
@@ -2662,7 +2714,7 @@ void Admin::manageHospitalizations(Hospitalization *&hos, Nurse *nurse, const st
                 Hospitalization *target = hos;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->hospitalizationID == hosID && target->department == department)
+                    if (!target->isDeleted && target->hospitalizationID == hosID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -2693,9 +2745,12 @@ void Admin::manageHospitalizations(Hospitalization *&hos, Nurse *nurse, const st
                                   << ", 住院记录状态: " << statusStr
                                   << std::endl;
 
-                        std::cout << "请选择你的操作：" << std::endl;
-                        std::cout << "1.修改住院记录状态" << std::endl;
-                        std::cout << "0.返回上级菜单" << std::endl;
+                        clearScreen();
+                        printMenuBorder();
+                        printMenuTitle("住院记录操作");
+                        printMenuItem(1, "修改住院记录状态");
+                        printMenuItem(0, "返回上级菜单");
+                        printMenuBottom();
 
                         int modifyChoice = selectIntCheck(0, 1);
 
@@ -2727,7 +2782,7 @@ void Admin::manageHospitalizations(Hospitalization *&hos, Nurse *nurse, const st
                 Hospitalization *target = hos;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->hospitalizationID == hosID && target->department == department)
+                    if (!target->isDeleted && target->hospitalizationID == hosID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -2755,9 +2810,12 @@ void Admin::manageHospitalizations(Hospitalization *&hos, Nurse *nurse, const st
                               << ", 住院记录状态: " << statusStr
                               << std::endl;
 
-                    std::cout << "确认要删除该住院记录吗？: " << std::endl;
-                    std::cout << "1. 确认" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除住院记录");
+                    printMenuItem(1, "确认");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int confirmChoice = selectIntCheck(0, 1);
 
@@ -2804,7 +2862,7 @@ bool Admin::viewAllBeds(bedInfo *&bed, const std::string &department)
 
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department)
+        if (!current->isDeleted && deptMatch(current->department, department))
         {
             std::string statusStr = bedStatusToString(current->status);
             std::cout << "床位ID: " << current->bedID
@@ -2842,7 +2900,7 @@ bool Admin::viewBedsByWardType(bedInfo *&bed, const std::string &department)
     std::cout << "正在查找病房类型为: " << wardTypeStr << " 的床位信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->wardType == wardTypeStr)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->wardType == wardTypeStr)
         {
             std::string statusStr = bedStatusToString(current->status);
             std::cout << "床位ID: " << current->bedID
@@ -2872,12 +2930,15 @@ bool Admin::viewBedsByWardType(bedInfo *&bed, const std::string &department)
 // 根据床位状态查看床位信息
 bool Admin::viewBedsByStatus(bedInfo *&bed, const std::string &department)
 {
-    std::cout << "请输入要过滤的床位状态: ";
-    std::cout << "1. 可用" << std::endl;
-    std::cout << "2. 占用" << std::endl;
-    std::cout << "3. 清洁中" << std::endl;
-    std::cout << "4. 不可用" << std::endl;
-    std::cout << "0. 返回上级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择床位状态");
+    printMenuItem(1, "可用");
+    printMenuItem(2, "占用");
+    printMenuItem(3, "清洁中");
+    printMenuItem(4, "不可用");
+    printMenuItem(0, "返回上级菜单");
+    printMenuBottom();
 
     int statusFilter = selectIntCheck(0, 4);
 
@@ -2895,7 +2956,7 @@ bool Admin::viewBedsByStatus(bedInfo *&bed, const std::string &department)
     std::cout << "正在查找状态为: " << bedStatusToString(filterStatus) << " 的床位信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->status == filterStatus)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->status == filterStatus)
         {
             std::string statusStr = bedStatusToString(current->status);
             std::cout << "床位ID: " << current->bedID
@@ -2934,7 +2995,7 @@ bool Admin::viewBedByID(bedInfo *&bed, const std::string &department)
     std::cout << "正在查找床位ID: " << bedID << " 的床位信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->bedID == bedID && current->department == department)
+        if (!current->isDeleted && current->bedID == bedID && deptMatch(current->department, department))
         {
             std::string statusStr = bedStatusToString(current->status);
             std::cout << "床位ID: " << current->bedID
@@ -2973,7 +3034,7 @@ bool Admin::viewBedsByNurseID(bedInfo *&bed, const std::string &department)
     std::cout << "正在查找负责护士ID: " << nurseID << " 的床位信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->nurseID == nurseID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->nurseID == nurseID)
         {
             std::string statusStr = bedStatusToString(current->status);
             std::cout << "床位ID: " << current->bedID
@@ -3011,7 +3072,7 @@ bool Admin::viewBedsByPatientID(bedInfo *&bed, const std::string &department)
     std::cout << "正在查找患者ID: " << patientID << " 的床位信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->patientID == patientID)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->patientID == patientID)
         {
             std::string statusStr = bedStatusToString(current->status);
             std::cout << "床位ID: " << current->bedID
@@ -3049,7 +3110,7 @@ bool Admin::viewBedsByHospitalizationID(bedInfo *&bed, Hospitalization *&hos, co
 
     while (currentHos != nullptr)
     {
-        if (!currentHos->isDeleted && currentHos->hospitalizationID == hosID && currentHos->department == department)
+        if (!currentHos->isDeleted && currentHos->hospitalizationID == hosID && deptMatch(currentHos->department, department))
         {
             bedID = currentHos->bedNumber;
             foundHos = true;
@@ -3069,7 +3130,7 @@ bool Admin::viewBedsByHospitalizationID(bedInfo *&bed, Hospitalization *&hos, co
 
     while (currentBed != nullptr)
     {
-        if (!currentBed->isDeleted && currentBed->bedID == bedID && currentBed->department == department)
+        if (!currentBed->isDeleted && currentBed->bedID == bedID && deptMatch(currentBed->department, department))
         {
             std::string statusStr = bedStatusToString(currentBed->status);
             std::cout << "床位ID: " << currentBed->bedID
@@ -3100,12 +3161,15 @@ bool Admin::viewBedsByHospitalizationID(bedInfo *&bed, Hospitalization *&hos, co
 // 修改床位状态
 void Admin::modifyBedStatus(bedInfo *&target, const std::string &department)
 {
-    std::cout << "请输入新的床位状态: ";
-    std::cout << "1. 可用" << std::endl;
-    std::cout << "2. 占用" << std::endl;
-    std::cout << "3. 清洁中" << std::endl;
-    std::cout << "4. 不可用" << std::endl;
-    std::cout << "0. 返回上级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择床位状态");
+    printMenuItem(1, "可用");
+    printMenuItem(2, "占用");
+    printMenuItem(3, "清洁中");
+    printMenuItem(4, "不可用");
+    printMenuItem(0, "返回上级菜单");
+    printMenuBottom();
 
     int newStatus = selectIntCheck(0, 4);
 
@@ -3153,7 +3217,7 @@ bool Admin::addBedInfo(bedInfo *&bed, const std::string &department)
     // 检查是否有重复的床位ID
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->bedID == newBed->bedID && current->department == department)
+        if (!current->isDeleted && current->bedID == newBed->bedID && deptMatch(current->department, department))
         {
             std::cout << "床位ID已存在！无法添加床位信息。" << std::endl;
             delete newBed; // 释放内存
@@ -3252,7 +3316,7 @@ void Admin::manageBedInfo(bedInfo *&bed, Hospitalization *&hos, const std::strin
                 bedInfo *target = bed;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->bedID == bedID && target->department == department)
+                    if (!target->isDeleted && target->bedID == bedID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -3278,9 +3342,12 @@ void Admin::manageBedInfo(bedInfo *&bed, Hospitalization *&hos, const std::strin
                                   << ", 占用天数: " << target->daysOccupied
                                   << std::endl;
 
-                        std::cout << "请选择你的操作：" << std::endl;
-                        std::cout << "1.修改床位状态" << std::endl;
-                        std::cout << "0.返回上级菜单" << std::endl;
+                        clearScreen();
+                        printMenuBorder();
+                        printMenuTitle("床位操作");
+                        printMenuItem(1, "修改床位状态");
+                        printMenuItem(0, "返回上级菜单");
+                        printMenuBottom();
 
                         int modifyChoice = selectIntCheck(0, 1);
 
@@ -3314,7 +3381,7 @@ void Admin::manageBedInfo(bedInfo *&bed, Hospitalization *&hos, const std::strin
                 bedInfo *target = bed;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->bedID == bedID && target->department == department)
+                    if (!target->isDeleted && target->bedID == bedID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -3338,9 +3405,12 @@ void Admin::manageBedInfo(bedInfo *&bed, Hospitalization *&hos, const std::strin
                               << ", 占用天数: " << target->daysOccupied
                               << std::endl;
 
-                    std::cout << "确认要删除该床位信息吗？: " << std::endl;
-                    std::cout << "1. 确认" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除床位信息");
+                    printMenuItem(1, "确认");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int confirmChoice = selectIntCheck(0, 1);
 
@@ -3387,7 +3457,7 @@ bool Admin::viewAllMedicationRecords(MedicationRecord *&medRec, const std::strin
 
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department)
+        if (!current->isDeleted && deptMatch(current->department, department))
         {
             std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
             std::string statusStr = medicationStatusToString(current->status);
@@ -3437,7 +3507,7 @@ bool Admin::viewMedicationRecordsByPatient(MedicationRecord *&medRec, const std:
     std::cout << "正在查找患者ID: " << patientID << " 的用药记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->patientID == patientID && current->department == department)
+        if (!current->isDeleted && current->patientID == patientID && deptMatch(current->department, department))
         {
             std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
             std::string statusStr = medicationStatusToString(current->status);
@@ -3487,7 +3557,7 @@ bool Admin::viewMedicationRecordsByDoctor(MedicationRecord *&medRec, const std::
     std::cout << "正在查找医生ID: " << doctorID << " 的用药记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->doctorID == doctorID && current->department == department)
+        if (!current->isDeleted && current->doctorID == doctorID && deptMatch(current->department, department))
         {
             std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
             std::string statusStr = medicationStatusToString(current->status);
@@ -3537,7 +3607,7 @@ bool Admin::viewMedicationRecordsByPharmacist(MedicationRecord *&medRec, const s
     std::cout << "正在查找药师ID: " << pharmacistID << " 的用药记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->pharmacistID == pharmacistID && current->department == department)
+        if (!current->isDeleted && current->pharmacistID == pharmacistID && deptMatch(current->department, department))
         {
             std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
             std::string statusStr = medicationStatusToString(current->status);
@@ -3587,7 +3657,7 @@ bool Admin::viewMedicationRecordByID(MedicationRecord *&medRec, const std::strin
     std::cout << "正在查找用药记录ID: " << medRecordID << " 的用药记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->medRecordID == medRecordID && current->department == department)
+        if (!current->isDeleted && current->medRecordID == medRecordID && deptMatch(current->department, department))
         {
             std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
             std::string statusStr = medicationStatusToString(current->status);
@@ -3638,7 +3708,7 @@ bool Admin::viewMedicationRecordsByMedicationID(MedicationRecord *&medRec, const
     std::cout << "正在查找药品ID: " << medicineID << " 的用药记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department)
+        if (!current->isDeleted && deptMatch(current->department, department))
         {
             for (const auto &line : current->lines)
             {
@@ -3698,7 +3768,7 @@ bool Admin::viewMedicationRecordsByConsultationID(MedicationRecord *&medRec, con
     std::cout << "正在查找看诊记录ID: " << consultationID << " 的用药记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->consultationID == consultationID && current->department == department)
+        if (!current->isDeleted && current->consultationID == consultationID && deptMatch(current->department, department))
         {
             std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
             std::string statusStr = medicationStatusToString(current->status);
@@ -3752,7 +3822,7 @@ bool Admin::viewMedicationRecordsByReviewStatus(MedicationRecord *&medRec, const
     std::cout << "正在查找审核状态为: " << medicationReviewStatusToString(filterStatus) << " 的用药记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->reviewStatus == filterStatus)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->reviewStatus == filterStatus)
         {
             std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
             std::string statusStr = medicationStatusToString(current->status);
@@ -3805,7 +3875,7 @@ bool Admin::viewMedicationRecordsByStatus(MedicationRecord *&medRec, const std::
     std::cout << "正在查找用药状态为: " << medicationStatusToString(filterStatus) << " 的用药记录..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->status == filterStatus)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->status == filterStatus)
         {
             std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
             std::string statusStr = medicationStatusToString(current->status);
@@ -3867,7 +3937,7 @@ bool Admin::addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Ph
     std::cout << "当前科室可以关联的看诊记录列表(还未审核处方的看诊记录): " << std::endl;
     while (currentCon != nullptr)
     {
-        if (!currentCon->isDeleted && !currentCon->prescriptions.empty() && !currentCon->isPrescriptionReviewed && currentCon->department == department)
+        if (!currentCon->isDeleted && !currentCon->prescriptions.empty() && !currentCon->isPrescriptionReviewed && deptMatch(currentCon->department, department))
         {
             std::cout << "看诊记录ID: " << currentCon->consultationID
                       << ", 患者ID: " << currentCon->patientID
@@ -3896,7 +3966,7 @@ bool Admin::addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Ph
 
     while (currentCon != nullptr)
     {
-        if (!currentCon->isDeleted && currentCon->consultationID == consultationID && currentCon->department == department)
+        if (!currentCon->isDeleted && currentCon->consultationID == consultationID && deptMatch(currentCon->department, department))
         {
             if (currentCon->prescriptions.empty())
             {
@@ -3916,7 +3986,7 @@ bool Admin::addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Ph
 
             while (currentPha != nullptr)
             {
-                if (!currentPha->isDeleted && currentPha->department == department)
+                if (!currentPha->isDeleted && deptMatch(currentPha->department, department))
                 {
                     std::cout << "药师ID: " << currentPha->getUserID() << ", 姓名: " << currentPha->getUsername() << std::endl;
                 }
@@ -3929,7 +3999,7 @@ bool Admin::addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Ph
             bool foundPha = false;
             while (currentPha != nullptr)
             {
-                if (!currentPha->isDeleted && currentPha->getUserID() == newMedRec->pharmacistID && currentPha->department == department)
+                if (!currentPha->isDeleted && currentPha->getUserID() == newMedRec->pharmacistID && deptMatch(currentPha->department, department))
                 {
                     foundPha = true;
                     break;
@@ -3973,7 +4043,7 @@ bool Admin::addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Ph
                 bool foundMed = false;
                 while (currentMed != nullptr)
                 {
-                    if (!currentMed->isDeleted && currentMed->medicineID == pres.medicineID && currentMed->department == department)
+                    if (!currentMed->isDeleted && currentMed->medicineID == pres.medicineID && deptMatch(currentMed->department, department))
                     {
                         MedicationLine line;
                         line.medicineID = pres.medicineID;
@@ -4008,7 +4078,7 @@ bool Admin::addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Ph
                 return false;
             }
 
-            newMedRec->medRecordID = "mrd" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+            newMedRec->medRecordID = "mrd" + padId(idCounter, 6);
             idCounter++;
             MyTime &t = MyTime::getInstance();
             newMedRec->createTime = t.getTime();
@@ -4109,7 +4179,7 @@ void Admin::manageMedicationRecords(MedicationRecord *&medRec, Consultation *con
                 MedicationRecord *target = medRec;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->medRecordID == medRecordID && target->department == department)
+                    if (!target->isDeleted && target->medRecordID == medRecordID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -4148,9 +4218,12 @@ void Admin::manageMedicationRecords(MedicationRecord *&medRec, Consultation *con
                                       << std::endl;
                         }
 
-                        std::cout << "请选择你的操作：" << std::endl;
-                        std::cout << "1. 修改审核状态" << std::endl;
-                        std::cout << "0. 返回上一级菜单" << std::endl;
+                        clearScreen();
+                        printMenuBorder();
+                        printMenuTitle("用药记录操作");
+                        printMenuItem(1, "修改审核状态");
+                        printMenuItem(0, "返回上一级菜单");
+                        printMenuBottom();
 
                         int modifyChoice = selectIntCheck(0, 1);
 
@@ -4183,7 +4256,7 @@ void Admin::manageMedicationRecords(MedicationRecord *&medRec, Consultation *con
                 MedicationRecord *target = medRec;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->medRecordID == medRecordID && target->department == department)
+                    if (!target->isDeleted && target->medRecordID == medRecordID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -4220,9 +4293,12 @@ void Admin::manageMedicationRecords(MedicationRecord *&medRec, Consultation *con
                                   << std::endl;
                     }
 
-                    std::cout << "确认要删除该用药记录吗？: " << std::endl;
-                    std::cout << "1. 确认" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除用药记录");
+                    printMenuItem(1, "确认");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int confirm = selectIntCheck(0, 1);
 
@@ -4266,11 +4342,12 @@ bool Admin::viewAllMedicines(Medicine *&med, const std::string &department)
     std::cout << "正在查找科室 " << department << " 库房中的药品信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department)
+        if (!current->isDeleted && deptMatch(current->department, department))
         {
             std::string statusStr = medicineStatusToString(current->status);
             std::cout << "药品ID: " << current->medicineID
                       << ", 药品名称: " << current->name
+                      << ", 通用名: " << (current->genericName == "#" ? "无" : current->genericName)
                       << ", 规格: " << current->specification
                       << ", 进价: " << current->purchasePrice
                       << ", 售价: " << current->salePrice
@@ -4280,8 +4357,17 @@ bool Admin::viewAllMedicines(Medicine *&med, const std::string &department)
                       << ", 生产日期: " << current->productionDate
                       << ", 有效期至: " << current->expiryDate
                       << ", 生产厂家: " << current->manufacturer
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
+                      << ", 备注: " << (current->note.empty() ? "无" : current->note);
+            if (!current->aliases.empty())
+            {
+                std::cout << ", 别名: ";
+                for (size_t i = 0; i < current->aliases.size(); i++)
+                {
+                    if (i > 0) std::cout << ", ";
+                    std::cout << current->aliases[i];
+                }
+            }
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -4303,11 +4389,12 @@ bool Admin::viewMedicineByID(Medicine *&med, const std::string &department)
     std::cout << "正在查找药品ID: " << medicineID << " 的药品信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->medicineID == medicineID && current->department == department)
+        if (!current->isDeleted && current->medicineID == medicineID && deptMatch(current->department, department))
         {
             std::string statusStr = medicineStatusToString(current->status);
             std::cout << "药品ID: " << current->medicineID
                       << ", 药品名称: " << current->name
+                      << ", 通用名: " << (current->genericName == "#" ? "无" : current->genericName)
                       << ", 规格: " << current->specification
                       << ", 进价: " << current->purchasePrice
                       << ", 售价: " << current->salePrice
@@ -4317,8 +4404,17 @@ bool Admin::viewMedicineByID(Medicine *&med, const std::string &department)
                       << ", 生产日期: " << current->productionDate
                       << ", 有效期至: " << current->expiryDate
                       << ", 生产厂家: " << current->manufacturer
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
+                      << ", 备注: " << (current->note.empty() ? "无" : current->note);
+            if (!current->aliases.empty())
+            {
+                std::cout << ", 别名: ";
+                for (size_t i = 0; i < current->aliases.size(); i++)
+                {
+                    if (i > 0) std::cout << ", ";
+                    std::cout << current->aliases[i];
+                }
+            }
+            std::cout << std::endl;
             found = true;
             break;
         }
@@ -4341,11 +4437,12 @@ bool Admin::viewMedicinesByName(Medicine *&med, const std::string &department)
     std::cout << "正在查找药品名称包含 \"" << name << "\" 的药品信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->name.find(name) != std::string::npos && current->department == department)
+        if (!current->isDeleted && current->name.find(name) != std::string::npos && deptMatch(current->department, department))
         {
             std::string statusStr = medicineStatusToString(current->status);
             std::cout << "药品ID: " << current->medicineID
                       << ", 药品名称: " << current->name
+                      << ", 通用名: " << (current->genericName == "#" ? "无" : current->genericName)
                       << ", 规格: " << current->specification
                       << ", 进价: " << current->purchasePrice
                       << ", 售价: " << current->salePrice
@@ -4355,8 +4452,17 @@ bool Admin::viewMedicinesByName(Medicine *&med, const std::string &department)
                       << ", 生产日期: " << current->productionDate
                       << ", 有效期至: " << current->expiryDate
                       << ", 生产厂家: " << current->manufacturer
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
+                      << ", 备注: " << (current->note.empty() ? "无" : current->note);
+            if (!current->aliases.empty())
+            {
+                std::cout << ", 别名: ";
+                for (size_t i = 0; i < current->aliases.size(); i++)
+                {
+                    if (i > 0) std::cout << ", ";
+                    std::cout << current->aliases[i];
+                }
+            }
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -4381,11 +4487,12 @@ bool Admin::viewMedicinesByStatus(Medicine *&med, const std::string &department)
     std::cout << "正在查找药品状态为: " << medicineStatusToString(filterStatus) << " 的药品信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->status == filterStatus)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->status == filterStatus)
         {
             std::string statusStr = medicineStatusToString(current->status);
             std::cout << "药品ID: " << current->medicineID
                       << ", 药品名称: " << current->name
+                      << ", 通用名: " << (current->genericName == "#" ? "无" : current->genericName)
                       << ", 规格: " << current->specification
                       << ", 进价: " << current->purchasePrice
                       << ", 售价: " << current->salePrice
@@ -4395,8 +4502,17 @@ bool Admin::viewMedicinesByStatus(Medicine *&med, const std::string &department)
                       << ", 生产日期: " << current->productionDate
                       << ", 有效期至: " << current->expiryDate
                       << ", 生产厂家: " << current->manufacturer
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
+                      << ", 备注: " << (current->note.empty() ? "无" : current->note);
+            if (!current->aliases.empty())
+            {
+                std::cout << ", 别名: ";
+                for (size_t i = 0; i < current->aliases.size(); i++)
+                {
+                    if (i > 0) std::cout << ", ";
+                    std::cout << current->aliases[i];
+                }
+            }
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -4418,11 +4534,12 @@ bool Admin::viewMedicinesByManufacturer(Medicine *&med, const std::string &depar
     std::cout << "正在查找生产厂家包含 \"" << manufacturer << "\" 的药品信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->manufacturer.find(manufacturer) != std::string::npos && current->department == department)
+        if (!current->isDeleted && current->manufacturer.find(manufacturer) != std::string::npos && deptMatch(current->department, department))
         {
             std::string statusStr = medicineStatusToString(current->status);
             std::cout << "药品ID: " << current->medicineID
                       << ", 药品名称: " << current->name
+                      << ", 通用名: " << (current->genericName == "#" ? "无" : current->genericName)
                       << ", 规格: " << current->specification
                       << ", 进价: " << current->purchasePrice
                       << ", 售价: " << current->salePrice
@@ -4432,8 +4549,17 @@ bool Admin::viewMedicinesByManufacturer(Medicine *&med, const std::string &depar
                       << ", 生产日期: " << current->productionDate
                       << ", 有效期至: " << current->expiryDate
                       << ", 生产厂家: " << current->manufacturer
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
+                      << ", 备注: " << (current->note.empty() ? "无" : current->note);
+            if (!current->aliases.empty())
+            {
+                std::cout << ", 别名: ";
+                for (size_t i = 0; i < current->aliases.size(); i++)
+                {
+                    if (i > 0) std::cout << ", ";
+                    std::cout << current->aliases[i];
+                }
+            }
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -4453,11 +4579,12 @@ bool Admin::viewMedicinesBySafetyStock(Medicine *&med, const std::string &depart
     std::cout << "正在查找当前库存数量低于安全库存阈值的药品信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->stock < current->safetyStock)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->stock < current->safetyStock)
         {
             std::string statusStr = medicineStatusToString(current->status);
             std::cout << "药品ID: " << current->medicineID
                       << ", 药品名称: " << current->name
+                      << ", 通用名: " << (current->genericName == "#" ? "无" : current->genericName)
                       << ", 规格: " << current->specification
                       << ", 进价: " << current->purchasePrice
                       << ", 售价: " << current->salePrice
@@ -4467,8 +4594,17 @@ bool Admin::viewMedicinesBySafetyStock(Medicine *&med, const std::string &depart
                       << ", 生产日期: " << current->productionDate
                       << ", 有效期至: " << current->expiryDate
                       << ", 生产厂家: " << current->manufacturer
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
+                      << ", 备注: " << (current->note.empty() ? "无" : current->note);
+            if (!current->aliases.empty())
+            {
+                std::cout << ", 别名: ";
+                for (size_t i = 0; i < current->aliases.size(); i++)
+                {
+                    if (i > 0) std::cout << ", ";
+                    std::cout << current->aliases[i];
+                }
+            }
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -4603,9 +4739,24 @@ bool Admin::addMedicine(Medicine *&med, const std::string &department, int &idCo
 
     newMed->manufacturer = inputStringCheck("请输入药品生产厂家: ");
 
+    newMed->genericName = inputStringCheck("请输入药品通用名（可选）: ");
+
+    std::cout << "请输入药品别名（逗号分隔，无则回车跳过）: ";
+    std::string aliasInput;
+    std::getline(std::cin, aliasInput);
+    if (!aliasInput.empty())
+    {
+        std::istringstream aliasStream(aliasInput);
+        std::string alias;
+        while (std::getline(aliasStream, alias, ','))
+        {
+            if (!alias.empty()) newMed->aliases.push_back(alias);
+        }
+    }
+
     newMed->note = inputStringCheck("请输入药品备注信息（可选）: ");
 
-    newMed->medicineID = "med" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    newMed->medicineID = "med" + padId(idCounter, 6);
     idCounter++;
 
     // 插入到链表头部
@@ -4619,7 +4770,7 @@ bool Admin::addMedicine(Medicine *&med, const std::string &department, int &idCo
     return true;
 }
 
-void Admin::manageMedicines(Medicine *&med, const std::string &department, int &idCounter)
+void Admin::manageMedicines(Medicine *&med, MedicineFlow *&medFlow, const std::string &department, int &idCounter, int &medFlowCounter)
 {
     while (true)
     {
@@ -4677,7 +4828,7 @@ void Admin::manageMedicines(Medicine *&med, const std::string &department, int &
                 Medicine *target = med;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->medicineID == medicineID && target->department == department)
+                    if (!target->isDeleted && target->medicineID == medicineID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -4785,7 +4936,7 @@ void Admin::manageMedicines(Medicine *&med, const std::string &department, int &
                 Medicine *target = med;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->medicineID == medicineID && target->department == department)
+                    if (!target->isDeleted && target->medicineID == medicineID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -4810,9 +4961,12 @@ void Admin::manageMedicines(Medicine *&med, const std::string &department, int &
                               << ", 备注: " << (target->note.empty() ? "无" : target->note)
                               << std::endl;
 
-                    std::cout << "确认要删除该药品吗？: " << std::endl;
-                    std::cout << "1. 确认" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除药品");
+                    printMenuItem(1, "确认");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int confirm = selectIntCheck(0, 1);
 
@@ -4840,11 +4994,238 @@ void Admin::manageMedicines(Medicine *&med, const std::string &department, int &
             addMedicine(med, department, idCounter);
             pause("管理员 > 药品管理");
         }
+        else if (choice == 5) // 药品出入库流水管理
+        {
+            manageMedicineFlows(medFlow, med, department, medFlowCounter);
+            pause("管理员 > 药品管理");
+        }
         else if (choice == 0) // 返回上一级菜单
         {
             break;
         }
     }
+}
+
+// ==================================== 药品出入库流水管理 =================================
+
+void Admin::manageMedicineFlows(MedicineFlow *&flowHead, Medicine *&medHead, const std::string &department, int &flowCounter)
+{
+    while (true)
+    {
+        int choice = adminMedicineFlowManagementMenu();
+        if (choice == 0) break;
+        else if (choice == 1) { viewAllMedicineFlows(flowHead, department); pause("管理员 > 药品流水管理"); }
+        else if (choice == 2) { viewMedicineFlowsByMedicineID(flowHead, department); pause("管理员 > 药品流水管理"); }
+        else if (choice == 3) { viewMedicineFlowsByType(flowHead, department); pause("管理员 > 药品流水管理"); }
+        else if (choice == 4) { viewMedicineFlowsByOperator(flowHead, department); pause("管理员 > 药品流水管理"); }
+        else if (choice == 5)
+        {
+            addMedicineFlow(flowHead, medHead, department, flowCounter);
+            pause("管理员 > 药品流水管理");
+        }
+        else std::cout << "无效的选择！" << std::endl;
+    }
+}
+
+void Admin::addMedicineFlow(MedicineFlow *&flowHead, Medicine *&medHead, const std::string &department, int &flowCounter)
+{
+    // 先查看所有药品让用户选择
+    viewAllMedicines(medHead, department);
+    std::string medicineID = inputRecordIDCheck("请输入药品ID: ", {"med"});
+
+    Medicine *target = medHead;
+    while (target != nullptr)
+    {
+        if (!target->isDeleted && target->medicineID == medicineID && deptMatch(target->department, department))
+            break;
+        target = target->next;
+    }
+    if (!target)
+    {
+        std::cout << "未找到ID为 " << medicineID << " 的药品！" << std::endl;
+        return;
+    }
+
+    int typeChoice = MedicineFlowTypeMenu();
+    if (typeChoice == 0) return;
+
+    std::cout << "请输入变动数量: ";
+    int quantity = selectIntCheck(1, INT_MAX);
+
+    // 出库时检查库存是否足够
+    if (typeChoice == 2 && quantity > target->stock)
+    {
+        std::cout << "库存不足！当前库存: " << target->stock << "，请求出库: " << quantity << std::endl;
+        return;
+    }
+
+    int reasonChoice = MedicineFlowReasonMenu();
+    if (reasonChoice == 0) return;
+
+    const char *reasons[] = {"", "采购入库", "退货入库", "盘点调整(入)", "处方发药(出)", "过期报损(出)", "退货出库", "盘点调整(出)", "其他原因"};
+    std::string reason = reasons[reasonChoice];
+
+    std::string note = inputStringCheck("请输入备注（可选）: ");
+
+    MedicineFlow *newFlow = new MedicineFlow();
+    newFlow->flowID = "mfl" + padId(flowCounter, 6);
+    flowCounter++;
+    newFlow->medicineID = medicineID;
+    newFlow->type = static_cast<MedicineFlowType>(typeChoice);
+    newFlow->quantity = quantity;
+    newFlow->operatorID = getUserID();
+    newFlow->reason = reason;
+    newFlow->timestamp = MyTime::getInstance().getTime();
+    newFlow->note = note.empty() ? "#" : note;
+
+    // 更新库存
+    if (typeChoice == 1) target->stock += quantity;
+    else target->stock -= quantity;
+
+    // 自动更新药品状态
+    target->status = (target->stock < target->safetyStock) ? MedicineStatus::LOW_STOCK : MedicineStatus::NORMAL;
+
+    // 头插入链表
+    newFlow->next = flowHead;
+    if (flowHead) flowHead->prev = newFlow;
+    flowHead = newFlow;
+
+    std::string typeStr = (typeChoice == 1) ? "入库" : "出库";
+    std::cout << "流水记录已添加！流水号: " << newFlow->flowID
+              << "，药品: " << target->name
+              << "，" << typeStr << " " << quantity << "，当前库存: " << target->stock << std::endl;
+    LogManager::getInstance().logOperation(getUserID(), "管理员", "药品流水",
+        typeStr + " " + std::to_string(quantity) + " - " + target->name);
+}
+
+bool Admin::viewAllMedicineFlows(MedicineFlow *&flowHead, const std::string &department)
+{
+    MedicineFlow *current = flowHead;
+    bool found = false;
+    std::cout << "\n===== 药品出入库流水记录（科室: " << department << "） =====" << std::endl;
+    std::cout << std::left << std::setw(12) << "流水号" << std::setw(10) << "药品ID"
+              << std::setw(6) << "类型" << std::setw(8) << "数量"
+              << std::setw(10) << "操作人" << std::setw(12) << "原因"
+              << std::setw(20) << "时间" << std::endl;
+    std::cout << std::string(90, '-') << std::endl;
+
+    while (current != nullptr)
+    {
+        if (!current->isDeleted)
+        {
+            std::string typeStr = (current->type == MedicineFlowType::IN_STOCK) ? "入库" : "出库";
+            std::cout << std::left << std::setw(12) << current->flowID
+                      << std::setw(10) << current->medicineID
+                      << std::setw(6) << typeStr << std::setw(8) << current->quantity
+                      << std::setw(10) << current->operatorID
+                      << std::setw(12) << current->reason
+                      << std::setw(20) << current->timestamp << std::endl;
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found) std::cout << "暂无流水记录。" << std::endl;
+    return found;
+}
+
+bool Admin::viewMedicineFlowsByMedicineID(MedicineFlow *&flowHead, const std::string &department)
+{
+    std::string medicineID = inputRecordIDCheck("请输入药品ID: ", {"med"});
+    MedicineFlow *current = flowHead;
+    bool found = false;
+    std::cout << "\n===== 药品 " << medicineID << " 的流水记录 =====" << std::endl;
+    std::cout << std::left << std::setw(12) << "流水号" << std::setw(6) << "类型"
+              << std::setw(8) << "数量" << std::setw(10) << "操作人"
+              << std::setw(12) << "原因" << std::setw(20) << "时间" << std::endl;
+    std::cout << std::string(70, '-') << std::endl;
+
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->medicineID == medicineID)
+        {
+            std::string typeStr = (current->type == MedicineFlowType::IN_STOCK) ? "入库" : "出库";
+            std::cout << std::left << std::setw(12) << current->flowID
+                      << std::setw(6) << typeStr << std::setw(8) << current->quantity
+                      << std::setw(10) << current->operatorID
+                      << std::setw(12) << current->reason
+                      << std::setw(20) << current->timestamp << std::endl;
+            found = true;
+        }
+        current = current->next;
+    }
+    if (!found) std::cout << "未找到该药品的流水记录。" << std::endl;
+    return found;
+}
+
+bool Admin::viewMedicineFlowsByType(MedicineFlow *&flowHead, const std::string &department)
+{
+    int typeChoice = MedicineFlowTypeMenu();
+    if (typeChoice == 0) return false;
+    MedicineFlowType targetType = static_cast<MedicineFlowType>(typeChoice);
+    std::string typeStr = (typeChoice == 1) ? "入库" : "出库";
+
+    MedicineFlow *current = flowHead;
+    bool found = false;
+    std::cout << "\n===== " << typeStr << "流水记录 =====" << std::endl;
+    std::cout << std::left << std::setw(12) << "流水号" << std::setw(10) << "药品ID"
+              << std::setw(8) << "数量" << std::setw(10) << "操作人"
+              << std::setw(12) << "原因" << std::setw(20) << "时间" << std::endl;
+    std::cout << std::string(70, '-') << std::endl;
+
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->type == targetType)
+        {
+            std::cout << std::left << std::setw(12) << current->flowID
+                      << std::setw(10) << current->medicineID
+                      << std::setw(8) << current->quantity
+                      << std::setw(10) << current->operatorID
+                      << std::setw(12) << current->reason
+                      << std::setw(20) << current->timestamp << std::endl;
+            found = true;
+        }
+        current = current->next;
+    }
+    if (!found) std::cout << "暂无" << typeStr << "流水记录。" << std::endl;
+    return found;
+}
+
+bool Admin::viewMedicineFlowsByOperator(MedicineFlow *&flowHead, const std::string &department)
+{
+    std::string operatorID = inputIDCheck("请输入操作人ID: ");
+    MedicineFlow *current = flowHead;
+    bool found = false;
+    std::cout << "\n===== 操作人 " << operatorID << " 的流水记录 =====" << std::endl;
+    std::cout << std::left << std::setw(12) << "流水号" << std::setw(10) << "药品ID"
+              << std::setw(6) << "类型" << std::setw(8) << "数量"
+              << std::setw(12) << "原因" << std::setw(20) << "时间" << std::endl;
+    std::cout << std::string(70, '-') << std::endl;
+
+    while (current != nullptr)
+    {
+        if (!current->isDeleted && current->operatorID == operatorID)
+        {
+            std::string typeStr = (current->type == MedicineFlowType::IN_STOCK) ? "入库" : "出库";
+            std::cout << std::left << std::setw(12) << current->flowID
+                      << std::setw(10) << current->medicineID
+                      << std::setw(6) << typeStr << std::setw(8) << current->quantity
+                      << std::setw(12) << current->reason
+                      << std::setw(20) << current->timestamp << std::endl;
+            found = true;
+        }
+        current = current->next;
+    }
+    if (!found) std::cout << "未找到该操作人的流水记录。" << std::endl;
+    return found;
+}
+
+void Admin::deleteMedicineFlow(MedicineFlow *&flowHead, MedicineFlow *&target)
+{
+    if (!target) return;
+    target->isDeleted = true;
+    std::cout << "流水记录 " << target->flowID << " 已删除（逻辑删除）" << std::endl;
+    LogManager::getInstance().logOperation(getUserID(), "管理员", "删除流水", target->flowID);
 }
 
 // ==================================== 医生信息管理 =================================
@@ -4857,7 +5238,7 @@ bool Admin::viewAllDoctors(Doctor *&doc, const std::string &department)
     std::cout << "正在查找科室 " << department << " 的医生信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department)
+        if (!current->isDeleted && deptMatch(current->department, department))
         {
             std::string titleStr = doctorTitleToString(current->title);
             std::cout << "医生ID: " << current->getUserID()
@@ -4894,7 +5275,7 @@ bool Admin::viewDoctorByID(Doctor *&doc, const std::string &department)
     std::cout << "正在查找ID: " << doctorID << " 的医生信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == doctorID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == doctorID && deptMatch(current->department, department))
         {
             std::string titleStr = doctorTitleToString(current->title);
             std::cout << "医生ID: " << current->getUserID()
@@ -4932,7 +5313,7 @@ bool Admin::viewDoctorsByName(Doctor *&doc, const std::string &department)
     std::cout << "正在查找姓名包含 \"" << name << "\" 的医生信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUsername().find(name) != std::string::npos && current->department == department)
+        if (!current->isDeleted && current->getUsername().find(name) != std::string::npos && deptMatch(current->department, department))
         {
             std::string titleStr = doctorTitleToString(current->title);
             std::cout << "医生ID: " << current->getUserID()
@@ -4977,7 +5358,7 @@ bool Admin::viewDoctorByTitle(Doctor *&doc, const std::string &department)
     std::cout << "正在查找职称为: " << doctorTitleToString(filterTitle) << " 的医生信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->title == filterTitle)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->title == filterTitle)
         {
             std::string titleStr = doctorTitleToString(current->title);
             std::cout << "医生ID: " << current->getUserID()
@@ -5010,10 +5391,13 @@ bool Admin::viewDoctorsByOnDutyStatus(Doctor *&doc, const std::string &departmen
 
     bool found = false;
 
-    std::cout << "请选择医生在岗状态过滤条件: " << std::endl;
-    std::cout << "1. 在岗" << std::endl;
-    std::cout << "2. 不在岗" << std::endl;
-    std::cout << "0. 返回上一级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("医生在岗状态筛选");
+    printMenuItem(1, "在岗");
+    printMenuItem(2, "不在岗");
+    printMenuItem(0, "返回上一级菜单");
+    printMenuBottom();
     int onDutyFilter = selectIntCheck(0, 2);
 
     if (onDutyFilter == 0)
@@ -5027,7 +5411,7 @@ bool Admin::viewDoctorsByOnDutyStatus(Doctor *&doc, const std::string &departmen
     std::cout << "正在查找在岗状态为: " << (filterOnDutyStatus ? "在岗" : "不在岗") << " 的医生信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->isOnDuty == filterOnDutyStatus)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->isOnDuty == filterOnDutyStatus)
         {
             std::string titleStr = doctorTitleToString(current->title);
             std::cout << "医生ID: " << current->getUserID()
@@ -5133,10 +5517,13 @@ void Admin::modifyDoctorEmail(Doctor *&target, const std::string &department)
 void Admin::modifyDoctorOnDutyStatus(Doctor *&target, const std::string &department)
 {
     std::cout << "当前医生在岗状态: " << (target->isOnDuty ? "在岗" : "不在岗") << std::endl;
-    std::cout << "请选择新的在岗状态: " << std::endl;
-    std::cout << "1. 在岗" << std::endl;
-    std::cout << "2. 不在岗" << std::endl;
-    std::cout << "0. 返回上一级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择在岗状态");
+    printMenuItem(1, "在岗");
+    printMenuItem(2, "不在岗");
+    printMenuItem(0, "返回上一级菜单");
+    printMenuBottom();
 
     int onDutyChoice = selectIntCheck(0, 2);
     if (onDutyChoice == 0)
@@ -5269,7 +5656,7 @@ void Admin::manageDoctors(Doctor *&doc, const std::string &department, int &idCo
                 Doctor *target = doc;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->getUserID() == doctorID && target->department == department)
+                    if (!target->isDeleted && target->getUserID() == doctorID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -5388,7 +5775,7 @@ void Admin::manageDoctors(Doctor *&doc, const std::string &department, int &idCo
                 Doctor *target = doc;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->getUserID() == doctorID && target->department == department)
+                    if (!target->isDeleted && target->getUserID() == doctorID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -5413,9 +5800,12 @@ void Admin::manageDoctors(Doctor *&doc, const std::string &department, int &idCo
                               << ", 累计开具住院证次数: " << target->hospitalizationApplyCount
                               << std::endl;
 
-                    std::cout << "确认要删除该医生吗？: " << std::endl;
-                    std::cout << "1. 确认" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除医生");
+                    printMenuItem(1, "确认");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int confirmChoice = selectIntCheck(0, 1);
                     if (confirmChoice == 1)
@@ -5458,7 +5848,7 @@ bool Admin::viewAllNurses(Nurse *&nurse, const std::string &department)
     std::cout << "正在查找科室 " << department << " 的护士信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department)
+        if (!current->isDeleted && deptMatch(current->department, department))
         {
             std::string level = nurseLevelToString(current->level);
             std::cout << "护士ID: " << current->getUserID()
@@ -5493,7 +5883,7 @@ bool Admin::viewNurseByID(Nurse *&nurse, const std::string &department)
     std::cout << "正在查找ID: " << nurseID << " 的护士信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == nurseID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == nurseID && deptMatch(current->department, department))
         {
             std::string level = nurseLevelToString(current->level);
             std::cout << "护士ID: " << current->getUserID()
@@ -5529,7 +5919,7 @@ bool Admin::viewNursesByName(Nurse *&nurse, const std::string &department)
     std::cout << "正在查找姓名包含 \"" << name << "\" 的护士信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUsername().find(name) != std::string::npos && current->department == department)
+        if (!current->isDeleted && current->getUsername().find(name) != std::string::npos && deptMatch(current->department, department))
         {
             std::string level = nurseLevelToString(current->level);
 
@@ -5561,10 +5951,13 @@ bool Admin::viewNursesByOnDutyStatus(Nurse *&nurse, const std::string &departmen
 
     bool found = false;
 
-    std::cout << "请选择护士在岗状态过滤条件: " << std::endl;
-    std::cout << "1. 在岗" << std::endl;
-    std::cout << "2. 不在岗" << std::endl;
-    std::cout << "0. 返回上一级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("护士在岗状态筛选");
+    printMenuItem(1, "在岗");
+    printMenuItem(2, "不在岗");
+    printMenuItem(0, "返回上一级菜单");
+    printMenuBottom();
     int onDutyFilter = selectIntCheck(0, 2);
 
     if (onDutyFilter == 0)
@@ -5578,7 +5971,7 @@ bool Admin::viewNursesByOnDutyStatus(Nurse *&nurse, const std::string &departmen
     std::cout << "正在查找在岗状态为: " << (filterOnDutyStatus ? "在岗" : "不在岗") << " 的护士信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->isOnDuty == filterOnDutyStatus)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->isOnDuty == filterOnDutyStatus)
         {
             std::string level = nurseLevelToString(current->level);
             std::cout << "护士ID: " << current->getUserID()
@@ -5621,7 +6014,7 @@ bool Admin::viewNurseByLevel(Nurse *&nurse, const std::string &department)
     std::cout << "正在查找等级为: " << nurseLevelToString(filterLevel) << " 的护士信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->level == filterLevel)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->level == filterLevel)
         {
             std::cout << "护士ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -5724,10 +6117,13 @@ void Admin::modifyNurseEmail(Nurse *&target, const std::string &department)
 void Admin::modifyNurseOnDutyStatus(Nurse *&target, const std::string &department)
 {
     std::cout << "当前护士在岗状态: " << (target->isOnDuty ? "在岗" : "不在岗") << std::endl;
-    std::cout << "请选择新的在岗状态: " << std::endl;
-    std::cout << "1. 在岗" << std::endl;
-    std::cout << "2. 不在岗" << std::endl;
-    std::cout << "0. 返回上一级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择在岗状态");
+    printMenuItem(1, "在岗");
+    printMenuItem(2, "不在岗");
+    printMenuItem(0, "返回上一级菜单");
+    printMenuBottom();
 
     int onDutyChoice = selectIntCheck(0, 2);
     if (onDutyChoice == 0)
@@ -5843,7 +6239,7 @@ void Admin::manageNurses(Nurse *&nurse, const std::string &department, int &idCo
                 Nurse *target = nurse;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->getUserID() == nurseID && target->department == department)
+                    if (!target->isDeleted && target->getUserID() == nurseID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -5948,7 +6344,7 @@ void Admin::manageNurses(Nurse *&nurse, const std::string &department, int &idCo
                 Nurse *target = nurse;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->getUserID() == nurseID && target->department == department)
+                    if (!target->isDeleted && target->getUserID() == nurseID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -5970,9 +6366,12 @@ void Admin::manageNurses(Nurse *&nurse, const std::string &department, int &idCo
                               << ", 床位管理次数: " << target->bedManageCount
                               << std::endl;
 
-                    std::cout << "确认要删除该护士吗？: " << std::endl;
-                    std::cout << "1. 确认" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除护士");
+                    printMenuItem(1, "确认");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int confirmChoice = selectIntCheck(0, 1);
                     if (confirmChoice == 1)
@@ -6016,7 +6415,7 @@ bool Admin::viewAllPharmacists(Pharmacist *&pharmacist, const std::string &depar
     std::cout << "正在查找科室 " << department << " 的药剂师信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department)
+        if (!current->isDeleted && deptMatch(current->department, department))
         {
             std::cout << "药剂师ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6051,7 +6450,7 @@ bool Admin::viewPharmacistByID(Pharmacist *&pharmacist, const std::string &depar
     std::cout << "正在查找ID: " << pharmacistID << " 的药剂师信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == pharmacistID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == pharmacistID && deptMatch(current->department, department))
         {
             std::cout << "药剂师ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6087,7 +6486,7 @@ bool Admin::viewPharmacistsByName(Pharmacist *&pharmacist, const std::string &de
     std::cout << "正在查找姓名包含 \"" << name << "\" 的药剂师信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUsername().find(name) != std::string::npos && current->department == department)
+        if (!current->isDeleted && current->getUsername().find(name) != std::string::npos && deptMatch(current->department, department))
         {
             std::cout << "药剂师ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6118,10 +6517,13 @@ bool Admin::viewPharmacistsByOnDutyStatus(Pharmacist *&pharmacist, const std::st
 
     bool found = false;
 
-    std::cout << "请选择药剂师在岗状态过滤条件: " << std::endl;
-    std::cout << "1. 在岗" << std::endl;
-    std::cout << "2. 不在岗" << std::endl;
-    std::cout << "0. 返回上一级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("药剂师在岗状态筛选");
+    printMenuItem(1, "在岗");
+    printMenuItem(2, "不在岗");
+    printMenuItem(0, "返回上一级菜单");
+    printMenuBottom();
     int onDutyFilter = selectIntCheck(0, 2);
 
     if (onDutyFilter == 0)
@@ -6135,7 +6537,7 @@ bool Admin::viewPharmacistsByOnDutyStatus(Pharmacist *&pharmacist, const std::st
     std::cout << "正在查找在岗状态为: " << (filterOnDutyStatus ? "在岗" : "不在岗") << " 的药剂师信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->isOnDuty == filterOnDutyStatus)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->isOnDuty == filterOnDutyStatus)
         {
             std::cout << "药剂师ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6178,7 +6580,7 @@ bool Admin::viewPharmacistByLevel(Pharmacist *&pharmacist, const std::string &de
     std::cout << "正在查找职称为: " << pharmacistLevelToString(filterLevel) << " 的药剂师信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department && current->level == filterLevel)
+        if (!current->isDeleted && deptMatch(current->department, department) && current->level == filterLevel)
         {
             std::cout << "药剂师ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6282,10 +6684,13 @@ void Admin::modifyPharmacistEmail(Pharmacist *&target, const std::string &depart
 void Admin::modifyPharmacistOnDutyStatus(Pharmacist *&target, const std::string &department)
 {
     std::cout << "当前药剂师在岗状态: " << (target->isOnDuty ? "在岗" : "不在岗") << std::endl;
-    std::cout << "请选择新的在岗状态: " << std::endl;
-    std::cout << "1. 在岗" << std::endl;
-    std::cout << "2. 不在岗" << std::endl;
-    std::cout << "0. 返回上一级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择在岗状态");
+    printMenuItem(1, "在岗");
+    printMenuItem(2, "不在岗");
+    printMenuItem(0, "返回上一级菜单");
+    printMenuBottom();
 
     int onDutyChoice = selectIntCheck(0, 2);
     if (onDutyChoice == 0)
@@ -6410,7 +6815,7 @@ void Admin::managePharmacists(Pharmacist *&pharmacist, const std::string &depart
                 Pharmacist *target = pharmacist;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->getUserID() == pharmacistID && target->department == department)
+                    if (!target->isDeleted && target->getUserID() == pharmacistID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -6521,7 +6926,7 @@ void Admin::managePharmacists(Pharmacist *&pharmacist, const std::string &depart
                 Pharmacist *target = pharmacist;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->getUserID() == pharmacistID && target->department == department)
+                    if (!target->isDeleted && target->getUserID() == pharmacistID && deptMatch(target->department, department))
                     {
                         break;
                     }
@@ -6544,9 +6949,12 @@ void Admin::managePharmacists(Pharmacist *&pharmacist, const std::string &depart
                               << ", 累计库存管理次数: " << target->inventoryManageCount
                               << std::endl;
 
-                    std::cout << "确定要删除该药剂师吗？: ";
-                    std::cout << "1. 确定" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除药剂师");
+                    printMenuItem(1, "确定");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int confirmChoice = selectIntCheck(0, 1);
 
@@ -6590,7 +6998,7 @@ bool Admin::viewAllPatients(Patient *&patient, const std::string &department)
     std::cout << "正在查找科室 " << department << " 的患者信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->department == department)
+        if (!current->isDeleted && deptMatch(current->department, department))
         {
             std::cout << "患者ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6630,7 +7038,7 @@ bool Admin::viewPatientByID(Patient *&patient, const std::string &department)
     std::cout << "正在查找ID: " << patientID << " 的患者信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "患者ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6671,7 +7079,7 @@ bool Admin::viewPatientsByName(Patient *&patient, const std::string &department)
     std::cout << "正在查找姓名包含 \"" << name << "\" 的患者信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUsername().find(name) != std::string::npos && current->department == department)
+        if (!current->isDeleted && current->getUsername().find(name) != std::string::npos && deptMatch(current->department, department))
         {
             std::cout << "患者ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6711,7 +7119,7 @@ bool Admin::viewPatientsByIDCard(Patient *&patient, const std::string &departmen
     std::cout << "正在查找身份证号: " << idCardNumber << " 的患者信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->idCardNumber == idCardNumber && current->department == department)
+        if (!current->isDeleted && current->idCardNumber == idCardNumber && deptMatch(current->department, department))
         {
             std::cout << "患者ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6752,7 +7160,7 @@ bool Admin::viewPatientsByGender(Patient *&patient, const std::string &departmen
     std::cout << "正在查找性别为 \"" << gender << "\" 的患者信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getGender() == gender && current->department == department)
+        if (!current->isDeleted && current->getGender() == gender && deptMatch(current->department, department))
         {
             std::cout << "患者ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6800,7 +7208,7 @@ bool Admin::viewPatientsByAgeGroup(Patient *&patient, const std::string &departm
     std::cout << "正在查找年龄在 " << minAge << " 到 " << maxAge << " 岁之间的患者信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getAge() >= minAge && current->getAge() <= maxAge && current->department == department)
+        if (!current->isDeleted && current->getAge() >= minAge && current->getAge() <= maxAge && deptMatch(current->department, department))
         {
             std::cout << "患者ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6833,10 +7241,13 @@ bool Admin::viewPatientsByAgeGroup(Patient *&patient, const std::string &departm
 // 根据患者住院状态查看患者信息
 bool Admin::viewPatientsByHospitalizationStatus(Patient *&patient, const std::string &department)
 {
-    std::cout << "请选择住院状态: " << std::endl;
-    std::cout << "1. 已住院" << std::endl;
-    std::cout << "2. 未住院" << std::endl;
-    std::cout << "0. 返回上一级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择住院状态");
+    printMenuItem(1, "已住院");
+    printMenuItem(2, "未住院");
+    printMenuItem(0, "返回上一级菜单");
+    printMenuBottom();
 
     int hospitalizationChoice = selectIntCheck(0, 2);
     if (hospitalizationChoice == 0)
@@ -6850,7 +7261,7 @@ bool Admin::viewPatientsByHospitalizationStatus(Patient *&patient, const std::st
     std::cout << "正在查找住院状态为 " << (filterHospitalized ? "已住院" : "未住院") << " 的患者信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->isHospitalized == filterHospitalized && current->department == department)
+        if (!current->isDeleted && current->isHospitalized == filterHospitalized && deptMatch(current->department, department))
         {
             std::cout << "患者ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6896,7 +7307,7 @@ bool Admin::viewPatientsByMaritalStatus(Patient *&patient, const std::string &de
     std::cout << "正在查找婚姻状况为 " << patientMaritalStatusToString(filterMaritalStatus) << " 的患者信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->maritalStatus == filterMaritalStatus && current->department == department)
+        if (!current->isDeleted && current->maritalStatus == filterMaritalStatus && deptMatch(current->department, department))
         {
             std::cout << "患者ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -6928,10 +7339,13 @@ bool Admin::viewPatientsByMaritalStatus(Patient *&patient, const std::string &de
 // 根据联系方式查看患者信息
 bool Admin::viewPatientsByContactInfo(Patient *&patient, const std::string &department)
 {
-    std::cout << "请选择联系方式类型: " << std::endl;
-    std::cout << "1. 电话号码" << std::endl;
-    std::cout << "2. 电子邮箱" << std::endl;
-    std::cout << "0. 返回上一级菜单" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择联系方式类型");
+    printMenuItem(1, "电话号码");
+    printMenuItem(2, "电子邮箱");
+    printMenuItem(0, "返回上一级菜单");
+    printMenuBottom();
     int contactChoice = selectIntCheck(0, 2);
 
     if (contactChoice == 0)
@@ -6949,7 +7363,7 @@ bool Admin::viewPatientsByContactInfo(Patient *&patient, const std::string &depa
         std::cout << "正在查找电话号码为 " << telephone << " 的患者信息..." << std::endl;
         while (current != nullptr)
         {
-            if (!current->isDeleted && current->getTelephone() == telephone && current->department == department)
+            if (!current->isDeleted && current->getTelephone() == telephone && deptMatch(current->department, department))
             {
                 std::cout << "患者ID: " << current->getUserID()
                           << ", 姓名: " << current->getUsername()
@@ -6985,7 +7399,7 @@ bool Admin::viewPatientsByContactInfo(Patient *&patient, const std::string &depa
         std::cout << "正在查找电子邮箱为 " << email << " 的患者信息..." << std::endl;
         while (current != nullptr)
         {
-            if (!current->isDeleted && current->getEmail() == email && current->department == department)
+            if (!current->isDeleted && current->getEmail() == email && deptMatch(current->department, department))
             {
                 std::cout << "患者ID: " << current->getUserID()
                           << ", 姓名: " << current->getUsername()
@@ -7025,7 +7439,7 @@ bool Admin::viewPatientsByAddress(Patient *&patient, const std::string &departme
     std::cout << "正在查找家庭住址包含 \"" << address << "\" 的患者信息..." << std::endl;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->address.find(address) != std::string::npos && current->department == department)
+        if (!current->isDeleted && current->address.find(address) != std::string::npos && deptMatch(current->department, department))
         {
             std::cout << "患者ID: " << current->getUserID()
                       << ", 姓名: " << current->getUsername()
@@ -7062,7 +7476,7 @@ void Admin::modifyPatientName(Patient *&patient, const std::string &department)
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者姓名: " << current->getUsername() << std::endl;
             std::string newName = inputStringCheck("请输入新的患者姓名: ");
@@ -7081,7 +7495,7 @@ void Admin::modifyPatientGender(Patient *&patient, const std::string &department
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者性别: " << current->getGender() << std::endl;
             std::string newGender = inputGenderCheck("请输入新的患者性别: ");
@@ -7100,7 +7514,7 @@ void Admin::modifyPatientAge(Patient *&patient, const std::string &department)
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者年龄: " << current->getAge() << std::endl;
             int newAge = inputAgeCheck("请输入新的患者年龄: ");
@@ -7119,7 +7533,7 @@ void Admin::modifyPatientDepartment(Patient *&patient, const std::string &depart
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者所属科室: " << current->department << std::endl;
 
@@ -7151,7 +7565,7 @@ void Admin::modifyPatientIDCard(Patient *&patient, const std::string &department
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者身份证号: " << current->idCardNumber << std::endl;
             std::string newIDCardNumber = inputIDcardCheck("请输入新的患者身份证号: ");
@@ -7170,7 +7584,7 @@ void Admin::modifyPatientTelephone(Patient *&patient, const std::string &departm
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者联系电话: " << current->getTelephone() << std::endl;
             std::string newTelephone = inputTelephoneCheck("请输入新的患者联系电话: ");
@@ -7189,7 +7603,7 @@ void Admin::modifyPatientEmail(Patient *&patient, const std::string &department)
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者电子邮箱: " << current->getEmail() << std::endl;
             std::string newEmail = inputEmailCheck("请输入新的患者电子邮箱: ");
@@ -7208,7 +7622,7 @@ void Admin::modifyPatientAddress(Patient *&patient, const std::string &departmen
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者家庭住址: " << current->address << std::endl;
             std::string newAddress = inputStringCheck("请输入新的患者家庭住址: ");
@@ -7227,7 +7641,7 @@ void Admin::modifyPatientMaritalStatus(Patient *&patient, const std::string &dep
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者婚姻状况: " << patientMaritalStatusToString(current->maritalStatus) << std::endl;
 
@@ -7255,7 +7669,7 @@ void Admin::modifyPatientEmergencyContact(Patient *&patient, const std::string &
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者紧急联系人姓名: " << current->emergencyContactName << std::endl;
             std::cout << "当前患者紧急联系人电话: " << current->emergencyContactPhone << std::endl;
@@ -7280,7 +7694,7 @@ void Admin::modifyPatientRegistrationCount(Patient *&patient, const std::string 
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者累计挂号次数: " << current->registrationCount << std::endl;
             std::cout << "请输入新的累计挂号次数: ";
@@ -7300,7 +7714,7 @@ void Admin::modifyPatientConsultationCount(Patient *&patient, const std::string 
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者累计看诊次数: " << current->consultationCount << std::endl;
             std::cout << "请输入新的累计看诊次数: ";
@@ -7320,7 +7734,7 @@ void Admin::modifyPatientHospitalizationCount(Patient *&patient, const std::stri
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者累计住院次数: " << current->hospitalizationCount << std::endl;
             std::cout << "请输入新的累计住院次数: ";
@@ -7340,7 +7754,7 @@ void Admin::modifyPatientMedicationCount(Patient *&patient, const std::string &d
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             std::cout << "当前患者累计用药记录数量: " << current->medicationCount << std::endl;
             std::cout << "请输入新的累计用药记录数量: ";
@@ -7360,7 +7774,7 @@ void Admin::deletePatient(Patient *&patient, const std::string &department)
     Patient *current = patient;
     while (current != nullptr)
     {
-        if (!current->isDeleted && current->getUserID() == patientID && current->department == department)
+        if (!current->isDeleted && current->getUserID() == patientID && deptMatch(current->department, department))
         {
             current->isDeleted = true; // 逻辑删除
             std::cout << "患者信息已删除！" << std::endl;
@@ -7471,7 +7885,7 @@ void Admin::managePatients(Patient *&patient, const std::string &department, int
                 Patient *target = patient;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->getUserID() == patientID && target->department == department)
+                    if (!target->isDeleted && target->getUserID() == patientID && deptMatch(target->department, department))
                     {
                         break; // 找到目标患者，跳出循环
                     }
@@ -7596,7 +8010,7 @@ void Admin::managePatients(Patient *&patient, const std::string &department, int
                 Patient *target = patient;
                 while (target != nullptr)
                 {
-                    if (!target->isDeleted && target->getUserID() == patientID && target->department == department)
+                    if (!target->isDeleted && target->getUserID() == patientID && deptMatch(target->department, department))
                     {
                         break; // 找到目标患者，跳出循环
                     }
@@ -7624,9 +8038,12 @@ void Admin::managePatients(Patient *&patient, const std::string &department, int
                               << ", 用药记录数量: " << target->medicationCount
                               << std::endl;
 
-                    std::cout << "确定要删除该患者信息吗？: ";
-                    std::cout << "1. 确定" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除患者信息");
+                    printMenuItem(1, "确定");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
                     int confirmChoice = selectIntCheck(0, 1);
                     if (confirmChoice == 1)
                     {
@@ -7668,43 +8085,16 @@ void Admin::AdminPersonalInfo()
         }
         else if (choice == 1)
         {
-            while (true)
-            {
-                int viewChoice = adminPersonalInfoViewMenu();
-                if (viewChoice == 0)
-                {
-                    break;
-                }
-                else if (viewChoice == 1)
-                {
-                    std::cout << "ID: " << this->userID << std::endl;
-                }
-                else if (viewChoice == 2)
-                {
-                    std::cout << "姓名: " << this->username << std::endl;
-                }
-                else if (viewChoice == 3)
-                {
-                    std::cout << "性别: " << this->gender << std::endl;
-                }
-                else if (viewChoice == 4)
-                {
-                    std::cout << "年龄: " << this->age << std::endl;
-                }
-                else if (viewChoice == 5)
-                {
-                    std::cout << "联系电话: " << this->telephone << std::endl;
-                }
-                else if (viewChoice == 6)
-                {
-                    std::cout << "电子邮箱: " << this->email << std::endl;
-                }
-                else if (viewChoice == 7)
-                {
-                    std::cout << "账号创建时间: " << this->createTime << std::endl;
-                }
-                pause("管理员 > 个人信息管理");
-            }
+            printInfoCard("管理员个人信息", {
+                {"用户ID", userID},
+                {"姓名", username},
+                {"性别", gender},
+                {"年龄", std::to_string(age)},
+                {"联系电话", telephone},
+                {"电子邮箱", email},
+                {"账号创建时间", createTime},
+            });
+            pause("管理员 > 个人信息管理");
         }
         else if (choice == 2)
         {
@@ -7782,4 +8172,324 @@ void Admin::AdminPersonalInfo()
             }
         }
     }
+}
+
+// ======================================== 统计报表功能 ========================================
+
+void Admin::showDepartmentReport(Doctor *&docHead, Registration *&regHead, Consultation *&conHead)
+{
+    const char *departments[] = {"内科", "外科", "妇产科", "急诊科", "儿科"};
+
+    // 时间范围选择
+    int timeChoice = timeRangeMenu();
+    if (timeChoice == 0) return;
+    std::string startTime, endTime;
+    if (timeChoice == 1) { startTime = getCurrentMonthStart(); }
+    else if (timeChoice == 2) { startTime = getMonthsAgoStart(3); }
+    else if (timeChoice == 3) { startTime = getMonthsAgoStart(6); }
+    else if (timeChoice == 4)
+    {
+        startTime = inputDateCheck("请输入起始日期 (YYYY-MM-DD): ") + " 00:00:00";
+        endTime = inputDateCheck("请输入结束日期 (YYYY-MM-DD): ") + " 23:59:59";
+    }
+
+    printTitle("科室统计总览");
+    if (timeChoice != 5)
+        std::cout << "时间范围: " << startTime << " ~ " << (endTime.empty() ? "至今" : endTime) << std::endl << std::endl;
+
+    for (const char *dept : departments)
+    {
+        int doctorCount = 0, regCount = 0, conCount = 0;
+        double totalFee = 0.0;
+
+        Doctor *d = docHead;
+        while (d) { if (!d->isDeleted && d->department == dept) doctorCount++; d = d->next; }
+
+        Registration *r = regHead;
+        while (r)
+        {
+            if (!r->isDeleted && r->department == dept && isTimestampInRange(r->registerTime, startTime, endTime))
+            {
+                regCount++;
+                totalFee += r->fee;
+            }
+            r = r->next;
+        }
+
+        Consultation *c = conHead;
+        while (c)
+        {
+            if (!c->isDeleted && c->department == dept && isTimestampInRange(c->consultationTime, startTime, endTime))
+                conCount++;
+            c = c->next;
+        }
+
+        std::cout << "【" << dept << "】 医生: " << doctorCount << "人 | 挂号: " << regCount
+                  << "次 | 看诊: " << conCount << "次 | 挂号收入: " << std::fixed << std::setprecision(2) << totalFee << "元" << std::endl;
+    }
+    pause("统计报表 > 科室统计");
+}
+
+void Admin::showDoctorWorkloadReport(Doctor *&docHead)
+{
+    printTitle("医生工作量统计");
+    std::cout << std::left;
+    std::cout << "ID      | 姓名     | 科室   | 职称         | 看诊数 | 检查数 | 住院证" << std::endl;
+    std::cout << "--------|----------|--------|-------------|--------|--------|-------" << std::endl;
+
+    Doctor *current = docHead;
+    while (current)
+    {
+        if (!current->isDeleted)
+        {
+            std::cout << current->getUserID() << " | "
+                      << current->getUsername() << " | "
+                      << current->department << " | "
+                      << doctorTitleToString(current->title) << " | "
+                      << current->consultationCount << " | "
+                      << current->examinationCount << " | "
+                      << current->hospitalizationApplyCount << std::endl;
+        }
+        current = current->next;
+    }
+    pause("统计报表 > 医生工作量");
+}
+
+void Admin::showPatientReport(Patient *&patientHead, Registration *&regHead, Consultation *&conHead)
+{
+    // 时间范围选择
+    int timeChoice = timeRangeMenu();
+    if (timeChoice == 0) return;
+    std::string startTime, endTime;
+    if (timeChoice == 1) { startTime = getCurrentMonthStart(); }
+    else if (timeChoice == 2) { startTime = getMonthsAgoStart(3); }
+    else if (timeChoice == 3) { startTime = getMonthsAgoStart(6); }
+    else if (timeChoice == 4)
+    {
+        startTime = inputDateCheck("请输入起始日期 (YYYY-MM-DD): ") + " 00:00:00";
+        endTime = inputDateCheck("请输入结束日期 (YYYY-MM-DD): ") + " 23:59:59";
+    }
+
+    printTitle("患者就诊统计");
+    if (timeChoice != 5)
+        std::cout << "时间范围: " << startTime << " ~ " << (endTime.empty() ? "至今" : endTime) << std::endl << std::endl;
+
+    int totalPatients = 0, hospitalized = 0;
+    double totalBalance = 0.0;
+    int newRegistrations = 0, newConsultations = 0;
+    double regRevenue = 0.0;
+
+    Patient *current = patientHead;
+    while (current)
+    {
+        if (!current->isDeleted)
+        {
+            totalPatients++;
+            totalBalance += current->balance;
+            if (current->isHospitalized) hospitalized++;
+        }
+        current = current->next;
+    }
+
+    // 时间范围内统计
+    Registration *r = regHead;
+    while (r)
+    {
+        if (!r->isDeleted && isTimestampInRange(r->registerTime, startTime, endTime))
+        {
+            newRegistrations++;
+            regRevenue += r->fee;
+        }
+        r = r->next;
+    }
+
+    Consultation *c = conHead;
+    while (c)
+    {
+        if (!c->isDeleted && isTimestampInRange(c->consultationTime, startTime, endTime))
+            newConsultations++;
+        c = c->next;
+    }
+
+    std::cout << "总患者数: " << totalPatients << std::endl;
+    std::cout << "当前住院中: " << hospitalized << std::endl;
+    std::cout << "患者账户总余额: " << std::fixed << std::setprecision(2) << totalBalance << " 元" << std::endl;
+    std::cout << std::string(50, '-') << std::endl;
+    std::cout << "【时间段统计】" << std::endl;
+    std::cout << "  新增挂号: " << newRegistrations << " 次 | 挂号收入: " << std::fixed << std::setprecision(2) << regRevenue << " 元" << std::endl;
+    std::cout << "  新增看诊: " << newConsultations << " 次" << std::endl;
+    std::cout << "  总收入(挂号): " << std::fixed << std::setprecision(2) << regRevenue << " 元" << std::endl;
+    pause("统计报表 > 患者统计");
+}
+
+void Admin::showBedUtilizationReport(bedInfo *&bedHead, Hospitalization *&hosHead)
+{
+    // 时间范围选择
+    int timeChoice = timeRangeMenu();
+    if (timeChoice == 0) return;
+    std::string startTime, endTime;
+    if (timeChoice == 1) { startTime = getCurrentMonthStart(); }
+    else if (timeChoice == 2) { startTime = getMonthsAgoStart(3); }
+    else if (timeChoice == 3) { startTime = getMonthsAgoStart(6); }
+    else if (timeChoice == 4)
+    {
+        startTime = inputDateCheck("请输入起始日期 (YYYY-MM-DD): ") + " 00:00:00";
+        endTime = inputDateCheck("请输入结束日期 (YYYY-MM-DD): ") + " 23:59:59";
+    }
+
+    printTitle("床位使用率统计");
+    if (timeChoice != 5)
+        std::cout << "时间范围: " << startTime << " ~ " << (endTime.empty() ? "至今" : endTime) << std::endl << std::endl;
+
+    int total = 0, occupied = 0, available = 0, maintenance = 0;
+    std::map<std::string, int> deptTotal, deptOccupied;
+
+    bedInfo *current = bedHead;
+    while (current)
+    {
+        if (!current->isDeleted)
+        {
+            total++;
+            deptTotal[current->department]++;
+            if (current->status == bedStatus::OCCUPIED) { occupied++; deptOccupied[current->department]++; }
+            else if (current->status == bedStatus::AVAILABLE) available++;
+            else maintenance++;
+        }
+        current = current->next;
+    }
+
+    // 时间段内入院/出院统计
+    int admittedInPeriod = 0, dischargedInPeriod = 0;
+    double totalHosRevenue = 0.0;
+    Hospitalization *h = hosHead;
+    while (h)
+    {
+        if (!h->isDeleted)
+        {
+            if (isTimestampInRange(h->admitTime, startTime, endTime)) admittedInPeriod++;
+            if (isTimestampInRange(h->dischargeTime, startTime, endTime)) dischargedInPeriod++;
+            if (h->status == HospitalizationStatus::DISCHARGED || h->status == HospitalizationStatus::ADMITTED)
+                totalHosRevenue += h->totalCost;
+        }
+        h = h->next;
+    }
+
+    std::cout << "总床位: " << total << " | 已占用: " << occupied << " | 空闲: " << available
+              << " | 维护中: " << maintenance << std::endl;
+    if (total > 0)
+        std::cout << "总使用率: " << std::fixed << std::setprecision(1) << (occupied * 100.0 / total) << "%" << std::endl;
+
+    std::cout << "\n按科室统计:" << std::endl;
+    for (auto &pair : deptTotal)
+    {
+        int occ = deptOccupied[pair.first];
+        double rate = pair.second > 0 ? (occ * 100.0 / pair.second) : 0;
+        std::cout << "  " << pair.first << ": " << pair.second << "张床位, " << occ << "张占用 ("
+                  << std::fixed << std::setprecision(1) << rate << "%)" << std::endl;
+    }
+
+    std::cout << "\n【时间段统计】" << std::endl;
+    std::cout << "  期间入院: " << admittedInPeriod << " 人次 | 期间出院: " << dischargedInPeriod << " 人次" << std::endl;
+    std::cout << "  住院总收入: " << std::fixed << std::setprecision(2) << totalHosRevenue << " 元" << std::endl;
+    pause("统计报表 > 床位使用率");
+}
+
+void Admin::showMedicineInventoryReport(Medicine *&medHead, MedicineFlow *&flowHead)
+{
+    // 时间范围选择
+    int timeChoice = timeRangeMenu();
+    if (timeChoice == 0) return;
+    std::string startTime, endTime;
+    if (timeChoice == 1) { startTime = getCurrentMonthStart(); }
+    else if (timeChoice == 2) { startTime = getMonthsAgoStart(3); }
+    else if (timeChoice == 3) { startTime = getMonthsAgoStart(6); }
+    else if (timeChoice == 4)
+    {
+        startTime = inputDateCheck("请输入起始日期 (YYYY-MM-DD): ") + " 00:00:00";
+        endTime = inputDateCheck("请输入结束日期 (YYYY-MM-DD): ") + " 23:59:59";
+    }
+
+    printTitle("药品库存统计");
+    if (timeChoice != 5)
+        std::cout << "时间范围: " << startTime << " ~ " << (endTime.empty() ? "至今" : endTime) << std::endl << std::endl;
+
+    int totalTypes = 0, lowStock = 0, expiredCount = 0;
+    double totalValue = 0.0, totalPurchaseValue = 0.0;
+
+    Medicine *current = medHead;
+    while (current)
+    {
+        if (!current->isDeleted)
+        {
+            totalTypes++;
+            totalValue += current->stock * current->salePrice;
+            totalPurchaseValue += current->stock * current->purchasePrice;
+            if (current->stock <= current->safetyStock) lowStock++;
+            // 检查过期
+            if (current->expiryDate != "#" && current->expiryDate < MyTime::getInstance().getTime().substr(0, 10))
+                expiredCount++;
+        }
+        current = current->next;
+    }
+
+    // 时间段内出入库统计
+    int inCount = 0, outCount = 0, inQty = 0, outQty = 0;
+    MedicineFlow *f = flowHead;
+    while (f)
+    {
+        if (!f->isDeleted && isTimestampInRange(f->timestamp, startTime, endTime))
+        {
+            if (f->type == MedicineFlowType::IN_STOCK) { inCount++; inQty += f->quantity; }
+            else { outCount++; outQty += f->quantity; }
+        }
+        f = f->next;
+    }
+
+    std::cout << "药品种类: " << totalTypes << std::endl;
+    std::cout << "库存预警(低于安全库存): " << lowStock << " 种" << std::endl;
+    std::cout << "已过期药品: " << expiredCount << " 种" << std::endl;
+    std::cout << "库存总价值(售价): " << std::fixed << std::setprecision(2) << totalValue << " 元" << std::endl;
+    std::cout << "库存总成本(进价): " << std::fixed << std::setprecision(2) << totalPurchaseValue << " 元" << std::endl;
+    std::cout << "潜在利润: " << std::fixed << std::setprecision(2) << (totalValue - totalPurchaseValue) << " 元" << std::endl;
+
+    if (lowStock > 0)
+    {
+        std::cout << "\n低库存药品列表:" << std::endl;
+        current = medHead;
+        while (current)
+        {
+            if (!current->isDeleted && current->stock <= current->safetyStock)
+            {
+                std::cout << "  " << current->medicineID << " " << current->name
+                          << " | 当前库存: " << current->stock
+                          << " | 安全库存: " << current->safetyStock << std::endl;
+            }
+            current = current->next;
+        }
+    }
+
+    std::cout << "\n【时间段出入库统计】" << std::endl;
+    std::cout << "  入库: " << inCount << " 笔, 共 " << inQty << " 件" << std::endl;
+    std::cout << "  出库: " << outCount << " 笔, 共 " << outQty << " 件" << std::endl;
+    std::cout << "  净变动: " << (inQty - outQty) << " 件" << std::endl;
+    pause("统计报表 > 药品库存");
+}
+
+void Admin::showDataAnalysisReport(Hospitalization *&hosHead, bedInfo *&bedHead, Registration *&regHead, Medicine *&medHead, MedicineFlow *&flowHead)
+{
+    DataAnalysisReport report = runFullAnalysis(hosHead, bedHead, regHead, medHead);
+
+    printTitle("数据分析与预测");
+    std::cout << "报告生成时间: " << report.generatedAt << std::endl << std::endl;
+
+    std::cout << "=== 表格报告 ===" << std::endl;
+    displayTabularReport(report);
+
+    std::cout << std::endl << "=== ASCII可视化图表 ===" << std::endl;
+    displayAsciiChart(report);
+
+    std::cout << std::endl << "=== 摘要报告 ===" << std::endl;
+    displaySummaryReport(report);
+
+    pause("统计报表 > 数据分析与预测");
 }

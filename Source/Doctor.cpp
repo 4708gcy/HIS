@@ -31,19 +31,29 @@ bool Doctor::doctorSignUp(int &idCounter)
     // 其他医生特有信息的初始化在这里进行
     this->department = inputDepartmentCheck("请输入所属科室: ");
 
-    std::cout << "请选择医生职称:" << std::endl;
-    std::cout << "1. 实习医师" << std::endl;
-    std::cout << "2. 住院医师" << std::endl;
-    std::cout << "3. 主治医师" << std::endl;
-    std::cout << "4. 副主任医师" << std::endl;
-    std::cout << "5. 主任医师" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择医生职称");
+    printMenuBottom();
+    printMenuItem(1, "实习医师");
+    printMenuItem(2, "住院医师");
+    printMenuItem(3, "主治医师");
+    printMenuItem(4, "副主任医师");
+    printMenuItem(5, "主任医师");
+    printMenuBottom();
     int titleChoice = selectIntCheck(1, 5);
     this->title = static_cast<DoctorTitle>(titleChoice);
 
     this->specialty = inputStringCheck("请输入擅长方向: ");
     this->scheduleInfo = inputStringCheck("请输入排班信息: ");
 
-    std::cout << "请输入你现在是否在岗 (1-是, 0-否): " << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("在岗状态");
+    printMenuBottom();
+    printMenuItem(1, "是");
+    printMenuItem(0, "否");
+    printMenuBottom();
     int onDutyChoice = selectIntCheck(0, 1);
     this->isOnDuty = (onDutyChoice == 1);
 
@@ -397,7 +407,7 @@ bool Doctor::createRegistrationByPatient(Registration *&regHead, Doctor *&doctor
                 if (!doc->isDeleted && doc->isOnDuty && doc->department == this->department && doc->doctorID == assignedDoctorID)
                 {
                     Registration *newReg = new Registration();
-                    newReg->registrationID = "reg" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0'); // 生成新的挂号ID，格式为 reg000001
+                    newReg->registrationID = "reg" + padId(idCounter, 6);
                     idCounter++;
                     newReg->patientID = patientID;
 
@@ -509,9 +519,13 @@ void Doctor::manageRegistrations(Registration *&regHead, Doctor *&doctor, Patien
                                   << ", 备注: " << target->note
                                   << std::endl;
 
-                        std::cout << "请选择你的操作: " << std::endl;
-                        std::cout << "1. 修改挂号状态" << std::endl;
-                        std::cout << "0. 返回上一级" << std::endl;
+                        clearScreen();
+                        printMenuBorder();
+                        printMenuTitle("挂号操作");
+                        printMenuBottom();
+                        printMenuItem(1, "修改挂号状态");
+                        printMenuItem(0, "返回上一级");
+                        printMenuBottom();
 
                         int modifyChoice = selectIntCheck(0, 1);
 
@@ -561,9 +575,13 @@ void Doctor::manageRegistrations(Registration *&regHead, Doctor *&doctor, Patien
                               << ", 备注: " << target->note
                               << std::endl;
 
-                    std::cout << "确认要删除这条挂号记录吗？: " << std::endl;
-                    std::cout << "1. 确认" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除挂号");
+                    printMenuBottom();
+                    printMenuItem(1, "确认");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int confirmChoice = selectIntCheck(0, 1);
 
@@ -1190,7 +1208,7 @@ bool Doctor::createConsultationByRegistration(Registration *&regHead, Consultati
         if (!currentReg->isDeleted && currentReg->doctorID == this->doctorID && currentReg->registrationID == regID)
         {
             Consultation *newCon = new Consultation();
-            newCon->consultationID = "con" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0'); // 生成新的看诊ID，格式为 con000001
+            newCon->consultationID = "con" + padId(idCounter, 6);
             idCounter++;
             newCon->registrationID = regID;
             newCon->patientID = currentReg->patientID;
@@ -1448,9 +1466,13 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                         }
                     }
 
-                    std::cout << "确定要删除该看诊记录吗？: " << std::endl;
-                    std::cout << "1. 确定" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除看诊");
+                    printMenuBottom();
+                    printMenuItem(1, "确定");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int deleteChoice = selectIntCheck(0, 1);
                     if (deleteChoice == 1)
@@ -1764,14 +1786,18 @@ bool Doctor::getExaminationsByItemName(Examination *&exaHead)
 // 根据检查状态获取检查记录信息
 bool Doctor::getExaminationsByStatus(Examination *&exaHead)
 {
-    std::cout << "请选择要查询的检查状态：" << std::endl;
-    std::cout << "1. 已下单" << std::endl;
-    std::cout << "2. 已支付" << std::endl;
-    std::cout << "3. 检查中" << std::endl;
-    std::cout << "4. 检查完成" << std::endl;
-    std::cout << "5. 报告已出" << std::endl;
-    std::cout << "6. 已作废" << std::endl;
-    std::cout << "0. 取消查询" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("查询检查状态");
+    printMenuBottom();
+    printMenuItem(1, "已下单");
+    printMenuItem(2, "已支付");
+    printMenuItem(3, "检查中");
+    printMenuItem(4, "检查完成");
+    printMenuItem(5, "报告已出");
+    printMenuItem(6, "已作废");
+    printMenuItem(0, "取消查询");
+    printMenuBottom();
 
     int statusChoice = selectIntCheck(0, 6);
 
@@ -1825,15 +1851,19 @@ bool Doctor::getExaminationsByStatus(Examination *&exaHead)
 // 修改检查记录的状态
 void Doctor::setExaminationStatus(Examination *&target)
 {
-    std::cout << "当前检查状态: " << examStatusToString(target->status) << std::endl;
-    std::cout << "请选择新的检查状态：" << std::endl;
-    std::cout << "1. 已下单" << std::endl;
-    std::cout << "2. 已支付" << std::endl;
-    std::cout << "3. 检查中" << std::endl;
-    std::cout << "4. 检查完成" << std::endl;
-    std::cout << "5. 报告已出" << std::endl;
-    std::cout << "6. 已作废" << std::endl;
-    std::cout << "0. 取消修改" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("修改检查状态");
+    printMenuLine("当前状态: " + examStatusToString(target->status));
+    printMenuBottom();
+    printMenuItem(1, "已下单");
+    printMenuItem(2, "已支付");
+    printMenuItem(3, "检查中");
+    printMenuItem(4, "检查完成");
+    printMenuItem(5, "报告已出");
+    printMenuItem(6, "已作废");
+    printMenuItem(0, "取消修改");
+    printMenuBottom();
 
     int statusChoice = selectIntCheck(0, 6);
 
@@ -1897,10 +1927,14 @@ void Doctor::setExaminationAttachments(Examination *&target)
         }
         std::cout << std::endl;
 
-        std::cout << "请选择操作:" << std::endl;
-        std::cout << "1. 添加附件" << std::endl;
-        std::cout << "2. 删除附件" << std::endl;
-        std::cout << "0. 返回上级菜单" << std::endl;
+        clearScreen();
+        printMenuBorder();
+        printMenuTitle("附件管理");
+        printMenuBottom();
+        printMenuItem(1, "添加附件");
+        printMenuItem(2, "删除附件");
+        printMenuItem(0, "返回上级菜单");
+        printMenuBottom();
         int op = selectIntCheck(0, 2);
 
         if (op == 0)
@@ -2020,7 +2054,7 @@ bool Doctor::createExaminationByConsultation(Consultation *&conHead, Examination
 
                 newExa->fee = calculateExaminationFee(newExa->itemName); // 根据检查项目名称计算检查费用
 
-                newExa->examinationID = "exa" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0'); // 生成新的检查ID，格式为 exa000001
+                newExa->examinationID = "exa" + padId(idCounter, 6);
                 idCounter++;
                 MyTime &t = MyTime::getInstance();
                 newExa->orderTime = t.getTime();
@@ -2222,9 +2256,13 @@ void Doctor::manageExaminations(Examination *&exaHead, Consultation *&conHead, i
                     }
                     std::cout << std::endl;
 
-                    std::cout << "确定要删除该检查记录吗？: " << std::endl;
-                    std::cout << "1. 确定" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("确认删除检查");
+                    printMenuBottom();
+                    printMenuItem(1, "确定");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int deleteChoice = selectIntCheck(0, 1);
                     if (deleteChoice == 1)
@@ -2261,75 +2299,10 @@ void Doctor::managePersonalInfo()
         }
         else if (choice == 1)
         {
-            while (true)
-            {
-                int viewChoice = doctorPersonalInfoViewMenu();
-                if (viewChoice == 0)
-                {
-                    break;
-                }
-                else if (viewChoice == 1)
-                {
-                    std::cout << "医生ID: " << this->doctorID << std::endl;
-                }
-                else if (viewChoice == 2)
-                {
-                    std::cout << "姓名: " << this->username << std::endl;
-                }
-                else if (viewChoice == 3)
-                {
-                    std::cout << "性别: " << this->gender << std::endl;
-                }
-                else if (viewChoice == 4)
-                {
-                    std::cout << "年龄: " << this->age << std::endl;
-                }
-                else if (viewChoice == 5)
-                {
-                    std::cout << "科室: " << this->department << std::endl;
-                }
-                else if (viewChoice == 6)
-                {
-                    std::cout << "职称: " << doctorTitleToString(this->title) << std::endl;
-                }
-                else if (viewChoice == 7)
-                {
-                    std::cout << "联系电话: " << this->telephone << std::endl;
-                }
-                else if (viewChoice == 8)
-                {
-                    std::cout << "邮箱: " << this->email << std::endl;
-                }
-                else if (viewChoice == 9)
-                {
-                    std::cout << "在岗状态: " << (this->isOnDuty ? "在岗" : "不在岗") << std::endl;
-                }
-                else if (viewChoice == 10)
-                {
-                    std::cout << "擅长方向: " << this->specialty << std::endl;
-                }
-                else if (viewChoice == 11)
-                {
-                    std::cout << "排班信息: " << this->scheduleInfo << std::endl;
-                }
-                else if (viewChoice == 12)
-                {
-                    std::cout << "累计接诊患者人数: " << this->consultationCount << std::endl;
-                }
-                else if (viewChoice == 13)
-                {
-                    std::cout << "累计完成的检查数量: " << this->examinationCount << std::endl;
-                }
-                else if (viewChoice == 14)
-                {
-                    std::cout << "累计开具住院证数量: " << this->hospitalizationApplyCount << std::endl;
-                }
-                else if (viewChoice == 15)
-                {
-                    std::cout << "账户创建时间: " << this->createTime << std::endl;
-                }
-                pause("医生 > 个人信息管理");
-            }
+            printInfoCard("医生个人信息", {
+                {"医生ID", doctorID}, {"姓名", username}, {"性别", gender}, {"年龄", std::to_string(age)}, {"科室", department}, {"职称", doctorTitleToString(title)}, {"联系电话", telephone}, {"邮箱", email}, {"在岗状态", isOnDuty ? "在岗" : "不在岗"}, {"擅长方向", specialty}, {"排班信息", scheduleInfo}, {"累计接诊患者人数", std::to_string(consultationCount)}, {"累计完成的检查数量", std::to_string(examinationCount)}, {"累计开具住院证数量", std::to_string(hospitalizationApplyCount)}, {"账户创建时间", createTime}
+            });
+            pause("医生 > 个人信息管理");
         }
         else if (choice == 2)
         {
@@ -2394,11 +2367,15 @@ void Doctor::managePersonalInfo()
                 }
                 else if (modifyChoice == 8)
                 {
-                    std::cout << "当前的在岗状态: " << (this->isOnDuty ? "在岗" : "不在岗") << std::endl;
-                    std::cout << "请选择新的在岗状态: " << std::endl;
-                    std::cout << "1. 在岗" << std::endl;
-                    std::cout << "2. 不在岗" << std::endl;
-                    std::cout << "0. 取消修改" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("修改在岗状态");
+                    printMenuLine("当前状态: " + std::string(this->isOnDuty ? "在岗" : "不在岗"));
+                    printMenuBottom();
+                    printMenuItem(1, "在岗");
+                    printMenuItem(2, "不在岗");
+                    printMenuItem(0, "取消修改");
+                    printMenuBottom();
 
                     int dutyChoice = selectIntCheck(0, 2);
                     if (dutyChoice == 0)

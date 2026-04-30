@@ -4,6 +4,7 @@
 #include "Head/SaveData.h"
 #include "Head/Login.h"
 #include <mutex>
+#include <csignal>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -24,6 +25,47 @@ int hospitalizationCount = 0;
 int medicationRecordCount = 0;
 int medicineCount = 0;
 int bedCount = 0;
+int medicineFlowIDCount = 0;
+
+// 全局指针用于信号处理中的紧急保存
+static Admin *g_adminHead = nullptr;
+static Doctor *g_docHead = nullptr;
+static Nurse *g_nurseHead = nullptr;
+static Pharmacist *g_phaHead = nullptr;
+static Patient *g_patientHead = nullptr;
+static Registration *g_regHead = nullptr;
+static Consultation *g_conHead = nullptr;
+static Examination *g_examHead = nullptr;
+static Hospitalization *g_hosHead = nullptr;
+static MedicationRecord *g_medRecHead = nullptr;
+static Medicine *g_medHead = nullptr;
+static MedicineFlow *g_medFlowHead = nullptr;
+static bedInfo *g_bedHead = nullptr;
+
+void emergencySave()
+{
+    std::cerr << "\n正在紧急保存数据..." << std::endl;
+    if (g_adminHead) saveAdminData(g_adminHead, adminIDCount);
+    if (g_docHead) saveDoctorData(g_docHead, doctorIDCount);
+    if (g_nurseHead) saveNurseData(g_nurseHead, nurseIDCount);
+    if (g_phaHead) savePharmacistData(g_phaHead, pharmacistIDCount);
+    if (g_patientHead) savePatientData(g_patientHead, patientIDCount);
+    if (g_regHead) saveRegistrations(g_regHead, registrationCount);
+    if (g_conHead) saveConsultations(g_conHead, consultationCount);
+    if (g_examHead) saveExaminations(g_examHead, examinationCount);
+    if (g_hosHead) saveHospitalizations(g_hosHead, hospitalizationCount);
+    if (g_medRecHead) saveMedicationRecords(g_medRecHead, medicationRecordCount);
+    if (g_medHead) saveMedicines(g_medHead, medicineCount);
+    if (g_medFlowHead) saveMedicineFlows(g_medFlowHead, medicineFlowIDCount);
+    if (g_bedHead) saveBedInfos(g_bedHead, bedCount);
+    std::cerr << "数据已紧急保存，程序退出。" << std::endl;
+}
+
+void signalHandler(int signum)
+{
+    emergencySave();
+    std::_Exit(signum);
+}
 
 int main()
 {
@@ -31,6 +73,10 @@ int main()
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 #endif
+
+    std::signal(SIGINT, signalHandler);
+    std::signal(SIGABRT, signalHandler);
+    std::signal(SIGTERM, signalHandler);
 
     Admin *adminHead = loadAdminData(adminIDCount); // 加载管理员数据
     if (adminHead == nullptr)
@@ -60,7 +106,17 @@ int main()
     Hospitalization *hosHead = loadHospitalizations(hospitalizationCount);       // 加载住院记录数据
     MedicationRecord *medRecHead = loadMedicationRecords(medicationRecordCount); // 加载用药记录数据
     Medicine *medHead = loadMedicines(medicineCount);                            // 加载药品信息数据
+    MedicineFlow *medFlowHead = loadMedicineFlows(medicineFlowIDCount);         // 加载药品流水记录
     bedInfo *bedHead = loadBedInfos(bedCount);                                   // 加载床位信息数据
+
+    // 设置全局指针用于信号处理中的紧急保存
+    g_adminHead = adminHead; g_docHead = docHead; g_nurseHead = nurseHead;
+    g_phaHead = phaHead; g_patientHead = patientHead; g_regHead = regHead;
+    g_conHead = conHead; g_examHead = examHead; g_hosHead = hosHead;
+    g_medRecHead = medRecHead; g_medHead = medHead; g_medFlowHead = medFlowHead; g_bedHead = bedHead;
+
+    try
+    {
 
     while (true) // 系统主循环，处理登录和注册逻辑
     {
@@ -82,12 +138,10 @@ int main()
                             int adminChoice = adminMenu();
                             if (adminChoice == 1) // 账户管理
                             {
+                                std::string department = adminDepartmentMenu();
+                                if (department == "0") continue;
                                 while (true)
                                 {
-                                    std::string department = adminDepartmentMenu();
-                                    if (department == "0") break;
-                                    while (true)
-                                    {
                                         int userChoice = adminUserManagementMenu();
                                         if (userChoice == 1) client->manageDoctors(docHead, department, doctorIDCount);
                                         else if (userChoice == 2) client->manageNurses(nurseHead, department, nurseIDCount);
@@ -96,15 +150,12 @@ int main()
                                         else if (userChoice == 0) break;
                                         else std::cout << "无效的选择! 请重新选择。" << std::endl;
                                     }
-                                }
                             }
                             else if (adminChoice == 2) // 医疗记录管理
                             {
+                                std::string department = adminDepartmentMenu();
+                                if (department == "0") continue;
                                 while (true)
-                                {
-                                    std::string department = adminDepartmentMenu();
-                                    if (department == "0") break;
-                                    while (true)
                                     {
                                         int recordChoice = adminMedicalRecordMenu();
                                         if (recordChoice == 1) client->manageRegistrations(regHead, docHead, department, registrationCount);
@@ -115,25 +166,18 @@ int main()
                                         else if (recordChoice == 0) break;
                                         else std::cout << "无效的选择! 请重新选择。" << std::endl;
                                     }
-                                }
                             }
                             else if (adminChoice == 3) // 药品管理
                             {
-                                while (true)
-                                {
-                                    std::string department = adminDepartmentMenu();
-                                    if (department == "0") break;
-                                    client->manageMedicines(medHead, department, medicineCount);
-                                }
+                                std::string department = adminDepartmentMenu();
+                                if (department == "0") continue;
+                                client->manageMedicines(medHead, medFlowHead, department, medicineCount, medicineFlowIDCount);
                             }
                             else if (adminChoice == 4) // 床位管理
                             {
-                                while (true)
-                                {
-                                    std::string department = adminDepartmentMenu();
-                                    if (department == "0") break;
-                                    client->manageBedInfo(bedHead, hosHead, department);
-                                }
+                                std::string department = adminDepartmentMenu();
+                                if (department == "0") continue;
+                                client->manageBedInfo(bedHead, hosHead, department);
                             }
                             else if (adminChoice == 5)
                             {
@@ -146,6 +190,20 @@ int main()
                             else if (adminChoice == 7) // 账号封锁管理
                             {
                                 AccountManagement(adminHead, docHead, nurseHead, phaHead, patientHead); // 调用账号激活/封锁管理函数
+                            }
+                            else if (adminChoice == 8) // 统计报表
+                            {
+                                while (true)
+                                {
+                                    int reportChoice = adminReportMenu();
+                                    if (reportChoice == 1) client->showDepartmentReport(docHead, regHead, conHead);
+                                    else if (reportChoice == 2) client->showDoctorWorkloadReport(docHead);
+                                    else if (reportChoice == 3) client->showPatientReport(patientHead, regHead, conHead);
+                                    else if (reportChoice == 4) client->showBedUtilizationReport(bedHead, hosHead);
+                                    else if (reportChoice == 5) client->showMedicineInventoryReport(medHead, medFlowHead);
+                                    else if (reportChoice == 6) client->showDataAnalysisReport(hosHead, bedHead, regHead, medHead, medFlowHead);
+                                    else if (reportChoice == 0) break;
+                                }
                             }
                             else if (adminChoice == 0) // 退出登录
                             {
@@ -311,6 +369,7 @@ int main()
                 if (newAdmin->adminSignUp(adminIDCount))
                 {
                     newAdmin->next = adminHead;
+                    if (adminHead != nullptr) adminHead->prev = newAdmin;
                     adminHead = newAdmin;
                     printSuccess("管理员注册成功");
                     LogManager::getInstance().logOperation(newAdmin->getUserID(), "管理员", "注册", "新管理员账号注册成功");
@@ -422,6 +481,7 @@ int main()
     saveHospitalizations(hosHead, hospitalizationCount);      // 保存住院记录数据
     saveMedicationRecords(medRecHead, medicationRecordCount); // 保存用药记录数据
     saveMedicines(medHead, medicineCount);                    // 保存药品信息数据
+    saveMedicineFlows(medFlowHead, medicineFlowIDCount);     // 保存药品流水记录
     saveBedInfos(bedHead, bedCount);                          // 保存床位信息数据
 
     LogManager::getInstance().info("系统退出，所有数据已保存");
@@ -438,5 +498,19 @@ int main()
     while (hosHead) { Hospitalization *n = hosHead->next; delete hosHead; hosHead = n; }
     while (medRecHead) { MedicationRecord *n = medRecHead->next; delete medRecHead; medRecHead = n; }
     while (medHead) { Medicine *n = medHead->next; delete medHead; medHead = n; }
+    while (medFlowHead) { MedicineFlow *n = medFlowHead->next; delete medFlowHead; medFlowHead = n; }
     while (bedHead) { bedInfo *n = bedHead->next; delete bedHead; bedHead = n; }
+    } // end try
+    catch (const std::exception &e)
+    {
+        std::cerr << "\n程序发生异常: " << e.what() << std::endl;
+        emergencySave();
+        return 1;
+    }
+    catch (...)
+    {
+        std::cerr << "\n程序发生未知异常" << std::endl;
+        emergencySave();
+        return 1;
+    }
 }

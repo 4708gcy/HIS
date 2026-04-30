@@ -23,9 +23,6 @@ void saveAdminData(Admin *adminHead, int count)
                 << current->getSalt() << ","
                 << (current->getIsAccountActive() ? "1" : "0") << ","
                 << current->getCreateTime() << ","
-                << current->getTotalRevenue() << ","
-                << current->getTotalExpenses() << ","
-                << current->getNetProfit() << ","
                 << (current->getIsDeleted() ? "1" : "0") << ","
                 << std::endl;
 
@@ -554,12 +551,48 @@ void saveMedicines(Medicine *medHead, int count)
                 << (current->isSpecial ? "1" : "0") << ","
                 << (current->isDeleted ? "1" : "0") << ","
                 << (current->note.empty() ? "无备注" : current->note) << ","
+                << (current->genericName.empty() || current->genericName == "#" ? "#" : current->genericName) << ","
                 << static_cast<int>(current->status)
                 << std::endl;
+        // 保存别名子行
+        for (const auto &alias : current->aliases)
+        {
+            outFile << "ALIAS:" << alias << std::endl;
+        }
         current = current->next;
     }
 
     outFile << "count:" << count << std::endl;
     outFile.close();
     std::cout << "药品信息数据保存成功！" << std::endl;
+}
+
+void saveMedicineFlows(MedicineFlow *flowHead, int count)
+{
+    std::ofstream outFile(MEDICINE_FLOW_FILE);
+    if (!outFile)
+    {
+        std::cerr << "无法打开药品流水文件进行保存！" << std::endl;
+        return;
+    }
+
+    MedicineFlow *current = flowHead;
+    while (current != nullptr)
+    {
+        outFile << current->flowID << ","
+                << current->medicineID << ","
+                << static_cast<int>(current->type) << ","
+                << current->quantity << ","
+                << current->operatorID << ","
+                << current->reason << ","
+                << current->timestamp << ","
+                << (current->note.empty() ? "无备注" : current->note) << ","
+                << (current->isDeleted ? "1" : "0")
+                << std::endl;
+        current = current->next;
+    }
+
+    outFile << "count:" << count << std::endl;
+    outFile.close();
+    std::cout << "药品流水数据保存成功！" << std::endl;
 }

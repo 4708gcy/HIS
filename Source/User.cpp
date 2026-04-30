@@ -17,7 +17,7 @@ bool User::signUp(int choice, int &idCounter)
         if (apiKey == "88888888")
         {
             role = UserRole::ADMIN;
-            userID = "0" + std::to_string(idCounter).insert(0, 5 - std::to_string(idCounter).length(), '0');
+            userID = "0" + padId(idCounter, 5);
             idCounter++;
             salt = generateSalt();
             MyTime &myTime = MyTime::getInstance();
@@ -49,7 +49,7 @@ bool User::signUp(int choice, int &idCounter)
     case 2:
     {
         role = UserRole::DOCTOR;
-        userID = "1" + std::to_string(idCounter).insert(0, 5 - std::to_string(idCounter).length(), '0');
+        userID = "1" + padId(idCounter, 5);
         idCounter++;
         salt = generateSalt();
         MyTime &myTime = MyTime::getInstance();
@@ -70,7 +70,7 @@ bool User::signUp(int choice, int &idCounter)
     case 3:
     {
         role = UserRole::NURSE;
-        userID = "2" + std::to_string(idCounter).insert(0, 5 - std::to_string(idCounter).length(), '0');
+        userID = "2" + padId(idCounter, 5);
         idCounter++;
         salt = generateSalt();
         MyTime &myTime = MyTime::getInstance();
@@ -89,7 +89,7 @@ bool User::signUp(int choice, int &idCounter)
     case 4:
     {
         role = UserRole::PHARMACIST;
-        userID = "3" + std::to_string(idCounter).insert(0, 5 - std::to_string(idCounter).length(), '0');
+        userID = "3" + padId(idCounter, 5);
         idCounter++;
         salt = generateSalt();
         MyTime &myTime = MyTime::getInstance();
@@ -108,7 +108,7 @@ bool User::signUp(int choice, int &idCounter)
     case 5:
     {
         role = UserRole::PATIENT;
-        userID = "4" + std::to_string(idCounter).insert(0, 5 - std::to_string(idCounter).length(), '0');
+        userID = "4" + padId(idCounter, 5);
         idCounter++;
         salt = generateSalt();
         MyTime &myTime = MyTime::getInstance();

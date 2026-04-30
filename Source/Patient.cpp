@@ -41,11 +41,15 @@ bool Patient::patientSignUp(int &idCounter)
     this->allergyHistory = inputStringCheck("请输入过敏史（如无请填写“无”）: ");
     this->pastMedicalHistory = inputStringCheck("请输入既往病史（如无请填写“无”）: ");
 
-    std::cout << "请选择婚姻状况:" << std::endl;
-    std::cout << "1. 未婚" << std::endl;
-    std::cout << "2. 已婚" << std::endl;
-    std::cout << "3. 离异" << std::endl;
-    std::cout << "4. 丧偶" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择婚姻状况");
+    printMenuBottom();
+    printMenuItem(1, "未婚");
+    printMenuItem(2, "已婚");
+    printMenuItem(3, "离异");
+    printMenuItem(4, "丧偶");
+    printMenuBottom();
     int maritalChoice = selectIntCheck(1, 4);
     this->maritalStatus = static_cast<MaritalStatus>(maritalChoice);
 
@@ -435,7 +439,7 @@ bool Patient::appointRegistration(Registration *&regHead, Doctor *&doctorHead, i
     }
 
     Registration *newReg = new Registration();
-    newReg->registrationID = "reg" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    newReg->registrationID = "reg" + padId(idCounter, 6);
     idCounter++;
     newReg->patientID = this->patientID;
     newReg->doctorID = docID;
@@ -474,9 +478,13 @@ void Patient::cancelRegistration(Registration *&target)
         return;
     }
 
-    std::cout << "是否确定撤回申请? : " << std::endl;
-    std::cout << "1. 确定" << std::endl;
-    std::cout << "0. 取消" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("撤回挂号申请");
+    printMenuBottom();
+    printMenuItem(1, "确定");
+    printMenuItem(0, "取消");
+    printMenuBottom();
 
     int c = selectIntCheck(0, 1);
     if (c == 1)
@@ -510,9 +518,13 @@ void Patient::payRegistrationFee(Registration *&target)
         return;
     }
 
-    std::cout << "是否确认支付? : " << std::endl;
-    std::cout << "1. 确定" << std::endl;
-    std::cout << "0. 取消" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("确认支付挂号费");
+    printMenuBottom();
+    printMenuItem(1, "确定");
+    printMenuItem(0, "取消");
+    printMenuBottom();
 
     int c = selectIntCheck(0, 1);
     if (c == 1)
@@ -593,9 +605,13 @@ void Patient::manageRegistrations(Registration *&regHead, Doctor *&doctorHead, i
                               << ", 备注: " << current->note
                               << std::endl;
 
-                    std::cout << "您确定要撤销该挂号申请吗？" << std::endl;
-                    std::cout << "1. 确定" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("撤销挂号申请");
+                    printMenuBottom();
+                    printMenuItem(1, "确定");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
                     int c = selectIntCheck(0, 1);
 
                     if (c == 1)
@@ -642,9 +658,13 @@ void Patient::manageRegistrations(Registration *&regHead, Doctor *&doctorHead, i
                               << ", 备注: " << current->note
                               << std::endl;
 
-                    std::cout << "您确定要支付该挂号费用吗？" << std::endl;
-                    std::cout << "1. 确定" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("支付挂号费用");
+                    printMenuBottom();
+                    printMenuItem(1, "确定");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
                     int c = selectIntCheck(0, 1);
 
                     if (c == 1)
@@ -1276,14 +1296,18 @@ bool Patient::getExaminationsByStatus(Examination *&examHead, int select)
     int choice = select;
     if (choice == -1)
     {
-        std::cout << "请输入查询的检查状态: ";
-        std::cout << "1. 待支付" << std::endl;
-        std::cout << "2. 已支付" << std::endl;
-        std::cout << "3. 检查中" << std::endl;
-        std::cout << "4. 检查完成" << std::endl;
-        std::cout << "5. 报告已出" << std::endl;
-        std::cout << "6. 已作废" << std::endl;
-        std::cout << "0. 取消查询" << std::endl;
+        clearScreen();
+        printMenuBorder();
+        printMenuTitle("查询检查状态");
+        printMenuBottom();
+        printMenuItem(1, "待支付");
+        printMenuItem(2, "已支付");
+        printMenuItem(3, "检查中");
+        printMenuItem(4, "检查完成");
+        printMenuItem(5, "报告已出");
+        printMenuItem(6, "已作废");
+        printMenuItem(0, "取消查询");
+        printMenuBottom();
 
         choice = selectIntCheck(0, 6);
 
@@ -1383,9 +1407,13 @@ void Patient::payExaminationFee(Examination *&target)
         return;
     }
 
-    std::cout << "是否确认支付? : " << std::endl;
-    std::cout << "1. 确定" << std::endl;
-    std::cout << "0. 取消" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("确认支付检查费");
+    printMenuBottom();
+    printMenuItem(1, "确定");
+    printMenuItem(0, "取消");
+    printMenuBottom();
 
     int c = selectIntCheck(0, 1);
     if (c == 1)
@@ -1511,9 +1539,13 @@ void Patient::manageExaminations(Examination *&examHead)
                     }
                     std::cout << std::endl;
 
-                    std::cout << "您确定要支付该检查费用吗？" << std::endl;
-                    std::cout << "1. 确定" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("支付检查费用");
+                    printMenuBottom();
+                    printMenuItem(1, "确定");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
                     int c = selectIntCheck(0, 1);
 
                     if (c == 1)
@@ -1665,11 +1697,15 @@ bool Patient::getMedicationsByStatus(MedicationRecord *&medHead, int select)
     int sChoice;
     if (select == -1)
     {
-        std::cout << "请选择要查询的用药发药状态: " << std::endl;
-        std::cout << "1. 未缴费" << std::endl;
-        std::cout << "2. 待发药" << std::endl;
-        std::cout << "3. 已发药" << std::endl;
-        std::cout << "4. 已退药" << std::endl;
+        clearScreen();
+        printMenuBorder();
+        printMenuTitle("查询用药发药状态");
+        printMenuBottom();
+        printMenuItem(1, "未缴费");
+        printMenuItem(2, "待发药");
+        printMenuItem(3, "已发药");
+        printMenuItem(4, "已退药");
+        printMenuBottom();
         sChoice = selectIntCheck(1, 4);
     }
     else
@@ -1758,7 +1794,13 @@ void Patient::payMedicationFee(MedicationRecord *&target)
         return;
     }
 
-    std::cout << "是否确认支付? (1. 确定 / 0. 取消): " << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("确认支付用药费");
+    printMenuBottom();
+    printMenuItem(1, "确定");
+    printMenuItem(0, "取消");
+    printMenuBottom();
     int confirm = selectIntCheck(0, 1);
     if (confirm == 1)
     {
@@ -1837,9 +1879,13 @@ void Patient::manageMedications(MedicationRecord *&medHead)
                     std::cout << "当前要支付的用药记录信息如下:" << std::endl;
                     printMedicationRecord(current);
 
-                    std::cout << "您确定要支付该用药费用吗？" << std::endl;
-                    std::cout << "1. 确定" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("支付用药费用");
+                    printMenuBottom();
+                    printMenuItem(1, "确定");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
                     int c = selectIntCheck(0, 1);
 
                     if (c == 1)
@@ -1968,12 +2014,16 @@ bool Patient::getHospitalizationsByStatus(Hospitalization *&hosHead, int select)
     int sChoice;
     if (select == -1)
     {
-        std::cout << "请选择要查询的住院状态: " << std::endl;
-        std::cout << "1. 申请中" << std::endl;
-        std::cout << "2. 已缴费" << std::endl;
-        std::cout << "3. 已入院" << std::endl;
-        std::cout << "4. 已出院" << std::endl;
-        std::cout << "5. 已作废" << std::endl;
+        clearScreen();
+        printMenuBorder();
+        printMenuTitle("查询住院状态");
+        printMenuBottom();
+        printMenuItem(1, "申请中");
+        printMenuItem(2, "已缴费");
+        printMenuItem(3, "已入院");
+        printMenuItem(4, "已出院");
+        printMenuItem(5, "已作废");
+        printMenuBottom();
         sChoice = selectIntCheck(1, 5);
     }
     else
@@ -2152,9 +2202,13 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
             printError("余额不足，无法为其办理出院，请先充值!");
             return;
         }
-        std::cout << "是否确认扣款并办理出院?: ";
-        std::cout << "1. 确认" << std::endl;
-        std::cout << "0. 取消" << std::endl;
+        clearScreen();
+        printMenuBorder();
+        printMenuTitle("确认出院扣款");
+        printMenuBottom();
+        printMenuItem(1, "确认");
+        printMenuItem(0, "取消");
+        printMenuBottom();
 
         int confirm = selectIntCheck(0, 1);
         if (confirm == 1)
@@ -2239,9 +2293,13 @@ void Patient::payHospitalizationDeposit(Hospitalization *&hosHead)
         return;
     }
 
-    std::cout << "是否确认缴纳?: ";
-    std::cout << "1. 确认" << std::endl;
-    std::cout << "0. 取消" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("确认缴纳费用");
+    printMenuBottom();
+    printMenuItem(1, "确认");
+    printMenuItem(0, "取消");
+    printMenuBottom();
 
     int confirm = selectIntCheck(0, 1);
     if (confirm == 1)
@@ -2329,95 +2387,10 @@ void Patient::managePersonalInfo()
         }
         else if (choice == 1)
         {
-            while (true)
-            {
-                int viewChoice = patientPersonalInfoViewMenu();
-                if (viewChoice == 0)
-                {
-                    break;
-                }
-                else if (viewChoice == 1)
-                {
-                    std::cout << "ID: " << this->patientID << std::endl;
-                }
-                else if (viewChoice == 2)
-                {
-                    std::cout << "姓名: " << this->username << std::endl;
-                }
-                else if (viewChoice == 3)
-                {
-                    std::cout << "性别: " << this->gender << std::endl;
-                }
-                else if (viewChoice == 4)
-                {
-                    std::cout << "年龄: " << this->age << std::endl;
-                }
-                else if (viewChoice == 5)
-                {
-                    std::cout << "身份证号: " << this->idCardNumber << std::endl;
-                }
-                else if (viewChoice == 6)
-                {
-                    std::cout << "联系电话: " << this->telephone << std::endl;
-                }
-                else if (viewChoice == 7)
-                {
-                    std::cout << "邮箱地址: " << this->email << std::endl;
-                }
-                else if (viewChoice == 8)
-                {
-                    std::cout << "家庭住址: " << this->address << std::endl;
-                }
-                else if (viewChoice == 9)
-                {
-                    std::cout << "紧急联系人姓名: " << this->emergencyContactName << std::endl;
-                }
-                else if (viewChoice == 10)
-                {
-                    std::cout << "紧急联系人电话: " << this->emergencyContactPhone << std::endl;
-                }
-                else if (viewChoice == 11)
-                {
-                    std::cout << "过敏史: " << this->allergyHistory << std::endl;
-                }
-                else if (viewChoice == 12)
-                {
-                    std::cout << "既往病史: " << this->pastMedicalHistory << std::endl;
-                }
-                else if (viewChoice == 13)
-                {
-                    std::cout << "婚姻状况: " << patientMaritalStatusToString(this->maritalStatus) << std::endl;
-                }
-                else if (viewChoice == 14)
-                {
-                    std::cout << "账户余额: " << this->balance << " 元" << std::endl;
-                }
-                else if (viewChoice == 15)
-                {
-                    std::cout << "是否住院中: " << (this->isHospitalized ? "是" : "否") << std::endl;
-                }
-                else if (viewChoice == 16)
-                {
-                    std::cout << "累计挂号次数: " << this->registrationCount << std::endl;
-                }
-                else if (viewChoice == 17)
-                {
-                    std::cout << "累计就诊次数: " << this->consultationCount << std::endl;
-                }
-                else if (viewChoice == 18)
-                {
-                    std::cout << "累计住院次数: " << this->hospitalizationCount << std::endl;
-                }
-                else if (viewChoice == 19)
-                {
-                    std::cout << "累计用药次数: " << this->medicationCount << std::endl;
-                }
-                else if (viewChoice == 20)
-                {
-                    std::cout << "账户创建时间: " << this->createTime << std::endl;
-                }
-                pause("患者 > 个人信息管理");
-            }
+            printInfoCard("患者个人信息", {
+                {"患者ID", patientID}, {"姓名", username}, {"性别", gender}, {"年龄", std::to_string(age)}, {"身份证号", idCardNumber}, {"联系电话", telephone}, {"邮箱地址", email}, {"家庭住址", address}, {"紧急联系人姓名", emergencyContactName}, {"紧急联系人电话", emergencyContactPhone}, {"过敏史", allergyHistory}, {"既往病史", pastMedicalHistory}, {"婚姻状况", patientMaritalStatusToString(maritalStatus)}, {"账户余额", std::to_string(balance) + " 元"}, {"是否住院中", isHospitalized ? "是" : "否"}, {"累计挂号次数", std::to_string(registrationCount)}, {"累计就诊次数", std::to_string(consultationCount)}, {"累计住院次数", std::to_string(hospitalizationCount)}, {"累计用药次数", std::to_string(medicationCount)}, {"账户创建时间", createTime}
+            });
+            pause("患者 > 个人信息管理");
         }
         else if (choice == 2)
         {
@@ -2497,13 +2470,17 @@ void Patient::managePersonalInfo()
                 }
                 else if (modifyChoice == 12)
                 {
-                    std::cout << "当前的婚姻状况: " << patientMaritalStatusToString(this->maritalStatus) << std::endl;
-                    std::cout << "请选择新的婚姻状况:" << std::endl;
-                    std::cout << "1. 未婚" << std::endl;
-                    std::cout << "2. 已婚" << std::endl;
-                    std::cout << "3. 离异" << std::endl;
-                    std::cout << "4. 丧偶" << std::endl;
-                    std::cout << "0. 取消修改" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("修改婚姻状况");
+                    printMenuLine("当前状况: " + patientMaritalStatusToString(this->maritalStatus));
+                    printMenuBottom();
+                    printMenuItem(1, "未婚");
+                    printMenuItem(2, "已婚");
+                    printMenuItem(3, "离异");
+                    printMenuItem(4, "丧偶");
+                    printMenuItem(0, "取消修改");
+                    printMenuBottom();
 
                     int maritalChoice = selectIntCheck(0, 4);
                     if (maritalChoice == 0)

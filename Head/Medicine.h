@@ -11,8 +11,7 @@
 #define MEDICINE_H
 
 #include <string>
-
-
+#include <vector>
 
 enum class MedicineStatus
 {
@@ -20,6 +19,12 @@ enum class MedicineStatus
     LOW_STOCK = 2,   // 库存低于安全阈值
     EXPIRED = 3,     // 已过期
     DISCONTINUED = 4 // 已停用
+};
+
+enum class MedicineFlowType
+{
+    IN_STOCK = 1,   // 入库
+    OUT_STOCK = 2   // 出库
 };
 
 struct Medicine
@@ -60,6 +65,12 @@ struct Medicine
     // 是否为专科受限用药（需二次审批）
     bool isSpecial = false;
 
+    // 通用名（国家药典标准名）
+    std::string genericName = "#";
+
+    // 别名/商品名列表（CSV中以 ALIAS: 子行存储）
+    std::vector<std::string> aliases;
+
     bool isDeleted = false; // 逻辑删除标志
 
     // 备注（储存条件、用法等）
@@ -71,6 +82,22 @@ struct Medicine
     // 双向链表指针（供内存链表使用）
     Medicine *prev = nullptr;
     Medicine *next = nullptr;
+};
+
+struct MedicineFlow
+{
+    std::string flowID = "#";               // 流水号，格式 mflXXXXXX
+    std::string medicineID = "#";           // 关联药品ID
+    MedicineFlowType type = MedicineFlowType::IN_STOCK; // 1=入库 2=出库
+    int quantity = 0;                       // 变动数量（正数）
+    std::string operatorID = "#";           // 操作人ID
+    std::string reason = "#";               // 原因：采购入库/退货出库/过期报损等
+    std::string timestamp = "#";            // 操作时间 YYYY-MM-DD hh:mm:ss
+    std::string note = "#";                 // 备注
+    bool isDeleted = false;
+
+    MedicineFlow *prev = nullptr;
+    MedicineFlow *next = nullptr;
 };
 
 #endif // MEDICINE_H

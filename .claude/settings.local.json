@@ -20,7 +20,15 @@
       "Bash(git diff *)",
       "Read(//d/D-vscode编程练习c/**)",
       "Bash(grep -c \"\\\\.Get\\\\|\\\\.Post\\\\|\\\\.Put\\\\|\\\\.Delete\" Source/ApiServer.cpp)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(git checkout *)",
+      "Bash(python *)",
+      "Bash(timeout 10 ./Debug/his.exe)",
+      "Bash(timeout 15 ./Debug/his.exe)",
+      "Bash(g++ -std=c++17 -I Head -o generate_test_data generate_test_data.cpp Source/SHA-256.cpp Source/UI.cpp)",
+      "Bash(g++ -std=c++17 -I Head -o generate_test_data generate_test_data.cpp Source/SHA-256.cpp)",
+      "Bash(./generate_test_data.exe)",
+      "Bash(grep -v \"^VITAL\\\\|^$\" Data/RecordData/HospitalizationChainData/bed_info.txt)"
     ]
   }
 }

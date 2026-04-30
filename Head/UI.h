@@ -21,6 +21,8 @@
 
 void pause(const std::string &breadcrumb = ""); // 暂停函数，等待用户按键继续（支持面包屑导航）
 std::string trim(const std::string &str);       // 去除字符串首尾空格的辅助函数
+void clearScreen();                              // 清屏函数
+int getDisplayWidth(const std::string &str);     // 获取字符串显示宽度（CJK字符占2列）
 
 // ======================================== 终端颜色与工具函数区域 =======================================
 
@@ -31,10 +33,27 @@ void printTitle(const std::string &title); // 打印带颜色的标题分隔线
 void printSuccess(const std::string &msg); // 打印成功消息（绿色）
 void printError(const std::string &msg);   // 打印错误消息（红色）
 void printWarning(const std::string &msg); // 打印警告消息（黄色）
+void printInfoCard(const std::string &title, const std::vector<std::pair<std::string, std::string>> &fields); // 打印个人信息卡片
+void printMenuBorder();                                        // 打印菜单顶部边框（Unicode双线）
+void printMenuBottom();                                        // 打印菜单底部边框
+void printMenuTitle(const std::string &title);                 // 打印居中标题（CJK宽度感知）
+void printMenuItem(int num, const std::string &text);          // 打印格式化菜单项（自动对齐）
+void printMenuLine(const std::string &text);                   // 打印无编号的菜单行
 
 // ======================================== 分页显示工具 =======================================================================
 
 void printWithPagination(const std::vector<std::string> &lines, int pageSize = 10); // 分页打印字符串列表，返回是否被用户中断
+
+// ======================================== 时间范围工具 =====================================================================
+
+// 检查时间戳是否在指定范围内（格式: "YYYY-MM-DD hh:mm:ss"）
+bool isTimestampInRange(const std::string &timestamp, const std::string &startTime, const std::string &endTime);
+// 获取当前月的起始时间 "YYYY-MM-01 00:00:00"
+std::string getCurrentMonthStart();
+// 获取近 N 个月的起始时间
+std::string getMonthsAgoStart(int monthsAgo);
+
+int timeRangeMenu(); // 时间范围选择菜单（本月/近三月/近半年/自定义/全部）
 
 // ======================================== 操作日志系统 =====================================================================
 
@@ -56,6 +75,9 @@ private:
 // ======================================== 操作日志系统 =====================================================================
 
 //  ======================================== 输入校验函数区域 =======================================
+
+std::string padId(int counter, int digits); // 安全的零填充ID生成，防止计数器溢出
+bool deptMatch(const std::string &entityDept, const std::string &filter); // 科室匹配，支持"全院"过滤
 
 int selectIntCheck(const int min, const int max);                                                                                         // 检查输入的选择是否在指定范围内
 double inputFeeCheck(const std::string &prompt);                                                                                          // 检查输入的费用是否为有效的正数
@@ -83,6 +105,7 @@ int loginRegisterUI(); // 登录和注册选择界面
 int beginUI(); // 启动界面，显示欢迎信息和主菜单
 
 int adminMenu(); // 管理员菜单，提供账户管理和医疗记录管理选项
+int adminReportMenu(); // 管理员统计报表菜单
 
 std::string adminDepartmentMenu(); // 管理员科室管理菜单
 
@@ -116,6 +139,10 @@ int adminMedicineManagementMenu(); // 管理员药品信息管理菜单
 int adminMedicineViewMenu();       // 管理员药品信息查看方式选择菜单
 int MedicineStatusMenu();          // 药品状态选择菜单
 int MedicineModificationMenu();    // 药品信息修改菜单
+int adminMedicineFlowManagementMenu(); // 药品出入库流水管理菜单
+int adminMedicineFlowViewMenu();       // 药品流水查看方式选择菜单
+int MedicineFlowTypeMenu();            // 流水类型选择（入库/出库）
+int MedicineFlowReasonMenu();          // 流水原因选择菜单
 
 // ========================================= 管理员账户管理菜单区域 =======================================
 

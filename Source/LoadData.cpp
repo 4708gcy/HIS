@@ -34,7 +34,7 @@ Admin *loadAdminData(int &count)
 
         std::istringstream iss(line);
         Admin *newAdmin = new Admin();
-        std::string isActiveStr, totalRevenueStr, totalExpensesStr, netProfitStr, isDeletedStr;
+        std::string isActiveStr, isDeletedStr;
         std::string userID, username, gender, ageStr, telephone, email, storedHash, salt, createTime;
 
         // 按保存顺序读取
@@ -48,9 +48,6 @@ Admin *loadAdminData(int &count)
         std::getline(iss, salt, ',');
         std::getline(iss, isActiveStr, ',');
         std::getline(iss, createTime, ',');
-        std::getline(iss, totalRevenueStr, ',');
-        std::getline(iss, totalExpensesStr, ',');
-        std::getline(iss, netProfitStr, ',');
         std::getline(iss, isDeletedStr, ',');
 
         newAdmin->setUserID(userID);
@@ -70,9 +67,6 @@ Admin *loadAdminData(int &count)
         newAdmin->setSalt(salt);
         newAdmin->setIsAccountActive(isActiveStr == "1");
         newAdmin->setCreateTime(createTime);
-        newAdmin->getTotalRevenue() = std::stod(totalRevenueStr);
-        newAdmin->getTotalExpenses() = std::stod(totalExpensesStr);
-        newAdmin->getNetProfit() = std::stod(netProfitStr);
         newAdmin->setIsDeleted(isDeletedStr == "1");
         newAdmin->setRole(UserRole::ADMIN);
 
@@ -844,6 +838,12 @@ Examination *loadExaminations(int &count)
                 while (std::getline(iss, field, ';'))
                     fields.push_back(field);
 
+                if (fields.size() < 15)
+                {
+                    std::cerr << "警告: 检查记录的体征数据字段不足(需要15个，实际" << fields.size() << "个)，跳过" << std::endl;
+                    continue;
+                }
+
                 // 按顺序赋值
                 try
                 {
@@ -1233,6 +1233,12 @@ bedInfo *loadBedInfos(int &count)
             while (std::getline(vsStream, field, ';'))
                 fields.push_back(field);
 
+            if (fields.size() < 15)
+            {
+                std::cerr << "警告: 床位记录的体征数据字段不足(需要15个，实际" << fields.size() << "个)，跳过" << std::endl;
+                continue;
+            }
+
             try
             {
                 newBed->vitalSigns.temperatureC = std::stod(fields[0]);
@@ -1524,75 +1530,148 @@ Medicine *loadMedicines(int &count)
 
         std::istringstream iss(line);
         Medicine *newMed = new Medicine();
-        std::string purchasePriceStr, salePriceStr, stockStr, safetyStockStr, isSpecialStr, isDeletedStr, noteStr, statusStr;
+        std::string purchasePriceStr, salePriceStr, stockStr, safetyStockStr, isSpecialStr, isDeletedStr, noteStr, genericNameStr, statusStr;
 
-        std::getline(iss, newMed->medicineID, ',');
-        std::getline(iss, newMed->name, ',');
-        std::getline(iss, newMed->specification, ',');
-        std::getline(iss, newMed->manufacturer, ',');
-        std::getline(iss, purchasePriceStr, ',');
-        std::getline(iss, salePriceStr, ',');
-        std::getline(iss, stockStr, ',');
-        std::getline(iss, safetyStockStr, ',');
-        std::getline(iss, newMed->productionDate, ',');
-        std::getline(iss, newMed->expiryDate, ',');
-        std::getline(iss, newMed->department, ',');
-        std::getline(iss, isSpecialStr, ',');
-        std::getline(iss, isDeletedStr, ',');
-        std::getline(iss, noteStr, ',');
-        std::getline(iss, statusStr);
+        // 先将所有字段读入 vector，以兼容旧版 CSV（无 genericName 字段）
+        std::vector<std::string> fields;
+        std::string field;
+        while (std::getline(iss, field, ','))
+        {
+            fields.push_back(field);
+        }
 
-        try
+        if (fields.size() >= 1) newMed->medicineID = fields[0];
+        if (fields.size() >= 2) newMed->name = fields[1];
+        if (fields.size() >= 3) newMed->specification = fields[2];
+        if (fields.size() >= 4) newMed->manufacturer = fields[3];
+        if (fields.size() >= 5) purchasePriceStr = fields[4];
+        if (fields.size() >= 6) salePriceStr = fields[5];
+        if (fields.size() >= 7) stockStr = fields[6];
+        if (fields.size() >= 8) safetyStockStr = fields[7];
+        if (fields.size() >= 9) newMed->productionDate = fields[8];
+        if (fields.size() >= 10) newMed->expiryDate = fields[9];
+        if (fields.size() >= 11) newMed->department = fields[10];
+        if (fields.size() >= 12) isSpecialStr = fields[11];
+        if (fields.size() >= 13) isDeletedStr = fields[12];
+        if (fields.size() >= 14) noteStr = fields[13];
+
+        // 新格式：fields[14] = genericName, fields[15] = status
+        // 旧格式：fields[14] = status (15 个字段)
+        if (fields.size() >= 16)
         {
-            newMed->purchasePrice = std::stod(purchasePriceStr);
+            genericNameStr = fields[14];
+            statusStr = fields[15];
         }
-        catch (...)
+        else if (fields.size() >= 15)
         {
-            newMed->purchasePrice = 0.0;
+            statusStr = fields[14];
+            genericNameStr = "#";
         }
-        try
+        else
         {
-            newMed->salePrice = std::stod(salePriceStr);
+            genericNameStr = "#";
+            statusStr = "1";
         }
-        catch (...)
-        {
-            newMed->salePrice = 0.0;
-        }
-        try
-        {
-            newMed->stock = std::stoi(stockStr);
-        }
-        catch (...)
-        {
-            newMed->stock = 0;
-        }
-        try
-        {
-            newMed->safetyStock = std::stoi(safetyStockStr);
-        }
-        catch (...)
-        {
-            newMed->safetyStock = 0;
-        }
+
+        try { newMed->purchasePrice = std::stod(purchasePriceStr); }
+        catch (...) { newMed->purchasePrice = 0.0; }
+        try { newMed->salePrice = std::stod(salePriceStr); }
+        catch (...) { newMed->salePrice = 0.0; }
+        try { newMed->stock = std::stoi(stockStr); }
+        catch (...) { newMed->stock = 0; }
+        try { newMed->safetyStock = std::stoi(safetyStockStr); }
+        catch (...) { newMed->safetyStock = 0; }
         newMed->isSpecial = (isSpecialStr == "1");
         newMed->isDeleted = (isDeletedStr == "1");
         newMed->note = (noteStr == "无备注" ? "" : noteStr);
-        try
+        newMed->genericName = (genericNameStr.empty() || genericNameStr == "#") ? "#" : genericNameStr;
+        try { newMed->status = static_cast<MedicineStatus>(std::stoi(statusStr)); }
+        catch (...) { newMed->status = MedicineStatus::NORMAL; }
+
+        Medicine *currentMed = newMed;
+
+        // 读取别名子行
+        while (std::getline(inFile, line))
         {
-            newMed->status = static_cast<MedicineStatus>(std::stoi(statusStr));
-        }
-        catch (...)
-        {
-            newMed->status = MedicineStatus::NORMAL;
+            if (line.rfind("count:", 0) == 0)
+            {
+                try { count = std::stoi(line.substr(6)); }
+                catch (...) { count = 0; }
+                break;
+            }
+            if (line.rfind("ALIAS:", 0) == 0)
+            {
+                std::string alias = line.substr(6);
+                if (!alias.empty()) currentMed->aliases.push_back(alias);
+            }
+            else
+            {
+                // 下一个主记录，回退一行让外层循环处理
+                inFile.seekg(inFile.tellg().operator-(std::streamoff(line.size()) + 1));
+                break;
+            }
         }
 
         // 链表头插
-        newMed->prev = nullptr;
-        newMed->next = medHead;
+        currentMed->prev = nullptr;
+        currentMed->next = medHead;
         if (medHead)
-            medHead->prev = newMed;
-        medHead = newMed;
+            medHead->prev = currentMed;
+        medHead = currentMed;
     }
     inFile.close();
     return medHead;
+}
+
+MedicineFlow *loadMedicineFlows(int &count)
+{
+    MedicineFlow *flowHead = nullptr;
+    std::ifstream inFile(MEDICINE_FLOW_FILE);
+    if (!inFile)
+    {
+        std::cerr << "无法打开药品流水文件！" << std::endl;
+        count = 0;
+        return nullptr;
+    }
+
+    std::string line;
+    count = 0;
+    while (std::getline(inFile, line))
+    {
+        if (line.rfind("count:", 0) == 0)
+        {
+            try { count = std::stoi(line.substr(6)); }
+            catch (...) { count = 0; }
+            break;
+        }
+        if (line.empty()) continue;
+
+        std::istringstream iss(line);
+        MedicineFlow *newFlow = new MedicineFlow();
+        std::string typeStr, quantityStr, isDeletedStr;
+
+        std::getline(iss, newFlow->flowID, ',');
+        std::getline(iss, newFlow->medicineID, ',');
+        std::getline(iss, typeStr, ',');
+        std::getline(iss, quantityStr, ',');
+        std::getline(iss, newFlow->operatorID, ',');
+        std::getline(iss, newFlow->reason, ',');
+        std::getline(iss, newFlow->timestamp, ',');
+        std::getline(iss, newFlow->note, ',');
+        std::getline(iss, isDeletedStr);
+
+        try { newFlow->type = static_cast<MedicineFlowType>(std::stoi(typeStr)); }
+        catch (...) { newFlow->type = MedicineFlowType::IN_STOCK; }
+        try { newFlow->quantity = std::stoi(quantityStr); }
+        catch (...) { newFlow->quantity = 0; }
+        newFlow->isDeleted = (isDeletedStr == "1");
+
+        // 链表头插
+        newFlow->prev = nullptr;
+        newFlow->next = flowHead;
+        if (flowHead) flowHead->prev = newFlow;
+        flowHead = newFlow;
+    }
+    inFile.close();
+    return flowHead;
 }

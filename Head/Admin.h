@@ -18,11 +18,6 @@
 
 class Admin : public User
 {
-private:
-    double totalRevenue = 0.0;  // 医院总收入统计（可选）
-    double totalExpenses = 0.0; // 医院总支出统计（可选）
-    double netProfit = 0.0;     // 医院净利润统计（可选）
-
 public:
     Admin *next = nullptr; // 管理员链表的下一个节点指针
     Admin *prev = nullptr; // 管理员链表的上一个节点指针
@@ -31,9 +26,6 @@ public:
 
     bool adminSignUp(int &idCounter); // 管理员注册，调用基类的 signUp(1) 方法，并将管理员信息保存到文件中
     bool adminSignIn();                 // 管理员登录，验证用户ID和密码，并设置登录状态
-    double &getTotalRevenue();          // 获取医院总收入
-    double &getTotalExpenses();         // 获取医院总支出
-    double &getNetProfit();             // 获取医院净利润
 
     // === 管理医疗记录 ===
     void manageRegistrations(Registration *&reg, Doctor *&doc, const std::string &department, int &idCounter); // 管理挂号记录（查看、修改状态等）
@@ -106,7 +98,7 @@ public:
     void deleteMedicationRecord(MedicationRecord *&medRec, const std::string &department);                                                                     // 删除用药记录（逻辑删除，设置 isDeleted 标志）
     bool addMedicationRecord(MedicationRecord *&medRec, Consultation *con, Pharmacist *pha, Medicine *med, const std::string &department, int &idCounter);     // 添加用药记录（根据输入信息创建新的 MedicationRecord 对象，并插入到链表中）
 
-    void manageMedicines(Medicine *&med, const std::string &department, int &idCounter); // 管理药品信息（查看、修改库存等）
+    void manageMedicines(Medicine *&med, MedicineFlow *&medFlow, const std::string &department, int &idCounter, int &flowCounter); // 管理药品信息（查看、修改库存等）
     bool viewAllMedicines(Medicine *&med, const std::string &department);                // 查看所有药品信息（可按科室、状态过滤）
     bool viewMedicineByID(Medicine *&med, const std::string &department);                // 根据药品ID查看药品信息
     bool viewMedicinesByName(Medicine *&med, const std::string &department);             // 根据药品名称查看药品信息
@@ -127,6 +119,15 @@ public:
     void modifyMedicineManufacturer(Medicine *&target, const std::string &department);   // 修改药品生产厂家
     void deleteMedicine(Medicine *&target, const std::string &department);               // 删除药品信息（逻辑删除，设置 isDeleted 标志）
     bool addMedicine(Medicine *&med, const std::string &department, int &idCounter);     // 添加药品信息（根据输入信息创建新的 Medicine 对象，并插入到链表中）
+
+    // === 药品出入库流水管理 ===
+    void manageMedicineFlows(MedicineFlow *&flowHead, Medicine *&medHead, const std::string &department, int &flowCounter);
+    void addMedicineFlow(MedicineFlow *&flowHead, Medicine *&medHead, const std::string &department, int &flowCounter);
+    void deleteMedicineFlow(MedicineFlow *&flowHead, MedicineFlow *&target);
+    bool viewAllMedicineFlows(MedicineFlow *&flowHead, const std::string &department);
+    bool viewMedicineFlowsByMedicineID(MedicineFlow *&flowHead, const std::string &department);
+    bool viewMedicineFlowsByType(MedicineFlow *&flowHead, const std::string &department);
+    bool viewMedicineFlowsByOperator(MedicineFlow *&flowHead, const std::string &department);
 
     // 管理人员信息
     void manageDoctors(Doctor *&doc, const std::string &department, int &idCounter);            // 管理医生信息（查看、修改职称等）
@@ -221,6 +222,14 @@ public:
     bool addPatient(Patient *&patient, int &idCounter);                                         // 添加患者信息（根据输入信息创建新的 Patient 对象，并插入到链表中）
 
     void AdminPersonalInfo(); // 管理员个人信息管理（查看、修改密码等）
+
+    // 统计报表功能
+    void showDepartmentReport(Doctor *&docHead, Registration *&regHead, Consultation *&conHead);
+    void showDoctorWorkloadReport(Doctor *&docHead);
+    void showPatientReport(Patient *&patientHead, Registration *&regHead, Consultation *&conHead);
+    void showBedUtilizationReport(bedInfo *&bedHead, Hospitalization *&hosHead);
+    void showMedicineInventoryReport(Medicine *&medHead, MedicineFlow *&flowHead);
+    void showDataAnalysisReport(Hospitalization *&hosHead, bedInfo *&bedHead, Registration *&regHead, Medicine *&medHead, MedicineFlow *&flowHead);
 };
 
 #endif // ADMIN_H

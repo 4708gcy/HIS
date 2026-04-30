@@ -31,17 +31,27 @@ bool Pharmacist::pharmacistSignUp(int &idCounter)
     this->pharmacistID = this->userID;
     this->department = inputDepartmentCheck("请输入所属药房/科室: ");
 
-    std::cout << "请选择药剂师等级:" << std::endl;
-    std::cout << "1. 实习药剂师" << std::endl;
-    std::cout << "2. 初级药剂师" << std::endl;
-    std::cout << "3. 高级药剂师" << std::endl;
-    std::cout << "4. 主管药剂师" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择药剂师等级");
+    printMenuBottom();
+    printMenuItem(1, "实习药剂师");
+    printMenuItem(2, "初级药剂师");
+    printMenuItem(3, "高级药剂师");
+    printMenuItem(4, "主管药剂师");
+    printMenuBottom();
     int levelChoice = selectIntCheck(1, 4);
     this->level = static_cast<PharmacistLevel>(levelChoice);
 
     this->scheduleInfo = inputStringCheck("请输入排班信息: ");
 
-    std::cout << "请输入你现在是否在岗 (1-是, 0-否): " << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("在岗状态");
+    printMenuBottom();
+    printMenuItem(1, "是");
+    printMenuItem(0, "否");
+    printMenuBottom();
     int onDutyChoice = selectIntCheck(0, 1);
     this->isOnDuty = (onDutyChoice == 1);
 
@@ -797,7 +807,7 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
     }
 
     MedicationRecord *newRecord = new MedicationRecord;
-    newRecord->medRecordID = "mrd" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    newRecord->medRecordID = "mrd" + padId(idCounter, 6);
     idCounter++;
     newRecord->consultationID = con->consultationID;
     newRecord->doctorID = con->doctorID;
@@ -947,10 +957,14 @@ void Pharmacist::manageMedicationRecords(MedicationRecord *&medRecHead, Medicine
                 }
                 else if (modifyChoice == 3)
                 {
-                    std::cout << "请选择你的操作:" << std::endl;
-                    std::cout << "1. 增加药品" << std::endl;
-                    std::cout << "2. 减少药品" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("药品操作");
+                    printMenuBottom();
+                    printMenuItem(1, "增加药品");
+                    printMenuItem(2, "减少药品");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int medModifyChoice = selectIntCheck(0, 2);
 
@@ -1027,7 +1041,13 @@ void Pharmacist::manageMedicationRecords(MedicationRecord *&medRecHead, Medicine
                 continue;
             }
 
-            std::cout << "确认删除该用药记录吗？\n1. 确认\n0. 取消" << std::endl;
+            clearScreen();
+            printMenuBorder();
+            printMenuTitle("确认删除用药记录");
+            printMenuBottom();
+            printMenuItem(1, "确认");
+            printMenuItem(0, "取消");
+            printMenuBottom();
             int confirmChoice = selectIntCheck(0, 1);
             if (confirmChoice == 1)
             {
@@ -1385,7 +1405,7 @@ void Pharmacist::reduceMedicineStock(Medicine *&target)
 void Pharmacist::addNewMedicine(Medicine *&medHead, int &idCounter)
 {
     Medicine *newMed = new Medicine;
-    newMed->medicineID = "med" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    newMed->medicineID = "med" + padId(idCounter, 6);
     idCounter++;
     newMed->name = inputStringCheck("请输入药品名称: ");
     newMed->specification = inputStringCheck("请输入药品规格: ");
@@ -1577,7 +1597,13 @@ void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
                       << ", 备注: " << target->note
                       << std::endl;
 
-            std::cout << "确认删除该药品吗？\n1. 确认\n0. 取消" << std::endl;
+            clearScreen();
+            printMenuBorder();
+            printMenuTitle("确认删除药品");
+            printMenuBottom();
+            printMenuItem(1, "确认");
+            printMenuItem(0, "取消");
+            printMenuBottom();
             int confirmChoice = selectIntCheck(0, 1);
             if (confirmChoice == 1)
             {
@@ -1628,7 +1654,14 @@ void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
                           << ", 状态: " << medicineStatusToString(target->status)
                           << std::endl;
 
-                std::cout << "请选择库存管理操作:\n1. 增加库存\n2. 减少库存\n0. 取消" << std::endl;
+                clearScreen();
+                printMenuBorder();
+                printMenuTitle("库存管理");
+                printMenuBottom();
+                printMenuItem(1, "增加库存");
+                printMenuItem(2, "减少库存");
+                printMenuItem(0, "取消");
+                printMenuBottom();
                 int stockChoice = selectIntCheck(0, 2);
                 if(stockChoice == 0){
                     printWarning("已取消库存管理操作！");
@@ -1657,71 +1690,10 @@ void Pharmacist::managePersonalInfo()
         }
         else if (choice == 1)
         {
-            while (true)
-            {
-                int viewChoice = pharmacistPersonalInfoViewMenu();
-                if (viewChoice == 0)
-                {
-                    break;
-                }
-                else if (viewChoice == 1)
-                {
-                    std::cout << "药剂师ID: " << this->pharmacistID << std::endl;
-                }
-                else if (viewChoice == 2)
-                {
-                    std::cout << "姓名: " << this->username << std::endl;
-                }
-                else if (viewChoice == 3)
-                {
-                    std::cout << "性别: " << this->gender << std::endl;
-                }
-                else if (viewChoice == 4)
-                {
-                    std::cout << "年龄: " << this->age << std::endl;
-                }
-                else if (viewChoice == 5)
-                {
-                    std::cout << "科室: " << this->department << std::endl;
-                }
-                else if (viewChoice == 6)
-                {
-                    std::cout << "职称: " << pharmacistLevelToString(this->level) << std::endl;
-                }
-                else if (viewChoice == 7)
-                {
-                    std::cout << "联系电话: " << this->telephone << std::endl;
-                }
-                else if (viewChoice == 8)
-                {
-                    std::cout << "邮箱: " << this->email << std::endl;
-                }
-                else if (viewChoice == 9)
-                {
-                    std::cout << "在岗状态: " << (this->isOnDuty ? "在岗" : "不在岗") << std::endl;
-                }
-                else if (viewChoice == 10)
-                {
-                    std::cout << "排班信息: " << this->scheduleInfo << std::endl;
-                }
-                else if (viewChoice == 11)
-                {
-                    std::cout << "累计审核次数: " << this->reviewCount << std::endl;
-                }
-                else if (viewChoice == 12)
-                {
-                    std::cout << "累计发药次数: " << this->dispenseCount << std::endl;
-                }
-                else if (viewChoice == 13)
-                {
-                    std::cout << "累计库存管理次数: " << this->inventoryManageCount << std::endl;
-                }
-                else if (viewChoice == 14)
-                {
-                    std::cout << "账户创建时间: " << this->createTime << std::endl;
-                }
-                pause("药剂师 > 个人信息管理");
-            }
+            printInfoCard("药师个人信息", {
+                {"药剂师ID", pharmacistID}, {"姓名", username}, {"性别", gender}, {"年龄", std::to_string(age)}, {"科室", department}, {"职称", pharmacistLevelToString(level)}, {"联系电话", telephone}, {"邮箱", email}, {"在岗状态", isOnDuty ? "在岗" : "不在岗"}, {"排班信息", scheduleInfo}, {"累计审核次数", std::to_string(reviewCount)}, {"累计发药次数", std::to_string(dispenseCount)}, {"累计库存管理次数", std::to_string(inventoryManageCount)}, {"账户创建时间", createTime}
+            });
+            pause("药剂师 > 个人信息管理");
         }
         else if (choice == 2)
         {
@@ -1783,11 +1755,15 @@ void Pharmacist::managePersonalInfo()
                 }
                 else if (modifyChoice == 8)
                 {
-                    std::cout << "当前在岗状态: " << (this->isOnDuty ? "在岗" : "不在岗") << std::endl;
-                    std::cout << "请选择新的在岗状态: " << std::endl;
-                    std::cout << "1. 在岗" << std::endl;
-                    std::cout << "2. 不在岗" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("修改在岗状态");
+                    printMenuLine("当前状态: " + std::string(this->isOnDuty ? "在岗" : "不在岗"));
+                    printMenuBottom();
+                    printMenuItem(1, "在岗");
+                    printMenuItem(2, "不在岗");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int dutyChoice = selectIntCheck(0, 2);
 

@@ -30,17 +30,27 @@ bool Nurse::nurseSignUp(int &idCounter)
     this->nurseID = this->userID;
     this->department = inputDepartmentCheck("请输入所属科室: ");
 
-    std::cout << "请选择护士等级:" << std::endl;
-    std::cout << "1. 实习护士" << std::endl;
-    std::cout << "2. 初级护士" << std::endl;
-    std::cout << "3. 高级护士" << std::endl;
-    std::cout << "4. 护士长" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("选择护士等级");
+    printMenuBottom();
+    printMenuItem(1, "实习护士");
+    printMenuItem(2, "初级护士");
+    printMenuItem(3, "高级护士");
+    printMenuItem(4, "护士长");
+    printMenuBottom();
     int levelChoice = selectIntCheck(1, 4);
     this->level = static_cast<NurseLevel>(levelChoice);
 
     this->scheduleInfo = inputStringCheck("请输入排班信息: ");
 
-    std::cout << "请输入你现在是否在岗 (1-是, 0-否): " << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("在岗状态");
+    printMenuBottom();
+    printMenuItem(1, "是");
+    printMenuItem(0, "否");
+    printMenuBottom();
     int onDutyChoice = selectIntCheck(0, 1);
     this->isOnDuty = (onDutyChoice == 1);
 
@@ -357,14 +367,18 @@ bool Nurse::getExaminationsByItemName(Examination *&exaHead)
 // 根据检查状态查询检查记录
 bool Nurse::getExaminationsByStatus(Examination *&exaHead)
 {
-    std::cout << "请选择要查询的检查状态：" << std::endl;
-    std::cout << "1. 已下单" << std::endl;
-    std::cout << "2. 已支付" << std::endl;
-    std::cout << "3. 检查中" << std::endl;
-    std::cout << "4. 检查完成" << std::endl;
-    std::cout << "5. 报告已出" << std::endl;
-    std::cout << "6. 已作废" << std::endl;
-    std::cout << "0. 取消查询" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("查询检查状态");
+    printMenuBottom();
+    printMenuItem(1, "已下单");
+    printMenuItem(2, "已支付");
+    printMenuItem(3, "检查中");
+    printMenuItem(4, "检查完成");
+    printMenuItem(5, "报告已出");
+    printMenuItem(6, "已作废");
+    printMenuItem(0, "取消查询");
+    printMenuBottom();
 
     int statusChoice = selectIntCheck(0, 6);
     if (statusChoice == 0)
@@ -396,15 +410,19 @@ bool Nurse::getExaminationsByStatus(Examination *&exaHead)
 // 护士修改检查记录状态
 void Nurse::setExaminationStatus(Examination *&target)
 {
-    std::cout << "当前检查状态: " << examStatusToString(target->status) << std::endl;
-    std::cout << "请选择新的检查状态：" << std::endl;
-    std::cout << "1. 已下单" << std::endl;
-    std::cout << "2. 已支付" << std::endl;
-    std::cout << "3. 检查中" << std::endl;
-    std::cout << "4. 检查完成" << std::endl;
-    std::cout << "5. 报告已出" << std::endl;
-    std::cout << "6. 已作废" << std::endl;
-    std::cout << "0. 取消修改" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("修改检查状态");
+    printMenuLine("当前状态: " + examStatusToString(target->status));
+    printMenuBottom();
+    printMenuItem(1, "已下单");
+    printMenuItem(2, "已支付");
+    printMenuItem(3, "检查中");
+    printMenuItem(4, "检查完成");
+    printMenuItem(5, "报告已出");
+    printMenuItem(6, "已作废");
+    printMenuItem(0, "取消修改");
+    printMenuBottom();
 
     int statusChoice = selectIntCheck(0, 6);
     if (statusChoice == 0)
@@ -482,10 +500,14 @@ void Nurse::setExaminationAttachments(Examination *&target)
         }
         std::cout << std::endl;
 
-        std::cout << "请选择操作:" << std::endl;
-        std::cout << "1. 添加附件" << std::endl;
-        std::cout << "2. 删除附件" << std::endl;
-        std::cout << "0. 返回上级菜单" << std::endl;
+        clearScreen();
+        printMenuBorder();
+        printMenuTitle("附件管理");
+        printMenuBottom();
+        printMenuItem(1, "添加附件");
+        printMenuItem(2, "删除附件");
+        printMenuItem(0, "返回上级菜单");
+        printMenuBottom();
 
         int op = selectIntCheck(0, 2);
         if (op == 0)
@@ -816,13 +838,17 @@ bool Nurse::getHospitalizationsByID(Hospitalization *&hosHead)
 // 根据住院状态查询住院记录
 bool Nurse::getHospitalizationsByStatus(Hospitalization *&hosHead)
 {
-    std::cout << "请选择住院状态：" << std::endl;
-    std::cout << "1. 申请中" << std::endl;
-    std::cout << "2. 已缴费待分床" << std::endl;
-    std::cout << "3. 已入院" << std::endl;
-    std::cout << "4. 已出院" << std::endl;
-    std::cout << "5. 已作废" << std::endl;
-    std::cout << "0. 取消" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("查询住院状态");
+    printMenuBottom();
+    printMenuItem(1, "申请中");
+    printMenuItem(2, "已缴费待分床");
+    printMenuItem(3, "已入院");
+    printMenuItem(4, "已出院");
+    printMenuItem(5, "已作废");
+    printMenuItem(0, "取消");
+    printMenuBottom();
 
     int choice = selectIntCheck(0, 5);
     if (choice == 0)
@@ -997,14 +1023,18 @@ bool Nurse::getHospitalizationsByBedNumber(Hospitalization *&hosHead)
 // 护士修改住院记录状态
 void Nurse::setHospitalizationStatus(Hospitalization *&target)
 {
-    std::cout << "当前状态: " << hosStatusToString(target->status) << std::endl;
-    std::cout << "请选择新的住院状态：" << std::endl;
-    std::cout << "1. 申请中" << std::endl;
-    std::cout << "2. 已缴费待分床" << std::endl;
-    std::cout << "3. 已入院" << std::endl;
-    std::cout << "4. 已出院" << std::endl;
-    std::cout << "5. 已作废" << std::endl;
-    std::cout << "0. 取消" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("修改住院状态");
+    printMenuLine("当前状态: " + hosStatusToString(target->status));
+    printMenuBottom();
+    printMenuItem(1, "申请中");
+    printMenuItem(2, "已缴费待分床");
+    printMenuItem(3, "已入院");
+    printMenuItem(4, "已出院");
+    printMenuItem(5, "已作废");
+    printMenuItem(0, "取消");
+    printMenuBottom();
 
     int choice = selectIntCheck(0, 5);
     if (choice == 0)
@@ -1282,7 +1312,7 @@ void Nurse::createHospitalization(Hospitalization *&hosHead, Consultation *&conH
     newHos->consultationID = current->consultationID;
     newHos->department = current->department;
     newHos->applyTime = MyTime::getInstance().getTime();
-    newHos->hospitalizationID = "hos" + std::to_string(idCounter).insert(0, 6 - std::to_string(idCounter).length(), '0');
+    newHos->hospitalizationID = "hos" + padId(idCounter, 6);
     idCounter++;
     newHos->availableAdmitTime = "#";
     newHos->admitTime = "#";
@@ -1503,12 +1533,16 @@ bool Nurse::getAllBeds(bedInfo *&bedHead)
 // 根据床位状态查询床位信息
 bool Nurse::getBedsByStatus(bedInfo *&bedHead)
 {
-    std::cout << "请选择床位状态：" << std::endl;
-    std::cout << "1. 已占用" << std::endl;
-    std::cout << "2. 清洁中" << std::endl;
-    std::cout << "3. 可分配" << std::endl;
-    std::cout << "4. 不可用" << std::endl;
-    std::cout << "0. 取消" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("查询床位状态");
+    printMenuBottom();
+    printMenuItem(1, "已占用");
+    printMenuItem(2, "清洁中");
+    printMenuItem(3, "可分配");
+    printMenuItem(4, "不可用");
+    printMenuItem(0, "取消");
+    printMenuBottom();
 
     int choice = selectIntCheck(0, 4);
     if (choice == 0)
@@ -1662,13 +1696,17 @@ bool Nurse::getBedsByWardType(bedInfo *&bedHead)
 // 护士修改床位状态
 void Nurse::setBedStatus(bedInfo *&target)
 {
-    std::cout << "当前床位状态: " << bedStatusToString(target->status) << std::endl;
-    std::cout << "请选择新的床位状态：" << std::endl;
-    std::cout << "1. 已占用" << std::endl;
-    std::cout << "2. 清洁中" << std::endl;
-    std::cout << "3. 可分配" << std::endl;
-    std::cout << "4. 不可用" << std::endl;
-    std::cout << "0. 取消" << std::endl;
+    clearScreen();
+    printMenuBorder();
+    printMenuTitle("修改床位状态");
+    printMenuLine("当前状态: " + bedStatusToString(target->status));
+    printMenuBottom();
+    printMenuItem(1, "已占用");
+    printMenuItem(2, "清洁中");
+    printMenuItem(3, "可分配");
+    printMenuItem(4, "不可用");
+    printMenuItem(0, "取消");
+    printMenuBottom();
 
     int choice = selectIntCheck(0, 4);
 
@@ -1915,41 +1953,10 @@ void Nurse::managePersonalInfo()
         }
         else if (choice == 1)
         {
-            while (true)
-            {
-                int viewChoice = nursePersonalInfoViewMenu();
-
-                if (viewChoice == 0)
-                    break;
-                else if (viewChoice == 1)
-                    std::cout << "护士ID: " << this->nurseID << std::endl;
-                else if (viewChoice == 2)
-                    std::cout << "姓名: " << this->username << std::endl;
-                else if (viewChoice == 3)
-                    std::cout << "性别: " << this->gender << std::endl;
-                else if (viewChoice == 4)
-                    std::cout << "年龄: " << this->age << std::endl;
-                else if (viewChoice == 5)
-                    std::cout << "科室: " << this->department << std::endl;
-                else if (viewChoice == 6)
-                    std::cout << "护士等级: " << nurseLevelToString(this->level) << std::endl;
-                else if (viewChoice == 7)
-                    std::cout << "联系电话: " << this->telephone << std::endl;
-                else if (viewChoice == 8)
-                    std::cout << "邮箱: " << this->email << std::endl;
-                else if (viewChoice == 9)
-                    std::cout << "在岗状态: " << (this->isOnDuty ? "在岗" : "不在岗") << std::endl;
-                else if (viewChoice == 10)
-                    std::cout << "排班信息: " << this->scheduleInfo << std::endl;
-                else if (viewChoice == 11)
-                    std::cout << "累计护理人数: " << this->patientCareCount << std::endl;
-                else if (viewChoice == 12)
-                    std::cout << "累计床位管理次数: " << this->bedManageCount << std::endl;
-                else if (viewChoice == 13)
-                    std::cout << "账户创建时间: " << this->createTime << std::endl;
-
-                pause("护士 > 个人信息管理");
-            }
+            printInfoCard("护士个人信息", {
+                {"护士ID", nurseID}, {"姓名", username}, {"性别", gender}, {"年龄", std::to_string(age)}, {"科室", department}, {"护士等级", nurseLevelToString(level)}, {"联系电话", telephone}, {"邮箱", email}, {"在岗状态", isOnDuty ? "在岗" : "不在岗"}, {"排班信息", scheduleInfo}, {"累计护理人数", std::to_string(patientCareCount)}, {"累计床位管理次数", std::to_string(bedManageCount)}, {"账户创建时间", createTime}
+            });
+            pause("护士 > 个人信息管理");
         }
         else if (choice == 2)
         {
@@ -1987,13 +1994,17 @@ void Nurse::managePersonalInfo()
                 }
                 else if (modifyChoice == 5)
                 {
-                    std::cout << "当前等级: " << nurseLevelToString(this->level) << std::endl;
-                    std::cout << "请选择新的护士等级:" << std::endl;
-                    std::cout << "1. 实习护士" << std::endl;
-                    std::cout << "2. 初级护士" << std::endl;
-                    std::cout << "3. 高级护士" << std::endl;
-                    std::cout << "4. 护士长" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("修改护士等级");
+                    printMenuLine("当前等级: " + nurseLevelToString(this->level));
+                    printMenuBottom();
+                    printMenuItem(1, "实习护士");
+                    printMenuItem(2, "初级护士");
+                    printMenuItem(3, "高级护士");
+                    printMenuItem(4, "护士长");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int levelChoice = selectIntCheck(0, 4);
 
@@ -2020,10 +2031,15 @@ void Nurse::managePersonalInfo()
                 }
                 else if (modifyChoice == 8)
                 {
-                    std::cout << "当前在岗状态: " << (this->isOnDuty ? "在岗" : "不在岗") << std::endl;
-                    std::cout << "1. 在岗" << std::endl;
-                    std::cout << "2. 不在岗" << std::endl;
-                    std::cout << "0. 取消" << std::endl;
+                    clearScreen();
+                    printMenuBorder();
+                    printMenuTitle("修改在岗状态");
+                    printMenuLine("当前状态: " + std::string(this->isOnDuty ? "在岗" : "不在岗"));
+                    printMenuBottom();
+                    printMenuItem(1, "在岗");
+                    printMenuItem(2, "不在岗");
+                    printMenuItem(0, "取消");
+                    printMenuBottom();
 
                     int dutyChoice = selectIntCheck(0, 2);
 
