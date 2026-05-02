@@ -19,3 +19,7 @@ export function getFeeStandards() {
 export function getExaminationItems() {
   return request.get('/examination-items')
 }
+
+export function getSchedules(params) {
+  return request.get('/schedules', { params })
+}

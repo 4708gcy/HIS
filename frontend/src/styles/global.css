@@ -1,36 +1,48 @@
-/* === HIS Theme: Pure & Clinical === */
+/* === HIS Theme: Pure & Clinical v2 === */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Primary palette — soft medical blue */
-  --his-primary: #1e88e5;
-  --his-primary-light: #e8f1fb;
-  --his-primary-dark: #1565c0;
-  --his-primary-hover: #1976d2;
+  /* Primary palette — medical blue with teal accent */
+  --his-primary: #1976d2;
+  --his-primary-light: #e3f2fd;
+  --his-primary-dark: #0d47a1;
+  --his-primary-hover: #1565c0;
+  --his-accent: #00897b;
+  --his-accent-light: #e0f2f1;
 
-  /* Neutrals */
-  --his-bg: #f6f8fc;
+  /* Neutrals — cooler, more clinical */
+  --his-bg: #f5f7fa;
   --his-surface: #ffffff;
-  --his-surface-alt: #f0f4fa;
-  --his-border: #e4e9f2;
-  --his-text: #1a2b4a;
-  --his-text-secondary: #5a6e8a;
-  --his-text-muted: #96a3b8;
+  --his-surface-alt: #f0f3f8;
+  --his-border: #e2e8f0;
+  --his-text: #1e293b;
+  --his-text-secondary: #64748b;
+  --his-text-muted: #94a3b8;
 
-  /* Shadows */
-  --his-shadow-sm: 0 1px 3px rgba(30, 136, 229, 0.06);
-  --his-shadow-md: 0 4px 12px rgba(30, 136, 229, 0.08);
-  --his-shadow-lg: 0 8px 24px rgba(30, 136, 229, 0.12);
+  /* Shadows — tighter, more refined */
+  --his-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --his-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.07);
+  --his-shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.10);
 
   /* Transitions */
-  --his-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --his-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Sidebar */
   --his-sidebar-bg: #ffffff;
-  --his-sidebar-text: #3d5a80;
-  --his-sidebar-active-bg: #e8f1fb;
-  --his-sidebar-active-text: #1e88e5;
+  --his-sidebar-text: #475569;
+  --his-sidebar-active-bg: #e3f2fd;
+  --his-sidebar-active-text: #1976d2;
   --his-sidebar-width-expanded: 240px;
   --his-sidebar-width-collapsed: 64px;
+
+  /* Typography */
+  --his-font: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --his-font-mono: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
+
+  /* Radius */
+  --his-radius-sm: 6px;
+  --his-radius-md: 10px;
+  --his-radius-lg: 14px;
 }
 
 /* === Reset === */
@@ -43,9 +55,12 @@
 
 html, body, #app {
   height: 100%;
-  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  font-family: var(--his-font);
   color: var(--his-text);
   background: var(--his-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
 }
 
 /* === Element Plus Theme Overrides === */
@@ -108,17 +123,65 @@ html, body, #app {
 }
 
 .el-dialog {
-  border-radius: 12px !important;
+  border-radius: var(--his-radius-lg) !important;
+  overflow: hidden;
+}
+
+.el-dialog__header {
+  border-bottom: 1px solid var(--his-border);
+  padding: 16px 20px !important;
+  margin-right: 0 !important;
+}
+
+.el-dialog__body {
+  padding: 20px !important;
 }
 
 .el-card {
-  border-radius: 10px !important;
+  border-radius: var(--his-radius-md) !important;
   border: 1px solid var(--his-border) !important;
-  transition: box-shadow var(--his-transition);
+  transition: box-shadow var(--his-transition), transform var(--his-transition);
+  overflow: hidden;
 }
 
 .el-card:hover {
   box-shadow: var(--his-shadow-md);
+}
+
+.el-card__header {
+  border-bottom: 1px solid var(--his-border);
+  padding: 14px 20px !important;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Table refinements */
+.el-table {
+  --el-table-border-color: var(--his-border) !important;
+  font-size: 13px;
+}
+
+.el-table th.el-table__cell {
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--his-text-secondary);
+}
+
+.el-table td.el-table__cell {
+  padding: 10px 0;
+}
+
+/* Form refinements */
+.el-form-item__label {
+  font-weight: 500;
+  color: var(--his-text);
+}
+
+.el-input__wrapper,
+.el-select__wrapper {
+  border-radius: var(--his-radius-sm) !important;
 }
 
 /* === Utility Classes === */
@@ -163,4 +226,70 @@ html, body, #app {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
+}
+
+/* === Stat Card Styles === */
+.stat-card {
+  background: var(--his-surface);
+  border-radius: var(--his-radius-md);
+  border: 1px solid var(--his-border);
+  padding: 20px;
+  transition: all var(--his-transition);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--his-shadow-md);
+}
+
+.stat-card .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--his-text);
+  line-height: 1.2;
+}
+
+.stat-card .stat-label {
+  font-size: 13px;
+  color: var(--his-text-muted);
+  margin-top: 4px;
+}
+
+/* === Empty State === */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--his-text-muted);
+}
+
+.empty-state svg {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+/* === Stagger Animation === */
+.stagger-item {
+  animation: fadeIn 0.35s ease-out both;
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.03s; }
+.stagger-item:nth-child(2) { animation-delay: 0.06s; }
+.stagger-item:nth-child(3) { animation-delay: 0.09s; }
+.stagger-item:nth-child(4) { animation-delay: 0.12s; }
+.stagger-item:nth-child(5) { animation-delay: 0.15s; }
+.stagger-item:nth-child(6) { animation-delay: 0.18s; }
+
+/* === Print Styles === */
+@media print {
+  .no-print,
+  .el-dialog__headerbtn,
+  .el-dialog__footer {
+    display: none !important;
+  }
+  .el-dialog {
+    box-shadow: none !important;
+    border: none !important;
+  }
 }

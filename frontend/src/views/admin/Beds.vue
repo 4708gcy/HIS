@@ -32,8 +32,9 @@
         <el-table-column prop="dailyRate" label="日费用" width="100">
           <template #default="{ row }">{{ row.dailyRate?.toFixed(2) }} 元</template>
         </el-table-column>
-        <el-table-column label="操作" width="80" fixed="right">
+        <el-table-column label="操作" width="140" fixed="right">
           <template #default="{ row }">
+            <el-button type="primary" size="small" @click="openEdit(row)">编辑</el-button>
             <el-button type="danger" size="small" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -68,13 +69,46 @@
         <el-button type="primary" :loading="addSaving" @click="handleAdd">确定</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="editVisible" title="编辑床位" width="500px">
+      <el-form ref="editFormRef" :model="editForm" :rules="addRules" label-width="80px">
+        <el-form-item label="科室" prop="department">
+          <el-select v-model="editForm.department" clearable placeholder="请选择科室" style="width: 100%">
+            <el-option v-for="d in departments" :key="d" :label="d" :value="d" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="病房类型" prop="wardType">
+          <el-select v-model="editForm.wardType" placeholder="请选择病房类型" style="width: 100%">
+            <el-option label="普通病房" value="普通病房" />
+            <el-option label="隔离病房" value="隔离病房" />
+            <el-option label="VIP病房" value="VIP病房" />
+            <el-option label="ICU病房" value="ICU病房" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="区号" prop="areaNumber"><el-input-number v-model="editForm.areaNumber" :min="1" :max="99" /></el-form-item>
+        <el-form-item label="病房号" prop="wardNumber"><el-input-number v-model="editForm.wardNumber" :min="1" :max="999" /></el-form-item>
+        <el-form-item label="床位号" prop="bedNumber"><el-input-number v-model="editForm.bedNumber" :min="1" :max="99" /></el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="editForm.status" style="width: 100%">
+            <el-option label="可用" :value="3" />
+            <el-option label="已占用" :value="1" />
+            <el-option label="清洁中" :value="2" />
+            <el-option label="不可用" :value="4" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editVisible = false">取消</el-button>
+        <el-button type="primary" :loading="editSaving" @click="handleEdit">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getBeds, createBed, deleteBed } from '../../api/admin'
+import { getBeds, createBed, updateBed, deleteBed } from '../../api/admin'
 import { getDepartments } from '../../api/common'
 
 const departments = ref([])
@@ -98,6 +132,20 @@ const addForm = reactive({
   wardNumber: 1,
   bedNumber: 1
 })
+
+// -- 编辑床位 --
+const editFormRef = ref(null)
+const editVisible = ref(false)
+const editSaving = ref(false)
+const editForm = reactive({
+  bedID: '',
+  department: '',
+  wardType: '',
+  areaNumber: 1,
+  wardNumber: 1,
+  bedNumber: 1,
+  status: 3
+})
 const addRules = {
   department: [{ required: true, message: '请选择科室', trigger: 'change' }],
   wardType: [{ required: true, message: '请选择病房类型', trigger: 'change' }],
@@ -109,6 +157,32 @@ const addRules = {
 function openAdd() {
   Object.assign(addForm, { department: '', wardType: '', areaNumber: 1, wardNumber: 1, bedNumber: 1 })
   addVisible.value = true
+}
+
+function openEdit(row) {
+  Object.assign(editForm, {
+    bedID: row.bedID,
+    department: row.department || '',
+    wardType: row.wardType || '',
+    areaNumber: row.areaNumber || 1,
+    wardNumber: row.wardNumber || 1,
+    bedNumber: row.bedNumber || 1,
+    status: row.status || 3
+  })
+  editVisible.value = true
+}
+
+async function handleEdit() {
+  try {
+    await editFormRef.value?.validate()
+  } catch { return }
+  editSaving.value = true
+  try {
+    const { bedID, ...data } = editForm
+    const res = await updateBed(bedID, data)
+    if (res.code === 200) { ElMessage.success('编辑成功'); editVisible.value = false; loadData() }
+  } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '编辑失败') }
+  finally { editSaving.value = false }
 }
 
 async function handleAdd() {

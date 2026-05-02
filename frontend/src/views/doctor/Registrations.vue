@@ -23,9 +23,10 @@
           </template>
         </el-table-column>
         <el-table-column prop="registerTime" label="挂号时间" min-width="180" />
-        <el-table-column label="操作" width="100">
+        <el-table-column label="操作" width="160">
           <template #default="{ row }">
             <el-button v-if="row.status === 1" type="primary" size="small" @click="openDialog(row)">开始看诊</el-button>
+            <el-button v-if="row.status !== 3" type="danger" size="small" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -81,8 +82,8 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { getMyRegistrations, createConsultation } from '../../api/doctor'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getMyRegistrations, createConsultation, deleteRegistration } from '../../api/doctor'
 import { getExaminationItems } from '../../api/common'
 
 const statusMap = { 0: '已预约', 1: '已支付', 2: '已取消', 3: '已完成' }
@@ -161,6 +162,14 @@ async function handleSubmit() {
     else ElMessage.error(res.message)
   } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '操作失败') }
   finally { submitting.value = false }
+}
+
+async function handleDelete(row) {
+  try {
+    await ElMessageBox.confirm('确定删除此挂号记录？', '确认', { type: 'warning' })
+    const res = await deleteRegistration(row.registrationID)
+    if (res.code === 200) { ElMessage.success('删除成功'); loadData() }
+  } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '操作失败') }
 }
 
 onMounted(() => {

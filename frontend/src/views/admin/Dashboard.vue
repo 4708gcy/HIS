@@ -65,14 +65,15 @@ onMounted(async () => {
 }
 
 .page-title {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .page-title h2 {
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
   color: var(--his-text);
   margin: 0;
+  letter-spacing: -0.3px;
 }
 
 .page-title h2::after {
@@ -80,7 +81,7 @@ onMounted(async () => {
   display: block;
   width: 40px;
   height: 3px;
-  background: var(--his-primary);
+  background: linear-gradient(90deg, var(--his-primary), var(--his-accent, #00897b));
   border-radius: 2px;
   margin-top: 8px;
 }
@@ -98,19 +99,37 @@ onMounted(async () => {
 .stat-card {
   background: var(--his-surface);
   border: 1px solid var(--his-border);
-  border-radius: 12px;
+  border-radius: var(--his-radius-md, 10px);
   padding: 20px;
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.25s;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--his-shadow-md);
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.stat-card:hover::before {
+  opacity: 1;
 }
 
 .stat-icon {
@@ -123,6 +142,11 @@ onMounted(async () => {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   color: var(--accent);
   flex-shrink: 0;
+  transition: transform 0.25s;
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.05);
 }
 
 .stat-info {
@@ -131,15 +155,17 @@ onMounted(async () => {
 }
 
 .stat-value {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--his-text);
   line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
   font-size: 13px;
   color: var(--his-text-secondary);
   margin-top: 4px;
+  font-weight: 500;
 }
 </style>

@@ -183,3 +183,62 @@ export function updateAccountStatus(id, role, active) {
 export function updateAdminProfile(data) {
   return request.put('/admin/profile', data)
 }
+
+// 床位编辑
+export function updateBed(id, data) {
+  return request.put(`/admin/beds/${id}`, data)
+}
+
+// 挂号记录完整编辑
+export function updateRegistration(id, data) {
+  return request.put(`/admin/registrations/${id}`, data)
+}
+
+// 看诊记录完整编辑
+export function updateConsultation(id, data) {
+  return request.put(`/admin/consultations/${id}`, data)
+}
+
+// 检查记录编辑
+export function updateExamination(id, data) {
+  return request.put(`/admin/examinations/${id}`, data)
+}
+
+// 排班管理
+export function getSchedules(params) {
+  return request.get('/admin/schedules', { params })
+}
+export function createSchedule(data) {
+  return request.post('/admin/schedules', data)
+}
+export function updateSchedule(id, data) {
+  return request.put(`/admin/schedules/${id}`, data)
+}
+export function deleteSchedule(id) {
+  return request.delete(`/admin/schedules/${id}`)
+}
+
+// 统计报表
+export function getDepartmentReport() {
+  return request.get('/admin/reports/department')
+}
+export function getDoctorWorkloadReport() {
+  return request.get('/admin/reports/doctor-workload')
+}
+export function getPatientReport() {
+  return request.get('/admin/reports/patient')
+}
+export function getBedUtilizationReport() {
+  return request.get('/admin/reports/bed-utilization')
+}
+export function getMedicineInventoryReport() {
+  return request.get('/admin/reports/medicine-inventory')
+}
+export function getOverviewReport() {
+  return request.get('/admin/reports/overview')
+}
+
+// 药品流水
+export function getMedicineFlows(params) {
+  return request.get('/admin/medicine-flows', { params })
+}

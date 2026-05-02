@@ -39,3 +39,6 @@ export function getProfile() {
 export function updateProfile(data) {
   return request.put('/patient/profile', data)
 }
+export function deleteRegistration(id) {
+  return request.delete(`/patient/registrations/${id}`)
+}

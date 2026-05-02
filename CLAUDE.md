@@ -62,6 +62,8 @@ No test framework exists; testing is manual via interactive console.
 
 **Important:** The program MUST be launched from the `build/` directory because all data file paths use `../Data/` relative paths. Running from the project root will fail to find data files. First console run forces admin account registration before anything else.
 
+**Other project files:** `DevelopLog.md` contains the development log (date-versioned entries like `4.24.1`). `Document/` holds course design documents (task spec, report template, reference materials).
+
 ## Architecture
 
 C++17 console application for a Hospital Information System. Windows-only (uses MSVC, `SetConsoleOutputCP(CP_UTF8)`).
@@ -128,6 +130,7 @@ Null/empty fields use `"#"` sentinel. All deletions are logical (`isDeleted`), n
 | Medication record | `Data/RecordData/MedicineChainData/medication_records.txt` |
 | Medicine | `Data/RecordData/MedicineChainData/medicines.txt` |
 | Medicine flow | `Data/RecordData/MedicineChainData/medicine_flow.txt` |
+| Schedule | `Data/schedules.json` (JSON, server-side only) |
 | Operation log | `Data/OperationLog/his_YYYY_MM_DD.log` |
 
 ### Zero External Build Dependencies
@@ -145,6 +148,7 @@ Third-party libraries (`httplib.h`, `json.hpp`) are bundled directly in `Head/`.
 - **Global ID counters**: `main.cpp` declares global counters (`adminIDCount`, `doctorIDCount`, etc.) that track the number of used IDs per role. These are populated during `load*Data()` calls and passed to `signUp()` methods to generate new unique IDs.
 - **`saveAllUnsafe()` naming convention**: In `DataManager`, `saveAllUnsafe()` saves all data without acquiring the mutex. Callers must hold the mutex before calling it (e.g., `std::lock_guard<std::mutex> lock(dm.getMutex()); dm.saveAllUnsafe();`). The "Unsafe" suffix means "unsafe to call without mutex held", not "unsafe for production". This pattern appears ~74 times in `ApiServer.cpp`.
 - **Data analysis**: `DataAnalysis.h/cpp` provides statistical analysis (monthly stats, demand prediction via moving average + linear regression, bed allocation optimization, medicine profit margins). Three display formats: tabular, ASCII charts, summary. Invoked via Admin report menu option 6.
+- **Language**: Code comments, UI strings, documentation, and commit messages are primarily in Chinese. Commit messages use date-based versioning (e.g., "4.24.1").
 
 ### UI/UX Features
 
@@ -172,7 +176,7 @@ Console I/O uses Unicode double-line box-drawing menus (`╔═╗║╚═╝`)
 
 ### REST API Server Architecture
 
-cpp-httplib + nlohmann/json (both single-header in `Head/`). `DataManager` singleton replaces global variables, `std::mutex` thread safety. ~125 route registrations. Response: `{ "code": int, "message": string, "data": object }`. Error codes: 200/400/401/403/404/500. All responses include `Access-Control-Allow-Origin: *` CORS header.
+cpp-httplib + nlohmann/json (both single-header in `Head/`). `DataManager` singleton replaces global variables, `std::mutex` thread safety. ~140 route registrations. Response: `{ "code": int, "message": string, "data": object }`. Error codes: 200/400/401/403/404/500. All responses include `Access-Control-Allow-Origin: *` CORS header.
 
 | File | Purpose |
 | ------ | --------- |
@@ -181,33 +185,48 @@ cpp-httplib + nlohmann/json (both single-header in `Head/`). `DataManager` singl
 | `Head/ApiResponse.h` | JSON response builders |
 | `Head/JWTAuth.h` | JWT (HMAC-SHA256, 24h validity) |
 | `Head/JsonHelper.h` | Struct-to-JSON + enum-to-string |
-| `Source/ApiServer.cpp` | All ~125 route handlers |
+| `Source/ApiServer.cpp` | All ~140 route handlers |
 
 Endpoint groups:
 
 | Group | Path prefix | Count | Description |
 | --- | --- | --- | --- |
 | Auth | `/api/auth/` | 4 | Login/register/change-pwd |
-| Admin | `/api/admin/` | 30+ | CRUD all entities, user/bed/medicine management |
-| Doctor | `/api/doctor/` | 11 | Registration/consultation/examination CRUD |
-| Nurse | `/api/nurse/` | 11 | Hospitalization/bed assignment/discharge |
-| Pharmacist | `/api/pharmacist/` | 11 | Medication review/dispensing/inventory |
-| Patient | `/api/patient/` | 12 | Registration/payment/records/recharge |
+| Admin | `/api/admin/` | 45+ | CRUD all entities, user/bed/medicine management, schedules, reports, medicine flows |
+| Doctor | `/api/doctor/` | 14 | Registration/consultation/examination CRUD (incl. delete) |
+| Nurse | `/api/nurse/` | 12 | Hospitalization/bed assignment/discharge/transfer |
+| Pharmacist | `/api/pharmacist/` | 12 | Medication review/dispensing/inventory/flows |
+| Patient | `/api/patient/` | 13 | Registration/payment/records/recharge/cancel |
 | Common | `/api/` | 3 | `/departments`, `/fee-standards`, `/examination-items` |
+
+**Scheduling system**: `g_schedules` vector with JSON persistence to `Data/schedules.json`. CRUD at `/api/admin/schedules`, public read at `/api/schedules`. Loaded on server start, saved on mutation and Ctrl+C.
+
+**Report endpoints** (in-memory aggregation from linked lists):
+
+- `GET /api/admin/reports/overview` — system-wide stats
+- `GET /api/admin/reports/department` — per-department breakdown
+- `GET /api/admin/reports/doctor-workload` — doctor workload stats
+- `GET /api/admin/reports/patient` — patient demographics
+- `GET /api/admin/reports/bed-utilization` — bed occupancy rates
+- `GET /api/admin/reports/medicine-inventory` — stock levels and flows
+
+**Hospital transfer**: `POST /api/nurse/hospitalizations/:id/transfer` — moves patient between beds/wards.
 
 ### Frontend Architecture
 
-Vue 3 + Vite 6 + Pinia (localStorage) + Vue Router (role guards) + Element Plus (zh-cn) + Axios (JWT interceptor). Port 3000, proxies `/api` → 8080. 34 Vue files, 8 API modules.
+Vue 3 + Vite 6 + Pinia (localStorage) + Vue Router (role guards) + Element Plus (zh-cn) + Axios (JWT interceptor). Port 3000, proxies `/api` → 8080. 38 Vue files, 8 API modules.
 
 | Directory | Purpose |
 | ----------- | --------- |
 | `api/` | 8 modules — `index.js` (axios + Bearer + 401 redirect), role-specific modules, `common.js` (shared) |
 | `store/user.js` | Pinia — token/userID/role, localStorage persisted |
 | `router/index.js` | Role-based route groups + navigation guard |
-| `views/` | 33 `.vue` files: `admin/`(13), `doctor/`(4), `nurse/`(4), `pharmacist/`(3), `patient/`(6), plus Layout/Login/Register (+ `App.vue` at `src/` root = 34 total) |
-| `styles/global.css` | 167-line CSS variable theme ("Pure & Clinical", blue `#1e88e5`, frosted-glass cards, `fade-in`/`slideIn` animations) |
+| `views/` | 37 `.vue` files: `admin/`(16: +Schedules, Reports, MedicineFlows), `doctor/`(4), `nurse/`(4), `pharmacist/`(3), `patient/`(7: +Schedules), plus Layout/Login/Register (+ `App.vue` at `src/` root = 38 total) |
+| `styles/global.css` | 296-line CSS variable theme ("Pure & Clinical v2", blue `#1976d2` + teal accent `#00897b`, Noto Sans SC font, frosted-glass cards, `fade-in`/`slideIn`/`stagger` animations, print styles) |
 
 Route guard behavior: unauthenticated → `/login`; role mismatch → auto-redirect to role's default page.
+
+**Prescription printing**: Patient consultation detail page has a print button that opens a new window with formatted prescription HTML (patient info, diagnosis, medication table) and calls `window.print()`. Uses CSS `@media print` rules for clean output.
 
 ### Known Gotchas
 
@@ -230,7 +249,3 @@ Route guard behavior: unauthenticated → `/login`; role mismatch → auto-redir
 ### `"#"` Sentinel Convention
 
 All null/empty string fields use `"#"` as sentinel (not empty string or `null`). This applies to every text field across all data files — gender, telephone, email, department, note, productionDate, expiryDate, etc. API handlers and console code both check `field == "#"` to determine emptiness and convert `"#"` to display-friendly strings.
-
-### Language
-
-Code comments, UI strings, documentation, and commit messages are primarily in Chinese. Commit messages use date-based versioning (e.g., "4.24.1").

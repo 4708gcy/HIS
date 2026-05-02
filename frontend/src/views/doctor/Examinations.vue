@@ -13,9 +13,10 @@
           <template #default="{ row }"><el-tag size="small">{{ row.statusStr }}</el-tag></template>
         </el-table-column>
         <el-table-column prop="reportSummary" label="报告摘要" min-width="150" show-overflow-tooltip />
-        <el-table-column label="操作" width="100">
+        <el-table-column label="操作" width="150">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="openEdit(row)">编辑</el-button>
+            <el-button type="danger" size="small" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -41,8 +42,8 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { getMyExaminations, updateExamination } from '../../api/doctor'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getMyExaminations, updateExamination, deleteExamination } from '../../api/doctor'
 
 const loading = ref(false)
 const saving = ref(false)
@@ -68,6 +69,14 @@ async function handleSave() {
     if (res.code === 200) { ElMessage.success('保存成功'); editVisible.value = false; loadData() }
   } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '操作失败') }
   finally { saving.value = false }
+}
+
+async function handleDelete(row) {
+  try {
+    await ElMessageBox.confirm('确定删除此检查记录？', '确认', { type: 'warning' })
+    const res = await deleteExamination(row.examinationID)
+    if (res.code === 200) { ElMessage.success('删除成功'); loadData() }
+  } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '操作失败') }
 }
 
 onMounted(loadData)

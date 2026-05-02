@@ -33,3 +33,12 @@ export function createConsultation(data) {
 export function createExaminations(data) {
   return request.post('/doctor/examinations', data)
 }
+export function deleteRegistration(id) {
+  return request.delete(`/doctor/registrations/${id}`)
+}
+export function deleteConsultation(id) {
+  return request.delete(`/doctor/consultations/${id}`)
+}
+export function deleteExamination(id) {
+  return request.delete(`/doctor/examinations/${id}`)
+}

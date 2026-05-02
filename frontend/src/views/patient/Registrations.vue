@@ -18,9 +18,10 @@
           <template #default="{ row }"><el-tag :type="['info','success','warning','danger'][row.status]" size="small">{{ row.statusStr }}</el-tag></template>
         </el-table-column>
         <el-table-column prop="registerTime" label="挂号时间" min-width="180" />
-        <el-table-column label="操作" width="100">
+        <el-table-column label="操作" width="160">
           <template #default="{ row }">
             <el-button v-if="row.status === 0" type="success" size="small" @click="handlePay(row)">支付</el-button>
+            <el-button v-if="row.status === 0" type="danger" size="small" @click="handleCancel(row)">取消</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -51,7 +52,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMyRegistrations, createRegistration, payRegistration } from '../../api/patient'
+import { getMyRegistrations, createRegistration, payRegistration, deleteRegistration } from '../../api/patient'
 import { getDepartments, getDoctors } from '../../api/common'
 import { useUserStore } from '../../store/user'
 
@@ -92,6 +93,14 @@ async function handleRegister() {
     else ElMessage.error(res.message)
   } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '操作失败') }
   finally { submitting.value = false }
+}
+
+async function handleCancel(row) {
+  try {
+    await ElMessageBox.confirm('确定取消此挂号？取消后不可恢复', '确认取消', { type: 'warning' })
+    const res = await deleteRegistration(row.registrationID)
+    if (res.code === 200) { ElMessage.success('取消成功'); loadData() }
+  } catch (e) { if (e !== 'cancel' && e?.message !== 'cancel') ElMessage.error(e.message || '操作失败') }
 }
 
 async function handlePay(row) {

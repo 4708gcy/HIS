@@ -32,6 +32,9 @@ const routes = [
         { path: 'admin/medication-records', name: 'AdminMedicationRecords', component: () => import('../views/admin/MedicationRecords.vue'), meta: { roles: [1] } },
         { path: 'admin/medicines', name: 'AdminMedicines', component: () => import('../views/admin/Medicines.vue'), meta: { roles: [1] } },
         { path: 'admin/beds', name: 'AdminBeds', component: () => import('../views/admin/Beds.vue'), meta: { roles: [1] } },
+        { path: 'admin/schedules', name: 'AdminSchedules', component: () => import('../views/admin/Schedules.vue'), meta: { roles: [1] } },
+        { path: 'admin/reports', name: 'AdminReports', component: () => import('../views/admin/Reports.vue'), meta: { roles: [1] } },
+        { path: 'admin/medicine-flows', name: 'AdminMedicineFlows', component: () => import('../views/admin/MedicineFlows.vue'), meta: { roles: [1] } },
         { path: 'admin/profile', name: 'AdminProfile', component: () => import('../views/admin/Profile.vue'), meta: { roles: [1] } }
       ],
       // 医生路由
@@ -61,6 +64,7 @@ const routes = [
         { path: 'patient/examinations', name: 'PatientExaminations', component: () => import('../views/patient/Examinations.vue'), meta: { roles: [5] } },
         { path: 'patient/medication-records', name: 'PatientMedRecords', component: () => import('../views/patient/MedicationRecords.vue'), meta: { roles: [5] } },
         { path: 'patient/hospitalizations', name: 'PatientHospitalizations', component: () => import('../views/patient/Hospitalizations.vue'), meta: { roles: [5] } },
+        { path: 'patient/schedules', name: 'PatientSchedules', component: () => import('../views/patient/Schedules.vue'), meta: { roles: [5] } },
         { path: 'patient/profile', name: 'PatientProfile', component: () => import('../views/patient/Profile.vue'), meta: { roles: [5] } }
       ]
     ]

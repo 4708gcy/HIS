@@ -3,6 +3,12 @@
 #include "SaveData.h"
 #include "SHA-256.h"
 #include <algorithm>
+#include <fstream>
+#include <map>
+
+// 前向声明（定义在匿名 namespace 之后）
+static void loadSchedules();
+static void saveSchedules();
 
 // ===== DataManager 实现 =====
 
@@ -37,6 +43,7 @@ void DataManager::init()
     medHead = loadMedicines(medicineCount_);
     medFlowHead = loadMedicineFlows(medicineFlowCount_);
     bedHead = loadBedInfos(bedCount_);
+    loadSchedules();
 }
 
 void DataManager::saveAllUnsafe()
@@ -54,6 +61,7 @@ void DataManager::saveAllUnsafe()
     saveMedicines(medHead, medicineCount_);
     saveMedicineFlows(medFlowHead, medicineFlowCount_);
     saveBedInfos(bedHead, bedCount_);
+    saveSchedules();
 }
 
 void DataManager::saveAll()
@@ -204,6 +212,32 @@ namespace
         res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     }
 
+}
+
+// ===== 排班数据持久化 =====
+static std::vector<json> g_schedules;
+static int g_scheduleIdCounter = 0;
+
+static void loadSchedules()
+{
+    std::ifstream ifs("../Data/schedules.json");
+    if (!ifs.is_open()) return;
+    try {
+        json root = json::parse(ifs);
+        g_scheduleIdCounter = root.value("counter", 0);
+        if (root.contains("schedules") && root["schedules"].is_array())
+            g_schedules = root["schedules"].get<std::vector<json>>();
+    } catch (...) {}
+}
+
+static void saveSchedules()
+{
+    std::ofstream ofs("../Data/schedules.json");
+    if (!ofs.is_open()) return;
+    json root;
+    root["counter"] = g_scheduleIdCounter;
+    root["schedules"] = g_schedules;
+    ofs << root.dump(2);
 }
 
 // ===== 路由注册 =====
@@ -2902,4 +2936,446 @@ void registerApiRoutes(httplib::Server &svr)
         med->isDeleted = true;
         dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
+
+    // ==================== 排班 API ====================
+
+    // GET /api/admin/schedules - 管理员查看排班列表（支持筛选）
+    svr.Get("/api/admin/schedules", [&](const httplib::Request &req, httplib::Response &res)
+            {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::string department = req.get_param_value("department");
+        std::string doctorID = req.get_param_value("doctorID");
+        std::string date = req.get_param_value("date");
+        json list = json::array();
+        for (const auto &s : g_schedules) {
+            bool match = true;
+            if (!department.empty() && s.value("department", "") != department) match = false;
+            if (!doctorID.empty() && s.value("doctorID", "") != doctorID) match = false;
+            if (!date.empty() && s.value("date", "") != date) match = false;
+            if (match) list.push_back(s);
+        }
+        res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
+
+    // POST /api/admin/schedules - 管理员创建排班
+    svr.Post("/api/admin/schedules", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            if (!body.contains("doctorID") || !body.contains("date") || !body.contains("timeSlot")) {
+                res.set_content(ApiResponse::badRequest("缺少必填字段: doctorID, date, timeSlot").dump(), "application/json"); return;
+            }
+            std::string doctorID = body["doctorID"];
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Doctor *doc = findDoctor(dm.getDoctorHead(), doctorID);
+            if (!doc) { res.set_content(ApiResponse::notFound("医生不存在").dump(), "application/json"); return; }
+            g_scheduleIdCounter++;
+            json schedule;
+            schedule["id"] = g_scheduleIdCounter;
+            schedule["doctorID"] = doctorID;
+            schedule["doctorName"] = doc->getUsername();
+            schedule["department"] = body.value("department", doc->getDepartment());
+            schedule["date"] = body["date"];
+            schedule["timeSlot"] = body["timeSlot"];
+            schedule["note"] = body.value("note", "");
+            schedule["createTime"] = MyTime::getInstance().getTime();
+            g_schedules.push_back(schedule);
+            saveSchedules();
+            res.set_content(ApiResponse::success("排班创建成功", schedule).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // PUT /api/admin/schedules/:id - 管理员修改排班
+    svr.Put(R"(/api/admin/schedules/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+            {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        int id = std::stoi(req.matches[1]);
+        try {
+            json body = json::parse(req.body);
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            for (auto &s : g_schedules) {
+                if (s.value("id", 0) == id) {
+                    if (body.contains("doctorID")) {
+                        Doctor *doc = findDoctor(dm.getDoctorHead(), body["doctorID"].get<std::string>());
+                        if (!doc) { res.set_content(ApiResponse::notFound("医生不存在").dump(), "application/json"); return; }
+                        s["doctorID"] = body["doctorID"];
+                        s["doctorName"] = doc->getUsername();
+                    }
+                    if (body.contains("department")) s["department"] = body["department"];
+                    if (body.contains("date")) s["date"] = body["date"];
+                    if (body.contains("timeSlot")) s["timeSlot"] = body["timeSlot"];
+                    if (body.contains("note")) s["note"] = body["note"];
+                    saveSchedules();
+                    res.set_content(ApiResponse::success("排班修改成功", s).dump(), "application/json");
+                    return;
+                }
+            }
+            res.set_content(ApiResponse::notFound("排班记录不存在").dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // DELETE /api/admin/schedules/:id - 管理员删除排班
+    svr.Delete(R"(/api/admin/schedules/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+                {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        int id = std::stoi(req.matches[1]);
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        for (auto it = g_schedules.begin(); it != g_schedules.end(); ++it) {
+            if (it->value("id", 0) == id) {
+                g_schedules.erase(it);
+                saveSchedules();
+                res.set_content(ApiResponse::success("排班删除成功").dump(), "application/json");
+                return;
+            }
+        }
+        res.set_content(ApiResponse::notFound("排班记录不存在").dump(), "application/json"); });
+
+    // GET /api/schedules - 公开排班查询（无需登录）
+    svr.Get("/api/schedules", [&](const httplib::Request &req, httplib::Response &res)
+            {
+        setCORS(req, res);
+        std::string department = req.get_param_value("department");
+        std::string date = req.get_param_value("date");
+        json list = json::array();
+        for (const auto &s : g_schedules) {
+            bool match = true;
+            if (!department.empty() && s.value("department", "") != department) match = false;
+            if (!date.empty() && s.value("date", "") != date) match = false;
+            if (match) list.push_back(s);
+        }
+        res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
+
+    // ==================== 转科 API ====================
+
+    // POST /api/nurse/hospitalizations/:id/transfer - 转科
+    svr.Post(R"(/api/nurse/hospitalizations/(\d+)/transfer)", [&](const httplib::Request &req, httplib::Response &res)
+              {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 3) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        try {
+            json body = json::parse(req.body);
+            std::string newDepartment = body.value("newDepartment", "");
+            if (newDepartment.empty()) { res.set_content(ApiResponse::badRequest("请提供新科室").dump(), "application/json"); return; }
+            std::string newBedID = body.value("newBedID", "");
+
+            std::lock_guard<std::mutex> lock(dm.getMutex());
+            Hospitalization *hos = findById(dm.getHosHead(), req.matches[1]);
+            if (!hos) { res.set_content(ApiResponse::notFound("住院记录不存在").dump(), "application/json"); return; }
+            if (hos->status != HospitalizationStatus::ADMITTED) {
+                res.set_content(ApiResponse::badRequest("该住院记录状态不允许转科").dump(), "application/json"); return;
+            }
+
+            // 释放旧床位
+            if (!hos->bedNumber.empty() && hos->bedNumber != "#") {
+                bedInfo *oldBed = findById(dm.getBedHead(), hos->bedNumber);
+                if (oldBed) { oldBed->status = bedStatus::AVAILABLE; oldBed->patientID = "#"; oldBed->nurseID = "#"; }
+            }
+
+            // 分配新床位
+            if (!newBedID.empty()) {
+                bedInfo *newBed = findById(dm.getBedHead(), newBedID);
+                if (!newBed || newBed->status != bedStatus::AVAILABLE) {
+                    res.set_content(ApiResponse::badRequest("新床位不可用").dump(), "application/json"); return;
+                }
+                newBed->status = bedStatus::OCCUPIED;
+                newBed->patientID = hos->patientID;
+                newBed->nurseID = auth.userID;
+                newBed->useTimes++;
+                hos->bedNumber = newBedID;
+                hos->wardType = newBed->wardType;
+            } else {
+                hos->bedNumber = "#";
+            }
+
+            hos->department = newDepartment;
+            hos->nurseID = auth.userID;
+            dm.saveAllUnsafe();
+            res.set_content(ApiResponse::success("转科成功", JsonHelper::toJson(hos)).dump(), "application/json");
+        } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
+
+    // ==================== 管理员报表 API ====================
+
+    // GET /api/admin/reports/department - 科室报表
+    svr.Get("/api/admin/reports/department", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        // 按科室统计挂号和看诊数量
+        std::map<std::string, json> deptStats;
+        Registration *reg = dm.getRegHead();
+        while (reg) {
+            if (!reg->isDeleted) {
+                std::string dept = reg->department.empty() || reg->department == "#" ? "未知" : reg->department;
+                if (deptStats.find(dept) == deptStats.end())
+                    deptStats[dept] = json{{"department", dept}, {"registrations", 0}, {"consultations", 0}};
+                deptStats[dept]["registrations"] = deptStats[dept]["registrations"].get<int>() + 1;
+            }
+            reg = reg->next;
+        }
+        Consultation *con = dm.getConHead();
+        while (con) {
+            if (!con->isDeleted) {
+                std::string dept = con->department.empty() || con->department == "#" ? "未知" : con->department;
+                if (deptStats.find(dept) == deptStats.end())
+                    deptStats[dept] = json{{"department", dept}, {"registrations", 0}, {"consultations", 0}};
+                deptStats[dept]["consultations"] = deptStats[dept]["consultations"].get<int>() + 1;
+            }
+            con = con->next;
+        }
+        json list = json::array();
+        for (auto &kv : deptStats) list.push_back(kv.second);
+        res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
+
+    // GET /api/admin/reports/doctor-workload - 医生工作量报表
+    svr.Get("/api/admin/reports/doctor-workload", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        std::map<std::string, json> docStats;
+        // 统计每个医生的看诊数量
+        Consultation *con = dm.getConHead();
+        while (con) {
+            if (!con->isDeleted) {
+                std::string docID = con->doctorID;
+                if (docStats.find(docID) == docStats.end()) {
+                    std::string docName = "未知";
+                    Doctor *doc = findDoctor(dm.getDoctorHead(), docID);
+                    if (doc) docName = doc->getUsername();
+                    docStats[docID] = json{{"doctorID", docID}, {"doctorName", docName}, {"consultations", 0}, {"examinations", 0}};
+                }
+                docStats[docID]["consultations"] = docStats[docID]["consultations"].get<int>() + 1;
+            }
+            con = con->next;
+        }
+        // 统计每个医生的检查数量
+        Examination *exa = dm.getExamHead();
+        while (exa) {
+            if (!exa->isDeleted) {
+                std::string docID = exa->doctorID;
+                if (docStats.find(docID) == docStats.end()) {
+                    std::string docName = "未知";
+                    Doctor *doc = findDoctor(dm.getDoctorHead(), docID);
+                    if (doc) docName = doc->getUsername();
+                    docStats[docID] = json{{"doctorID", docID}, {"doctorName", docName}, {"consultations", 0}, {"examinations", 0}};
+                }
+                docStats[docID]["examinations"] = docStats[docID]["examinations"].get<int>() + 1;
+            }
+            exa = exa->next;
+        }
+        json list = json::array();
+        for (auto &kv : docStats) list.push_back(kv.second);
+        res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
+
+    // GET /api/admin/reports/patient - 患者报表
+    svr.Get("/api/admin/reports/patient", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        int totalPatients = 0;
+        Patient *pat = dm.getPatientHead();
+        while (pat) {
+            if (!pat->isDeleted) totalPatients++;
+            pat = pat->next;
+        }
+        // 统计每个患者的就诊次数
+        std::map<std::string, int> visitCounts;
+        Registration *reg = dm.getRegHead();
+        while (reg) {
+            if (!reg->isDeleted && !reg->patientID.empty() && reg->patientID != "#")
+                visitCounts[reg->patientID]++;
+            reg = reg->next;
+        }
+        json list = json::array();
+        for (auto &kv : visitCounts) {
+            std::string pName = "未知";
+            Patient *p = findPatient(dm.getPatientHead(), kv.first);
+            if (p) pName = p->getUsername();
+            list.push_back(json{{"patientID", kv.first}, {"patientName", pName}, {"visitCount", kv.second}});
+        }
+        json data;
+        data["totalPatients"] = totalPatients;
+        data["patientsWithVisits"] = list.size();
+        data["list"] = list;
+        res.set_content(ApiResponse::success("", data).dump(), "application/json"); });
+
+    // GET /api/admin/reports/bed-utilization - 床位利用率报表
+    svr.Get("/api/admin/reports/bed-utilization", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        std::map<std::string, json> deptBeds;
+        bedInfo *bed = dm.getBedHead();
+        while (bed) {
+            if (!bed->isDeleted) {
+                std::string dept = bed->department.empty() || bed->department == "#" ? "未知" : bed->department;
+                if (deptBeds.find(dept) == deptBeds.end())
+                    deptBeds[dept] = json{{"department", dept}, {"total", 0}, {"occupied", 0}, {"available", 0}, {"cleaning", 0}, {"unavailable", 0}};
+                deptBeds[dept]["total"] = deptBeds[dept]["total"].get<int>() + 1;
+                if (bed->status == bedStatus::OCCUPIED) deptBeds[dept]["occupied"] = deptBeds[dept]["occupied"].get<int>() + 1;
+                else if (bed->status == bedStatus::AVAILABLE) deptBeds[dept]["available"] = deptBeds[dept]["available"].get<int>() + 1;
+                else if (bed->status == bedStatus::ClEANING) deptBeds[dept]["cleaning"] = deptBeds[dept]["cleaning"].get<int>() + 1;
+                else if (bed->status == bedStatus::UNAVAILABLE) deptBeds[dept]["unavailable"] = deptBeds[dept]["unavailable"].get<int>() + 1;
+            }
+            bed = bed->next;
+        }
+        json list = json::array();
+        for (auto &kv : deptBeds) list.push_back(kv.second);
+        res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
+
+    // GET /api/admin/reports/medicine-inventory - 药品库存报表
+    svr.Get("/api/admin/reports/medicine-inventory", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        json list = json::array();
+        int totalMedicines = 0, lowStockCount = 0, expiredCount = 0, normalCount = 0;
+        Medicine *med = dm.getMedHead();
+        while (med) {
+            if (!med->isDeleted) {
+                totalMedicines++;
+                if (med->status == MedicineStatus::LOW_STOCK) lowStockCount++;
+                else if (med->status == MedicineStatus::EXPIRED) expiredCount++;
+                else if (med->status == MedicineStatus::NORMAL) normalCount++;
+                json item;
+                item["medicineID"] = med->medicineID;
+                item["name"] = med->name;
+                item["stock"] = med->stock;
+                item["safetyStock"] = med->safetyStock;
+                item["status"] = static_cast<int>(med->status);
+                item["statusStr"] = JsonHelper::medicineStatusToStr(static_cast<int>(med->status));
+                item["department"] = med->department;
+                list.push_back(item);
+            }
+            med = med->next;
+        }
+        json data;
+        data["totalMedicines"] = totalMedicines;
+        data["normalCount"] = normalCount;
+        data["lowStockCount"] = lowStockCount;
+        data["expiredCount"] = expiredCount;
+        data["list"] = list;
+        res.set_content(ApiResponse::success("", data).dump(), "application/json"); });
+
+    // GET /api/admin/reports/overview - 总览仪表盘
+    svr.Get("/api/admin/reports/overview", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        json data;
+        // 统计各实体数量
+        int cnt = 0;
+        Doctor *doc = dm.getDoctorHead(); while (doc) { if (!doc->isDeleted) cnt++; doc = doc->next; }
+        data["doctors"] = cnt;
+        cnt = 0;
+        Nurse *nur = dm.getNurseHead(); while (nur) { if (!nur->isDeleted) cnt++; nur = nur->next; }
+        data["nurses"] = cnt;
+        cnt = 0;
+        Pharmacist *pha = dm.getPharmacistHead(); while (pha) { if (!pha->isDeleted) cnt++; pha = pha->next; }
+        data["pharmacists"] = cnt;
+        cnt = 0;
+        Patient *pat = dm.getPatientHead(); while (pat) { if (!pat->isDeleted) cnt++; pat = pat->next; }
+        data["patients"] = cnt;
+        cnt = 0;
+        Registration *reg = dm.getRegHead(); while (reg) { if (!reg->isDeleted) cnt++; reg = reg->next; }
+        data["registrations"] = cnt;
+        cnt = 0;
+        Consultation *con = dm.getConHead(); while (con) { if (!con->isDeleted) cnt++; con = con->next; }
+        data["consultations"] = cnt;
+        cnt = 0;
+        Examination *exa = dm.getExamHead(); while (exa) { if (!exa->isDeleted) cnt++; exa = exa->next; }
+        data["examinations"] = cnt;
+        cnt = 0;
+        Hospitalization *hos = dm.getHosHead(); while (hos) { if (!hos->isDeleted) cnt++; hos = hos->next; }
+        data["hospitalizations"] = cnt;
+        cnt = 0;
+        MedicationRecord *mr = dm.getMedRecHead(); while (mr) { if (!mr->isDeleted) cnt++; mr = mr->next; }
+        data["medicationRecords"] = cnt;
+        cnt = 0;
+        Medicine *med = dm.getMedHead(); while (med) { if (!med->isDeleted) cnt++; med = med->next; }
+        data["medicines"] = cnt;
+        cnt = 0;
+        bedInfo *bed = dm.getBedHead(); while (bed) { if (!bed->isDeleted) cnt++; bed = bed->next; }
+        data["beds"] = cnt;
+        res.set_content(ApiResponse::success("", data).dump(), "application/json"); });
+
+    // ==================== 药品流水 API ====================
+
+    // 辅助：MedicineFlow 序列化（JsonHelper 中没有该函数）
+    auto medFlowToJson = [](const MedicineFlow *flow) -> json {
+        json j;
+        j["flowID"] = (flow->flowID == "#") ? "" : flow->flowID;
+        j["medicineID"] = (flow->medicineID == "#") ? "" : flow->medicineID;
+        j["type"] = static_cast<int>(flow->type);
+        j["typeStr"] = (flow->type == MedicineFlowType::IN_STOCK) ? "入库" : "出库";
+        j["quantity"] = flow->quantity;
+        j["operatorID"] = (flow->operatorID == "#") ? "" : flow->operatorID;
+        j["reason"] = (flow->reason == "#") ? "" : flow->reason;
+        j["timestamp"] = (flow->timestamp == "#") ? "" : flow->timestamp;
+        j["note"] = (flow->note == "#") ? "" : flow->note;
+        j["isDeleted"] = flow->isDeleted;
+        return j;
+    };
+
+    // GET /api/admin/medicine-flows - 管理员查看药品流水（支持筛选）
+    svr.Get("/api/admin/medicine-flows", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::string medicineID = req.get_param_value("medicineID");
+        std::string typeStr = req.get_param_value("type");
+        json list = json::array();
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        MedicineFlow *cur = dm.getMedFlowHead();
+        while (cur) {
+            if (!cur->isDeleted) {
+                bool match = true;
+                if (!medicineID.empty() && cur->medicineID != medicineID) match = false;
+                if (!typeStr.empty() && std::to_string(static_cast<int>(cur->type)) != typeStr) match = false;
+                if (match) list.push_back(medFlowToJson(cur));
+            }
+            cur = cur->next;
+        }
+        res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
+
+    // GET /api/pharmacist/medicine-flows - 药剂师查看药品流水
+    svr.Get("/api/pharmacist/medicine-flows", [&](const httplib::Request &req, httplib::Response &res)
+             {
+        setCORS(req, res);
+        auto auth = authenticateRequest(req);
+        if (!auth.valid || auth.role != 4) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
+        std::string medicineID = req.get_param_value("medicineID");
+        std::string typeStr = req.get_param_value("type");
+        json list = json::array();
+        std::lock_guard<std::mutex> lock(dm.getMutex());
+        MedicineFlow *cur = dm.getMedFlowHead();
+        while (cur) {
+            if (!cur->isDeleted) {
+                bool match = true;
+                if (!medicineID.empty() && cur->medicineID != medicineID) match = false;
+                if (!typeStr.empty() && std::to_string(static_cast<int>(cur->type)) != typeStr) match = false;
+                if (match) list.push_back(medFlowToJson(cur));
+            }
+            cur = cur->next;
+        }
+        res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 }

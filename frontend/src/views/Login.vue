@@ -131,12 +131,24 @@ async function handleLogin() {
   z-index: 1;
   width: 420px;
   padding: 40px 36px 32px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 32px rgba(30, 136, 229, 0.1), 0 1px 2px rgba(30, 136, 229, 0.05);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 40px rgba(25, 118, 210, 0.12), 0 2px 8px rgba(25, 118, 210, 0.06);
+  animation: cardAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .login-header {
@@ -145,22 +157,29 @@ async function handleLogin() {
 }
 
 .logo-icon {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   margin: 0 auto 16px;
+  animation: logoPulse 2s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
 }
 
 .logo-icon svg {
   width: 100%;
   height: 100%;
+  filter: drop-shadow(0 2px 8px rgba(25, 118, 210, 0.2));
 }
 
 .login-header h2 {
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--his-text);
   margin: 0 0 6px;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.3px;
 }
 
 .login-header p {
@@ -197,11 +216,23 @@ async function handleLogin() {
 }
 
 .login-form :deep(.el-button--primary) {
-  border-radius: 8px;
-  height: 42px;
+  border-radius: 10px;
+  height: 44px;
   font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 1px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, #1976d2, #1565c0) !important;
+  border: none !important;
+  transition: all 0.25s;
+}
+
+.login-form :deep(.el-button--primary:hover) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.35);
+}
+
+.login-form :deep(.el-button--primary:active) {
+  transform: translateY(0);
 }
 
 .register-link {

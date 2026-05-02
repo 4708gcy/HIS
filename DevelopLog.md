@@ -432,3 +432,98 @@ his_server.exe — 编译通过
 | 可操作性 | 13/15 | 命令可直接复制执行 |
 
 **结论**：无需修改，文件已足够完善
+
+---
+
+## 2026.5.2 — 课程设计全面审查与补全（6步流程）
+
+### Step 1: 后端代码审查
+
+对照 PDF 课程设计要求，检查纯后端（main.cpp 控制台模式）代码，发现 20 项问题：
+
+| 级别 | 数量 | 关键项 |
+
+|------|------|--------|
+| Critical | 2 | 排班管理模块缺失、处方打印功能缺失 |
+| High | 8 | 转科流程不完整、费用明细缺失、CSV 逗号冲突、药品流水 API 缺失等 |
+| Medium | 6 | 报表统计、床位编辑、记录删除等 |
+| Low | 4 | 边界情况、UI 提示优化 |
+
+### Step 2: 前后端贯通检查
+
+验证 REST API 覆盖率约 85%，识别出 P0-P3 分级的前后端缺口。
+
+### Step 3: P0-P2 全部修复 + 前端美化
+
+#### P0 修复（3 项）
+
+| 功能 | 后端 | 前端 |
+
+|------|------|------|
+| 排班管理 | `g_schedules` vector + JSON 持久化 `Data/schedules.json`，5 个端点（CRUD + 公开查询） | `admin/Schedules.vue`（管理员 CRUD）、`patient/Schedules.vue`（患者只读） |
+| 处方打印 | — | `patient/Consultations.vue` 新增 `printPrescription()`，`window.open()` 打印格式化处方 |
+| 转科办理 | `POST /api/nurse/hospitalizations/:id/transfer` | — |
+
+#### P1 修复（2 项）
+
+| 功能 | 后端 | 前端 |
+|------|------|------|
+
+| 统计报表 | 6 个报表端点（overview/department/doctor-workload/patient/bed-utilization/medicine-inventory） | `admin/Reports.vue`（概览卡片 + 科室统计 + 医生工作量 + 床位利用率 + 药品库存） |
+| 药品流水 | `GET /api/admin/medicine-flows`、`GET /api/pharmacist/medicine-flows` | `admin/MedicineFlows.vue`（类型标签 + 药品筛选） |
+
+#### P2 修复（6 项）
+
+- `api/doctor.js` 新增 3 个 delete 函数（registration/consultation/examination）
+- `api/patient.js` 新增 deleteRegistration
+- `api/admin.js` 新增 updateBed/updateRegistration/updateConsultation/updateExamination + 4 个 schedule 函数 + 6 个 report 函数 + getMedicineFlows
+- `doctor/Registrations.vue` 新增删除按钮
+- `doctor/Consultations.vue` 新增删除按钮
+- `doctor/Examinations.vue` 新增删除按钮
+- `patient/Registrations.vue` 新增取消按钮
+- `admin/Beds.vue` 新增编辑按钮 + 编辑对话框
+
+#### 前端美化
+
+- `global.css`：167 行 → 296 行。主色 `#1e88e5` → `#1976d2`，新增 teal accent `#00897b`，引入 Noto Sans SC 字体，新增 radius/font CSS 变量，增强 card/dialog/table/form 样式，新增 stagger 动画和 print 样式
+- `Dashboard.vue`：统计卡片渐变顶边框、tabular-nums 字体、图标 hover 缩放、accent 边框色过渡
+- `Login.vue`：磨砂玻璃增强（blur 16px）、cardAppear 关键帧、logoPulse 动画、按钮渐变 + translateY 悬浮
+
+#### 路由 & 布局更新
+
+- `router/index.js` 新增 4 条路由：admin/schedules、admin/reports、admin/medicine-flows、patient/schedules
+- `Layout.vue` 新增"系统管理"子菜单（排班管理、统计报表）、药品流水菜单项、患者排班查询菜单项
+
+#### 构建验证
+
+```text
+his.exe — 编译通过
+his_server.exe — 编译通过
+```
+
+### Step 4: CLAUDE.md 更新
+
+- 新增 `schedules.json` 到数据持久化表
+- API 端点数 ~125 → ~140，补充排班/报表/转科/药品流水端点文档
+- 前端文件数 34 → 38，页面分布更新（admin 13→16、patient 6→7）
+- 补充处方打印功能说明
+- `global.css` 行数 167 → 296，更新描述
+
+### Step 5: 上下文压缩
+
+执行 `/compact` 压缩会话上下文。
+
+### Step 6: 开发日志
+
+本条日志。
+
+### 代码统计
+
+```text
+后端 Source/ApiServer.cpp：+~490 行（15 个新端点 + 排班 JSON 持久化）
+前端 api/：+30 个函数（admin.js 17、doctor.js 3、patient.js 1、+ schedule/report/flow）
+前端 views/：4 个新页面 + 6 个页面增强
+前端 styles/global.css：+129 行
+前端 router/Layout：+4 路由 + 3 菜单项
+CLAUDE.md：+30 行更新
+```

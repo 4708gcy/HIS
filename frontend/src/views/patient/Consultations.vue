@@ -20,6 +20,12 @@
     </el-card>
 
     <el-dialog v-model="detailVisible" title="看诊详情" width="800px">
+      <div class="no-print" style="margin-bottom: 12px; text-align: right">
+        <el-button type="primary" @click="printPrescription">
+          <el-icon><Printer /></el-icon> 打印处方
+        </el-button>
+      </div>
+      <div ref="printArea">
       <el-descriptions :column="2" border>
         <el-descriptions-item label="看诊ID">{{ detail.consultationID }}</el-descriptions-item>
         <el-descriptions-item label="挂号ID">{{ detail.registrationID }}</el-descriptions-item>
@@ -69,18 +75,21 @@
           <el-table-column prop="duration" label="疗程" width="100" />
         </el-table>
       </div>
+      </div><!-- /printArea -->
     </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { Printer } from '@element-plus/icons-vue'
 import { getMyConsultations } from '../../api/patient'
 
 const loading = ref(false)
 const tableData = ref([])
 const detailVisible = ref(false)
 const detail = reactive({})
+const printArea = ref(null)
 
 async function loadData() {
   loading.value = true
@@ -89,6 +98,44 @@ async function loadData() {
 }
 
 function viewDetail(row) { Object.assign(detail, row); detailVisible.value = true }
+
+function printPrescription() {
+  const content = printArea.value
+  if (!content) return
+  const printWindow = window.open('', '_blank')
+  printWindow.document.write(`
+    <html><head><title>处方 - ${detail.consultationID}</title>
+    <style>
+      body { font-family: "SimSun", serif; padding: 40px; color: #000; }
+      h2 { text-align: center; margin-bottom: 4px; }
+      h4 { margin: 16px 0 8px; border-bottom: 1px solid #000; padding-bottom: 4px; }
+      table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+      th, td { border: 1px solid #000; padding: 6px 8px; text-align: left; font-size: 14px; }
+      th { background: #f0f0f0; }
+      .info-row { display: flex; gap: 24px; margin: 4px 0; font-size: 14px; }
+      .info-row span { min-width: 200px; }
+      .footer { margin-top: 40px; text-align: right; font-size: 14px; }
+    </style></head><body>
+    <h2>门诊处方笺</h2>
+    <div class="info-row"><span>看诊编号：${detail.consultationID}</span><span>挂号编号：${detail.registrationID}</span></div>
+    <div class="info-row"><span>患者编号：${detail.patientID}</span><span>医生编号：${detail.doctorID}</span></div>
+    <div class="info-row"><span>科室：${detail.department}</span><span>看诊时间：${detail.consultationTime}</span></div>
+    <h4>诊断</h4>
+    <p>${detail.preliminaryDiagnosis || '-'}</p>
+    <h4>主诉</h4>
+    <p>${detail.chiefComplaint || '-'}</p>
+    <h4>处方</h4>
+    ${(detail.prescriptions && detail.prescriptions.length) ? `
+    <table><tr><th>药品名称</th><th>数量</th><th>用法用量</th><th>频次</th><th>疗程</th><th>备注</th></tr>
+    ${detail.prescriptions.map(p => `<tr><td>${p.name||'-'}</td><td>${p.quantity||'-'}</td><td>${p.dosage||'-'}</td><td>${p.frequency||'-'}</td><td>${p.duration||'-'}</td><td>${p.note||'-'}</td></tr>`).join('')}
+    </table>` : '<p>无处方</p>'}
+    ${(detail.examinationList && detail.examinationList.length) ? `<h4>检查项目</h4><p>${detail.examinationList.join('、')}</p>` : ''}
+    ${detail.note && detail.note !== '#' ? `<h4>医嘱备注</h4><p>${detail.note}</p>` : ''}
+    <div class="footer">打印时间：${new Date().toLocaleString('zh-CN')}</div>
+    </body></html>`)
+  printWindow.document.close()
+  printWindow.print()
+}
 
 onMounted(loadData)
 </script>
