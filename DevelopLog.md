@@ -298,7 +298,6 @@
 
 | 端点 | 功能 |
 |------|------|
-
 | `POST /api/admin/{doctors,nurses,pharmacists,patients}` | 添加人员（含 SHA-256 密码加密） |
 | `POST /api/admin/{registrations,consultations,examinations,hospitalizations,medication-records}` | 添加医疗记录 |
 
@@ -344,7 +343,6 @@
 ### 2. 关键编译错误修复
 
 | 错误 | 根因 | 修复 |
-
 |------|------|------|
 | C3861 `printMenuBorder` 未找到 | 函数为 UI.cpp 中 static，Admin.cpp 不可见 | 改用 `printTitle()` 重写展示逻辑 |
 | LNK2019 链接错误 | CMake GLOB 未识别新文件 | 重新运行 `cmake ..` 配置 |
@@ -385,7 +383,6 @@ his_server.exe — 编译通过
 编写独立 C++ 生成器 `generate_test_data.cpp`，调用项目 SHA-256 模块统一生成密码哈希，满足课程设计要求：
 
 | 数据类型 | 数量 | 说明 |
-
 |----------|------|------|
 | 管理员 | 5 | 含原有 gcy，新增 4 名 |
 | 医生 | 21 | 每科室 4 名 + gcy，覆盖 5 科室 |
@@ -404,7 +401,6 @@ his_server.exe — 编译通过
 ### 2. 生成过程 Bug 修复
 
 | 问题 | 根因 | 修复 |
-
 |------|------|------|
 | 编译错误 `std::to_string` 类型不匹配 | `int` 和 `""` 混用 | 移除死代码，统一使用 `ostringstream` |
 | 0/30 床位更新成功 | 床位 ID 格式不匹配（生成器用 `N1-P1-1`，实际为 `N-03-P-001-01`） | 读取实际 bed_info.txt 提取正确 ID |
@@ -422,7 +418,6 @@ his_server.exe — 编译通过
 使用 CLAUDE.md Improver 技能进行评估：**93/100（Grade A）**
 
 | 维度 | 得分 | 说明 |
-
 |------|------|------|
 | 命令/工作流 | 20/20 | 完整的构建、运行、调试命令 |
 | 架构清晰度 | 18/20 | 类层次、数据结构、API 架构均有说明 |
@@ -442,7 +437,6 @@ his_server.exe — 编译通过
 对照 PDF 课程设计要求，检查纯后端（main.cpp 控制台模式）代码，发现 20 项问题：
 
 | 级别 | 数量 | 关键项 |
-
 |------|------|--------|
 | Critical | 2 | 排班管理模块缺失、处方打印功能缺失 |
 | High | 8 | 转科流程不完整、费用明细缺失、CSV 逗号冲突、药品流水 API 缺失等 |
@@ -458,7 +452,6 @@ his_server.exe — 编译通过
 #### P0 修复（3 项）
 
 | 功能 | 后端 | 前端 |
-
 |------|------|------|
 | 排班管理 | `g_schedules` vector + JSON 持久化 `Data/schedules.json`，5 个端点（CRUD + 公开查询） | `admin/Schedules.vue`（管理员 CRUD）、`patient/Schedules.vue`（患者只读） |
 | 处方打印 | — | `patient/Consultations.vue` 新增 `printPrescription()`，`window.open()` 打印格式化处方 |
@@ -468,7 +461,6 @@ his_server.exe — 编译通过
 
 | 功能 | 后端 | 前端 |
 |------|------|------|
-
 | 统计报表 | 6 个报表端点（overview/department/doctor-workload/patient/bed-utilization/medicine-inventory） | `admin/Reports.vue`（概览卡片 + 科室统计 + 医生工作量 + 床位利用率 + 药品库存） |
 | 药品流水 | `GET /api/admin/medicine-flows`、`GET /api/pharmacist/medicine-flows` | `admin/MedicineFlows.vue`（类型标签 + 药品筛选） |
 

@@ -30,7 +30,6 @@ mkdir -p frontend/src/views/{admin,doctor,nurse,pharmacist,patient}
 目录职责：
 
 | 目录 | 用途 |
-
 |------|------|
 | `src/api/` | 封装所有 HTTP 请求（axios 实例 + 各角色 API 模块） |
 | `src/store/` | Pinia 状态管理（用户登录态、JWT token、角色信息） |
@@ -80,7 +79,6 @@ npm install
 **各包作用：**
 
 | 包 | 用途 |
-
 |----|------|
 | `vue` | 前端框架（Composition API + `<script setup>`） |
 | `vite` | 构建工具，提供开发服务器（热更新）和生产构建 |
