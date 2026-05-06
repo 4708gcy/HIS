@@ -198,6 +198,44 @@ namespace
         return std::to_string(roleDigit) + num;
     }
 
+    std::string generateRecordID(const std::string &prefix, int &counter)
+    {
+        std::string num = std::to_string(counter);
+        while (num.size() < 6)
+            num = "0" + num;
+        counter++;
+        return prefix + num;
+    }
+
+    template <typename T>
+    void pushFront(T *&head, T *node)
+    {
+        node->prev = nullptr;
+        node->next = head;
+        if (head)
+            head->prev = node;
+        head = node;
+    }
+
+    void applyMedicineNames(Medicine *med, const json &body)
+    {
+        if (body.contains("genericName"))
+            med->genericName = body.value("genericName", "#");
+        if (body.contains("aliases") && body["aliases"].is_array())
+        {
+            med->aliases.clear();
+            for (const auto &alias : body["aliases"])
+            {
+                if (alias.is_string())
+                {
+                    std::string value = alias.get<std::string>();
+                    if (!value.empty())
+                        med->aliases.push_back(value);
+                }
+            }
+        }
+    }
+
     // 验证密码
     bool verifyPassword(const std::string &inputPassword, const std::string &storedHash)
     {
@@ -407,8 +445,7 @@ void registerApiRoutes(httplib::Server &svr)
                 newUser->setAge(age);
                 newUser->setTelephone(telephone);
                 newUser->setEmail(email);
-                newUser->next = dm.getAdminHead();
-                dm.getAdminHead() = newUser;
+                pushFront(dm.getAdminHead(), newUser);
                 break;
             }
             case UserRole::DOCTOR:
@@ -431,9 +468,7 @@ void registerApiRoutes(httplib::Server &svr)
                 newUser->setTitle(static_cast<DoctorTitle>(body.value("title", 1)));
                 newUser->setSpecialty(body.value("specialty", "#"));
                 newUser->setScheduleInfo(body.value("scheduleInfo", "#"));
-                newUser->next = dm.getDoctorHead();
-                if (dm.getDoctorHead()) dm.getDoctorHead()->prev = newUser;
-                dm.getDoctorHead() = newUser;
+                pushFront(dm.getDoctorHead(), newUser);
                 break;
             }
             case UserRole::NURSE:
@@ -455,9 +490,7 @@ void registerApiRoutes(httplib::Server &svr)
                 newUser->setDepartment(body.value("department", "急诊科"));
                 newUser->setLevel(static_cast<NurseLevel>(body.value("level", 1)));
                 newUser->setScheduleInfo(body.value("scheduleInfo", "#"));
-                newUser->next = dm.getNurseHead();
-                if (dm.getNurseHead()) dm.getNurseHead()->prev = newUser;
-                dm.getNurseHead() = newUser;
+                pushFront(dm.getNurseHead(), newUser);
                 break;
             }
             case UserRole::PHARMACIST:
@@ -479,9 +512,7 @@ void registerApiRoutes(httplib::Server &svr)
                 newUser->setDepartment(body.value("department", "急诊科"));
                 newUser->setLevel(static_cast<PharmacistLevel>(body.value("level", 1)));
                 newUser->setScheduleInfo(body.value("scheduleInfo", "#"));
-                newUser->next = dm.getPharmacistHead();
-                if (dm.getPharmacistHead()) dm.getPharmacistHead()->prev = newUser;
-                dm.getPharmacistHead() = newUser;
+                pushFront(dm.getPharmacistHead(), newUser);
                 break;
             }
             case UserRole::PATIENT:
@@ -508,9 +539,7 @@ void registerApiRoutes(httplib::Server &svr)
                 newUser->allergyHistory = body.value("allergyHistory", "#");
                 newUser->pastMedicalHistory = body.value("pastMedicalHistory", "#");
                 newUser->maritalStatus = static_cast<MaritalStatus>(body.value("maritalStatus", 1));
-                newUser->next = dm.getPatientHead();
-                if (dm.getPatientHead()) dm.getPatientHead()->prev = newUser;
-                dm.getPatientHead() = newUser;
+                pushFront(dm.getPatientHead(), newUser);
                 break;
             }
             }
@@ -884,9 +913,7 @@ void registerApiRoutes(httplib::Server &svr)
             doc->setSpecialty(body.value("specialty", "#"));
             doc->setScheduleInfo(body.value("scheduleInfo", "#"));
             doc->setIsOnDuty(body.value("isOnDuty", false));
-            doc->next = dm.getDoctorHead();
-            if (dm.getDoctorHead()) dm.getDoctorHead()->prev = doc;
-            dm.getDoctorHead() = doc;
+            pushFront(dm.getDoctorHead(), doc);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::userToJson(doc)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -919,9 +946,7 @@ void registerApiRoutes(httplib::Server &svr)
             nurse->setLevel(static_cast<NurseLevel>(body.value("level", 1)));
             nurse->setScheduleInfo(body.value("scheduleInfo", "#"));
             nurse->setIsOnDuty(body.value("isOnDuty", false));
-            nurse->next = dm.getNurseHead();
-            if (dm.getNurseHead()) dm.getNurseHead()->prev = nurse;
-            dm.getNurseHead() = nurse;
+            pushFront(dm.getNurseHead(), nurse);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::userToJson(nurse)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -954,9 +979,7 @@ void registerApiRoutes(httplib::Server &svr)
             ph->setLevel(static_cast<PharmacistLevel>(body.value("level", 1)));
             ph->setScheduleInfo(body.value("scheduleInfo", "#"));
             ph->setIsOnDuty(body.value("isOnDuty", true));
-            ph->next = dm.getPharmacistHead();
-            if (dm.getPharmacistHead()) dm.getPharmacistHead()->prev = ph;
-            dm.getPharmacistHead() = ph;
+            pushFront(dm.getPharmacistHead(), ph);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::userToJson(ph)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -993,9 +1016,7 @@ void registerApiRoutes(httplib::Server &svr)
             pat->allergyHistory = body.value("allergyHistory", "#");
             pat->pastMedicalHistory = body.value("pastMedicalHistory", "#");
             pat->maritalStatus = MaritalStatus::SINGLE;
-            pat->next = dm.getPatientHead();
-            if (dm.getPatientHead()) dm.getPatientHead()->prev = pat;
-            dm.getPatientHead() = pat;
+            pushFront(dm.getPatientHead(), pat);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::userToJson(pat)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -1029,7 +1050,7 @@ void registerApiRoutes(httplib::Server &svr)
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
     // GET /api/admin/registrations/:id
-    svr.Get(R"(/api/admin/registrations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Get(R"(/api/admin/registrations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1040,7 +1061,7 @@ void registerApiRoutes(httplib::Server &svr)
         res.set_content(ApiResponse::success("", JsonHelper::toJson(reg)).dump(), "application/json"); });
 
     // PUT /api/admin/registrations/:id/status - 修改挂号状态
-    svr.Put(R"(/api/admin/registrations/(\d+)/status)", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/admin/registrations/([^/]+)/status)", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1058,7 +1079,7 @@ void registerApiRoutes(httplib::Server &svr)
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // DELETE /api/admin/registrations/:id
-    svr.Delete(R"(/api/admin/registrations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Delete(R"(/api/admin/registrations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
                {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1086,7 +1107,7 @@ void registerApiRoutes(httplib::Server &svr)
             Patient *pat = findPatient(dm.getPatientHead(), patientID);
             if (!doc) { res.set_content(ApiResponse::notFound("医生不存在").dump(), "application/json"); return; }
             if (!pat) { res.set_content(ApiResponse::notFound("患者不存在").dump(), "application/json"); return; }
-            std::string newID = generateID(5, dm.registrationCount());
+            std::string newID = generateRecordID("reg", dm.registrationCount());
             Registration *newReg = new Registration();
             newReg->registrationID = newID;
             newReg->patientID = patientID;
@@ -1095,9 +1116,7 @@ void registerApiRoutes(httplib::Server &svr)
             newReg->registerTime = MyTime::getInstance().getTime();
             newReg->fee = doc->calculateRegistrationFee(doc->getTitle());
             newReg->status = RegistrationStatus::BOOKED;
-            newReg->next = dm.getRegHead();
-            if (dm.getRegHead()) dm.getRegHead()->prev = newReg;
-            dm.getRegHead() = newReg;
+            pushFront(dm.getRegHead(), newReg);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(newReg)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -1115,7 +1134,7 @@ void registerApiRoutes(httplib::Server &svr)
         while (cur) { if (!cur->isDeleted && (department.empty() || cur->department == department)) list.push_back(JsonHelper::toJson(cur)); cur = cur->next; }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
-    svr.Get(R"(/api/admin/consultations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Get(R"(/api/admin/consultations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1125,7 +1144,7 @@ void registerApiRoutes(httplib::Server &svr)
         if (!con) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         res.set_content(ApiResponse::success("", JsonHelper::toJson(con)).dump(), "application/json"); });
 
-    svr.Put(R"(/api/admin/consultations/(\d+)/status)", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/admin/consultations/([^/]+)/status)", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1140,7 +1159,7 @@ void registerApiRoutes(httplib::Server &svr)
             res.set_content(ApiResponse::success("", JsonHelper::toJson(con)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
-    svr.Delete(R"(/api/admin/consultations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Delete(R"(/api/admin/consultations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
                {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1164,7 +1183,7 @@ void registerApiRoutes(httplib::Server &svr)
             std::lock_guard<std::mutex> lock(dm.getMutex());
             Registration *reg = findById(dm.getRegHead(), registrationID);
             if (!reg) { res.set_content(ApiResponse::notFound("挂号记录不存在").dump(), "application/json"); return; }
-            std::string newID = generateID(6, dm.consultationCount());
+            std::string newID = generateRecordID("con", dm.consultationCount());
             Consultation *con = new Consultation();
             con->consultationID = newID;
             con->registrationID = registrationID;
@@ -1178,9 +1197,7 @@ void registerApiRoutes(httplib::Server &svr)
             con->familyHistory = body.value("familyHistory", "#");
             con->preliminaryDiagnosis = body.value("preliminaryDiagnosis", "#");
             con->status = ConsultationStatus::IN_PROGRESS;
-            con->next = dm.getConHead();
-            if (dm.getConHead()) dm.getConHead()->prev = con;
-            dm.getConHead() = con;
+            pushFront(dm.getConHead(), con);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(con)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -1197,7 +1214,7 @@ void registerApiRoutes(httplib::Server &svr)
         while (cur) { if (!cur->isDeleted) list.push_back(JsonHelper::toJson(cur)); cur = cur->next; }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
-    svr.Get(R"(/api/admin/examinations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Get(R"(/api/admin/examinations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1207,7 +1224,7 @@ void registerApiRoutes(httplib::Server &svr)
         if (!exa) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         res.set_content(ApiResponse::success("", JsonHelper::toJson(exa)).dump(), "application/json"); });
 
-    svr.Delete(R"(/api/admin/examinations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Delete(R"(/api/admin/examinations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
                {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1233,7 +1250,7 @@ void registerApiRoutes(httplib::Server &svr)
             Consultation *con = findById(dm.getConHead(), consultationID);
             if (!con) { res.set_content(ApiResponse::notFound("看诊记录不存在").dump(), "application/json"); return; }
             Doctor *doc = findDoctor(dm.getDoctorHead(), con->doctorID);
-            std::string newID = generateID(7, dm.examinationCount());
+            std::string newID = generateRecordID("exa", dm.examinationCount());
             Examination *exa = new Examination();
             exa->examinationID = newID;
             exa->consultationID = consultationID;
@@ -1244,9 +1261,7 @@ void registerApiRoutes(httplib::Server &svr)
             exa->fee = doc ? doc->calculateExaminationFee(itemName) : 5.0;
             exa->orderTime = MyTime::getInstance().getTime();
             exa->status = ExaminationStatus::ORDERED;
-            exa->next = dm.getExamHead();
-            if (dm.getExamHead()) dm.getExamHead()->prev = exa;
-            dm.getExamHead() = exa;
+            pushFront(dm.getExamHead(), exa);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(exa)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -1263,7 +1278,7 @@ void registerApiRoutes(httplib::Server &svr)
         while (cur) { if (!cur->isDeleted) list.push_back(JsonHelper::toJson(cur)); cur = cur->next; }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
-    svr.Get(R"(/api/admin/hospitalizations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Get(R"(/api/admin/hospitalizations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1273,7 +1288,7 @@ void registerApiRoutes(httplib::Server &svr)
         if (!hos) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         res.set_content(ApiResponse::success("", JsonHelper::toJson(hos)).dump(), "application/json"); });
 
-    svr.Delete(R"(/api/admin/hospitalizations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Delete(R"(/api/admin/hospitalizations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
                {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1298,7 +1313,7 @@ void registerApiRoutes(httplib::Server &svr)
             Consultation *con = findById(dm.getConHead(), consultationID);
             if (!con) { res.set_content(ApiResponse::notFound("看诊记录不存在").dump(), "application/json"); return; }
             std::string wardType = body.value("wardType", "普通病房");
-            std::string newID = generateID(8, dm.hospitalizationCount());
+            std::string newID = generateRecordID("hos", dm.hospitalizationCount());
             Hospitalization *hos = new Hospitalization();
             hos->hospitalizationID = newID;
             hos->consultationID = consultationID;
@@ -1309,9 +1324,7 @@ void registerApiRoutes(httplib::Server &svr)
             hos->applyTime = MyTime::getInstance().getTime();
             hos->deposit = body.value("deposit", 0.0);
             hos->status = HospitalizationStatus::APPLIED;
-            hos->next = dm.getHosHead();
-            if (dm.getHosHead()) dm.getHosHead()->prev = hos;
-            dm.getHosHead() = hos;
+            pushFront(dm.getHosHead(), hos);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(hos)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -1328,7 +1341,7 @@ void registerApiRoutes(httplib::Server &svr)
         while (cur) { if (!cur->isDeleted) list.push_back(JsonHelper::toJson(cur)); cur = cur->next; }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
-    svr.Delete(R"(/api/admin/medication-records/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Delete(R"(/api/admin/medication-records/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
                {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1352,7 +1365,7 @@ void registerApiRoutes(httplib::Server &svr)
             std::lock_guard<std::mutex> lock(dm.getMutex());
             Consultation *con = findById(dm.getConHead(), consultationID);
             if (!con) { res.set_content(ApiResponse::notFound("看诊记录不存在").dump(), "application/json"); return; }
-            std::string newID = generateID(9, dm.medicationRecordCount());
+            std::string newID = generateRecordID("mrd", dm.medicationRecordCount());
             MedicationRecord *med = new MedicationRecord();
             med->medRecordID = newID;
             med->consultationID = consultationID;
@@ -1362,9 +1375,7 @@ void registerApiRoutes(httplib::Server &svr)
             med->createTime = MyTime::getInstance().getTime();
             med->reviewStatus = MedicationReviewStatus::PENDING_REVIEW;
             med->status = MedicationStatus::UNPAID;
-            med->next = dm.getMedRecHead();
-            if (dm.getMedRecHead()) dm.getMedRecHead()->prev = med;
-            dm.getMedRecHead() = med;
+            pushFront(dm.getMedRecHead(), med);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(med)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -1398,7 +1409,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (name.empty()) { res.set_content(ApiResponse::badRequest("药品名称不能为空").dump(), "application/json"); return; }
 
             std::lock_guard<std::mutex> lock(dm.getMutex());
-            std::string newID = generateID(8, dm.medicineCount());
+            std::string newID = generateRecordID("med", dm.medicineCount());
             Medicine *med = new Medicine();
             med->medicineID = newID;
             med->name = name;
@@ -1414,14 +1425,13 @@ void registerApiRoutes(httplib::Server &svr)
             med->note = body.value("note", "#");
             med->status = MedicineStatus::NORMAL;
             med->isSpecial = false;
-            med->next = dm.getMedHead();
-            if (dm.getMedHead()) dm.getMedHead()->prev = med;
-            dm.getMedHead() = med;
+            applyMedicineNames(med, body);
+            pushFront(dm.getMedHead(), med);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(med)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
-    svr.Get(R"(/api/admin/medicines/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Get(R"(/api/admin/medicines/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1431,7 +1441,7 @@ void registerApiRoutes(httplib::Server &svr)
         if (!med) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         res.set_content(ApiResponse::success("", JsonHelper::toJson(med)).dump(), "application/json"); });
 
-    svr.Put(R"(/api/admin/medicines/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/admin/medicines/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1450,11 +1460,12 @@ void registerApiRoutes(httplib::Server &svr)
             if (body.contains("safetyStock")) med->safetyStock = body["safetyStock"];
             if (body.contains("status")) med->status = static_cast<MedicineStatus>(body["status"].get<int>());
             if (body.contains("note")) med->note = body["note"];
+            applyMedicineNames(med, body);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("", JsonHelper::toJson(med)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
-    svr.Delete(R"(/api/admin/medicines/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Delete(R"(/api/admin/medicines/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
                {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1515,9 +1526,7 @@ void registerApiRoutes(httplib::Server &svr)
             bed->wardNumber = wardNumber;
             bed->bedNumber = bedNumber;
             bed->status = bedStatus::AVAILABLE;
-            bed->next = dm.getBedHead();
-            if (dm.getBedHead()) dm.getBedHead()->prev = bed;
-            dm.getBedHead() = bed;
+            pushFront(dm.getBedHead(), bed);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(bed)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -1616,7 +1625,7 @@ void registerApiRoutes(httplib::Server &svr)
         while (cur) { if (!cur->isDeleted && cur->doctorID == auth.userID) list.push_back(JsonHelper::toJson(cur)); cur = cur->next; }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
-    svr.Get(R"(/api/doctor/consultations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Get(R"(/api/doctor/consultations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1626,7 +1635,7 @@ void registerApiRoutes(httplib::Server &svr)
         if (!con || con->doctorID != auth.userID) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         res.set_content(ApiResponse::success("", JsonHelper::toJson(con)).dump(), "application/json"); });
 
-    svr.Put(R"(/api/doctor/consultations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/doctor/consultations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1664,7 +1673,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (!reg || reg->doctorID != auth.userID) { res.set_content(ApiResponse::notFound("挂号记录不存在或不属于您").dump(), "application/json"); return; }
             if (reg->status != RegistrationStatus::PAID) { res.set_content(ApiResponse::badRequest("该挂号未支付或已完成").dump(), "application/json"); return; }
 
-            std::string newID = generateID(6, dm.consultationCount());
+            std::string newID = generateRecordID("con", dm.consultationCount());
             Consultation *con = new Consultation();
             con->consultationID = newID;
             con->registrationID = registrationID;
@@ -1683,9 +1692,7 @@ void registerApiRoutes(httplib::Server &svr)
             con->isHospitalizationRecommended = body.value("isHospitalizationRecommended", false);
             con->note = body.value("note", "#");
             con->status = ConsultationStatus::PENDING;
-            con->next = dm.getConHead();
-            if (dm.getConHead()) dm.getConHead()->prev = con;
-            dm.getConHead() = con;
+            pushFront(dm.getConHead(), con);
 
             // 更新挂号状态为已完成
             reg->status = RegistrationStatus::FINISHED;
@@ -1704,7 +1711,7 @@ void registerApiRoutes(httplib::Server &svr)
         while (cur) { if (!cur->isDeleted && cur->doctorID == auth.userID) list.push_back(JsonHelper::toJson(cur)); cur = cur->next; }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
-    svr.Get(R"(/api/doctor/examinations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Get(R"(/api/doctor/examinations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1714,7 +1721,7 @@ void registerApiRoutes(httplib::Server &svr)
         if (!exa || exa->doctorID != auth.userID) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         res.set_content(ApiResponse::success("", JsonHelper::toJson(exa)).dump(), "application/json"); });
 
-    svr.Put(R"(/api/doctor/examinations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/doctor/examinations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1753,7 +1760,7 @@ void registerApiRoutes(httplib::Server &svr)
             json created = json::array();
             for (auto &item : body["items"]) {
                 std::string itemName = item;
-                std::string exaID = generateID(7, dm.examinationCount());
+                std::string exaID = generateRecordID("exa", dm.examinationCount());
                 Examination *exa = new Examination();
                 exa->examinationID = exaID;
                 exa->consultationID = consultationID;
@@ -1764,9 +1771,7 @@ void registerApiRoutes(httplib::Server &svr)
                 exa->fee = doc ? doc->calculateExaminationFee(itemName) : 5.0;
                 exa->orderTime = MyTime::getInstance().getTime();
                 exa->status = ExaminationStatus::ORDERED;
-                exa->next = dm.getExamHead();
-                if (dm.getExamHead()) dm.getExamHead()->prev = exa;
-                dm.getExamHead() = exa;
+                pushFront(dm.getExamHead(), exa);
                 created.push_back(JsonHelper::toJson(exa));
 
                 // 同步到看诊的检查列表
@@ -1822,7 +1827,7 @@ void registerApiRoutes(httplib::Server &svr)
         while (cur) { if (!cur->isDeleted) list.push_back(JsonHelper::toJson(cur)); cur = cur->next; }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
-    svr.Get(R"(/api/nurse/hospitalizations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Get(R"(/api/nurse/hospitalizations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1832,7 +1837,7 @@ void registerApiRoutes(httplib::Server &svr)
         if (!hos) { res.set_content(ApiResponse::notFound().dump(), "application/json"); return; }
         res.set_content(ApiResponse::success("", JsonHelper::toJson(hos)).dump(), "application/json"); });
 
-    svr.Put(R"(/api/nurse/hospitalizations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/nurse/hospitalizations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1869,7 +1874,7 @@ void registerApiRoutes(httplib::Server &svr)
             Consultation *con = findById(dm.getConHead(), consultationID);
             if (!con || !con->isHospitalizationRecommended) { res.set_content(ApiResponse::badRequest("看诊记录不存在或未建议住院").dump(), "application/json"); return; }
 
-            std::string newID = generateID(8, dm.hospitalizationCount());
+            std::string newID = generateRecordID("hos", dm.hospitalizationCount());
             Hospitalization *hos = new Hospitalization();
             hos->hospitalizationID = newID;
             hos->consultationID = consultationID;
@@ -1881,15 +1886,13 @@ void registerApiRoutes(httplib::Server &svr)
             hos->applyTime = MyTime::getInstance().getTime();
             hos->deposit = body.value("deposit", 0.0);
             hos->status = HospitalizationStatus::APPLIED;
-            hos->next = dm.getHosHead();
-            if (dm.getHosHead()) dm.getHosHead()->prev = hos;
-            dm.getHosHead() = hos;
+            pushFront(dm.getHosHead(), hos);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("住院记录创建成功", JsonHelper::toJson(hos)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // POST /api/nurse/hospitalizations/:id/assign-bed - 分配床位
-    svr.Post(R"(/api/nurse/hospitalizations/(\d+)/assign-bed)", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Post(R"(/api/nurse/hospitalizations/([^/]+)/assign-bed)", [&](const httplib::Request &req, httplib::Response &res)
              {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1922,7 +1925,7 @@ void registerApiRoutes(httplib::Server &svr)
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // POST /api/nurse/hospitalizations/:id/discharge - 出院办理
-    svr.Post(R"(/api/nurse/hospitalizations/(\d+)/discharge)", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Post(R"(/api/nurse/hospitalizations/([^/]+)/discharge)", [&](const httplib::Request &req, httplib::Response &res)
              {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1939,18 +1942,8 @@ void registerApiRoutes(httplib::Server &svr)
             else if (hos->wardType == "VIP病房") dailyRate = 200.0;
             else if (hos->wardType == "ICU病房") dailyRate = 500.0;
 
-            // 简单天数计算
-            int days = 1;
-            if (!hos->admitTime.empty() && hos->admitTime != "#") {
-                // 从入院时间到当前的粗略天数
-                std::string now = MyTime::getInstance().getTime();
-                int admitDay = std::stoi(hos->admitTime.substr(8, 2));
-                int nowDay = std::stoi(now.substr(8, 2));
-                int admitMon = std::stoi(hos->admitTime.substr(5, 2));
-                int nowMon = std::stoi(now.substr(5, 2));
-                days = (nowMon - admitMon) * 30 + (nowDay - admitDay);
-                if (days < 1) days = 1;
-            }
+            std::string now = MyTime::getInstance().getTime();
+            int days = User::calculateStayDays(hos->admitTime, now);
             hos->totalCost = dailyRate * days;
 
             // 释放床位
@@ -1979,7 +1972,7 @@ void registerApiRoutes(httplib::Server &svr)
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // DELETE /api/nurse/hospitalizations/:id
-    svr.Delete(R"(/api/nurse/hospitalizations/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Delete(R"(/api/nurse/hospitalizations/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
                {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -1990,7 +1983,7 @@ void registerApiRoutes(httplib::Server &svr)
         hos->isDeleted = true; dm.saveAllUnsafe();
         res.set_content(ApiResponse::success("删除成功").dump(), "application/json"); });
 
-    svr.Put(R"(/api/nurse/examinations/(\d+)/vitals)", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/nurse/examinations/([^/]+)/vitals)", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -2060,9 +2053,7 @@ void registerApiRoutes(httplib::Server &svr)
             bed->bedID = bedID; bed->department = department; bed->wardType = wardType;
             bed->areaNumber = areaNumber; bed->wardNumber = wardNumber; bed->bedNumber = bedNumber;
             bed->status = bedStatus::AVAILABLE; bed->nurseID = auth.userID;
-            bed->next = dm.getBedHead();
-            if (dm.getBedHead()) dm.getBedHead()->prev = bed;
-            dm.getBedHead() = bed;
+            pushFront(dm.getBedHead(), bed);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(bed)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -2140,7 +2131,7 @@ void registerApiRoutes(httplib::Server &svr)
         while (cur) { if (!cur->isDeleted) list.push_back(JsonHelper::toJson(cur)); cur = cur->next; }
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
-    svr.Get(R"(/api/pharmacist/medication-records/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Get(R"(/api/pharmacist/medication-records/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -2151,7 +2142,7 @@ void registerApiRoutes(httplib::Server &svr)
         res.set_content(ApiResponse::success("", JsonHelper::toJson(med)).dump(), "application/json"); });
 
     // 审核用药记录
-    svr.Put(R"(/api/pharmacist/medication-records/(\d+)/review)", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/pharmacist/medication-records/([^/]+)/review)", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -2173,7 +2164,7 @@ void registerApiRoutes(httplib::Server &svr)
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // 发药
-    svr.Put(R"(/api/pharmacist/medication-records/(\d+)/dispense)", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/pharmacist/medication-records/([^/]+)/dispense)", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -2242,7 +2233,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (!con) { res.set_content(ApiResponse::notFound("看诊记录不存在").dump(), "application/json"); return; }
             if (con->prescriptions.empty()) { res.set_content(ApiResponse::badRequest("该看诊无处方").dump(), "application/json"); return; }
 
-            std::string newID = generateID(9, dm.medicationRecordCount());
+            std::string newID = generateRecordID("mrd", dm.medicationRecordCount());
             MedicationRecord *med = new MedicationRecord();
             med->medRecordID = newID;
             med->consultationID = consultationID;
@@ -2267,15 +2258,13 @@ void registerApiRoutes(httplib::Server &svr)
                 med->lines.push_back(line);
             }
             med->totalCost = totalCost;
-            med->next = dm.getMedRecHead();
-            if (dm.getMedRecHead()) dm.getMedRecHead()->prev = med;
-            dm.getMedRecHead() = med;
+            pushFront(dm.getMedRecHead(), med);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("用药记录创建成功", JsonHelper::toJson(med)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // DELETE /api/pharmacist/medication-records/:id
-    svr.Delete(R"(/api/pharmacist/medication-records/(\d+))", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Delete(R"(/api/pharmacist/medication-records/([^/]+))", [&](const httplib::Request &req, httplib::Response &res)
                {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -2335,7 +2324,7 @@ void registerApiRoutes(httplib::Server &svr)
             Doctor *doc = findDoctor(dm.getDoctorHead(), doctorID);
             if (!doc) { res.set_content(ApiResponse::notFound("医生不存在").dump(), "application/json"); return; }
 
-            std::string newID = generateID(5, dm.registrationCount());
+            std::string newID = generateRecordID("reg", dm.registrationCount());
             Registration *newReg = new Registration();
             newReg->registrationID = newID;
             newReg->patientID = auth.userID;
@@ -2344,15 +2333,13 @@ void registerApiRoutes(httplib::Server &svr)
             newReg->registerTime = MyTime::getInstance().getTime();
             newReg->fee = doc->calculateRegistrationFee(doc->getTitle());
             newReg->status = RegistrationStatus::BOOKED;
-            newReg->next = dm.getRegHead();
-            if (dm.getRegHead()) dm.getRegHead()->prev = newReg;
-            dm.getRegHead() = newReg;
+            pushFront(dm.getRegHead(), newReg);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("预约成功", JsonHelper::toJson(newReg)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
 
     // 患者支付挂号费
-    svr.Put(R"(/api/patient/registrations/(\d+)/pay)", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/patient/registrations/([^/]+)/pay)", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -2391,7 +2378,7 @@ void registerApiRoutes(httplib::Server &svr)
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
     // 患者支付检查费
-    svr.Put(R"(/api/patient/examinations/(\d+)/pay)", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/patient/examinations/([^/]+)/pay)", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -2419,7 +2406,7 @@ void registerApiRoutes(httplib::Server &svr)
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
     // 患者支付药费
-    svr.Put(R"(/api/patient/medication-records/(\d+)/pay)", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/patient/medication-records/([^/]+)/pay)", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -2448,7 +2435,7 @@ void registerApiRoutes(httplib::Server &svr)
         res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 
     // PUT /api/patient/hospitalizations/:id/pay - 住院缴费
-    svr.Put(R"(/api/patient/hospitalizations/(\d+)/pay)", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Put(R"(/api/patient/hospitalizations/([^/]+)/pay)", [&](const httplib::Request &req, httplib::Response &res)
             {
         setCORS(req, res);
         auto auth = authenticateRequest(req);
@@ -2872,11 +2859,7 @@ void registerApiRoutes(httplib::Server &svr)
                 res.set_content(ApiResponse::badRequest("药品名称和厂家不能为空").dump(), "application/json"); return; }
             std::lock_guard<std::mutex> lock(dm.getMutex());
             Medicine *newMed = new Medicine;
-            int count = dm.medicineCount();
-            std::string medNum = std::to_string(count);
-            if (medNum.length() < 6) medNum.insert(0, 6 - medNum.length(), '0');
-            newMed->medicineID = "med" + medNum;
-            dm.medicineCount()++;
+            newMed->medicineID = generateRecordID("med", dm.medicineCount());
             newMed->name = body["name"];
             newMed->manufacturer = body["manufacturer"];
             newMed->department = body.value("department", "急诊科");
@@ -2890,9 +2873,8 @@ void registerApiRoutes(httplib::Server &svr)
             newMed->status = newMed->stock < newMed->safetyStock ? MedicineStatus::LOW_STOCK : MedicineStatus::NORMAL;
             newMed->note = body.value("note", "#");
             newMed->isSpecial = (newMed->department != "#");
-            newMed->next = dm.getMedHead();
-            if (dm.getMedHead()) dm.getMedHead()->prev = newMed;
-            dm.getMedHead() = newMed;
+            applyMedicineNames(newMed, body);
+            pushFront(dm.getMedHead(), newMed);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("添加成功", JsonHelper::toJson(newMed)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -2919,6 +2901,7 @@ void registerApiRoutes(httplib::Server &svr)
             if (body.contains("department")) med->department = body["department"];
             if (body.contains("note")) med->note = body["note"];
             if (body.contains("status")) med->status = static_cast<MedicineStatus>(body["status"].get<int>());
+            applyMedicineNames(med, body);
             dm.saveAllUnsafe();
             res.set_content(ApiResponse::success("修改成功", JsonHelper::toJson(med)).dump(), "application/json");
         } catch (const std::exception &e) { res.set_content(ApiResponse::badRequest(e.what()).dump(), "application/json"); } });
@@ -3054,7 +3037,7 @@ void registerApiRoutes(httplib::Server &svr)
     // ==================== 转科 API ====================
 
     // POST /api/nurse/hospitalizations/:id/transfer - 转科
-    svr.Post(R"(/api/nurse/hospitalizations/(\d+)/transfer)", [&](const httplib::Request &req, httplib::Response &res)
+    svr.Post(R"(/api/nurse/hospitalizations/([^/]+)/transfer)", [&](const httplib::Request &req, httplib::Response &res)
               {
         setCORS(req, res);
         auto auth = authenticateRequest(req);

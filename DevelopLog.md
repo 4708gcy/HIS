@@ -519,3 +519,284 @@ his_server.exe — 编译通过
 前端 router/Layout：+4 路由 + 3 菜单项
 CLAUDE.md：+30 行更新
 ```
+
+---
+
+## 2026.5.6 — 后端课程设计审阅问题集中修复
+
+### 1. 修复背景
+
+根据《程序设计基础课程设计（2025级）》中的“全程链表实现”和后端一致性要求，对纯后端项目进行二次审阅后，集中修复 5 条较高优先级问题：
+
+| 编号 | 优先级 | 问题 | 影响 |
+|------|--------|------|------|
+| Finding 1 | P1 | API 新建记录 ID 为纯数字 | 与控制台 `reg/con/exa/hos/mrd/med` 前缀格式不兼容 |
+| Finding 2 | P1 | 控制台紧急保存使用旧 head 指针 | 注册或头插新增后，异常保存可能漏掉新头节点 |
+| Finding 3 | P2 | API 出院天数按固定 30 天月份粗算 | 跨月、跨年或非 30 天月份费用计算不准确 |
+| Finding 4 | P2 | API 管理员头插未维护 `prev` | 破坏管理员双向链表完整性 |
+| Finding 5 | P2 | 持久业务子集合仍使用 `std::vector` | “全程链表实现”答辩合规性存在风险 |
+
+### 2. 业务持久子集合链表化
+
+新增 `Head/LinkedList.h`，实现一个 RAII 双向链表容器，用于替代持久业务结构体中的 `std::vector` 子集合。
+
+#### LinkedList 支持能力
+
+- `push_back()`
+- `empty()`
+- `size()`
+- `begin()` / `end()` / range-for
+- `erase(iterator)`
+- `operator[]`
+- `begin() + n`、`begin() + n - 1` 等旧代码兼容写法
+- 拷贝构造、移动构造、拷贝赋值、移动赋值
+- 析构自动释放节点，避免子集合内存泄漏
+
+#### 替换范围
+
+| 文件 | 字段 | 修改 |
+|------|------|------|
+| `Head/Registration.h` | `relatedRegistrationIDs` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/Consultation.h` | `examinationlist` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/Consultation.h` | `prescriptions` | `std::vector<Prescription>` → `LinkedList<Prescription>` |
+| `Head/Consultation.h` | `attachments` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/Consultation.h` | `relatedConsultationIDs` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/Examination.h` | `attachments` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/Examination.h` | `relatedExaminationIDs` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/Hospitalization.h` | `relatedHospitalizationIDs` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/MedicationRecord.h` | `lines` | `std::vector<MedicationLine>` → `LinkedList<MedicationLine>` |
+| `Head/Medicine.h` | `aliases` | `std::vector<std::string>` → `LinkedList<std::string>` |
+
+#### 保留 `std::vector` 的范围
+
+按照“持久业务数据结构链表化，临时计算/展示容器不强行链表化”的原则，以下场景保留标准容器：
+
+- `DataAnalysis` 中的统计结果、排序缓存、图表数据
+- `UI` 中的临时分页展示数据
+- `JWTAuth`、`SHA-256` 等算法内部缓冲
+- API 排班 `g_schedules`，该部分使用 JSON 持久化且属于服务器端辅助配置
+
+### 3. API 记录 ID 格式修复
+
+在 `Source/ApiServer.cpp` 中新增 `generateRecordID(prefix, counter)`，统一生成控制台兼容的业务记录 ID。
+
+#### 修复前
+
+API 使用 `generateID(5/6/7/8/9, counter)`，生成纯数字 ID，例如：
+
+```text
+500001、600001、700001
+```
+
+这种 ID 无法通过控制台 `inputRecordIDCheck()` 的前缀校验。
+
+#### 修复后
+
+API 与控制台统一使用：
+
+| 业务类型 | ID 格式 |
+|----------|---------|
+| 挂号记录 | `reg000000` |
+| 看诊记录 | `con000000` |
+| 检查记录 | `exa000000` |
+| 住院记录 | `hos000000` |
+| 用药记录 | `mrd000000` |
+| 药品信息 | `med000000` |
+
+用户账号 ID 仍保留原有 6 位纯数字角色前缀格式：
+
+```text
+0xxxxx 管理员
+1xxxxx 医生
+2xxxxx 护士
+3xxxxx 药剂师
+4xxxxx 患者
+```
+
+#### 同步修复 API 路由
+
+由于业务记录 ID 变为带前缀字符串，原本只匹配 `(\d+)` 的业务记录路由同步放宽为 `([^/]+)`，覆盖：
+
+- 管理员：挂号、看诊、检查、住院、用药记录、药品
+- 医生：看诊、检查
+- 护士：住院、检查
+- 药剂师：用药记录
+- 患者：挂号支付、检查支付、用药支付、住院支付
+
+纯数字用户账号路由、排班路由保持不变。
+
+### 4. API 链表头插统一修复
+
+在 `Source/ApiServer.cpp` 中新增统一头插 helper：
+
+```cpp
+template <typename T>
+void pushFront(T *&head, T *node)
+{
+    node->prev = nullptr;
+    node->next = head;
+    if (head)
+        head->prev = node;
+    head = node;
+}
+```
+
+替换 API 中新增用户、记录、床位、药品时的手写头插逻辑，保证：
+
+- 新头节点 `prev == nullptr`
+- 旧头节点 `prev` 正确指向新头节点
+- 管理员注册头插不再遗漏 `prev`
+- 各类业务记录新增保持双向链表不变式
+
+### 5. 控制台紧急保存头指针修复
+
+`main.cpp` 原先将 `g_adminHead`、`g_regHead` 等全局指针设置为加载后的 head 值。
+
+问题在于：注册或新增记录采用头插法后，局部 `adminHead/regHead/...` 会变成新节点，但全局 `g_*Head` 仍指向旧头节点。若此时异常或 `Ctrl+C` 触发 `emergencySave()`，新插入的头节点可能不会写入文件。
+
+#### 修复方式
+
+将全局紧急保存指针改为“指向当前 head 变量的指针”：
+
+```cpp
+static Admin **g_adminHead = nullptr;
+static Registration **g_regHead = nullptr;
+```
+
+初始化时绑定局部 head 变量地址：
+
+```cpp
+g_adminHead = &adminHead;
+g_regHead = &regHead;
+```
+
+保存时解引用当前 head：
+
+```cpp
+if (g_adminHead && *g_adminHead)
+    saveAdminData(*g_adminHead, adminIDCount);
+```
+
+这样无论之后发生多少次头插，紧急保存都能拿到最新链表头。
+
+### 6. 住院天数计算公共化
+
+在 `User.h/User.cpp` 中新增：
+
+```cpp
+static int calculateStayDays(const std::string &admitTime,
+                             const std::string &dischargeTime);
+```
+
+实现要点：
+
+- 使用 `std::tm`、`std::mktime`、`std::difftime` 计算真实日期差
+- 支持跨月、跨年
+- 日期无效、为空或 `"#"` 时默认返回 1 天
+- 不足 1 天按 1 天计费
+- 使用 `mktime` 归一化后反查年月日，过滤非法日期
+
+复用位置：
+
+- `Source/ApiServer.cpp`：护士 API 出院结算
+- `Source/Patient.cpp`：患者控制台申请出院结算
+
+修复后不再使用 API 原先的 `(nowMon - admitMon) * 30 + (nowDay - admitDay)` 粗略算法。
+
+### 7. JSON 与药品别名兼容
+
+由于药品别名 `aliases` 从 `std::vector` 改为 `LinkedList`，同步更新：
+
+- `JsonHelper::toJson(const Registration*)`：将 `relatedRegistrationIDs` 手动转 JSON array
+- `JsonHelper::toJson(const Medicine*)`：新增输出 `genericName` 和 `aliases`
+- `ApiServer.cpp`：新增 `applyMedicineNames()`，支持 API 创建/修改药品时读取 `genericName` 和 `aliases`
+
+数据文件格式未改变，`LoadData.cpp` / `SaveData.cpp` 原有子行格式继续工作：
+
+```text
+ALIAS:药品别名
+PRESCRIPTION:...
+ATTACHMENT:...
+RELATED_CONSULTATION_ID:...
+```
+
+### 8. 回归测试补充
+
+新增 `tests/backend_regression.cpp`，并在 `CMakeLists.txt` 中增加目标：
+
+```text
+his_backend_regression
+```
+
+测试覆盖：
+
+- `LinkedList` 空判断、尾插、下标访问
+- `erase(begin() + n)` 兼容旧代码用法
+- 拷贝构造为深拷贝
+- range-for 遍历
+- 住院天数跨月计算
+- 住院天数跨年计算
+- 同日不足 1 天按 1 天
+- 非法/空日期按 1 天兜底
+
+### 9. 验证结果
+
+执行构建验证：
+
+```powershell
+cmake --build build --config Debug --target his his_server his_backend_regression
+```
+
+结果：
+
+```text
+his.exe — 编译通过
+his_server.exe — 编译通过
+his_backend_regression.exe — 编译通过
+```
+
+执行回归测试：
+
+```powershell
+cd build
+.\Debug\his_backend_regression.exe
+```
+
+结果：
+
+```text
+退出码 0，全部 assert 通过
+```
+
+额外静态核对：
+
+- `Source/ApiServer.cpp` 中不存在 `generateID(5/6/7/8/9, ...)` 业务记录 ID 生成调用
+- 业务记录 API 路由不再使用纯数字 `(\d+)` 匹配
+- API 出院逻辑不再出现 `admitMon/nowMon` 或固定 30 天月份算法
+- API 管理员新增不再手写 `newUser->next = dm.getAdminHead()`，统一走 `pushFront()`
+
+### 10. 本次涉及文件
+
+```text
+CMakeLists.txt
+Head/LinkedList.h
+Head/Registration.h
+Head/Consultation.h
+Head/Examination.h
+Head/Hospitalization.h
+Head/MedicationRecord.h
+Head/Medicine.h
+Head/User.h
+Source/ApiServer.cpp
+Source/JsonHelper.cpp
+Source/Patient.cpp
+Source/User.cpp
+main.cpp
+tests/backend_regression.cpp
+```
+
+### 11. 后续可选优化
+
+- 将 `pushFront()` 从 `ApiServer.cpp` 抽为公共链表工具函数，供控制台和 API 共用
+- 为 API 创建记录流程增加更完整的自动化集成测试
+- 如老师要求更严格，可继续把排班 `g_schedules` 从 `std::vector<json>` 改为链式结构或在答辩中说明其为服务器配置数据

@@ -183,6 +183,7 @@ public:
     double calculateRegistrationFee(DoctorTitle title);                 // 根据医生职称计算挂号费用
     double calculateHospitalizationFee(std::string wardType, int days); // 根据床位类型和住院天数计算住院费用
     double calculateExaminationFee(std::string itemName);               // 根据检查项目名称计算检查费用
+    static int calculateStayDays(const std::string &admitTime, const std::string &dischargeTime); // 计算住院天数，不足1天按1天
 };
 
 #endif // USER_H

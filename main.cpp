@@ -28,36 +28,36 @@ int bedCount = 0;
 int medicineFlowIDCount = 0;
 
 // 全局指针用于信号处理中的紧急保存
-static Admin *g_adminHead = nullptr;
-static Doctor *g_docHead = nullptr;
-static Nurse *g_nurseHead = nullptr;
-static Pharmacist *g_phaHead = nullptr;
-static Patient *g_patientHead = nullptr;
-static Registration *g_regHead = nullptr;
-static Consultation *g_conHead = nullptr;
-static Examination *g_examHead = nullptr;
-static Hospitalization *g_hosHead = nullptr;
-static MedicationRecord *g_medRecHead = nullptr;
-static Medicine *g_medHead = nullptr;
-static MedicineFlow *g_medFlowHead = nullptr;
-static bedInfo *g_bedHead = nullptr;
+static Admin **g_adminHead = nullptr;
+static Doctor **g_docHead = nullptr;
+static Nurse **g_nurseHead = nullptr;
+static Pharmacist **g_phaHead = nullptr;
+static Patient **g_patientHead = nullptr;
+static Registration **g_regHead = nullptr;
+static Consultation **g_conHead = nullptr;
+static Examination **g_examHead = nullptr;
+static Hospitalization **g_hosHead = nullptr;
+static MedicationRecord **g_medRecHead = nullptr;
+static Medicine **g_medHead = nullptr;
+static MedicineFlow **g_medFlowHead = nullptr;
+static bedInfo **g_bedHead = nullptr;
 
 void emergencySave()
 {
     std::cerr << "\n正在紧急保存数据..." << std::endl;
-    if (g_adminHead) saveAdminData(g_adminHead, adminIDCount);
-    if (g_docHead) saveDoctorData(g_docHead, doctorIDCount);
-    if (g_nurseHead) saveNurseData(g_nurseHead, nurseIDCount);
-    if (g_phaHead) savePharmacistData(g_phaHead, pharmacistIDCount);
-    if (g_patientHead) savePatientData(g_patientHead, patientIDCount);
-    if (g_regHead) saveRegistrations(g_regHead, registrationCount);
-    if (g_conHead) saveConsultations(g_conHead, consultationCount);
-    if (g_examHead) saveExaminations(g_examHead, examinationCount);
-    if (g_hosHead) saveHospitalizations(g_hosHead, hospitalizationCount);
-    if (g_medRecHead) saveMedicationRecords(g_medRecHead, medicationRecordCount);
-    if (g_medHead) saveMedicines(g_medHead, medicineCount);
-    if (g_medFlowHead) saveMedicineFlows(g_medFlowHead, medicineFlowIDCount);
-    if (g_bedHead) saveBedInfos(g_bedHead, bedCount);
+    if (g_adminHead && *g_adminHead) saveAdminData(*g_adminHead, adminIDCount);
+    if (g_docHead && *g_docHead) saveDoctorData(*g_docHead, doctorIDCount);
+    if (g_nurseHead && *g_nurseHead) saveNurseData(*g_nurseHead, nurseIDCount);
+    if (g_phaHead && *g_phaHead) savePharmacistData(*g_phaHead, pharmacistIDCount);
+    if (g_patientHead && *g_patientHead) savePatientData(*g_patientHead, patientIDCount);
+    if (g_regHead && *g_regHead) saveRegistrations(*g_regHead, registrationCount);
+    if (g_conHead && *g_conHead) saveConsultations(*g_conHead, consultationCount);
+    if (g_examHead && *g_examHead) saveExaminations(*g_examHead, examinationCount);
+    if (g_hosHead && *g_hosHead) saveHospitalizations(*g_hosHead, hospitalizationCount);
+    if (g_medRecHead && *g_medRecHead) saveMedicationRecords(*g_medRecHead, medicationRecordCount);
+    if (g_medHead && *g_medHead) saveMedicines(*g_medHead, medicineCount);
+    if (g_medFlowHead && *g_medFlowHead) saveMedicineFlows(*g_medFlowHead, medicineFlowIDCount);
+    if (g_bedHead && *g_bedHead) saveBedInfos(*g_bedHead, bedCount);
     std::cerr << "数据已紧急保存，程序退出。" << std::endl;
 }
 
@@ -110,10 +110,10 @@ int main()
     bedInfo *bedHead = loadBedInfos(bedCount);                                   // 加载床位信息数据
 
     // 设置全局指针用于信号处理中的紧急保存
-    g_adminHead = adminHead; g_docHead = docHead; g_nurseHead = nurseHead;
-    g_phaHead = phaHead; g_patientHead = patientHead; g_regHead = regHead;
-    g_conHead = conHead; g_examHead = examHead; g_hosHead = hosHead;
-    g_medRecHead = medRecHead; g_medHead = medHead; g_medFlowHead = medFlowHead; g_bedHead = bedHead;
+    g_adminHead = &adminHead; g_docHead = &docHead; g_nurseHead = &nurseHead;
+    g_phaHead = &phaHead; g_patientHead = &patientHead; g_regHead = &regHead;
+    g_conHead = &conHead; g_examHead = &examHead; g_hosHead = &hosHead;
+    g_medRecHead = &medRecHead; g_medHead = &medHead; g_medFlowHead = &medFlowHead; g_bedHead = &bedHead;
 
     try
     {

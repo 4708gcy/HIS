@@ -1,0 +1,860 @@
+[
+    [
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "《程序设计基础课程设计》 （2025级）"
+                    }
+                ],
+                "level": 2
+            },
+            "bbox": [
+                247,
+                71,
+                744,
+                97
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "网上流传着一个测试工程师的笑话："
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                126,
+                509,
+                147
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，要了一杯啤酒；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                148,
+                625,
+                170
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，要了一杯咖啡；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                171,
+                626,
+                192
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，要了0.7杯啤酒；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                193,
+                631,
+                215
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，要了-1杯啤酒；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                216,
+                628,
+                237
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，要了2^32杯啤酒；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                239,
+                653,
+                260
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，要了一杯洗脚水；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                261,
+                650,
+                281
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，要了一杯蜥蜴；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                284,
+                625,
+                305
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，要了一份asdfQwer@24dg!&*(@；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                306,
+                811,
+                328
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，什么也没要；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                329,
+                603,
+                350
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，又走出去又从窗户进来又从后门出去从下水道钻进来；"
+                    }
+                ]
+            },
+            "bbox": [
+                89,
+                351,
+                907,
+                394
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，又走出去又进来又出去又进来又出去，最后在外面把老板打了一顿；"
+                    }
+                ]
+            },
+            "bbox": [
+                89,
+                397,
+                909,
+                439
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，要了一杯烫烫烫的锟斤拷；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                442,
+                742,
+                462
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，要了NaN杯Null；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                466,
+                642,
+                485
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师冲进一家酒吧，要了500T啤酒咖啡洗脚水野猫狼牙棒奶茶；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                487,
+                904,
+                508
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师把酒吧拆了；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                510,
+                438,
+                530
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师化装成老板走进一家酒吧，要了500杯啤酒并且不付钱；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                532,
+                873,
+                554
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一万个测试工程师在酒吧门外呼啸而过；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                555,
+                554,
+                575
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "一个测试工程师走进一家酒吧，要了一杯啤酒';DROP TABLE酒吧；"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                577,
+                811,
+                598
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "测试工程师们满意地离开了酒吧。"
+                    }
+                ]
+            },
+            "bbox": [
+                136,
+                600,
+                485,
+                620
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "然后一名顾客点了一份炒饭，酒吧炸了。"
+                    }
+                ]
+            },
+            "bbox": [
+                137,
+                623,
+                556,
+                644
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "1、基于上面的描述，请你的团队实现一个适用于小型医院的轻量级的医疗管理系统（Hospital Information System，简称 HIS），具体包括："
+                    }
+                ]
+            },
+            "bbox": [
+                89,
+                668,
+                907,
+                712
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（1）参考往年的题签（详见《程序设计基础课程设计》（2018级）、《程序设计基础课程设计》（2019级）共4个附件），自拟2025级的个性化题签。【注意】题签雷同可直接认定为作弊。"
+                    }
+                ]
+            },
+            "bbox": [
+                89,
+                712,
+                907,
+                778
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（2）自行组队，完成系统的设计和实现工作。请按照人性化的方式设计具体功能，如：增加信息仅含有部分数据，灵活的数据输入方式，软件使用人员操作失误，用户希望的多样化的查询和统计方式，清晰美观的输出方式，合理划分为多个源代码文件。"
+                    }
+                ]
+            },
+            "bbox": [
+                87,
+                781,
+                909,
+                869
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（3）自行拟定测试方案，提供充足的测试样例或具体功能测试建议。提前准备充足的原始数据文件用于现场评测，文件类型为txt，每个文件至少包含30"
+                    }
+                ]
+            },
+            "bbox": [
+                87,
+                870,
+                910,
+                915
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "条记录。"
+                    }
+                ]
+            },
+            "bbox": [
+                90,
+                67,
+                178,
+                87
+            ]
+        },
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "2、课程设计要求"
+                    }
+                ],
+                "level": 2
+            },
+            "bbox": [
+                134,
+                111,
+                326,
+                131
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（1）保证出勤和纪律，服从指导教师的安排。班内自由分组，每组3-4人（特殊情况以指导教师安排为准）。"
+                    }
+                ]
+            },
+            "bbox": [
+                100,
+                135,
+                907,
+                178
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（2）第3次实验课，每组提交1份自拟题签（PBL提交电子版，实验课堂提交纸质打印版）。题签的难度和完成比例是综合评定成绩的重要依据。"
+                    }
+                ]
+            },
+            "bbox": [
+                87,
+                179,
+                909,
+                223
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "注：软件学院《程序设计基础课程设计》拟于课程中期进行进度检查，并适当调整题目要求。"
+                    }
+                ]
+            },
+            "bbox": [
+                87,
+                225,
+                909,
+                268
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（3）最后2次实验课进行代码检查和答辩。答辩前，每组提交1份总结报告（含测试方案，请严格按照模板撰写，明确标明成员的任务分工和完成情况。超星平台PBL提交电子版，实验课堂提交纸质打印版（订书器订好））。"
+                    }
+                ]
+            },
+            "bbox": [
+                89,
+                269,
+                909,
+                336
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（4）用于代码检查的C语言源程序需要含有必要的代码注释，全程链表实现。"
+                    }
+                ]
+            },
+            "bbox": [
+                87,
+                337,
+                909,
+                380
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（5）指导教师按照平时考核（含个人实践考核）、代码和总结报告质量、任务分工和完成比例、界面美观和人性化、个人和团队答辩情况等环节综合评定成绩。"
+                    }
+                ]
+            },
+            "bbox": [
+                87,
+                382,
+                909,
+                449
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "《程序设计基础课程设计》平时考核：由教师导入学生名单，学生无需注册；学生在规定时间内登录超星MOOC并独立完成在线任务（视频学习、单元测验、AI实践、PBL提交题签和报告等）。超星MOOC成绩满分100分，超星MOOC成绩不低于80分为通过平时考核，否则《程序设计基础课程设计》最终成绩记为不及格。"
+                    }
+                ]
+            },
+            "bbox": [
+                87,
+                450,
+                910,
+                561
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "《程序设计基础课程设计》分组报告答辩：学生分组在实验课堂现场评测。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                563,
+                907,
+                583
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "《程序设计基础课程设计》最终成绩（五分制）=满足平时考核的分组报告答辩成绩。"
+                    }
+                ]
+            },
+            "bbox": [
+                87,
+                586,
+                909,
+                630
+            ]
+        },
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "3、特殊说明"
+                    }
+                ],
+                "level": 2
+            },
+            "bbox": [
+                136,
+                652,
+                277,
+                674
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（1）医疗管理系统至少容纳100名普通门诊患者，30名住院患者，20名医生，5个科室（每个科室至少3名医生），3种病房（部分科室与病房相关），至少20类药品（部分药品与科室相关）；且以上情况需要考虑人名重名、存储长度，药品名长度、商品名、通用名、别名等因素的影响。"
+                    }
+                ]
+            },
+            "bbox": [
+                87,
+                676,
+                910,
+                765
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（2）医疗管理系统至少包含：①患者信息和医疗记录管理：患者个人信息、相关联的医疗记录，医疗记录至少包括“挂号、看诊、检查、住院”4类和此类医疗记录的必要信息；②住院病房和床位管理：至少包含病房类型和关联科室、床位状态管理，患者与床位的关联；③药房和药品管理：药品出入库管理、处方发药管理。"
+                    }
+                ]
+            },
+            "bbox": [
+                87,
+                765,
+                910,
+                877
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（3）医疗管理系统要能够提供各种报表，考虑不同情况下、不同权限人员需要查看的报表信息：如按照患者、医生、科室、药品名等基础信息查询；适用于医护视角、管理视角和患者视角的统计查询。"
+                    }
+                ]
+            },
+            "bbox": [
+                87,
+                878,
+                910,
+                923
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": []
+            },
+            "bbox": [
+                89,
+                67,
+                601,
+                87
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（4）试验班学生，除（1）~（3）中所述基本功能外，还应该实现数据分析功能（如根据历史数据的分析和预测功能，根据住院情况优化不同科室的病房分配、提高病房的利用率），并能以多种形式展示上述统计和分析结果。"
+                    }
+                ]
+            },
+            "bbox": [
+                87,
+                90,
+                909,
+                155
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（5）补修、重修学生：请加入QQ群882099917，另行布置，具体事宜以任课教师在群中的通知为准。"
+                    }
+                ]
+            },
+            "bbox": [
+                89,
+                158,
+                907,
+                202
+            ]
+        },
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "4、教学进度"
+                    }
+                ],
+                "level": 2
+            },
+            "bbox": [
+                137,
+                225,
+                275,
+                244
+            ]
+        },
+        {
+            "type": "table",
+            "content": {
+                "image_source": {
+                    "path": "images/1899713e0bbc1178e99a7e963e42e328af7ea491613864748b95d06f63be8050.jpg"
+                },
+                "table_caption": [],
+                "table_footnote": [],
+                "html": "<table><tr><td rowspan=1 colspan=1>时间点</td><td rowspan=1 colspan=1>教师任务</td><td rowspan=1 colspan=1>备注</td></tr><tr><td rowspan=1 colspan=1>第1次实验课</td><td rowspan=1 colspan=1>教学团队已提前发布2个文件：本文件(含《程序设计基础课程设计》(2018级）、《程序设计基础课程设计》(2019级）共4个附件，PDF格式）和总结报告模板(Word格式）实验课堂统计和协调学生分组，保证3-4人一组。教师在PBL录入分组名单。</td><td rowspan=1 colspan=1>组内人数不符合要求的，所有成员最终成绩最高为良好，且良好比例不超过50%。提醒学生按时完成超星MOOC考核。</td></tr><tr><td rowspan=1 colspan=1>第3次实验课</td><td rowspan=1 colspan=1>实验课堂收取学生自拟的纸质打印版题签。</td><td rowspan=1 colspan=1>提醒学生按时完成超星MOOC考核、PBL提交电子版题签。</td></tr><tr><td rowspan=1 colspan=1>中期</td><td rowspan=1 colspan=1>软件学院《程序设计基础课程设计》拟于课程中期进行进度检查，并适当调整题目要求。</td><td rowspan=1 colspan=1></td></tr><tr><td rowspan=1 colspan=1>最后2次实验课</td><td rowspan=1 colspan=1>实验课堂收取学生的纸质打印版总结报告，进行代码检查和答辩。</td><td rowspan=1 colspan=1>提醒学生按时完成超星MOOC考核、PBL提交电子版总结报告。</td></tr><tr><td rowspan=1 colspan=1>结课</td><td rowspan=1 colspan=1>教师在PBL录入分组报告答辩成绩，提交总结报告和最终成绩单。</td><td rowspan=1 colspan=1></td></tr></table>",
+                "table_type": "complex_table",
+                "table_nest_level": 1
+            },
+            "bbox": [
+                82,
+                246,
+                914,
+                678
+            ]
+        },
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "5、医院就诊流程参考"
+                    }
+                ],
+                "level": 2
+            },
+            "bbox": [
+                124,
+                702,
+                357,
+                724
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（1）青年大学习之“学会看病！”"
+                    }
+                ]
+            },
+            "bbox": [
+                137,
+                732,
+                468,
+                752
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "https://www.douyin.com/user/MS4wLjABAAAAosLhBASC7VtixKOwBseaeVUVzz0A8zsvyiT4x9ynFi HxFzTirOp7_wDxGL7LuNOv?from_tab_name=main&modal_id=7611780878516665457"
+                    }
+                ]
+            },
+            "bbox": [
+                89,
+                763,
+                895,
+                797
+            ]
+        },
+        {
+            "type": "page_footer",
+            "content": {
+                "page_footer_content": [
+                    {
+                        "type": "text",
+                        "content": "https://www.douyin.com/video/7564249546839166249"
+                    }
+                ]
+            },
+            "bbox": [
+                126,
+                837,
+                573,
+                853
+            ]
+        }
+    ]
+]

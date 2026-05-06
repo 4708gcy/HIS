@@ -1,0 +1,24 @@
+[
+    [
+        {
+            "type": "text",
+            "content": "<text style=\"bold\">2023级《程序设计基础课程设计》总结报告（第A组）</text>"
+        },
+        {
+            "type": "table",
+            "content": "<table><tr><td><p><strong>学号</strong></p></td><td><p><strong>姓名</strong></p></td><td><p><strong>性别</strong></p></td><td><p><strong>班级</strong></p></td><td><p><strong>具体任务分工</strong></p></td><td><p><strong>所占比例</strong></p></td><td><p><strong>成绩</strong></p></td></tr><tr><td><p>212301**</p></td><td><p>张三</p></td><td><p>男</p></td><td><p>212301</p></td><td></td><td><p>50%</p></td><td></td></tr><tr><td><p>212301**</p></td><td><p>李四</p></td><td><p>女</p></td><td><p>212301</p></td><td></td><td><p>20%</p></td><td></td></tr><tr><td><p>212301**</p></td><td><p>王五</p></td><td><p>男</p></td><td><p>212301</p></td><td></td><td><p>20%</p></td><td></td></tr><tr><td><p>212301**</p></td><td><p>赵六七</p></td><td><p>男</p></td><td><p>212301</p></td><td></td><td><p>10%</p></td><td></td></tr><tr><td colspan=\"7\"><p><strong>填写说明：</strong></p></td></tr><tr><td colspan=\"7\"><p>1、请将首页红色部分信息填全，其中：学号为8位数字，计算机科学与技术学院通常以21开头、软件学院通常以55开头、人工智能学院通常以40开头；班级为6位数字；所占比例为百分数，比例值个位数为0或5，且所有人的所占比例之和为100%；人数不足的分组请保留后面的多余空行，请勿修改该表的结构。</p><p>2、请根据实际情况填写具体任务分工，主要任务包括：软件系统的总体分析与设计，具体功能的设计与实现，对应的测试与验证过程（报告正文需要列出若干组具体测试样例与对应结果），系统界面的设计与美工，以及辅助工具、视图和文件等。</p><p>3、成绩评定由指导教师填写，学生本人请勿填写和修改。</p></td></tr></table>"
+        },
+        {
+            "type": "text",
+            "content": "提交日期：2024年XX月XX日"
+        },
+        {
+            "type": "text",
+            "content": "<text style=\"bold\">报告正文</text>"
+        },
+        {
+            "type": "text",
+            "content": "【请用小四号宋体填写，自行组织章节和段落】"
+        }
+    ]
+]

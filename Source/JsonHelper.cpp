@@ -41,7 +41,10 @@ namespace JsonHelper
         j["statusStr"] = regStatusToStr(static_cast<int>(reg->status));
         j["note"] = cleanStr(reg->note);
         j["isDeleted"] = reg->isDeleted;
-        j["relatedRegistrationIDs"] = reg->relatedRegistrationIDs;
+        json relatedList = json::array();
+        for (const auto &r : reg->relatedRegistrationIDs)
+            relatedList.push_back(r);
+        j["relatedRegistrationIDs"] = relatedList;
         return j;
     }
 
@@ -232,6 +235,11 @@ namespace JsonHelper
         j["expiryDate"] = cleanStr(med->expiryDate);
         j["department"] = cleanStr(med->department);
         j["isSpecial"] = med->isSpecial;
+        j["genericName"] = cleanStr(med->genericName);
+        json aliasList = json::array();
+        for (const auto &alias : med->aliases)
+            aliasList.push_back(alias);
+        j["aliases"] = aliasList;
         j["note"] = cleanStr(med->note);
         j["status"] = static_cast<int>(med->status);
         j["statusStr"] = medicineStatusToStr(static_cast<int>(med->status));

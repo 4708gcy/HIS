@@ -1,0 +1,768 @@
+{
+    "pdf_info": [
+        {
+            "para_blocks": [
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "《程序设计基础课程设计》题签",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0,
+                    "is_numbered_style": false,
+                    "level": 1
+                },
+                {
+                    "type": "text",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "小组成员"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 1
+                },
+                {
+                    "type": "text",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "正文"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 2
+                },
+                {
+                    "type": "text",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "编写一个c语言程序，面向普通的酒水批发点，实现酒水批发与零售管理系统，动态管理进货、销售、客户、商品记录及其基本操作。其中主要功能有如下几种："
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 3
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "用户的注册，登录控制"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 4,
+                    "is_numbered_style": true,
+                    "level": 1,
+                    "section_number": "1."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "用户分为普通顾客，批发商和管理员三种，顾客和批发商有充值，升级，查看商品，查看购物历史，加入购物车，购买商品，退款申诉等操作权限，批发商和用户相比折扣更高，但有最低购买数量的要求，其余权限与普通用户相同，管理员除普通用户操作外，还可以进行解封或封禁用户，查找用户，查看商品，进货，查看记录，查看盈亏预测盈亏等操作。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 5,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "1.1."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "为保护用户安全，在本地不存储明文密码，使用MD5值比对的方法验证用户名与密码的正确性。",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 6,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "1.2."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "用户在反复输入错误的密码后，账户会被锁死，须联系管理员进行解封。",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 7,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "1.3."
+                },
+                {
+                    "type": "text",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "且一旦封禁便无法继续输入密码，防止暴力破解。",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 8
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "对销售记录，客户，商品三种主要批发信息的管理"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 9,
+                    "is_numbered_style": true,
+                    "level": 1,
+                    "section_number": "2."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "三种信息均使用"
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "动态内存双向链表",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "实现，全部支持增加，删除，查询等多种功能。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 10,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "2.1."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "销售记录信息主要包括：商品名称、客户名称、记录时间、客户等级（历史）、商品进价（历史）、单价（历史）、销售数量、订单退货状态等。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 11,
+                    "is_numbered_style": true,
+                    "level": 3,
+                    "section_number": "2.1.1."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "客户信息主要包括：客户名称、加入时间、客户等级（为方便对高级客户提供如折扣，赠品等服务）、余额、封禁状态等。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 12,
+                    "is_numbered_style": true,
+                    "level": 3,
+                    "section_number": "2.1.2."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "商品信息主要包括：商品名称（当前）、进价、售价、库存等。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 13,
+                    "is_numbered_style": true,
+                    "level": 3,
+                    "section_number": "2.1.3."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "对单个客户、单个商品的查询详情页面，提供查询相关销售记录的功能"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 14,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "2.2."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "对于三种信息，在录入时提供默认的时间模板（录入时的系统时间），并在程序内部维护时间顺序，方便查询时有清晰的时间逻辑。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 15,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "2.3."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "对数据文件的管理"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 16,
+                    "is_numbered_style": true,
+                    "level": 1,
+                    "section_number": "3."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "维护三条核心链表，分别存储记录，商品，客户信息，每条链表各两份数据文件(.txt)，分别作为本次启动的修改目标和启动前的备份。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 17,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "3.1."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "使用二进制文件来存储最初的原始内容",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "，来保证明文存储的记录，商品，客户的文件和备份文件等全部受损时，读取二进制文件来恢复信息。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 18,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "3.2."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "对本销售点总体销售情况的查询"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 19,
+                    "is_numbered_style": true,
+                    "level": 1,
+                    "section_number": "4."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "查询综合利润率，盈利情况，预测收入等"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 20,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "4.1."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "非法输入检测"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 21,
+                    "is_numbered_style": true,
+                    "level": 1,
+                    "section_number": "5."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "对所有用户可能输入信息的地方添加输入检测，防止意料之外的输入造成程序崩溃。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 22,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "5.1."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "其他特色功能",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 23,
+                    "is_numbered_style": true,
+                    "level": 1,
+                    "section_number": "6."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "字符串模糊查询：",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "使用余弦相似度的方法计算字符串的相似度，在搜索中返回和输入字符串最相似的结果。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 24,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "6.1."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "基于机器学习的销售额预测：",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "利用机器学习中的"
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "梯度下降算法",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "实现对销售额的"
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "线性回归预测",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 25,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "6.2."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "退换货工单系统：",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "用户可以对一个销售记录申诉退款，管理员可以一键归还客户余额，商品存量，将记录标记为无效。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 26,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "6.3."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "标准化的开发流程，编译链接工具与版本发布：",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "使用目前标准化C/C++项目常用的"
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "MinGW-64开发工具集",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "和"
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "cmake跨平台编译工具",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "，方便软件源码在任意环境下的编译运行，并提高可移植性。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 27,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "6.4."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "使用"
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "Easyx图形库",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "来实现GUI界面，可以直观展示信息，便于用户操作，还可以展示如商品售出占比饼状图，每日营业额折线图，以及线性回归拟合过程以及最后的回归直线。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 28,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "6.5."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "使用visual stdio 的"
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "setup工程",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "实现软件的封装打包，生成.msi和.exe文件便于用户在自己的计算机上安装并使用该软件，同时提供卸载服务。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 29,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "6.6."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "小组工作流情况",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 30,
+                    "is_numbered_style": true,
+                    "level": 1,
+                    "section_number": "7."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "为尽可能体验当今真实的标准化软件开发流程，提高小组合作分工效率，使用"
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "分布式版本控制系统（Git）",
+                                    "style": [
+                                        "bold"
+                                    ]
+                                },
+                                {
+                                    "type": "text",
+                                    "content": "对成员分工合作进行管理，将仓库上传到国内网站Gitee.com上托管，并在答辩前将权限设为public，方便后续的检查。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 31,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "7.1."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "对所有人的代码格式和文件名变量函数命名做出严格约定。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 32,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "7.2."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "对仓库的默认分支（master）添加保护，由组长赵梓霖管理开发进程与合并其他分支情况。每个小组成员除自己名字命名的主要分支外，可以自由添加新的分支用于功能测试。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 33,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "7.3."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "在开发中，维护首页的readme.md作为项目文档，内容主要为每次更新的改动，Todo-List，和发现的BUG，以便提醒其他小组成员注意，并方便过程中的代码理解。"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 34,
+                    "is_numbered_style": true,
+                    "level": 2,
+                    "section_number": "7.4."
+                },
+                {
+                    "type": "title",
+                    "lines": [
+                        {
+                            "spans": [
+                                {
+                                    "type": "text",
+                                    "content": "程序主要功能简图"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 35,
+                    "is_numbered_style": true,
+                    "level": 1,
+                    "section_number": "8."
+                },
+                {
+                    "type": "image",
+                    "blocks": [
+                        {
+                            "lines": [
+                                {
+                                    "spans": [
+                                        {
+                                            "type": "image",
+                                            "image_path": "d76cf22b24febf606c9a8ed1177d21fcedbf5670dddb476de8ff232638b3c918.jpg"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "index": 36,
+                            "type": "image_body"
+                        }
+                    ],
+                    "index": 36
+                }
+            ],
+            "discarded_blocks": [],
+            "page_idx": 0
+        }
+    ],
+    "_backend": "office",
+    "_version_name": "3.1.6"
+}

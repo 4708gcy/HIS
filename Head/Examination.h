@@ -10,8 +10,8 @@
 #ifndef EXAMINATION_H
 #define EXAMINATION_H
 
+#include "LinkedList.h"
 #include <string>
-#include <vector>
 
 /**
  * @file Examination.h
@@ -91,11 +91,11 @@ struct Examination
     ExaminationStatus status = ExaminationStatus::ORDERED;
 
     // 附件和备注
-    std::vector<std::string> attachments = {}; // 检查相关的附件文件路径列表
+    LinkedList<std::string> attachments = {}; // 检查相关的附件文件路径列表
     std::string note = "#";                     // 医生备注或特殊说明
 
     // 关联之前的检查记录（如同一看诊中多次检查）
-    std::vector<std::string> relatedExaminationIDs = {}; // 相关检查记录ID列表
+    LinkedList<std::string> relatedExaminationIDs = {}; // 相关检查记录ID列表
 
     bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
 

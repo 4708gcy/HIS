@@ -4,6 +4,40 @@
 #include <random>
 #include <algorithm>
 #include <iostream>
+#include <cstdio>
+#include <ctime>
+
+namespace
+{
+    bool parseDateOnly(const std::string &value, std::tm &out)
+    {
+        if (value.empty() || value == "#" || value.length() < 10)
+            return false;
+
+        int year = 0;
+        int month = 0;
+        int day = 0;
+        if (std::sscanf(value.c_str(), "%d-%d-%d", &year, &month, &day) != 3)
+            return false;
+        if (year < 1900 || month < 1 || month > 12 || day < 1 || day > 31)
+            return false;
+
+        std::tm parsed = {};
+        parsed.tm_year = year - 1900;
+        parsed.tm_mon = month - 1;
+        parsed.tm_mday = day;
+        parsed.tm_isdst = -1;
+
+        std::time_t normalized = std::mktime(&parsed);
+        if (normalized == static_cast<std::time_t>(-1))
+            return false;
+        if (parsed.tm_year != year - 1900 || parsed.tm_mon != month - 1 || parsed.tm_mday != day)
+            return false;
+
+        out = parsed;
+        return true;
+    }
+}
 
 // 1 - Admin, 2 - Doctor, 3 - Nurse, 4 - Pharmacist, 5 - Patient
 bool User::signUp(int choice, int &idCounter)
@@ -543,6 +577,23 @@ double User::calculateHospitalizationFee(std::string wardType, int days)
 
     return dailyRate * days;
 }
+
+int User::calculateStayDays(const std::string &admitTime, const std::string &dischargeTime)
+{
+    std::tm admit = {};
+    std::tm discharge = {};
+    if (!parseDateOnly(admitTime, admit) || !parseDateOnly(dischargeTime, discharge))
+        return 1;
+
+    std::time_t admitDate = std::mktime(&admit);
+    std::time_t dischargeDate = std::mktime(&discharge);
+    if (admitDate == static_cast<std::time_t>(-1) || dischargeDate == static_cast<std::time_t>(-1))
+        return 1;
+
+    int days = static_cast<int>(std::difftime(dischargeDate, admitDate) / 86400.0);
+    return days < 1 ? 1 : days;
+}
+
 // 根据检查项目名称计算检查费用
 // 计算检查项目价格
 double User::calculateExaminationFee(std::string itemName)

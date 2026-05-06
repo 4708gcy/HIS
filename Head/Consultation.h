@@ -10,6 +10,7 @@
 #ifndef CONSULTATION_H
 #define CONSULTATION_H
 
+#include "LinkedList.h"
 #include <string>
 
 /**
@@ -53,20 +54,20 @@ struct Consultation
     std::string familyHistory = "#";           // 家族史(患者家族成员的相关病史, 如遗传病、慢性病等)
 
     std::string preliminaryDiagnosis = "#";         // 初步诊断
-    std::vector<std::string> examinationlist = {}; // 计划检查项目列表
-    std::vector<Prescription> prescriptions = {};  // 处方列表（可包含多条医嘱）
+    LinkedList<std::string> examinationlist = {}; // 计划检查项目列表
+    LinkedList<Prescription> prescriptions = {};  // 处方列表（可包含多条医嘱）
     bool isPrescriptionReviewed = false;       // 处方是否已审核（由药师或医生审核后设置为 true）
 
     bool isHospitalizationRecommended = false; // 是否建议住院（根据病情严重程度等因素评估得出）
 
     // 附件和备注
-    std::vector<std::string> attachments = {}; // 看诊相关的附件文件路径列表
+    LinkedList<std::string> attachments = {}; // 看诊相关的附件文件路径列表
     std::string note = "#";                     // 医生备注或特殊说明
 
     ConsultationStatus status = ConsultationStatus::PENDING; // 状态
 
     // 关联之前的看诊记录（如同一挂号中多次看诊）
-    std::vector<std::string> relatedConsultationIDs = {}; // 相关看诊记录ID列表
+    LinkedList<std::string> relatedConsultationIDs = {}; // 相关看诊记录ID列表
 
     bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
 

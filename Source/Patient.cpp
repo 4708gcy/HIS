@@ -2169,24 +2169,7 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
     }
 
     std::cout << "正在为您计算出院费用结算..." << std::endl;
-    // 使用正确的日期差计算，如果不足1天按1天计算
-    int days = 1;
-    if (current->admitTime.length() >= 10)
-    {
-        int y1 = 0, m1 = 0, d1 = 0, y2 = 0, m2 = 0, d2 = 0;
-        sscanf(current->admitTime.c_str(), "%d-%d-%d", &y1, &m1, &d1);
-        std::string nowTime = MyTime::getInstance().getTime();
-        sscanf(nowTime.c_str(), "%d-%d-%d", &y2, &m2, &d2);
-        std::tm tm1 = {}, tm2 = {};
-        tm1.tm_year = y1 - 1900; tm1.tm_mon = m1 - 1; tm1.tm_mday = d1;
-        tm2.tm_year = y2 - 1900; tm2.tm_mon = m2 - 1; tm2.tm_mday = d2;
-        std::time_t t1 = std::mktime(&tm1);
-        std::time_t t2 = std::mktime(&tm2);
-        double diffSec = std::difftime(t2, t1);
-        days = static_cast<int>(diffSec / 86400.0);
-        if (days <= 0)
-            days = 1;
-    }
+    int days = User::calculateStayDays(current->admitTime, MyTime::getInstance().getTime());
     double calculatedCost = calculateHospitalizationFee(current->wardType, days);
     current->totalCost = calculatedCost;
 
