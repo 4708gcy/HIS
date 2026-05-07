@@ -164,6 +164,10 @@ void viewAllAdmins(Admin *&adminHead)
         }
         current = current->next;
     }
+    if (lines.size() <= 1)
+    {
+        printError("当前没有管理员账号");
+    }
     printWithPagination(lines, 10);
 }
 // 根据管理员ID查看管理员信息
@@ -212,7 +216,10 @@ void viewAdminsByName(Admin *&admin)
     {
         printError("未找到匹配的管理员账号");
     }
-    printWithPagination(lines, 10);
+    else
+    {
+        printWithPagination(lines, 10);
+    }
 }
 // 根据性别查看管理员信息
 void viewAdminsByGender(Admin *&admin)
@@ -239,7 +246,10 @@ void viewAdminsByGender(Admin *&admin)
     {
         printError("未找到匹配的管理员账号");
     }
-    printWithPagination(lines, 10);
+    else
+    {
+        printWithPagination(lines, 10);
+    }
 }
 // 根据年龄段查看管理员信息
 void viewAdminsByAgeGroup(Admin *&admin)
@@ -276,7 +286,10 @@ void viewAdminsByAgeGroup(Admin *&admin)
     {
         printError("未找到匹配的管理员账号");
     }
-    printWithPagination(lines, 10);
+    else
+    {
+        printWithPagination(lines, 10);
+    }
 }
 // 根据联系方式查看管理员信息
 void viewAdminsByContactInfo(Admin *&admin)
@@ -519,80 +532,68 @@ void manageAdmins(Admin *&admin, int &idCounter)
         }
         else if (choice == 1)
         {
-            while (true)
+            int viewChoice = adminAdminViewMenu();
+            if (viewChoice == 1)
             {
-                int viewChoice = adminAdminViewMenu();
-                if (viewChoice == 0)
-                {
-                    break; // 返回管理员管理菜单
-                }
-                else if (viewChoice == 1)
-                {
-                    viewAllAdmins(admin);
-                    pause();
-                }
-                else if (viewChoice == 2)
-                {
-                    viewAdminByID(admin);
-                    pause();
-                }
-                else if (viewChoice == 3)
-                {
-                    viewAdminsByName(admin);
-                    pause();
-                }
-                else if (viewChoice == 4)
-                {
-                    viewAdminsByGender(admin);
-                    pause();
-                }
-                else if (viewChoice == 5)
-                {
-                    viewAdminsByAgeGroup(admin);
-                    pause();
-                }
-                else if (viewChoice == 6)
-                {
-                    viewAdminsByContactInfo(admin);
-                    pause();
-                }
+                viewAllAdmins(admin);
+                pause();
             }
+            else if (viewChoice == 2)
+            {
+                viewAdminByID(admin);
+                pause();
+            }
+            else if (viewChoice == 3)
+            {
+                viewAdminsByName(admin);
+                pause();
+            }
+            else if (viewChoice == 4)
+            {
+                viewAdminsByGender(admin);
+                pause();
+            }
+            else if (viewChoice == 5)
+            {
+                viewAdminsByAgeGroup(admin);
+                pause();
+            }
+            else if (viewChoice == 6)
+            {
+                viewAdminsByContactInfo(admin);
+                pause();
+            }
+            // viewChoice == 0: 返回上级菜单，直接 fall through
         }
         else if (choice == 2)
         {
-            while (true)
+            int modifyChoice = adminAdminModificationMenu();
+            if (modifyChoice == 1)
             {
-                int modifyChoice = adminAdminModificationMenu();
-                if (modifyChoice == 0)
-                {
-                    break; // 返回管理员管理菜单
-                }
-                else if (modifyChoice == 1)
-                {
-                    modifyAdminName(admin);
-                    pause();
-                }
-                else if (modifyChoice == 2)
-                {
-                    modifyAdminGender(admin);
-                    pause();
-                }
-                else if (modifyChoice == 3)
-                {
-                    modifyAdminAge(admin);
-                    pause();
-                }
-                else if (modifyChoice == 4)
-                {
-                    modifyAdminTelephone(admin);
-                    pause();
-                }
-                else if (modifyChoice == 5)
-                {
-                    modifyAdminEmail(admin);
-                    pause();
-                }
+                modifyAdminName(admin);
+                pause();
             }
+            else if (modifyChoice == 2)
+            {
+                modifyAdminGender(admin);
+                pause();
+            }
+            else if (modifyChoice == 3)
+            {
+                modifyAdminAge(admin);
+                pause();
+            }
+            else if (modifyChoice == 4)
+            {
+                modifyAdminTelephone(admin);
+                pause();
+            }
+            else if (modifyChoice == 5)
+            {
+                modifyAdminEmail(admin);
+                pause();
+            }
+            // modifyChoice == 0: 返回上级菜单，直接 fall through
         }
         else if (choice == 3)
         {

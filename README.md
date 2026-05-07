@@ -154,7 +154,6 @@ C课设-HIS/
 │   ├── LoadData.h                  #   数据加载（13 条链表）
 │   ├── SaveData.h                  #   数据保存（13 条链表）
 │   ├── UI.h / UI.cpp               #   控制台 UI：双线框菜单、彩色输出、分页、日志
-│   ├── DataAnalysis.h              #   数据分析与预测（移动平均 + 线性回归）
 │   ├── ApiServer.h                 #   DataManager 单例 + API 路由注册（~140 端点）
 │   ├── ApiResponse.h               #   统一 JSON 响应格式
 │   ├── JWTAuth.h                   #   JWT 认证（HMAC-SHA256, 24h 有效）
@@ -167,7 +166,6 @@ C课设-HIS/
 ├── Source/                         # 实现文件（16 个 .cpp）
 │   ├── Admin.cpp                   #   管理员全部功能（~7,785 行，最大文件）
 │   ├── ApiServer.cpp               #   REST API 路由处理（~140 个端点）
-│   ├── DataAnalysis.cpp            #   数据分析与预测实现
 │   ├── Doctor.cpp                  #   医生功能实现
 │   ├── Nurse.cpp                   #   护士功能实现
 │   ├── Pharmacist.cpp              #   药剂师功能实现

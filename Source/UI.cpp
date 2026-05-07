@@ -261,8 +261,8 @@ void printWithPagination(const std::vector<std::string> &lines, int pageSize)
             std::string input;
             std::getline(std::cin, input);
             if (input == "0") return;
-            currentPage++;
         }
+        currentPage++;
     }
     setConsoleColor(ConsoleColor::GREEN);
     std::cout << "  共 " << lines.size() << " 条记录" << std::endl;
@@ -337,6 +337,10 @@ int selectIntCheck(const int min, const int max)
     {
         std::cout << "请输入整数: ";
         std::getline(std::cin, line);
+        if (std::cin.eof() || std::cin.fail())
+        {
+            return 0; // EOF 或读取失败时返回 0（通常表示返回/取消）
+        }
         line = trim(line); // 去除首尾空格
         std::stringstream ss(line);
         if (ss >> choice && !(ss >> line) && choice >= min && choice <= max)
@@ -361,6 +365,7 @@ double inputFeeCheck(const std::string &prompt)
     {
         std::cout << prompt;
         std::getline(std::cin, line);
+        if (std::cin.eof() || std::cin.fail()) return 0.0;
         line = trim(line); // 去除首尾空格
         std::stringstream ss(line);
         if (ss >> fee && !(ss >> line) && fee >= 0)
@@ -382,6 +387,7 @@ std::string inputStringCheck(const std::string &prompt)
     {
         std::cout << prompt;
         std::getline(std::cin, input);
+        if (std::cin.eof() || std::cin.fail()) return "";
         input = trim(input); // 去除首尾空格
         if (input.empty())
         {
@@ -410,6 +416,7 @@ std::string inputIDCheck(const std::string &prompt)
     {
         std::cout << prompt;
         std::getline(std::cin, id);
+        if (std::cin.eof() || std::cin.fail()) return "";
         id = trim(id); // 去除首尾空格
         // 检查长度、首位、后五位是否全为数字
         if (id.length() == 6 &&
@@ -441,6 +448,7 @@ std::string inputRecordIDCheck(const std::string &prompt, const std::vector<std:
     {
         std::cout << prompt;
         std::getline(std::cin, id);
+        if (std::cin.eof() || std::cin.fail()) return "";
         id = trim(id); // 去除首尾空格
 
         bool valid = false;
@@ -470,6 +478,7 @@ std::string inputPwdCheck(const std::string &prompt)
     {
         std::cout << prompt << "(密码必须至少8位，包含字母和数字): " << std::endl;
         std::getline(std::cin, pwd);
+        if (std::cin.eof() || std::cin.fail()) return "";
         pwd = trim(pwd); // 去除首尾空格
 
         if (pwd.length() < 8)
@@ -3218,10 +3227,9 @@ int adminReportMenu()
     printMenuItem(3, "患者就诊统计");
     printMenuItem(4, "床位使用率统计");
     printMenuItem(5, "药品库存统计");
-    printMenuItem(6, "数据分析与预测");
     printMenuItem(0, "返回上级菜单");
     printMenuBottom();
 
-    int choice = selectIntCheck(0, 6);
+    int choice = selectIntCheck(0, 5);
     return choice;
 }

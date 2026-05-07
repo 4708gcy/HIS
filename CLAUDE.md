@@ -58,7 +58,7 @@ cd frontend && npm run preview
 
 **Full-stack development**: Start backend first (`his_server.exe` on 8080), then frontend (`npm run dev` on 3000). Shutdown order: close frontend first, then backend.
 
-No test framework exists; testing is manual via interactive console.
+Testing is manual via interactive console. There is a regression test target (`his_backend_regression`) using `assert` in `tests/backend_regression.cpp`, but it is minimal.
 
 **Important:** The program MUST be launched from the `build/` directory because all data file paths use `../Data/` relative paths. Running from the project root will fail to find data files. First console run forces admin account registration before anything else.
 
@@ -84,6 +84,8 @@ All subclasses inherit from `User` so they share the same in-memory record chain
 ### Data Structures
 
 All records use **doubly-linked lists** (each node has `prev`/`next` pointers). Key structs: `Registration`, `Consultation` (contains `Prescription` sub-struct + exam list), `Examination` (contains `VitalSigns`), `Hospitalization`, `bedInfo`, `MedicationRecord` (contains `MedicationLine` items), `Medicine` (has `genericName` and `aliases` fields), `MedicineFlow` (tracks stock in/out with type, quantity, operator, reason, timestamp).
+
+**`LinkedList<T>` template** (`Head/LinkedList.h`): A generic doubly-linked list with full bidirectional iterator support, `operator[]`, `push_back`, `erase`, and copy/move semantics. Used for nested collections within structs (prescriptions, examination lists, medicine aliases, related registration/hospitalization IDs). Note: top-level entity chains (doctor list, patient list, etc.) use raw `prev`/`next` pointers, NOT `LinkedList<T>`. `AccountManageGeneric` in `Login.h` also iterates via raw pointers rather than `LinkedList<T>`.
 
 ### ID Scheme
 
@@ -147,7 +149,6 @@ Third-party libraries (`httplib.h`, `json.hpp`) are bundled directly in `Head/`.
 - **UI/input validation**: All console I/O and validation functions are in `UI.h`/`UI.cpp`. The `deptMatch(entityDept, filter)` utility supports "全院" (all-departments) filtering. All menus use Unicode double-line box-drawing with auto-clearing; see UI/UX Features section for function reference.
 - **Global ID counters**: `main.cpp` declares global counters (`adminIDCount`, `doctorIDCount`, etc.) that track the number of used IDs per role. These are populated during `load*Data()` calls and passed to `signUp()` methods to generate new unique IDs.
 - **`saveAllUnsafe()` naming convention**: In `DataManager`, `saveAllUnsafe()` saves all data without acquiring the mutex. Callers must hold the mutex before calling it (e.g., `std::lock_guard<std::mutex> lock(dm.getMutex()); dm.saveAllUnsafe();`). The "Unsafe" suffix means "unsafe to call without mutex held", not "unsafe for production". This pattern appears ~74 times in `ApiServer.cpp`.
-- **Data analysis**: `DataAnalysis.h/cpp` provides statistical analysis (monthly stats, demand prediction via moving average + linear regression, bed allocation optimization, medicine profit margins). Three display formats: tabular, ASCII charts, summary. Invoked via Admin report menu option 6.
 - **Language**: Code comments, UI strings, documentation, and commit messages are primarily in Chinese. Commit messages use date-based versioning (e.g., "4.24.1").
 
 ### UI/UX Features
@@ -230,7 +231,7 @@ Route guard behavior: unauthenticated → `/login`; role mismatch → auto-redir
 
 ### Known Gotchas
 
-**Enums:** `bedStatus` uses lowercase 'b' (not `BedStatus`). `ConsultationStatus` has `COMPLETED` (not `FINISHED`). `Examination` has `reportSummary` field (not `report`).
+**Enums:** `bedStatus` uses lowercase 'b' (not `BedStatus`). `bedStatus::ClEANING` has a typo — capital `L` instead of lowercase. `ConsultationStatus` has `COMPLETED` (not `FINISHED`). `Examination` has `reportSummary` field (not `report`).
 
 **Linked lists:** Always use head-insertion (`newNode->next = head; if(head) head->prev = newNode; head = newNode;`) for O(1). Tail-insertion with while-loop is O(n) and was a confirmed bug.
 
@@ -245,6 +246,18 @@ Route guard behavior: unauthenticated → `/login`; role mismatch → auto-redir
 **`saveAllUnsafe()`:** Caller must hold the mutex; the function itself does NOT acquire the lock.
 
 **`printMenuSeparator()`:** Defined in `UI.cpp` but never called — dead code. Do not use it; use `printMenuLine("")` for blank rows instead.
+
+**`Patient::getPatientID()`:** Returns `std::string` by value while other getters return `const std::string &`. Causes unnecessary copies.
+
+**Role mapping nuance:** The `UserRole` enum in `User.h` is 1-based (`ADMIN=1` through `PATIENT=5`), but the ID prefix scheme is 0-based (`0`=Admin, `1`=Doctor, etc.). The API server bridges these two numbering systems. Don't confuse enum values with ID prefixes.
+
+**Emergency save:** `main.cpp` registers signal handlers for `SIGINT`, `SIGABRT`, `SIGTERM` that call `emergencySave()` (which uses `std::_Exit()`) to persist data before abrupt termination. Global pointers to all linked list heads are set for this purpose.
+
+**No database / atomicity:** All data is plain text files. A crash between "add to linked list" and "save to file" loses data. Signal handlers mitigate this partially.
+
+**JWT secret is hardcoded:** `"HIS_JWT_SECRET_KEY_2026"` in `JWTAuth.cpp`. Not configurable via environment variable. HMAC construction is non-standard (uses `SHA256Encrypt` with fixed salts `"hmac-inner"`/`"hmac-outer"`), so tokens won't interoperate with standard JWT libraries.
+
+**File sizes for context:** `Admin.cpp` (377KB, ~7,785 lines), `ApiServer.cpp` (193KB, ~140 routes), `Doctor.cpp` (99KB), `Patient.cpp` (98KB), `UI.cpp` (96KB), `Nurse.cpp` (66KB), `Pharmacist.cpp` (65KB), `LoadData.cpp` (52KB), `SaveData.cpp` (25KB). Large files are normal in this project.
 
 ### `"#"` Sentinel Convention
 

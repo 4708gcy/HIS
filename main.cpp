@@ -201,7 +201,6 @@ int main()
                                     else if (reportChoice == 3) client->showPatientReport(patientHead, regHead, conHead);
                                     else if (reportChoice == 4) client->showBedUtilizationReport(bedHead, hosHead);
                                     else if (reportChoice == 5) client->showMedicineInventoryReport(medHead, medFlowHead);
-                                    else if (reportChoice == 6) client->showDataAnalysisReport(hosHead, bedHead, regHead, medHead, medFlowHead);
                                     else if (reportChoice == 0) break;
                                 }
                             }

@@ -2,6 +2,22 @@
 
 ---
 
+## 2026.5.7 — 统计报表优化
+
+**1. 移除"数据分析与预测"菜单入口**
+- `UI.cpp` `adminReportMenu()` 移除选项 6，`selectIntCheck` 范围改为 `(0,5)`
+- `main.cpp` 移除 `reportChoice == 6` 的 dispatch 调用
+- `CLAUDE.md`、`README.md` 移除 DataAnalysis 模块引用
+
+**2. 医生工作量统计重构**
+- 根因：Doctor 结构体的 `consultationCount`/`examinationCount`/`hospitalizationApplyCount` 字段从未被业务逻辑自增，始终为 0
+- 方案：改为动态遍历 Consultation、Examination、Hospitalization 链表按 doctorID 聚合统计
+- 新增：时间范围选择（复用 `timeRangeMenu`）、科室筛选（全院/内科/外科/妇产科/急诊科/儿科）
+- 排版：`std::setw` 列对齐 + 分隔线 + 底部合计行
+- 文件：`Head/Admin.h` 函数签名扩展，`Source/Admin.cpp` 函数重写，`main.cpp` 调用处更新
+
+---
+
 ## 2026.4.8 — 项目初始化
 
 - 创建核心医疗信息类：`Registration`、`Consultation`、`Examination`
