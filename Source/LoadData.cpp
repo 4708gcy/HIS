@@ -1510,19 +1510,17 @@ Medicine *loadMedicines(int &count)
     }
 
     std::string line;
+    std::string nextLine;
+    bool hasPending = false;
     count = 0;
-    while (std::getline(inFile, line))
+    while (hasPending || std::getline(inFile, line))
     {
+        if (hasPending) { line = nextLine; hasPending = false; }
+
         if (line.rfind("count:", 0) == 0)
         {
-            try
-            {
-                count = std::stoi(line.substr(6));
-            }
-            catch (...)
-            {
-                count = 0;
-            }
+            try { count = std::stoi(line.substr(6)); }
+            catch (...) { count = 0; }
             break;
         }
         if (line.empty())
@@ -1532,7 +1530,6 @@ Medicine *loadMedicines(int &count)
         Medicine *newMed = new Medicine();
         std::string purchasePriceStr, salePriceStr, stockStr, safetyStockStr, isSpecialStr, isDeletedStr, noteStr, genericNameStr, statusStr;
 
-        // 先将所有字段读入 vector，以兼容旧版 CSV（无 genericName 字段）
         std::vector<std::string> fields;
         std::string field;
         while (std::getline(iss, field, ','))
@@ -1555,8 +1552,6 @@ Medicine *loadMedicines(int &count)
         if (fields.size() >= 13) isDeletedStr = fields[12];
         if (fields.size() >= 14) noteStr = fields[13];
 
-        // 新格式：fields[14] = genericName, fields[15] = status
-        // 旧格式：fields[14] = status (15 个字段)
         if (fields.size() >= 16)
         {
             genericNameStr = fields[14];
@@ -1591,23 +1586,24 @@ Medicine *loadMedicines(int &count)
         Medicine *currentMed = newMed;
 
         // 读取别名子行
-        while (std::getline(inFile, line))
+        while (std::getline(inFile, nextLine))
         {
-            if (line.rfind("count:", 0) == 0)
+            if (nextLine.rfind("count:", 0) == 0)
             {
-                try { count = std::stoi(line.substr(6)); }
+                try { count = std::stoi(nextLine.substr(6)); }
                 catch (...) { count = 0; }
+                hasPending = false;
                 break;
             }
-            if (line.rfind("ALIAS:", 0) == 0)
+            if (nextLine.rfind("ALIAS:", 0) == 0)
             {
-                std::string alias = line.substr(6);
+                std::string alias = nextLine.substr(6);
                 if (!alias.empty()) currentMed->aliases.push_back(alias);
             }
             else
             {
-                // 下一个主记录，回退一行让外层循环处理
-                inFile.seekg(inFile.tellg().operator-(std::streamoff(line.size()) + 1));
+                // 下一个主记录，暂存给外层循环
+                hasPending = true;
                 break;
             }
         }
@@ -1621,57 +1617,4 @@ Medicine *loadMedicines(int &count)
     }
     inFile.close();
     return medHead;
-}
-
-MedicineFlow *loadMedicineFlows(int &count)
-{
-    MedicineFlow *flowHead = nullptr;
-    std::ifstream inFile(MEDICINE_FLOW_FILE);
-    if (!inFile)
-    {
-        std::cerr << "无法打开药品流水文件！" << std::endl;
-        count = 0;
-        return nullptr;
-    }
-
-    std::string line;
-    count = 0;
-    while (std::getline(inFile, line))
-    {
-        if (line.rfind("count:", 0) == 0)
-        {
-            try { count = std::stoi(line.substr(6)); }
-            catch (...) { count = 0; }
-            break;
-        }
-        if (line.empty()) continue;
-
-        std::istringstream iss(line);
-        MedicineFlow *newFlow = new MedicineFlow();
-        std::string typeStr, quantityStr, isDeletedStr;
-
-        std::getline(iss, newFlow->flowID, ',');
-        std::getline(iss, newFlow->medicineID, ',');
-        std::getline(iss, typeStr, ',');
-        std::getline(iss, quantityStr, ',');
-        std::getline(iss, newFlow->operatorID, ',');
-        std::getline(iss, newFlow->reason, ',');
-        std::getline(iss, newFlow->timestamp, ',');
-        std::getline(iss, newFlow->note, ',');
-        std::getline(iss, isDeletedStr);
-
-        try { newFlow->type = static_cast<MedicineFlowType>(std::stoi(typeStr)); }
-        catch (...) { newFlow->type = MedicineFlowType::IN_STOCK; }
-        try { newFlow->quantity = std::stoi(quantityStr); }
-        catch (...) { newFlow->quantity = 0; }
-        newFlow->isDeleted = (isDeletedStr == "1");
-
-        // 链表头插
-        newFlow->prev = nullptr;
-        newFlow->next = flowHead;
-        if (flowHead) flowHead->prev = newFlow;
-        flowHead = newFlow;
-    }
-    inFile.close();
-    return flowHead;
 }

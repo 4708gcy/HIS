@@ -27,7 +27,6 @@ void saveExaminations(Examination *examHead, int count);             // 将检�
 void saveHospitalizations(Hospitalization *hosHead, int count);      // 将住院记录保存到文件中
 void saveMedicationRecords(MedicationRecord *medRecHead, int count); // 将用药记录保存到文件中
 void saveMedicines(Medicine *medHead, int count);                    // 将药品信息保存到文件中
-void saveMedicineFlows(MedicineFlow *flowHead, int count);          // 将药品流水记录保存到文件中
 void saveBedInfos(bedInfo *bedHead, int count);                      // 将床位信息保存到文件中
 
 #endif

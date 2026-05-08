@@ -34,7 +34,6 @@ const routes = [
         { path: 'admin/beds', name: 'AdminBeds', component: () => import('../views/admin/Beds.vue'), meta: { roles: [1] } },
         { path: 'admin/schedules', name: 'AdminSchedules', component: () => import('../views/admin/Schedules.vue'), meta: { roles: [1] } },
         { path: 'admin/reports', name: 'AdminReports', component: () => import('../views/admin/Reports.vue'), meta: { roles: [1] } },
-        { path: 'admin/medicine-flows', name: 'AdminMedicineFlows', component: () => import('../views/admin/MedicineFlows.vue'), meta: { roles: [1] } },
         { path: 'admin/profile', name: 'AdminProfile', component: () => import('../views/admin/Profile.vue'), meta: { roles: [1] } }
       ],
       // 医生路由

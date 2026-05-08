@@ -41,7 +41,6 @@ void DataManager::init()
     hosHead = loadHospitalizations(hospitalizationCount_);
     medRecHead = loadMedicationRecords(medicationRecordCount_);
     medHead = loadMedicines(medicineCount_);
-    medFlowHead = loadMedicineFlows(medicineFlowCount_);
     bedHead = loadBedInfos(bedCount_);
     loadSchedules();
 }
@@ -59,7 +58,6 @@ void DataManager::saveAllUnsafe()
     saveHospitalizations(hosHead, hospitalizationCount_);
     saveMedicationRecords(medRecHead, medicationRecordCount_);
     saveMedicines(medHead, medicineCount_);
-    saveMedicineFlows(medFlowHead, medicineFlowCount_);
     saveBedInfos(bedHead, bedCount_);
     saveSchedules();
 }
@@ -1373,7 +1371,7 @@ void registerApiRoutes(httplib::Server &svr)
             med->patientID = con->patientID;
             med->department = con->department;
             med->createTime = MyTime::getInstance().getTime();
-            med->reviewStatus = MedicationReviewStatus::PENDING_REVIEW;
+            med->reviewStatus = con->isPrescriptionReviewed ? MedicationReviewStatus::APPROVED : MedicationReviewStatus::PENDING_REVIEW;
             med->status = MedicationStatus::UNPAID;
             pushFront(dm.getMedRecHead(), med);
             dm.saveAllUnsafe();
@@ -2242,7 +2240,7 @@ void registerApiRoutes(httplib::Server &svr)
             med->patientID = con->patientID;
             med->department = con->department;
             med->createTime = MyTime::getInstance().getTime();
-            med->reviewStatus = MedicationReviewStatus::PENDING_REVIEW;
+            med->reviewStatus = con->isPrescriptionReviewed ? MedicationReviewStatus::APPROVED : MedicationReviewStatus::PENDING_REVIEW;
             med->status = MedicationStatus::UNPAID;
             double totalCost = 0.0;
             for (auto &pres : con->prescriptions) {
@@ -3300,65 +3298,4 @@ void registerApiRoutes(httplib::Server &svr)
         data["beds"] = cnt;
         res.set_content(ApiResponse::success("", data).dump(), "application/json"); });
 
-    // ==================== 药品流水 API ====================
-
-    // 辅助：MedicineFlow 序列化（JsonHelper 中没有该函数）
-    auto medFlowToJson = [](const MedicineFlow *flow) -> json {
-        json j;
-        j["flowID"] = (flow->flowID == "#") ? "" : flow->flowID;
-        j["medicineID"] = (flow->medicineID == "#") ? "" : flow->medicineID;
-        j["type"] = static_cast<int>(flow->type);
-        j["typeStr"] = (flow->type == MedicineFlowType::IN_STOCK) ? "入库" : "出库";
-        j["quantity"] = flow->quantity;
-        j["operatorID"] = (flow->operatorID == "#") ? "" : flow->operatorID;
-        j["reason"] = (flow->reason == "#") ? "" : flow->reason;
-        j["timestamp"] = (flow->timestamp == "#") ? "" : flow->timestamp;
-        j["note"] = (flow->note == "#") ? "" : flow->note;
-        j["isDeleted"] = flow->isDeleted;
-        return j;
-    };
-
-    // GET /api/admin/medicine-flows - 管理员查看药品流水（支持筛选）
-    svr.Get("/api/admin/medicine-flows", [&](const httplib::Request &req, httplib::Response &res)
-             {
-        setCORS(req, res);
-        auto auth = authenticateRequest(req);
-        if (!auth.valid || auth.role != 1) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
-        std::string medicineID = req.get_param_value("medicineID");
-        std::string typeStr = req.get_param_value("type");
-        json list = json::array();
-        std::lock_guard<std::mutex> lock(dm.getMutex());
-        MedicineFlow *cur = dm.getMedFlowHead();
-        while (cur) {
-            if (!cur->isDeleted) {
-                bool match = true;
-                if (!medicineID.empty() && cur->medicineID != medicineID) match = false;
-                if (!typeStr.empty() && std::to_string(static_cast<int>(cur->type)) != typeStr) match = false;
-                if (match) list.push_back(medFlowToJson(cur));
-            }
-            cur = cur->next;
-        }
-        res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
-
-    // GET /api/pharmacist/medicine-flows - 药剂师查看药品流水
-    svr.Get("/api/pharmacist/medicine-flows", [&](const httplib::Request &req, httplib::Response &res)
-             {
-        setCORS(req, res);
-        auto auth = authenticateRequest(req);
-        if (!auth.valid || auth.role != 4) { res.set_content(ApiResponse::forbidden().dump(), "application/json"); return; }
-        std::string medicineID = req.get_param_value("medicineID");
-        std::string typeStr = req.get_param_value("type");
-        json list = json::array();
-        std::lock_guard<std::mutex> lock(dm.getMutex());
-        MedicineFlow *cur = dm.getMedFlowHead();
-        while (cur) {
-            if (!cur->isDeleted) {
-                bool match = true;
-                if (!medicineID.empty() && cur->medicineID != medicineID) match = false;
-                if (!typeStr.empty() && std::to_string(static_cast<int>(cur->type)) != typeStr) match = false;
-                if (match) list.push_back(medFlowToJson(cur));
-            }
-            cur = cur->next;
-        }
-        res.set_content(ApiResponse::success("", json({{"list", list}, {"total", list.size()}})).dump(), "application/json"); });
 }

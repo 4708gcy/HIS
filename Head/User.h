@@ -37,7 +37,6 @@
 #define HOSPITALIZATION_FILE "../Data/RecordData/HospitalizationChainData/hospitalizations.txt"
 #define MEDICATION_RECORD_FILE "../Data/RecordData/MedicineChainData/medication_records.txt"
 #define MEDICINE_FILE "../Data/RecordData/MedicineChainData/medicines.txt"
-#define MEDICINE_FLOW_FILE "../Data/RecordData/MedicineChainData/medicine_flow.txt"
 #define BED_FILE "../Data/RecordData/HospitalizationChainData/bed_info.txt"
 
 // 定义全局常量

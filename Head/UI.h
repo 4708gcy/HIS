@@ -139,10 +139,6 @@ int adminMedicineManagementMenu(); // 管理员药品信息管理菜单
 int adminMedicineViewMenu();       // 管理员药品信息查看方式选择菜单
 int MedicineStatusMenu();          // 药品状态选择菜单
 int MedicineModificationMenu();    // 药品信息修改菜单
-int adminMedicineFlowManagementMenu(); // 药品出入库流水管理菜单
-int adminMedicineFlowViewMenu();       // 药品流水查看方式选择菜单
-int MedicineFlowTypeMenu();            // 流水类型选择（入库/出库）
-int MedicineFlowReasonMenu();          // 流水原因选择菜单
 
 // ========================================= 管理员账户管理菜单区域 =======================================
 

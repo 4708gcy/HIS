@@ -10,7 +10,6 @@ struct Hospitalization;
 struct bedInfo;
 struct Registration;
 struct Medicine;
-struct MedicineFlow;
 
 // ===================== 分析结果结构体 =====================
 

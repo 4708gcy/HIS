@@ -2011,6 +2011,7 @@ void Nurse::managePersonalInfo()
                     if (levelChoice == 0)
                     {
                         printWarning("已取消修改操作！");
+                        pause("护士 > 个人信息管理");
                         continue;
                     }
 
@@ -2046,6 +2047,7 @@ void Nurse::managePersonalInfo()
                     if (dutyChoice == 0)
                     {
                         printWarning("已取消修改操作！");
+                        pause("护士 > 个人信息管理");
                         continue;
                     }
 

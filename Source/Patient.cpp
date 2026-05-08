@@ -568,11 +568,13 @@ void Patient::manageRegistrations(Registration *&regHead, Doctor *&doctorHead, i
             case 0:
                 break;
             }
+            pause();
             break;
         }
         case 2:
         {
             appointRegistration(regHead, doctorHead, idCounter);
+            pause();
             break;
         }
         case 3:
@@ -627,8 +629,10 @@ void Patient::manageRegistrations(Registration *&regHead, Doctor *&doctorHead, i
                 {
                     printError("没有找到属于您的挂号ID为 " + regID + " 的挂号记录。");
                 }
+                pause();
                 break;
             }
+            break;
         }
         case 4:
         {
@@ -682,6 +686,7 @@ void Patient::manageRegistrations(Registration *&regHead, Doctor *&doctorHead, i
                 }
             }
 
+            pause();
             break;
         }
         case 0:
@@ -1133,6 +1138,7 @@ void Patient::manageConsultations(Consultation *&conHead)
             case 0:
                 break;
             }
+            pause();
         }
     }
 }
@@ -1501,6 +1507,7 @@ void Patient::manageExaminations(Examination *&examHead)
             case 0:
                 break;
             }
+            pause();
         }
         else if (choice == 2)
         {
@@ -1562,6 +1569,7 @@ void Patient::manageExaminations(Examination *&examHead)
                     printError("没有找到属于您的检查ID为 " + examID + " 的待支付记录。");
                 }
             }
+            pause();
         }
     }
 }
@@ -1858,6 +1866,7 @@ void Patient::manageMedications(MedicationRecord *&medHead)
             case 0:
                 break;
             }
+            pause();
         }
         else if (choice == 2)
         {
@@ -1902,6 +1911,7 @@ void Patient::manageMedications(MedicationRecord *&medHead)
                     printError("没有找到属于您的用药记录ID为 " + medID + " 的记录。");
                 }
             }
+            pause();
         }
     }
 }
@@ -2345,14 +2355,17 @@ void Patient::manageHospitalizations(Hospitalization *&hosHead, bedInfo *&bedHea
             case 0:
                 break;
             }
+            pause();
         }
         else if (choice == 2)
         {
             applyForDischarge(hosHead, bedHead);
+            pause();
         }
         else if (choice == 3)
         {
             payHospitalizationDeposit(hosHead);
+            pause();
         }
     }
 }

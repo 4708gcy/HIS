@@ -1237,7 +1237,7 @@ int adminRegistrationViewMenu()
     printMenuBorder();
     printMenuTitle("挂号记录查看");
     printMenuBottom();
-    printMenuItem(1, "查看该科室的所有挂号记录");
+    printMenuItem(1, "查看所有挂号记录");
     printMenuItem(2, "根据挂号状态查看");
     printMenuItem(3, "根据患者ID查看");
     printMenuItem(4, "根据医生ID查看");
@@ -1273,7 +1273,7 @@ int adminConsultationViewMenu()
     printMenuBorder();
     printMenuTitle("看诊记录查看");
     printMenuBottom();
-    printMenuItem(1, "查看该科室的所有看诊记录");
+    printMenuItem(1, "查看所有看诊记录");
     printMenuItem(2, "根据患者ID查看");
     printMenuItem(3, "根据医生ID查看");
     printMenuItem(4, "根据状态查看");
@@ -1310,7 +1310,7 @@ int adminExaminationViewMenu()
     printMenuBorder();
     printMenuTitle("检查记录查看");
     printMenuBottom();
-    printMenuItem(1, "查看该科室的所有检查记录");
+    printMenuItem(1, "查看所有检查记录");
     printMenuItem(2, "根据患者ID查看");
     printMenuItem(3, "根据医生ID查看");
     printMenuItem(4, "根据状态查看");
@@ -1434,7 +1434,7 @@ int adminHospitalizationViewMenu()
     printMenuBorder();
     printMenuTitle("住院记录查看");
     printMenuBottom();
-    printMenuItem(1, "查看该科室的所有住院记录");
+    printMenuItem(1, "查看所有住院记录");
     printMenuItem(2, "根据患者ID查看");
     printMenuItem(3, "根据医生ID查看");
     printMenuItem(4, "根据护士ID查看");
@@ -1504,7 +1504,7 @@ int bedViewMenu()
     printMenuBorder();
     printMenuTitle("床位信息查看");
     printMenuBottom();
-    printMenuItem(1, "查看该科室的所有床位信息");
+    printMenuItem(1, "查看所有床位信息");
     printMenuItem(2, "根据床位状态查看");
     printMenuItem(3, "根据病房类型查看");
     printMenuItem(4, "根据床位号查看");
@@ -1543,7 +1543,7 @@ int adminMedicationRecordViewMenu()
     printMenuBorder();
     printMenuTitle("用药记录查看");
     printMenuBottom();
-    printMenuItem(1, "查看该科室的所有用药记录");
+    printMenuItem(1, "查看所有用药记录");
     printMenuItem(2, "根据患者ID查看");
     printMenuItem(3, "根据医生ID查看");
     printMenuItem(4, "根据药师ID查看");
@@ -1567,8 +1567,8 @@ int MedicationRecordReviewResultMenu()
     printMenuTitle("用药记录审核状态");
     printMenuBottom();
     printMenuItem(1, "待审核");
-    printMenuItem(2, "审核通过");
-    printMenuItem(3, "审核未通过");
+    printMenuItem(2, "审核未通过");
+    printMenuItem(3, "审核通过");
     printMenuItem(4, "医生撤销");
     printMenuItem(0, "返回上级菜单");
     printMenuBottom();
@@ -1606,11 +1606,10 @@ int adminMedicineManagementMenu()
     printMenuItem(2, "修改药品信息");
     printMenuItem(3, "删除药品信息");
     printMenuItem(4, "添加药品信息");
-    printMenuItem(5, "药品出入库流水管理");
     printMenuItem(0, "返回上级菜单");
     printMenuBottom();
 
-    int choice = selectIntCheck(0, 5);
+    int choice = selectIntCheck(0, 4);
     return choice;
 }
 
@@ -1674,81 +1673,6 @@ int MedicineModificationMenu()
     printMenuBottom();
 
     int choice = selectIntCheck(0, 11);
-    return choice;
-}
-
-// 管理员药品出入库流水管理菜单
-int adminMedicineFlowManagementMenu()
-{
-    clearScreen();
-    printMenuBorder();
-    printMenuTitle("药品出入库流水管理");
-    printMenuBottom();
-    printMenuItem(1, "查看所有流水记录");
-    printMenuItem(2, "按药品ID查看流水");
-    printMenuItem(3, "按流水类型查看（入库/出库）");
-    printMenuItem(4, "按操作人查看流水");
-    printMenuItem(5, "新增出入库记录");
-    printMenuItem(0, "返回上级菜单");
-    printMenuBottom();
-
-    int choice = selectIntCheck(0, 5);
-    return choice;
-}
-
-// 药品流水查看方式选择菜单
-int adminMedicineFlowViewMenu()
-{
-    clearScreen();
-    printMenuBorder();
-    printMenuTitle("药品流水记录查看");
-    printMenuBottom();
-    printMenuItem(1, "查看所有流水记录");
-    printMenuItem(2, "按药品ID查看");
-    printMenuItem(3, "按流水类型查看");
-    printMenuItem(4, "按操作人查看");
-    printMenuItem(0, "返回上级菜单");
-    printMenuBottom();
-
-    int choice = selectIntCheck(0, 4);
-    return choice;
-}
-
-// 流水类型选择菜单
-int MedicineFlowTypeMenu()
-{
-    clearScreen();
-    printMenuBorder();
-    printMenuTitle("选择流水类型");
-    printMenuBottom();
-    printMenuItem(1, "入库");
-    printMenuItem(2, "出库");
-    printMenuItem(0, "返回上级菜单");
-    printMenuBottom();
-
-    int choice = selectIntCheck(0, 2);
-    return choice;
-}
-
-// 流水原因选择菜单
-int MedicineFlowReasonMenu()
-{
-    clearScreen();
-    printMenuBorder();
-    printMenuTitle("选择变动原因");
-    printMenuBottom();
-    printMenuItem(1, "采购入库");
-    printMenuItem(2, "退货入库");
-    printMenuItem(3, "盘点调整(入)");
-    printMenuItem(4, "处方发药(出)");
-    printMenuItem(5, "过期报损(出)");
-    printMenuItem(6, "退货出库");
-    printMenuItem(7, "盘点调整(出)");
-    printMenuItem(8, "其他原因");
-    printMenuItem(0, "返回上级菜单");
-    printMenuBottom();
-
-    int choice = selectIntCheck(0, 8);
     return choice;
 }
 
@@ -2754,13 +2678,14 @@ int pharmacistMenu()
     printMenuBorder();
     printMenuTitle("药剂师功能界面");
     printMenuBottom();
-    printMenuItem(1, "管理用药信息");
-    printMenuItem(2, "管理药品信息");
-    printMenuItem(3, "个人信息管理");
+    printMenuItem(1, "处方审核");
+    printMenuItem(2, "管理用药信息");
+    printMenuItem(3, "管理药品信息");
+    printMenuItem(4, "个人信息管理");
     printMenuItem(0, "退出登录");
     printMenuBottom();
 
-    int choice = selectIntCheck(0, 3);
+    int choice = selectIntCheck(0, 4);
     return choice;
 }
 

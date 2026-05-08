@@ -25,7 +25,6 @@ int hospitalizationCount = 0;
 int medicationRecordCount = 0;
 int medicineCount = 0;
 int bedCount = 0;
-int medicineFlowIDCount = 0;
 
 // 全局指针用于信号处理中的紧急保存
 static Admin **g_adminHead = nullptr;
@@ -39,7 +38,6 @@ static Examination **g_examHead = nullptr;
 static Hospitalization **g_hosHead = nullptr;
 static MedicationRecord **g_medRecHead = nullptr;
 static Medicine **g_medHead = nullptr;
-static MedicineFlow **g_medFlowHead = nullptr;
 static bedInfo **g_bedHead = nullptr;
 
 void emergencySave()
@@ -56,7 +54,6 @@ void emergencySave()
     if (g_hosHead && *g_hosHead) saveHospitalizations(*g_hosHead, hospitalizationCount);
     if (g_medRecHead && *g_medRecHead) saveMedicationRecords(*g_medRecHead, medicationRecordCount);
     if (g_medHead && *g_medHead) saveMedicines(*g_medHead, medicineCount);
-    if (g_medFlowHead && *g_medFlowHead) saveMedicineFlows(*g_medFlowHead, medicineFlowIDCount);
     if (g_bedHead && *g_bedHead) saveBedInfos(*g_bedHead, bedCount);
     std::cerr << "数据已紧急保存，程序退出。" << std::endl;
 }
@@ -64,6 +61,34 @@ void emergencySave()
 void signalHandler(int signum)
 {
     emergencySave();
+
+#ifdef _WIN32
+    // 信号处理中不能安全使用 std::cin，用 Win32 API 直接操作控制台
+    HANDLE hStderr = GetStdHandle(STD_ERROR_HANDLE);
+    if (hStderr != INVALID_HANDLE_VALUE)
+    {
+        const char *msg = "\n按任意键退出...";
+        DWORD written;
+        WriteFile(hStderr, msg, (DWORD)strlen(msg), &written, NULL);
+    }
+    // 等待用户按键后再退出
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    if (hStdin != INVALID_HANDLE_VALUE)
+    {
+        FlushConsoleInputBuffer(hStdin);
+        DWORD mode;
+        GetConsoleMode(hStdin, &mode);
+        SetConsoleMode(hStdin, mode & ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT));
+        char buf[1];
+        DWORD read;
+        ReadFile(hStdin, buf, 1, &read, NULL);
+        SetConsoleMode(hStdin, mode);
+    }
+#else
+    std::cerr << "\n按任意键退出..." << std::flush;
+    std::cin.get();
+#endif
+
     std::_Exit(signum);
 }
 
@@ -106,14 +131,13 @@ int main()
     Hospitalization *hosHead = loadHospitalizations(hospitalizationCount);       // 加载住院记录数据
     MedicationRecord *medRecHead = loadMedicationRecords(medicationRecordCount); // 加载用药记录数据
     Medicine *medHead = loadMedicines(medicineCount);                            // 加载药品信息数据
-    MedicineFlow *medFlowHead = loadMedicineFlows(medicineFlowIDCount);         // 加载药品流水记录
     bedInfo *bedHead = loadBedInfos(bedCount);                                   // 加载床位信息数据
 
     // 设置全局指针用于信号处理中的紧急保存
     g_adminHead = &adminHead; g_docHead = &docHead; g_nurseHead = &nurseHead;
     g_phaHead = &phaHead; g_patientHead = &patientHead; g_regHead = &regHead;
     g_conHead = &conHead; g_examHead = &examHead; g_hosHead = &hosHead;
-    g_medRecHead = &medRecHead; g_medHead = &medHead; g_medFlowHead = &medFlowHead; g_bedHead = &bedHead;
+    g_medRecHead = &medRecHead; g_medHead = &medHead; g_bedHead = &bedHead;
 
     try
     {
@@ -171,7 +195,7 @@ int main()
                             {
                                 std::string department = adminDepartmentMenu();
                                 if (department == "0") continue;
-                                client->manageMedicines(medHead, medFlowHead, department, medicineCount, medicineFlowIDCount);
+                                client->manageMedicines(medHead, department, medicineCount);
                             }
                             else if (adminChoice == 4) // 床位管理
                             {
@@ -197,10 +221,10 @@ int main()
                                 {
                                     int reportChoice = adminReportMenu();
                                     if (reportChoice == 1) client->showDepartmentReport(docHead, regHead, conHead);
-                                    else if (reportChoice == 2) client->showDoctorWorkloadReport(docHead);
+                                    else if (reportChoice == 2) client->showDoctorWorkloadReport(docHead, conHead, examHead, hosHead);
                                     else if (reportChoice == 3) client->showPatientReport(patientHead, regHead, conHead);
                                     else if (reportChoice == 4) client->showBedUtilizationReport(bedHead, hosHead);
-                                    else if (reportChoice == 5) client->showMedicineInventoryReport(medHead, medFlowHead);
+                                    else if (reportChoice == 5) client->showMedicineInventoryReport(medHead, medRecHead);
                                     else if (reportChoice == 0) break;
                                 }
                             }
@@ -294,13 +318,18 @@ int main()
                             }
                             else if (pharmacistChoice == 1)
                             {
-                                client->manageMedicationRecords(medRecHead, medHead, conHead, medicationRecordCount);
+                                client->reviewPrescriptions(medRecHead, conHead, medHead, medicationRecordCount);
+                                pause("药剂师 > 处方审核");
                             }
                             else if (pharmacistChoice == 2)
                             {
-                                client->manageMedicines(medHead, medicineCount);
+                                client->manageMedicationRecords(medRecHead, medHead, conHead, medicationRecordCount);
                             }
                             else if (pharmacistChoice == 3)
+                            {
+                                client->manageMedicines(medHead, medicineCount);
+                            }
+                            else if (pharmacistChoice == 4)
                             {
                                 client->managePersonalInfo(); // 个人信息管理
                             }
@@ -480,7 +509,6 @@ int main()
     saveHospitalizations(hosHead, hospitalizationCount);      // 保存住院记录数据
     saveMedicationRecords(medRecHead, medicationRecordCount); // 保存用药记录数据
     saveMedicines(medHead, medicineCount);                    // 保存药品信息数据
-    saveMedicineFlows(medFlowHead, medicineFlowIDCount);     // 保存药品流水记录
     saveBedInfos(bedHead, bedCount);                          // 保存床位信息数据
 
     LogManager::getInstance().info("系统退出，所有数据已保存");
@@ -497,7 +525,6 @@ int main()
     while (hosHead) { Hospitalization *n = hosHead->next; delete hosHead; hosHead = n; }
     while (medRecHead) { MedicationRecord *n = medRecHead->next; delete medRecHead; medRecHead = n; }
     while (medHead) { Medicine *n = medHead->next; delete medHead; medHead = n; }
-    while (medFlowHead) { MedicineFlow *n = medFlowHead->next; delete medFlowHead; medFlowHead = n; }
     while (bedHead) { bedInfo *n = bedHead->next; delete bedHead; bedHead = n; }
     } // end try
     catch (const std::exception &e)

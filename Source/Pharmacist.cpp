@@ -203,6 +203,108 @@ void Pharmacist::increaseInventoryManageCount()
     ++inventoryManageCount;
 }
 
+// ==================== 处方审核 ====================
+void Pharmacist::reviewPrescriptions(MedicationRecord *&medRecHead, Consultation *conHead, Medicine *&medHead, int &idCounter)
+{
+    Consultation *con = conHead;
+    std::cout << "正在查找待审核处方的看诊记录..." << std::endl;
+
+    bool hasUnreviewed = false;
+
+    while (con)
+    {
+        if (!con->isDeleted && con->department == this->department && !con->prescriptions.empty() && !con->isPrescriptionReviewed)
+        {
+            std::cout << "看诊ID: " << con->consultationID
+                      << ", 患者ID: " << con->patientID
+                      << ", 医生ID: " << con->doctorID
+                      << ", 科室: " << con->department
+                      << ", 时间: " << con->consultationTime
+                      << ", 初步诊断: " << con->preliminaryDiagnosis
+                      << ", 处方数: " << con->prescriptions.size()
+                      << ", 处方审核状态: 未审核"
+                      << std::endl;
+
+            std::cout << "处方列表:" << std::endl;
+            for (const auto &pres : con->prescriptions)
+            {
+                std::cout << "  - 药品ID: " << pres.medicineID
+                          << ", 名称: " << pres.name
+                          << ", 数量: " << pres.quantity
+                          << ", 用量: " << pres.dosage
+                          << ", 频次: " << pres.frequency
+                          << ", 疗程: " << pres.duration
+                          << std::endl;
+            }
+
+            hasUnreviewed = true;
+        }
+        con = con->next;
+    }
+
+    if (!hasUnreviewed)
+    {
+        printWarning("没有找到任何待审核处方的看诊记录！");
+        return;
+    }
+
+    std::string conID = inputRecordIDCheck("请输入要审核的看诊ID: ", {"con"});
+
+    con = conHead;
+    while (con != nullptr)
+    {
+        if (!con->isDeleted && con->consultationID == conID && con->department == this->department && !con->prescriptions.empty() && !con->isPrescriptionReviewed)
+        {
+            break;
+        }
+        con = con->next;
+    }
+
+    if (con == nullptr)
+    {
+        printError("未找到指定的看诊记录！");
+        return;
+    }
+
+    std::cout << "\n处方详情:" << std::endl;
+    for (const auto &pres : con->prescriptions)
+    {
+        std::cout << "  药品ID: " << pres.medicineID
+                  << ", 名称: " << pres.name
+                  << ", 数量: " << pres.quantity
+                  << ", 用量: " << pres.dosage
+                  << ", 频次: " << pres.frequency
+                  << ", 疗程: " << pres.duration
+                  << ", 备注: " << pres.note
+                  << std::endl;
+    }
+
+    int reviewChoice = MedicationRecordReviewResultMenu();
+    if (reviewChoice == 0)
+    {
+        printWarning("已取消审核！");
+        return;
+    }
+
+    MedicationReviewStatus newStatus = static_cast<MedicationReviewStatus>(reviewChoice);
+
+    if (newStatus == MedicationReviewStatus::APPROVED)
+    {
+        con->isPrescriptionReviewed = true;
+        increaseReviewCount();
+        printSuccess("处方审核通过！请通过\"管理用药信息→添加用药记录\"创建用药记录。");
+    }
+    else if (newStatus == MedicationReviewStatus::REJECTED)
+    {
+        increaseReviewCount();
+        printWarning("处方审核未通过！");
+    }
+    else
+    {
+        printWarning("已取消审核！");
+    }
+}
+
 // ==================== 用药记录管理 ====================
 void Pharmacist::printMedicationRecord(MedicationRecord *current)
 {
@@ -305,7 +407,7 @@ bool Pharmacist::getMedicationRecordsByConsultationID(MedicationRecord *&medRecH
 // 根据用药记录ID查询用药记录（仅限本部门且分配给自己的记录）
 bool Pharmacist::getMedicationRecordsByID(MedicationRecord *&medRecHead)
 {
-    std::string recID = inputRecordIDCheck("请输入要查询的用药记录ID: ", {"med", "mr", "mrec"});
+    std::string recID = inputRecordIDCheck("请输入要查询的用药记录ID: ", {"mrd"});
 
     MedicationRecord *current = medRecHead;
     while (current != nullptr)
@@ -717,19 +819,37 @@ void Pharmacist::deleteMedicationRecord(MedicationRecord *&target)
     target->isDeleted = true;
     printSuccess("用药记录已逻辑删除！");
 }
-// 创建用药记录（仅限关联的看诊记录已开具处方的情况）
+// 创建用药记录（仅限关联的看诊记录处方审核通过的情况）
 void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation *conHead, Medicine *&medHead, int &idCounter)
 {
     Consultation *con = conHead;
 
-    std::cout << "正在查找未审核的看诊记录..." << std::endl;
+    std::cout << "正在查找处方审核通过的看诊记录..." << std::endl;
 
-    bool hasUnreviewed = false;
+    bool hasApproved = false;
 
     while (con)
     {
-        if (!con->isDeleted && con->department == this->department && !con->prescriptions.empty() && !con->isPrescriptionReviewed)
+        if (!con->isDeleted && con->department == this->department && !con->prescriptions.empty() && con->isPrescriptionReviewed)
         {
+            // 检查是否已存在该看诊记录的用药记录
+            bool alreadyHasRecord = false;
+            MedicationRecord *existing = medRecHead;
+            while (existing)
+            {
+                if (!existing->isDeleted && existing->consultationID == con->consultationID)
+                {
+                    alreadyHasRecord = true;
+                    break;
+                }
+                existing = existing->next;
+            }
+            if (alreadyHasRecord)
+            {
+                con = con->next;
+                continue;
+            }
+
             std::cout << "看诊ID: " << con->consultationID
                       << ", 挂号ID: " << con->registrationID
                       << ", 医生ID: " << con->doctorID
@@ -743,7 +863,7 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
                       << ", 初步诊断: " << con->preliminaryDiagnosis
                       << ", 检查项目数: " << con->examinationlist.size()
                       << ", 处方数: " << con->prescriptions.size()
-                      << ", 处方审核状态: " << (con->isPrescriptionReviewed ? "已审核" : "未审核")
+                      << ", 处方审核状态: 已审核通过"
                       << ", 住院建议: " << (con->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << con->note
                       << std::endl;
@@ -771,14 +891,14 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
                 }
             }
 
-            hasUnreviewed = true;
+            hasApproved = true;
         }
         con = con->next;
     }
 
-    if (!hasUnreviewed)
+    if (!hasApproved)
     {
-        printWarning("没有找到任何未审核的看诊记录，无法创建用药记录！");
+        printWarning("没有找到任何处方审核通过的看诊记录，无法创建用药记录！");
         return;
     }
 
@@ -787,7 +907,7 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
     con = conHead; // 重置指针到链表头部
     while (con != nullptr)
     {
-        if (!con->isDeleted && con->consultationID == conID && con->department == this->department && !con->prescriptions.empty() && !con->isPrescriptionReviewed)
+        if (!con->isDeleted && con->consultationID == conID && con->department == this->department && !con->prescriptions.empty() && con->isPrescriptionReviewed)
         {
             break;
         }
@@ -816,7 +936,7 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
     newRecord->department = con->department;
     newRecord->createTime = MyTime::getInstance().getTime();
     newRecord->status = MedicationStatus::UNPAID;
-    newRecord->reviewStatus = MedicationReviewStatus::PENDING_REVIEW;
+    newRecord->reviewStatus = con->isPrescriptionReviewed ? MedicationReviewStatus::APPROVED : MedicationReviewStatus::PENDING_REVIEW;
 
     double total = 0.0;
     for (const auto &pres : con->prescriptions)
@@ -1665,6 +1785,7 @@ void Pharmacist::manageMedicines(Medicine *&medHead, int &idCounter)
                 int stockChoice = selectIntCheck(0, 2);
                 if(stockChoice == 0){
                     printWarning("已取消库存管理操作！");
+                    pause("药剂师 > 药品管理");
                     break;
                 }else if(stockChoice == 1){
                     addMedicineStock(target);

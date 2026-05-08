@@ -42,7 +42,6 @@ public:
     Hospitalization *&getHosHead() { return hosHead; }
     MedicationRecord *&getMedRecHead() { return medRecHead; }
     Medicine *&getMedHead() { return medHead; }
-    MedicineFlow *&getMedFlowHead() { return medFlowHead; }
     bedInfo *&getBedHead() { return bedHead; }
 
     // ID 计数器
@@ -57,7 +56,6 @@ public:
     int &hospitalizationCount() { return hospitalizationCount_; }
     int &medicationRecordCount() { return medicationRecordCount_; }
     int &medicineCount() { return medicineCount_; }
-    int &medicineFlowCount() { return medicineFlowCount_; }
     int &bedCount() { return bedCount_; }
 
     std::mutex &getMutex() { return mtx; }
@@ -77,7 +75,6 @@ private:
     Hospitalization *hosHead = nullptr;
     MedicationRecord *medRecHead = nullptr;
     Medicine *medHead = nullptr;
-    MedicineFlow *medFlowHead = nullptr;
     bedInfo *bedHead = nullptr;
 
     int adminIDCount_ = 0;
@@ -91,7 +88,6 @@ private:
     int hospitalizationCount_ = 0;
     int medicationRecordCount_ = 0;
     int medicineCount_ = 0;
-    int medicineFlowCount_ = 0;
     int bedCount_ = 0;
 
     std::mutex mtx;

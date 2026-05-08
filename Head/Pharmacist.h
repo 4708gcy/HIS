@@ -63,6 +63,9 @@ public:
     void increaseDispenseCount();
     void increaseInventoryManageCount();
 
+    // ==================== 处方审核 ====================
+    void reviewPrescriptions(MedicationRecord *&medRecHead, Consultation *conHead, Medicine *&medHead, int &idCounter);
+
     // ==================== 用药记录管理 ====================
     void printMedicationRecord(MedicationRecord *current);
 

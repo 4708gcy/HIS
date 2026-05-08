@@ -546,6 +546,10 @@ void Doctor::manageRegistrations(Registration *&regHead, Doctor *&doctor, Patien
                     pause("医生 > 挂号管理");
                 }
             }
+            else
+            {
+                pause("医生 > 挂号管理");
+            }
         }
         else if (choice == 3)
         {
@@ -601,6 +605,10 @@ void Doctor::manageRegistrations(Registration *&regHead, Doctor *&doctor, Patien
                     printError("未找到挂号ID为 " + regID + " 的挂号记录，无法删除！");
                     pause("医生 > 挂号管理");
                 }
+            }
+            else
+            {
+                pause("医生 > 挂号管理");
             }
         }
         else if (choice == 4)
@@ -964,8 +972,19 @@ void Doctor::addConsultationPrescription(Consultation *&target, Medicine *&medHe
             medCurrent = medCurrent->next;
         }
 
+        std::string medID = inputStringCheck("请输入要添加的药品ID（输入0结束）: ");
+        if (medID == "0")
+            break;
+
+        if (medID.length() != 9 || medID.substr(0, 3) != "med" ||
+            !std::all_of(medID.begin() + 3, medID.end(), ::isdigit))
+        {
+            printError("无效的药品ID格式，请输入med+6位数字！");
+            continue;
+        }
+
         Prescription newPres;
-        newPres.medicineID = inputRecordIDCheck("请输入要添加的药品ID: ", {"med"});
+        newPres.medicineID = medID;
 
         // 检查是否已存在该药品ID
         bool exists = false;
@@ -1097,8 +1116,19 @@ void Doctor::initConsultationPrescription(Consultation *&target, Medicine *&medH
             medCurrent = medCurrent->next;
         }
 
+        std::string medID = inputStringCheck("请输入要添加的药品ID（输入0结束）: ");
+        if (medID == "0")
+            break;
+
+        if (medID.length() != 9 || medID.substr(0, 3) != "med" ||
+            !std::all_of(medID.begin() + 3, medID.end(), ::isdigit))
+        {
+            printError("无效的药品ID格式，请输入med+6位数字！");
+            continue;
+        }
+
         Prescription newPres;
-        newPres.medicineID = inputRecordIDCheck("请输入要添加的药品ID: ", {"med"});
+        newPres.medicineID = medID;
 
         // 检查是否已存在该药品ID
         bool exists = false;
@@ -1220,6 +1250,8 @@ bool Doctor::createConsultationByRegistration(Registration *&regHead, Consultati
             newCon->pastMedicalHistory = inputStringCheck("请输入既往史信息: ");
             newCon->familyHistory = inputStringCheck("请输入家族史信息: ");
             newCon->preliminaryDiagnosis = inputStringCheck("请输入初步诊断信息: ");
+
+            newCon->status = ConsultationStatus::IN_PROGRESS;
 
             initConsultationExamination(newCon);
             initConsultationPrescription(newCon, medHead);
@@ -1406,6 +1438,10 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                     pause("医生 > 看诊管理");
                 }
             }
+            else
+            {
+                pause("医生 > 看诊管理");
+            }
         }
         else if (choice == 3)
         {
@@ -1491,6 +1527,10 @@ void Doctor::manageConsultations(Consultation *&conHead, Registration *&regHead,
                     printError("未找到看诊ID为 " + conID + " 的看诊记录，无法删除！");
                     pause("医生 > 看诊管理");
                 }
+            }
+            else
+            {
+                pause("医生 > 看诊管理");
             }
         }
         else if (choice == 4)
@@ -2215,6 +2255,10 @@ void Doctor::manageExaminations(Examination *&exaHead, Consultation *&conHead, i
                     pause("医生 > 检查管理");
                 }
             }
+            else
+            {
+                pause("医生 > 检查管理");
+            }
         }
         else if (choice == 3)
         {
@@ -2276,6 +2320,15 @@ void Doctor::manageExaminations(Examination *&exaHead, Consultation *&conHead, i
                         pause("医生 > 检查管理");
                     }
                 }
+                else
+                {
+                    printError("未找到检查ID为 " + examID + " 的检查记录，无法删除！");
+                    pause("医生 > 检查管理");
+                }
+            }
+            else
+            {
+                pause("医生 > 检查管理");
             }
         }
         else if (choice == 4)
@@ -2347,6 +2400,7 @@ void Doctor::managePersonalInfo()
                     if (titleChoice == 0)
                     {
                         printWarning("已取消修改操作！");
+                        pause("医生 > 个人信息管理");
                         continue;
                     }
 
@@ -2381,6 +2435,7 @@ void Doctor::managePersonalInfo()
                     if (dutyChoice == 0)
                     {
                         printWarning("已取消修改操作！");
+                        pause("医生 > 个人信息管理");
                         continue;
                     }
 

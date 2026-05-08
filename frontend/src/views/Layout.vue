@@ -43,7 +43,6 @@
             <template #title><el-icon><Box /></el-icon><span>资源管理</span></template>
             <el-menu-item index="/admin/medicines">药品管理</el-menu-item>
             <el-menu-item index="/admin/beds">床位管理</el-menu-item>
-            <el-menu-item index="/admin/medicine-flows">药品流水</el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="admin-system">
             <template #title><el-icon><Setting /></el-icon><span>系统管理</span></template>
@@ -143,7 +142,6 @@ const currentPageTitle = computed(() => {
     '/admin/beds': '床位管理',
     '/admin/schedules': '排班管理',
     '/admin/reports': '统计报表',
-    '/admin/medicine-flows': '药品流水',
     '/admin/profile': '个人信息',
     '/doctor/registrations': '挂号列表', '/doctor/consultations': '看诊管理',
     '/doctor/examinations': '检查记录', '/doctor/profile': '个人信息',

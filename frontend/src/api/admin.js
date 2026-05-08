@@ -238,7 +238,3 @@ export function getOverviewReport() {
   return request.get('/admin/reports/overview')
 }
 
-// 药品流水
-export function getMedicineFlows(params) {
-  return request.get('/admin/medicine-flows', { params })
-}
