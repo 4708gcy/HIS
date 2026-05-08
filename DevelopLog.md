@@ -5,11 +5,13 @@
 ## 2026.5.7 — 统计报表优化
 
 **1. 移除"数据分析与预测"菜单入口**
+
 - `UI.cpp` `adminReportMenu()` 移除选项 6，`selectIntCheck` 范围改为 `(0,5)`
 - `main.cpp` 移除 `reportChoice == 6` 的 dispatch 调用
 - `CLAUDE.md`、`README.md` 移除 DataAnalysis 模块引用
 
 **2. 医生工作量统计重构**
+
 - 根因：Doctor 结构体的 `consultationCount`/`examinationCount`/`hospitalizationApplyCount` 字段从未被业务逻辑自增，始终为 0
 - 方案：改为动态遍历 Consultation、Examination、Hospitalization 链表按 doctorID 聚合统计
 - 新增：时间范围选择（复用 `timeRangeMenu`）、科室筛选（全院/内科/外科/妇产科/急诊科/儿科）
@@ -816,3 +818,31 @@ tests/backend_regression.cpp
 - 将 `pushFront()` 从 `ApiServer.cpp` 抽为公共链表工具函数，供控制台和 API 共用
 - 为 API 创建记录流程增加更完整的自动化集成测试
 - 如老师要求更严格，可继续把排班 `g_schedules` 从 `std::vector<json>` 改为链式结构或在答辩中说明其为服务器配置数据
+
+---
+
+## 2026.5.8 — 冗余架构精简、UI 细节修复及最终文档归档
+
+### 1. 代码精简：移除 `MedicineFlow` 模块
+
+为精简项目架构并去除过度设计的特性，全栈移除了“药品流水”及其关联功能：
+
+- **后端**：在 `LoadData.cpp` 和 `SaveData.cpp` 中移除了 `MedicineFlow` 数据的加载与保存；从底层业务链路中解绑并彻底删除了 `Data/RecordData/MedicineChainData/medicine_flow.txt` 文件。
+- **前端**：删除了视图文件 `views/admin/MedicineFlows.vue`，清理了 `router/index.js` 中的相关路由映射、`Layout.vue` 侧边栏菜单以及 `api/admin.js` 中的接口调用。
+
+### 2. 控制台 UI 交互体验修复
+
+- 修复了 `Source/Nurse.cpp` 和 `Source/Patient.cpp` 中存在的大量“信息闪退” Bug。
+- 在用户撤销修改或进行部分失败操作的分支后补充了 `pause(breadcrumb)` 拦截等待，确保提示信息对用户可见，优化了命令行交互流程。
+
+### 3. 全链路测试与底层数据更新
+
+- 进行了一轮详尽的全业务流端到端验证，所有关键底层数据实现了一次完整联动落地，系统操作日志 `his_2026_05_08.log` 录入了 82 条追溯记录。
+- 更新并同步了包括身份注册（如 `nurse_users.txt`）、就医流程（`registrations.txt`, `consultations.txt`, `examinations.txt`）、住院（`hospitalizations.txt`, `bed_info.txt`）以及发药（`medication_records.txt`, `medicines.txt`）在内的全部数据文件，确确验证了系统的文件持久化能力。
+
+### 4. 课程设计最终报告与可视化补充
+
+- 深度重排并大幅扩写了 `总结报告.md` (新增800余行内容) 及 `总结报告.docx`。
+- 新增 `custom-reference.docx` 全量参考文献及附件系统。
+- 利用 Mermaid 绘制并导出了前后端双向交互与角色的 `程序主要功能简图.mmd` / `.svg` 和 `flowchart.png`。
+- `Document/image/` 目录下集中补充了由系统全面运行环节捕获的高清验证截图，为期末答辩做好了详实的素材准备。
