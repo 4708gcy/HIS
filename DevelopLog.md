@@ -1,174 +1,848 @@
-# HIS (医院信息管理系统) 开发日志
+# HIS 开发日志
 
 ---
 
-## 2026.4.8 — 项目初始化与核心架构奠基
+## 2026.4.8 — 项目初始化
 
-* **建立核心医疗领域模型**：设计并创建了主要的数据承载类：挂号(`Registration`)、看诊(`Consultation`)、检查(`Examination`)。
-* **构建基础交互框架**：搭建 `UI.h`，利用 CJK 宽字符兼容的机制，完成了主菜单、管理员菜单等 6 个控制台交互界面。
-* **打通基础用户流**：基于泛型设计的理念，初步实现了管理员的注册、登录以及账号解锁/封禁功能。
-* **挂号业务流实现**：完成了挂号记录的核心管理功能，包括按多维度（科室/状态/患者ID等）的检索、状态推进以及安全的数据逻辑删除机制。
-
----
-
-## 2026.4.9 — 输入防护与数据持久化机制
-
-* **构建健壮的终端输入防护网**：针对控制台程序极易崩溃的输入环节，在 `UI.h` 集中实现了 6 项核心输入校验系统（覆盖数字范围、费用金额、特殊字符串拦截、格式化ID、密码拦截等）。
-* **实现数据持久层框架**：开发了独立的 `LoadData` 与 `SaveData` 模块，为管理员以及 4 类核心医疗记录（挂号/看诊/检查/住院）打通了基于纯文本的文件读写闭环。
-* **解决特殊字符冲撞问题**：定义了 `"#"` 作为处理空字符串的全局文件反序列化哨兵值，完美解决了 CSV 空字段和带逗号输入摧毁对齐解析的隐患。
+- 创建核心医疗信息类：`Registration`、`Consultation`、`Examination`
+- 创建 `UI.h` 并完成 6 个控制台菜单界面（主菜单、管理员菜单、科室/记录管理菜单）
+- 实现管理员注册、登录、账号解锁/封禁（泛型方式）
+- 实现挂号记录的查看（按科室/状态/患者ID/医生ID检索）、状态修改、逻辑删除
 
 ---
 
-## 2026.4.10 — 开发环境标准化与看诊流接入
+## 2026.4.9 — 输入校验与数据持久化
 
-* **标准化 VS Code 开发体验**：配置 `.vscode/tasks.json` (一键进行 CMake 构建与清理) 与 `launch.json` (配置外部终端和调试缓存隔离)，为后续高效联调清除障碍。
-* **深化看诊逻辑结构**：拓展 `Consultation` 结构体，增加 `isHospitalizationRecommended` (住院建议标志) 与 `isPrecriptionReviewed` (处方审核标志)，为多角色业务流转做铺垫。
-* **看诊管理模块上线**：完成管理员层面的看诊记录管理（增删改查及多维过滤），开发了 `trim()` 等字符串工具和状态枚举转义辅助服务。
-* **全局 ID 序列重构**：将 ID 分配器从基类抽离为全局生命周期变量，解决 ID 序列累加混乱的问题。
-
----
-
-## 2026.4.11 - 4.12 — 检查、住院与物理床位管理调度
-
-* **补全完整病程链条持久化**：针对看诊、检查、住院、床位信息，全面实现了对应的文件 `Load/Save`，确保系统下电数据不丢失。
-* **建立物理床位映射模型 (`bedInfo`)**：引入床位实体概念，支持床位状态转义，提供给病房真实的容量概念。
-* **护士工作台底层调度就绪**：实现管理员视角的各项测试功能，包括检查管理(9个函数)与住院管理(11个函数)。支持床位增删改查，并配以严格的床位 ID 格式/去重校验。
+- 在 `UI.h` 中实现 6 个输入校验函数（范围选择、费用、字符串、ID、记录ID、密码）
+- 封装挂号管理操作为独立函数，新增 `addRegistration()` 创建挂号记录
+- 创建 `LoadData.h` / `SaveData.h`，实现管理员数据及 4 种医疗记录（挂号/看诊/检查/住院）的加载与保存
+- 创建 `Login.h`，实现管理员登录验证
+- 在 `User` 基类中添加 6 个状态枚举转字符串工具函数
+- 搭建 `main.cpp` 主程序框架；修复 `Admin::next` 指针野指针导致的崩溃
 
 ---
 
-## 2026.4.13 - 4.14 — 药房流转与用户画像扩充
+## 2026.4.10 — VS Code 调试配置与看诊管理
 
-* **药房闭环管理通路**：完成核心的药品字典库管理 (21个增删改查相关操作)，以及处方驱动的用药记录流转管理 (13个函数操作)。
-* **全系统用户画像下沉**：在顶层 `User` 基类统一下放性别、年龄、电话、邮箱等字段，保证各角色账号模型的统一。
-* **严重 BUG 修复（CSV 解析雪崩）**：发现并修复因录入“英文逗号”导致的文件按列切分崩溃问题，不仅通过 `inputStringCheck` 将其拦截，更完善了输入过滤机制。
-
----
-
-## 2026.4.15 - 4.16 — 人员集联与计费中枢确立
-
-* **五大角色全量接入**：完成医生、护士、药剂师、患者的对应子系统集成及全部成员方法的构建。每个角色都有独立的业务域方法。
-* **泛型多态管理**：在 `Login.h` 实现了全角色的账号启停/封锁控制，利用泛型避免了大量冗余代码。
-* **医疗计费中枢引擎**：基于 `User.h` 确立三大计费准则结构：
-  * **挂号引擎**：按医生职称动态计费（10 - 50 元）。
-  * **开单引擎**：按检查项目字典计费（14 项可选）。
-  * **住院引擎**：按不同隔离/VIP规格的日额乘以住院天数实时计算。
+- 完善 `.vscode/tasks.json`（CMake 配置、build 清理）和 `launch.json`（调试后自动清理、外部终端）
+- 实现挂号记录加载函数
+- `Consultation` 新增 `isHospitalizationRecommended` 和 `isPrecriptionReviewed` 属性
+- 实现管理员看诊信息管理（9 个函数：查看/过滤/修改/删除/添加），配套 2 个 UI 菜单
+- 新增 `trim()` 辅助函数和 `conStatusToString()` 状态转换
+- **策略变更**：ID 计数器从 `User` 基类移至全局变量
 
 ---
 
-## 2026.4.17 - 4.18 — 医生工作台与系统全面重构
+## 2026.4.11-4.12 — 检查/住院/床位管理
 
-* **医生主业务流运行**：正式交付医生的挂号队列获取、看诊操作（开具结构化处方）、辅助检查下达的模块。
-* **底层模块全面瘦身重构**：重写了 `Admin.h` 中的 8 大管理核心模块，累计优化超 150 个内部函数交互，清除了大量低效的链表遍历与冗余逻辑。
-* **业务规范强制落地**：全面落实所有空值写入 `"#"` 的系统级数据存储规范。
-
----
-
-## 2026.4.20 - 4.22 — 前台服务完善与全生态打通
-
-* **患者主门户功能上线**：打通挂号预约、查看处方、检查确认、取药、住院缴费等全闭环功能。并新增 `balance` (个人账户余额) 属性用于处理预存及缴费。
-* **跨角色数据协作集成**：集成合并了护士及药剂师角色的业务代码，确保所有单据（处方、化验单、单据）均能在医生->患者->药房/护士站之间按照有限状态机 (`status`) 正确流转。
-* **严重 BUG 修复（床位覆盖）**：修复了极端测试下床位 ID 唯一性检查透传导致数据覆盖的严重漏洞。
+- 补全看诊、检查、住院、床位信息的 `LoadData` / `SaveData` 函数
+- 新增 `bedInfo` 结构体，实现床位状态转字符串
+- 实现管理员检查记录管理（9 个函数）和住院记录管理（11 个函数），配套 UI 菜单
+- 实现床位信息管理（11 个函数：增删查改），配套 3 个 UI 菜单和床位 ID 校验
 
 ---
 
-## 2026.4.24 — 测试基准搭建与 UI 精修
+## 2026.4.13-4.14 — 用药/药品/用户属性扩展
 
-* **基准测试数据录入**：为了校验大型集合下的代码稳健性，自动构建了 100 条医药数据及 5 大科室 300 条真实床位结构。
-* **修复死循环漏洞**：排查到一处 `main.cpp` 在特定错误交互下游离出控制边界导致占满 CPU 的死循环漏洞。
-* **大规模排版统一**：全系统终端 UI 的交互格式及宽度进行了校准和对齐优化。
-
----
-
-## 2026.4.25 — 架构全面体检与底层安全加固 (35+ 严重 BUG 修复)
-
-进行了全系统级别代码审计。
-
-* **高危安全加固（防御时序攻击）**：密码对比系统此前可通过短路运算时间推测哈希，现重构了 `SHA-256` 验证逻辑，改用 `volatile XOR` 遂字节比对机制彻底封堵此类侧信道攻击。
-* **内存安全与死循环清除**：解决了极其危险的空指针推进缺失(`current = current->next`)及数十处操作错误头指针的逻辑漏洞。
-* **业务逻辑修复**：限制最大处方量（防溢出）、修复药剂师身份伪造登录漏洞（硬编码"0"绕过）、修复所有用户登录限制器重置失败问题。
-* **UI/UX 大幅度飞跃**：
-  * **引入色彩控制系统**：新增各级别的消息色彩 `printSuccess/Error/Warning`。
-  * **交互增强**：加入链表结果的分页 (`printWithPagination`) 及明确的面包屑路由 (`pause`)。
-  * **静默输入**：调用 `ReadFile` API 实现了密码回显隐藏。
-  * **合规操作审计**：新增 `LogManager` 并配合互斥锁，每日记录操作留痕至 `Data/OperationLog`。
+- 实现用药记录管理（13 个函数）和药品信息管理（21 个函数，覆盖所有属性的增删改查）
+- `User` 新增性别、年龄、电话、邮箱属性，同步修改注册/保存/加载函数
+- **Bug 修复**：CSV 分隔符冲突 — 备注字段中的英文逗号导致解析崩溃，优化 `inputStringCheck` 禁止输入英文逗号
+- 完善药品结构体属性，新增 4 个药品管理 UI 菜单
 
 ---
 
-## 2026.4.26 — 操作日志全覆盖与缺陷扫尾
+## 2026.4.15-4.16 — 人员管理全面实现 & 费用规则
 
-* **全系统着色与监控日志铺设**：将 250+ 处干瘪的 `cout` 接入色彩库，300+ 处返回拦截接入面包屑路由；所有的登录、开单、删改等强鉴权操作全量接入审计日志流。
-* **修复逻辑死区**：
-  * 处理了 `Admin.cpp` 增加住院逻辑由于提前 break 而导致永远无法分配床位的问题。
-  * 改进了出院日期的计时机制，引入 `std::mktime` 实现精确的跨月甚至跨年计费结算（此前依赖粗略的乘法映射）。
-* **进程析构池重建**：重构了 `main.cpp` 的退出流，保障 12 大数据链表在异常退出时可以正确释放内存，实现纯净退出。
-
----
-
-## 2026.4.27 — 架构终极跃迁：引入完全前后端分离与 HTTP 微服务
-
-为克服终端 UI 的维护瓶颈，决定进行革命性系统升级。
-
-* **构建轻量级 HTTP 核心**：引入 header-only 的 `cpp-httplib` 和 JSON 库，使用原生 C++17 在 8080 端口启动了包含近 140+ 路由的完整后台服务器。
-* **引入单例与并发锁(`Mutex` 治理)**：
-  * 解决 API 层由于 `saveAll` 与 `httplib` 两层互斥锁嵌套导致的**严重死锁**。
-  * 重塑写操作拓扑，引入 33 处 `saveAllUnsafe()` 无锁化接口实现线程安全的文件落盘。
-* **自主实现 JWT 无状态会话**：内置基于 HMAC-SHA256 的 Token 签发中间件，彻底替代原本 C++ 的 `g_currentUser` 会话缓存机制。
-* **全套 Vue3 前端赋能**：在 Vite 框架下基于 Vue 3 + Element Plus 完成了 Web 层的搭设。根据五大职能实现动态路由、Pinia Store（角色存储），构建完整的单页（SPA）体验（多选表单、联级选框等，规避了由于终端只能单行录入的重度缺陷）。
+- 实现医生（22 个函数）、护士（22 个）、药剂师（20 个）、患者（27 个）的增删改查
+- 实现各角色类的 setter/getter、数据持久化（保存/加载）
+- 在 `Login.h` 中实现管理员账户管理（14 个函数，含泛型激活/封锁）
+- **费用规则制定**（`User.h`）：
+  - 挂号费：按医生职称（实习10 / 住院20 / 主治30 / 副高40 / 正高50 元）
+  - 检查费：按项目名称（5-30 元，共 14 项）
+  - 住院费：按病房类型×天数（普通50 / 隔离100 / VIP200 / ICU500 元/天）
 
 ---
 
-## 2026.4.29 — 代码质量打磨与前端现代化重构 (“Pure & Clinical”主题)
+## 2026.4.17-4.18 — 医生功能 & 全面重构优化
 
-* **冗余逻辑与隐患排查**：使用 `/simplify` 对全量代码进行死区剔除。同时优化了床位 ID 的重复生成问题，处理了潜在的药品 ID 数字溢出越界。
-* **API 控制路由加固**：前后端双向加固了基于角色的路由（Role-based Route Guards），阻断了非 Admin 角色能够通过 API 直接操作仪表盘核心数据的安全越权现象。
-* **前端主题换代**：彻底重构应用 CSS 变量体系，确立以蓝白主打的“Pure & Clinical”拟物态医疗设计风格。新增磨砂玻璃背景、仪表盘自适应浮层渐变、表格载入级行动画，总计重构超过 1400 行 UI 代码，体验逼近商业级水准。
-
----
-
-## 2026.4.30 — 数据分析内核引擎与压力测试
-
-* **统筹与趋势分析系统（Phase 3）落成**：独立实现了 `DataAnalysis.h` 分析内核，抛弃旧有 O(N^2) 嵌套查询，使用单次遍历与 Map 聚合将计算时间减半。
-* **床源与客流估算模型**：融合“时间序列滑动平均”与“简单线性回归”，用纯 C++ 推演下几个月的门诊/住院需求，自动生成可视化 ASCII 柱状图及调岗建议书。
-* **海量压力数据生成器**：
-  * 编写单独的 `generate_test_data.cpp`。以哈希规则为准，制造了超过百名医患信息、上百条高关联看诊链、交叉检查数据及物理床位占压数据，确保在复杂结构下底层增删改查不出现裂变断链。
+- 实现医生挂号（9 个函数）、看诊（19 个）、检查（16 个）管理，配套 UI 菜单
+- 重构 `Admin.h` 中全部 8 个管理模块（检查/住院/用药/药品/医生/护士/药剂师/患者），优化 152 个函数
+- 修正各角色注册函数返回值设计
+- **规范**：所有结构体 String 类型空值统一使用 `"#"` 哨兵
+- 实现医生/管理员个人信息管理（查看/修改），配套 UI 菜单
+- `Login.h` 使用泛型编程统一实现各角色账户激活/封锁
 
 ---
 
-## 2026.5.2 — 全面查漏补缺与课程设计验收对齐
+## 2026.4.20-4.22 — 患者/药剂师/护士功能完善
 
-对照课设要求进行全量筛查比对，修补功能真空地带：
-
-* **调度管理实现 (P0)**：补充后端 `g_schedules` JSON 可视化排班调度结构，并接入对应的管理页与患者查询终端。
-* **可视化单据生成 (P0)**：利用 CSS `@media print` 伪类响应系统打印机，支持一键开具并打印带有排版格式的医疗处方。
-* **复杂病程运转 (P0)**：新增患者病房内部“转科室/转床”的平滑转移流结转端点。
-* **图表补齐**：丰富了仪表盘的统计图表功能与管理看板。对各类环境进行最终 `CMake` 并发检查验证结果通过。
-
----
-
-## 2026.5.6 — 满足“全链表化”严格合规要求的底层大手术
-
-针对“核心与关联数据必须使用自建链表，不可使用 C++ 标准库容器”这一最严苛课设规则进行的深度修复：
-
-* **手写泛型双向链式容器 (`LinkedList<T>`)**：从零构建符合 RAII 机制的内存安全双向链表，对齐标准库接口（如迭代器、`erase`、下标访问等）。
-* **全量业务脱维替换**：从所有核心实体（如 `Registration` 的关联挂号池、`Consultation` 的处方及检查回执池、`Medicine` 的别名库）中完整抽除 `std::vector`，全面无缝更换为我们自建的 `LinkedList<T>`。
-* **系统化 API ID 生成器对齐**：API 端与老旧终端体系完全对准：全部以 `reg00../con00..` 等具象化字符头识别，抛弃导致异常纯数字索引机制。
-* **核心指针保护机制**：提取统一的 `pushFront` 智能模板替换所有手工头插法，完美解决了长达几周的“头指针逃逸”以及遇到 `emergencySave()` 宕机缺链等重大底层安全隐患。提供专属的 `regression tests` 对此核心系统进行了黑盒熔断测试。
+- 实现患者全部功能：挂号（10 个）、看诊（8 个）、检查（9 个）、用药（10 个）、住院（13 个）管理，新增 `balance` 属性
+- 实现患者、药剂师登录函数
+- 集成小组成员的 `Nurse` / `Pharmacist` 代码
+- 实现药剂师用药/药品管理、护士住院/检查/床位管理，配套全部 UI 菜单
+- 修正枚举类型起始值（全部从 1 开始）
+- 修复床位 ID 唯一性校验漏洞
+- 调试配置优化：`launch.json` 设置 `cwd` 和 `externalTerminal`
 
 ---
 
-## 2026.5.7 — 报表与统计系统优化重构
+## 2026.4.24 — 数据初始化 & UI 优化
 
-* **逻辑解耦**：彻底移除了控制台菜单中已显啰嗦的"数据分析与预测"冗余入口，将计算重担交由前端按需加载。
-* **计算修正（Doctor Workload）**：
-  * 清理了原本医生结构体内从未调用的硬编码 `xxxCount` 统计字段。改用动态下潜方式，直接横向全量遍历关联各业务记录（看诊/检查/住院），现场溯总真实数值，杜绝了数据不一致可能性。
-  * 引入格式化输出对齐（`std::setw` 与底部聚合）并增加灵活的科室聚合筛查流。
+- 批量生成 100 条测试药品数据，为 5 个科室各初始化 60 条床位数据
+- 修复 `main.cpp` 中药品管理科室选择循环的死循环 Bug（缺失 `break`）
+- 统一优化控制台交互界面格式
+
+---
+
+## 2026.4.25 — 全面代码审核（35+ Bug 修复）
+
+**Critical：**
+
+- `Login.cpp` 遍历链表缺失 `current = current->next` 导致死循环
+- `pharmacistLogin` 硬编码 `if (id == "0")` 绕过登录
+- `SHA-256.cpp` 时序攻击漏洞 — 改用 volatile XOR 逐字节比较
+- `User.cpp` ID 生成未定义行为（同一表达式修改和读取变量）
+- 所有角色登录成功后未重置 `loginAttempts` 计数器
+
+**High：**
+
+- `Admin.cpp` 约 50 处 modify 函数传错指针（头指针 vs 目标指针）
+- `Admin.cpp` `modifyMedicationRecordReviewStatus` 用错字段（`status` vs `reviewStatus`）
+- `Doctor.cpp` `while(true)` 无限循环、处方显示错误（"药品名称"→"药品ID"）、费用计算用错对象
+- `Pharmacist.cpp` 变量遮蔽导致状态过滤失效
+- `Patient.cpp` 密码修改 `this->salt` → `this->storedHash`
+
+**Medium/Low：**
+
+- 拼写修正 `AdminPersionalInfo` → `AdminPersonalInfo`
+- `deleteAdmin` 从物理删除改为逻辑删除
+- `selectIntCheck` 范围修正
+
+---
+
+## 2026.4.25（续）— 终端体验 & 操作日志
+
+- **颜色系统**：新增 `ConsoleColor` 枚举 + `printSuccess()` / `printError()` / `printWarning()` + 标题美化
+- **分页显示**：`printWithPagination()` 支持上一页/下一页/跳转
+- **面包屑导航**：`pause()` 新增 `breadcrumb` 参数（如 "管理员 > 医疗记录 > 挂号管理"）
+- **隐藏密码输入**：`inputHiddenPwdCheck()` 使用 Windows `ReadFile` API
+- **操作日志**：`LogManager` 单例类，线程安全，结构化日志持久化到 `Data/OperationLog/his_YYYY_MM_DD.log`
+
+---
+
+## 2026.4.26 — 新功能全面接入 & 6 项关键 Bug 修复
+
+**接入：**
+
+- 250+ 处裸 `std::cout` 替换为彩色打印函数
+- 300+ 处 `pause()` 添加面包屑路径
+- 全部角色登录/注册接入操作日志
+- 管理员用户列表接入分页显示
+
+**Critical Bug：**
+
+- `Admin.cpp` `addHospitalization`：`bedFound = true` 在 `break` 之后（死代码），床位分配始终失败
+- `Admin.cpp` `viewConsultationByID`：链表遍历缺失推进语句，死循环
+- 用药记录 11 处状态显示错误：`statusStr`（缴费状态）误用于审核状态列
+- 5 个登录函数不检查 `isDeleted` 标志，已删除账户仍可登录
+- `Patient.cpp` `applyForDischarge`：日期计算改用 `std::mktime` + `std::difftime` 精确计算
+
+**High/Medium Bug：**
+
+- 5 个登录函数缺少密码重试机制（改为 3 次重试）
+- `LoadData.cpp` `loadBedInfos`：`std::stoi` 缺少 try-catch
+- `Doctor.cpp` 处方数量上限 `INT_MAX` → 10000
+- `main.cpp` 退出时新增 12 条链表完整内存清理
+
+---
+
+## 2026.4.27 — REST API 后端 + Vue 3 前端全面实现
+
+### 后端 API 化
+
+**新增文件：** `ApiResponse.h`、`JsonHelper.h/cpp`、`JWTAuth.h/cpp`、`ApiServer.h/cpp`、`server_main.cpp`
+
+**架构：**
+
+- 引入 cpp-httplib（header-only）和 nlohmann/json（header-only），零外部构建依赖
+- `DataManager` 单例 + `std::mutex` 线程安全
+- JWT 认证（HMAC-SHA256，24h 有效）
+- 统一响应格式 `{code, message, data}`，CORS `Access-Control-Allow-Origin: *`
+- 60+ API 端点，覆盖 5 种角色核心业务
+
+**关键设计：** 零侵入现有代码，API 层作为独立模块，直接操作链表数据结构，写操作后立即持久化
+
+### 前端 Web 界面（Vue 3 + Element Plus）
+
+**技术栈：** Vue 3 + Vite 6 + Pinia + Vue Router + Element Plus (zh-cn) + Axios (JWT 拦截器)
+
+**架构：**
+
+- `api/` 按角色拆分 8 个模块（axios 实例 + JWT 拦截器 + 401 自动跳转）
+- `store/user.js` Pinia 状态（token/角色/localStorage 持久化）
+- `router/index.js` 角色路由守卫 + 组件懒加载
+- `Layout.vue` el-container 布局（侧边栏菜单按角色动态显示）
+- 39 个文件：3 配置 + 1 HTML + 9 JS 基础层 + 2 公共页面 + 24 角色页面
+
+**角色页面分布：**
+
+| 角色 | 页面数 | 核心功能 |
+| ------ | -------- | --------- |
+| 管理员 | 12 | Dashboard + 人员/记录/药品/床位 CRUD |
+| 医生 | 4 | 挂号/看诊/检查 + Profile |
+| 护士 | 4 | 住院/体征录入/床位 + Profile |
+| 药剂师 | 3 | 用药审核/药品库存 + Profile |
+| 患者 | 6 | 预约挂号/支付/查看记录/充值 + Profile |
+
+### 关键 Bug：互斥锁死锁
+
+**根因**：API handler 持有 `std::mutex` 锁后调用 `saveAll()`，而 `saveAll()` 内部对同一非递归互斥锁再次加锁
+
+**修复**：新增 `saveAllUnsafe()`（不加锁版本），33 处写操作端点替换调用
+
+---
+
+## 2026.4.27（续）— 前端功能全面补全
+
+### 后端新增 18 个端点
+
+| 角色 | 端点数 | 核心功能 |
+| ------ | -------- | --------- |
+| 通用 | 1 | 检查项目列表 |
+| 管理员 | 3 | 添加药品/床位、编辑个人信息 |
+| 医生 | 3 | 从挂号创建看诊、从看诊批量创建检查、编辑个人信息 |
+| 护士 | 8 | 创建住院、分配床位、出院办理、床位 CRUD、编辑个人信息 |
+| 药剂师 | 5 | 创建用药记录、药品 CRUD、编辑个人信息 |
+| 患者 | 1 | 住院押金缴纳 |
+
+### 前端 13 个页面更新
+
+- **医生 Registrations.vue 重写**：开始看诊对话框（主诉/病史/诊断/检查项目多选/建议住院）
+- **护士 Hospitalizations.vue 重写**：创建住院/分配床位/出院办理完整流程
+- **药剂师 MedicationRecords.vue 重写**：从看诊处方自动创建用药记录 + 药品行明细子表格
+- **患者页面增强**：Consultations 完整详情（处方子表格）、Examinations 生命体征区块、Hospitalizations 缴纳押金
+- **所有角色 Profile.vue**：统一新增编辑/查看切换功能
+
+### 前端设计决策
+
+- 前端分页（数据量小，`slice()` 避免后端复杂度）
+- 角色菜单隔离（`v-if="store.role === X"`，后端 JWT 保证权限）
+- Vite proxy 代理开发环境 CORS，生产环境 Nginx 反向代理
+- 直接对接真实 API，无 Mock 数据
+
+---
+
+## 2026.4.29 — 代码质量审查 & 前端全面优化
+
+### 1. /simplify 代码审查（4 项修复）
+
+- **死代码清理**：删除 `checkRoleAuth()` / `checkAuth()` 未调用函数（25 行）
+- **修改密码重构**：10 次 O(n) 遍历 → 单次遍历 + 缓存 `User*` 指针，SHA256 计算 2 次 → 1 次
+- **床位 ID 去重**：17 行手动 if/else → 调用已有 `autoGenerateBedID()` 工具函数
+- **药品 ID 溢出防护**：缓存 `to_string` 结果，显式判断长度后再零填充
+
+### 2. CLAUDE.md 文档优化（85 → 92 分）
+
+- 补充 VS Code 任务、`postDebugTask` 陷阱、零外部构建依赖
+- 新增 REST API 架构、前端架构、角色编号差异说明
+- 新增 Known Gotchas、`"#"` 哨兵值规范章节
+
+### 3. 前端路由权限控制
+
+- 全部 28 个子路由添加 `meta: { roles: [...] }` 角色限制
+- 路由守卫新增角色校验，不匹配时自动重定向到角色默认页面
+- Axios 拦截器细分 401/403/404/超时错误处理
+
+### 4. 后端 API 补全
+
+- `PUT /api/auth/change-password` 支持 5 种角色修改密码
+
+### 5. 控制台代码精简
+
+- `main.cpp` 管理员账户管理模块简化（-425 行冗余嵌套循环）
+
+### 6. README.md 大幅扩充
+
+- 新增两种运行模式的完整编译/运行/调试说明
+- 前后端联调启动步骤、API 测试示例
+- 角色编号映射表
+
+### 7. 前端 UI 全面重构 — "Pure & Clinical" 风格
+
+- `global.css` 2 行 → 167 行 CSS 变量主题系统（蓝白主色 `#1e88e5`、磨砂玻璃、阴影层次）
+- Login/Register：蓝白渐变 SVG 背景 + 医疗十字 Logo + 磨砂玻璃卡片
+- Layout：深色侧边栏 → 白色侧边栏 + 蓝色激活态 + 页面切换动画
+- Dashboard：自定义悬浮卡片（图标 + 数值 + 独立主题色）
+- 全部 26 个 CRUD 页面添加 `fade-in` 动画
+
+**UI 重设计统计：** 30 个文件变更，+1032 / -400 行
+
+---
+
+## 2026.4.29（续）— 权限修复 & 管理员 CRUD
+
+### 10. 前端权限路由修复
+
+**问题**：非管理员登录 Dashboard 显示 "无权限"（调用了管理员专属 API）
+
+**修复**：
+
+- `/dashboard` 限制 `meta: { roles: [1] }`，仅管理员可访问
+- Login/Register 按角色重定向（管理员→Dashboard，医生→挂号列表，护士→住院管理，药剂师→用药审核，患者→预约挂号）
+
+### 11. 布局空白修复
+
+- `Layout.vue` `el-main` padding 从 20px → `16px 20px`
+
+### 12. 管理员创建功能（9 个 POST 端点）
+
+| 端点 | 功能 |
+|------|------|
+| `POST /api/admin/{doctors,nurses,pharmacists,patients}` | 添加人员（含 SHA-256 密码加密） |
+| `POST /api/admin/{registrations,consultations,examinations,hospitalizations,medication-records}` | 添加医疗记录 |
+
+**前端**：12 个 Admin Vue 文件新增 "新建" 按钮 + 创建对话框 + `handleCreate()` 逻辑
+
+### 13. CLAUDE.md 二次优化
+
+- 新增 `npm run preview` 命令、路由数量更新（~124）、`saveAllUnsafe()` 命名约定说明
+
+### 14. 代码统计
+
+```text
+后端：+200 行（9 个 POST 端点）
+前端 API：+9 个 create 函数（admin.js）
+前端页面：12 个 Admin 文件各 +40~80 行
+修复：3 个文件 +20 行（router/Login/Register）
+```
+
+---
+
+## 2026.4.30 — Phase 3 数据分析模块集成 & 代码审查修复
+
+### 1. 数据分析模块集成（Phase 3 收尾）
+
+**新增文件：** `Head/DataAnalysis.h`、`Source/DataAnalysis.cpp`
+
+**功能：**
+
+- 月度科室统计（入院/出院人数、挂号总数、住院费用、床位日数）
+- 需求预测（3个月移动平均 + 线性回归 + 增长率）
+- 床位分配分析（利用率、平均住院天数、预测需求、推荐床位数）
+- 床位调配建议（调入/调出科室及数量）
+- 药品统计（库存量、进销价值、利润率）
+- 三种展示格式：表格报告、ASCII 可视化图表、摘要报告
+
+**集成路径：**
+
+- `Admin.h` 新增 `showDataAnalysisReport()` 方法声明
+- `Admin.cpp` 实现该方法，依次调用三种展示格式
+- `UI.cpp` `adminReportMenu()` 新增选项 6 "数据分析与预测"
+- `main.cpp` 添加 case 6 分发调用
+
+### 2. 关键编译错误修复
+
+| 错误 | 根因 | 修复 |
+|------|------|------|
+| C3861 `printMenuBorder` 未找到 | 函数为 UI.cpp 中 static，Admin.cpp 不可见 | 改用 `printTitle()` 重写展示逻辑 |
+| LNK2019 链接错误 | CMake GLOB 未识别新文件 | 重新运行 `cmake ..` 配置 |
+| C3646 `VitalSigns` 未知类型 | Hospitalization.h 未包含 Examination.h | DataAnalysis.cpp 中调整 include 顺序 |
+| C2027 `Registration` 未定义 | 仅有前向声明，DataAnalysis.cpp 需解引用 | 添加 `#include "Registration.h"` |
+| C3861 `deptMatch` 未找到 | 在 Admin.cpp 中为 static | 提取为 UI.h/UI.cpp 共享工具函数 |
+| C4477 snprintf 警告 | `std::string` 传给 `%s` 未调 `.c_str()` | 全部添加 `.c_str()` 调用 |
+
+### 3. /simplify 代码审查（多项修复）
+
+- **deptMatch 去重**：Admin.cpp 和 DataAnalysis.cpp 各有一份 static 副本 → 提取到 UI.h/UI.cpp
+- **analyzeMedicineStats 效率优化**：6 次遍历药品链表（每个科室+全院各一次）→ 单次遍历 + `std::map` 聚合 → 构建结果向量
+- **ASCII 图表 maxPred 修复**：每次循环重复计算最大预测值 → 提前计算一次
+- **未用参数清理**：`runFullAnalysis()` 的 `flowHead` 参数无实际用途 → 从签名中移除
+- **库存状态简化**：冗余的三层条件判断 → 简化为一次比较
+- **CLAUDE.md 优化**：补充 MedicineFlow、medicine_flow.txt、"mfl" 前缀、deptMatch 工具、DataAnalysis 模块说明
+
+### 4. 构建状态
+
+```text
+his.exe — 编译通过
+his_server.exe — 编译通过
+```
+
+### 5. 待后续处理
+
+- Phase 4：前端数据分析页面适配（Vue 3 可视化、API 端点）
+- 药品别名显示块提取（Admin.cpp 中 6 处重复）
+- 时间范围选择块提取（report 函数中 4 处重复）
+- 床位利用率阈值常量（85、50 硬编码）
+
+---
+
+## 2026.4.30（续）— 课程设计测试数据生成
+
+### 1. 测试数据批量生成
+
+编写独立 C++ 生成器 `generate_test_data.cpp`，调用项目 SHA-256 模块统一生成密码哈希，满足课程设计要求：
+
+| 数据类型 | 数量 | 说明 |
+|----------|------|------|
+| 管理员 | 5 | 含原有 gcy，新增 4 名 |
+| 医生 | 21 | 每科室 4 名 + gcy，覆盖 5 科室 |
+| 护士 | 21 | 每科室 4 名 + gcy，覆盖 5 科室 |
+| 药剂师 | 21 | 每科室 4 名 + gcy，覆盖 5 科室 |
+| 患者 | 101 | 含原有 gcy，新增 100 名（前 30 名住院） |
+| 挂号记录 | 131 | 住院挂号 30 条 + 门诊挂号 101 条 |
+| 看诊记录 | 130 | 每条挂号对应一条看诊 |
+| 检查记录 | 90 | 每条看诊附带 0-2 项检查 |
+| 住院记录 | 30 | 对应前 30 名患者 |
+| 床位分配 | 30 | 更新 bed_info.txt 中 30 张床位为 OCCUPIED |
+| 用药记录 | 90 | 每条看诊处方对应一条用药记录 |
+
+**密码统一**：所有新建账户密码为 `jlu123456`，SHA-256 加盐 1000 次迭代
+
+### 2. 生成过程 Bug 修复
+
+| 问题 | 根因 | 修复 |
+|------|------|------|
+| 编译错误 `std::to_string` 类型不匹配 | `int` 和 `""` 混用 | 移除死代码，统一使用 `ostringstream` |
+| 0/30 床位更新成功 | 床位 ID 格式不匹配（生成器用 `N1-P1-1`，实际为 `N-03-P-001-01`） | 读取实际 bed_info.txt 提取正确 ID |
+| 26/30 床位更新 | VIP/ICU 病房仅 3 个（非 5 个），第 3 病房仅 2 床 | 调整 `maxWard=2`，使用 8 张床/科室/类型 |
+
+### 3. 验证结果
+
+- 全部数据文件写入成功，数量符合课程要求
+- 密码哈希格式正确（16 字符盐 + `$` + 64 字符十六进制）
+- 30 张床位状态更新为 OCCUPIED，关联患者 ID 和护士 ID
+- `his.exe` 和 `his_server.exe` 均编译通过
+
+### 4. CLAUDE.md 质量审计
+
+使用 CLAUDE.md Improver 技能进行评估：**93/100（Grade A）**
+
+| 维度 | 得分 | 说明 |
+|------|------|------|
+| 命令/工作流 | 20/20 | 完整的构建、运行、调试命令 |
+| 架构清晰度 | 18/20 | 类层次、数据结构、API 架构均有说明 |
+| 非显而易见的模式 | 14/15 | Gotchas 章节覆盖关键陷阱 |
+| 简洁性 | 14/15 | 内容密度高，无冗余 |
+| 时效性 | 14/15 | 反映当前代码状态 |
+| 可操作性 | 13/15 | 命令可直接复制执行 |
+
+**结论**：无需修改，文件已足够完善
+
+---
+
+## 2026.5.2 — 课程设计全面审查与补全（6步流程）
+
+### Step 1: 后端代码审查
+
+对照 PDF 课程设计要求，检查纯后端（main.cpp 控制台模式）代码，发现 20 项问题：
+
+| 级别 | 数量 | 关键项 |
+|------|------|--------|
+| Critical | 2 | 排班管理模块缺失、处方打印功能缺失 |
+| High | 8 | 转科流程不完整、费用明细缺失、CSV 逗号冲突、药品流水 API 缺失等 |
+| Medium | 6 | 报表统计、床位编辑、记录删除等 |
+| Low | 4 | 边界情况、UI 提示优化 |
+
+### Step 2: 前后端贯通检查
+
+验证 REST API 覆盖率约 85%，识别出 P0-P3 分级的前后端缺口。
+
+### Step 3: P0-P2 全部修复 + 前端美化
+
+#### P0 修复（3 项）
+
+| 功能 | 后端 | 前端 |
+|------|------|------|
+| 排班管理 | `g_schedules` vector + JSON 持久化 `Data/schedules.json`，5 个端点（CRUD + 公开查询） | `admin/Schedules.vue`（管理员 CRUD）、`patient/Schedules.vue`（患者只读） |
+| 处方打印 | — | `patient/Consultations.vue` 新增 `printPrescription()`，`window.open()` 打印格式化处方 |
+| 转科办理 | `POST /api/nurse/hospitalizations/:id/transfer` | — |
+
+#### P1 修复（2 项）
+
+| 功能 | 后端 | 前端 |
+|------|------|------|
+| 统计报表 | 6 个报表端点（overview/department/doctor-workload/patient/bed-utilization/medicine-inventory） | `admin/Reports.vue`（概览卡片 + 科室统计 + 医生工作量 + 床位利用率 + 药品库存） |
+| 药品流水 | `GET /api/admin/medicine-flows`、`GET /api/pharmacist/medicine-flows` | `admin/MedicineFlows.vue`（类型标签 + 药品筛选） |
+
+#### P2 修复（6 项）
+
+- `api/doctor.js` 新增 3 个 delete 函数（registration/consultation/examination）
+- `api/patient.js` 新增 deleteRegistration
+- `api/admin.js` 新增 updateBed/updateRegistration/updateConsultation/updateExamination + 4 个 schedule 函数 + 6 个 report 函数 + getMedicineFlows
+- `doctor/Registrations.vue` 新增删除按钮
+- `doctor/Consultations.vue` 新增删除按钮
+- `doctor/Examinations.vue` 新增删除按钮
+- `patient/Registrations.vue` 新增取消按钮
+- `admin/Beds.vue` 新增编辑按钮 + 编辑对话框
+
+#### 前端美化
+
+- `global.css`：167 行 → 296 行。主色 `#1e88e5` → `#1976d2`，新增 teal accent `#00897b`，引入 Noto Sans SC 字体，新增 radius/font CSS 变量，增强 card/dialog/table/form 样式，新增 stagger 动画和 print 样式
+- `Dashboard.vue`：统计卡片渐变顶边框、tabular-nums 字体、图标 hover 缩放、accent 边框色过渡
+- `Login.vue`：磨砂玻璃增强（blur 16px）、cardAppear 关键帧、logoPulse 动画、按钮渐变 + translateY 悬浮
+
+#### 路由 & 布局更新
+
+- `router/index.js` 新增 4 条路由：admin/schedules、admin/reports、admin/medicine-flows、patient/schedules
+- `Layout.vue` 新增"系统管理"子菜单（排班管理、统计报表）、药品流水菜单项、患者排班查询菜单项
+
+#### 构建验证
+
+```text
+his.exe — 编译通过
+his_server.exe — 编译通过
+```
+
+### Step 4: CLAUDE.md 更新
+
+- 新增 `schedules.json` 到数据持久化表
+- API 端点数 ~125 → ~140，补充排班/报表/转科/药品流水端点文档
+- 前端文件数 34 → 38，页面分布更新（admin 13→16、patient 6→7）
+- 补充处方打印功能说明
+- `global.css` 行数 167 → 296，更新描述
+
+### Step 5: 上下文压缩
+
+执行 `/compact` 压缩会话上下文。
+
+### Step 6: 开发日志
+
+本条日志。
+
+### 代码统计
+
+```text
+后端 Source/ApiServer.cpp：+~490 行（15 个新端点 + 排班 JSON 持久化）
+前端 api/：+30 个函数（admin.js 17、doctor.js 3、patient.js 1、+ schedule/report/flow）
+前端 views/：4 个新页面 + 6 个页面增强
+前端 styles/global.css：+129 行
+前端 router/Layout：+4 路由 + 3 菜单项
+CLAUDE.md：+30 行更新
+```
+
+---
+
+## 2026.5.6 — 后端课程设计审阅问题集中修复
+
+### 1. 修复背景
+
+根据《程序设计基础课程设计（2025级）》中的“全程链表实现”和后端一致性要求，对纯后端项目进行二次审阅后，集中修复 5 条较高优先级问题：
+
+| 编号 | 优先级 | 问题 | 影响 |
+|------|--------|------|------|
+| Finding 1 | P1 | API 新建记录 ID 为纯数字 | 与控制台 `reg/con/exa/hos/mrd/med` 前缀格式不兼容 |
+| Finding 2 | P1 | 控制台紧急保存使用旧 head 指针 | 注册或头插新增后，异常保存可能漏掉新头节点 |
+| Finding 3 | P2 | API 出院天数按固定 30 天月份粗算 | 跨月、跨年或非 30 天月份费用计算不准确 |
+| Finding 4 | P2 | API 管理员头插未维护 `prev` | 破坏管理员双向链表完整性 |
+| Finding 5 | P2 | 持久业务子集合仍使用 `std::vector` | “全程链表实现”答辩合规性存在风险 |
+
+### 2. 业务持久子集合链表化
+
+新增 `Head/LinkedList.h`，实现一个 RAII 双向链表容器，用于替代持久业务结构体中的 `std::vector` 子集合。
+
+#### LinkedList 支持能力
+
+- `push_back()`
+- `empty()`
+- `size()`
+- `begin()` / `end()` / range-for
+- `erase(iterator)`
+- `operator[]`
+- `begin() + n`、`begin() + n - 1` 等旧代码兼容写法
+- 拷贝构造、移动构造、拷贝赋值、移动赋值
+- 析构自动释放节点，避免子集合内存泄漏
+
+#### 替换范围
+
+| 文件 | 字段 | 修改 |
+|------|------|------|
+| `Head/Registration.h` | `relatedRegistrationIDs` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/Consultation.h` | `examinationlist` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/Consultation.h` | `prescriptions` | `std::vector<Prescription>` → `LinkedList<Prescription>` |
+| `Head/Consultation.h` | `attachments` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/Consultation.h` | `relatedConsultationIDs` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/Examination.h` | `attachments` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/Examination.h` | `relatedExaminationIDs` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/Hospitalization.h` | `relatedHospitalizationIDs` | `std::vector<std::string>` → `LinkedList<std::string>` |
+| `Head/MedicationRecord.h` | `lines` | `std::vector<MedicationLine>` → `LinkedList<MedicationLine>` |
+| `Head/Medicine.h` | `aliases` | `std::vector<std::string>` → `LinkedList<std::string>` |
+
+#### 保留 `std::vector` 的范围
+
+按照“持久业务数据结构链表化，临时计算/展示容器不强行链表化”的原则，以下场景保留标准容器：
+
+- `DataAnalysis` 中的统计结果、排序缓存、图表数据
+- `UI` 中的临时分页展示数据
+- `JWTAuth`、`SHA-256` 等算法内部缓冲
+- API 排班 `g_schedules`，该部分使用 JSON 持久化且属于服务器端辅助配置
+
+### 3. API 记录 ID 格式修复
+
+在 `Source/ApiServer.cpp` 中新增 `generateRecordID(prefix, counter)`，统一生成控制台兼容的业务记录 ID。
+
+#### 修复前
+
+API 使用 `generateID(5/6/7/8/9, counter)`，生成纯数字 ID，例如：
+
+```text
+500001、600001、700001
+```
+
+这种 ID 无法通过控制台 `inputRecordIDCheck()` 的前缀校验。
+
+#### 修复后
+
+API 与控制台统一使用：
+
+| 业务类型 | ID 格式 |
+|----------|---------|
+| 挂号记录 | `reg000000` |
+| 看诊记录 | `con000000` |
+| 检查记录 | `exa000000` |
+| 住院记录 | `hos000000` |
+| 用药记录 | `mrd000000` |
+| 药品信息 | `med000000` |
+
+用户账号 ID 仍保留原有 6 位纯数字角色前缀格式：
+
+```text
+0xxxxx 管理员
+1xxxxx 医生
+2xxxxx 护士
+3xxxxx 药剂师
+4xxxxx 患者
+```
+
+#### 同步修复 API 路由
+
+由于业务记录 ID 变为带前缀字符串，原本只匹配 `(\d+)` 的业务记录路由同步放宽为 `([^/]+)`，覆盖：
+
+- 管理员：挂号、看诊、检查、住院、用药记录、药品
+- 医生：看诊、检查
+- 护士：住院、检查
+- 药剂师：用药记录
+- 患者：挂号支付、检查支付、用药支付、住院支付
+
+纯数字用户账号路由、排班路由保持不变。
+
+### 4. API 链表头插统一修复
+
+在 `Source/ApiServer.cpp` 中新增统一头插 helper：
+
+```cpp
+template <typename T>
+void pushFront(T *&head, T *node)
+{
+    node->prev = nullptr;
+    node->next = head;
+    if (head)
+        head->prev = node;
+    head = node;
+}
+```
+
+替换 API 中新增用户、记录、床位、药品时的手写头插逻辑，保证：
+
+- 新头节点 `prev == nullptr`
+- 旧头节点 `prev` 正确指向新头节点
+- 管理员注册头插不再遗漏 `prev`
+- 各类业务记录新增保持双向链表不变式
+
+### 5. 控制台紧急保存头指针修复
+
+`main.cpp` 原先将 `g_adminHead`、`g_regHead` 等全局指针设置为加载后的 head 值。
+
+问题在于：注册或新增记录采用头插法后，局部 `adminHead/regHead/...` 会变成新节点，但全局 `g_*Head` 仍指向旧头节点。若此时异常或 `Ctrl+C` 触发 `emergencySave()`，新插入的头节点可能不会写入文件。
+
+#### 修复方式
+
+将全局紧急保存指针改为“指向当前 head 变量的指针”：
+
+```cpp
+static Admin **g_adminHead = nullptr;
+static Registration **g_regHead = nullptr;
+```
+
+初始化时绑定局部 head 变量地址：
+
+```cpp
+g_adminHead = &adminHead;
+g_regHead = &regHead;
+```
+
+保存时解引用当前 head：
+
+```cpp
+if (g_adminHead && *g_adminHead)
+    saveAdminData(*g_adminHead, adminIDCount);
+```
+
+这样无论之后发生多少次头插，紧急保存都能拿到最新链表头。
+
+### 6. 住院天数计算公共化
+
+在 `User.h/User.cpp` 中新增：
+
+```cpp
+static int calculateStayDays(const std::string &admitTime,
+                             const std::string &dischargeTime);
+```
+
+实现要点：
+
+- 使用 `std::tm`、`std::mktime`、`std::difftime` 计算真实日期差
+- 支持跨月、跨年
+- 日期无效、为空或 `"#"` 时默认返回 1 天
+- 不足 1 天按 1 天计费
+- 使用 `mktime` 归一化后反查年月日，过滤非法日期
+
+复用位置：
+
+- `Source/ApiServer.cpp`：护士 API 出院结算
+- `Source/Patient.cpp`：患者控制台申请出院结算
+
+修复后不再使用 API 原先的 `(nowMon - admitMon) * 30 + (nowDay - admitDay)` 粗略算法。
+
+### 7. JSON 与药品别名兼容
+
+由于药品别名 `aliases` 从 `std::vector` 改为 `LinkedList`，同步更新：
+
+- `JsonHelper::toJson(const Registration*)`：将 `relatedRegistrationIDs` 手动转 JSON array
+- `JsonHelper::toJson(const Medicine*)`：新增输出 `genericName` 和 `aliases`
+- `ApiServer.cpp`：新增 `applyMedicineNames()`，支持 API 创建/修改药品时读取 `genericName` 和 `aliases`
+
+数据文件格式未改变，`LoadData.cpp` / `SaveData.cpp` 原有子行格式继续工作：
+
+```text
+ALIAS:药品别名
+PRESCRIPTION:...
+ATTACHMENT:...
+RELATED_CONSULTATION_ID:...
+```
+
+### 8. 回归测试补充
+
+新增 `tests/backend_regression.cpp`，并在 `CMakeLists.txt` 中增加目标：
+
+```text
+his_backend_regression
+```
+
+测试覆盖：
+
+- `LinkedList` 空判断、尾插、下标访问
+- `erase(begin() + n)` 兼容旧代码用法
+- 拷贝构造为深拷贝
+- range-for 遍历
+- 住院天数跨月计算
+- 住院天数跨年计算
+- 同日不足 1 天按 1 天
+- 非法/空日期按 1 天兜底
+
+### 9. 验证结果
+
+执行构建验证：
+
+```powershell
+cmake --build build --config Debug --target his his_server his_backend_regression
+```
+
+结果：
+
+```text
+his.exe — 编译通过
+his_server.exe — 编译通过
+his_backend_regression.exe — 编译通过
+```
+
+执行回归测试：
+
+```powershell
+cd build
+.\Debug\his_backend_regression.exe
+```
+
+结果：
+
+```text
+退出码 0，全部 assert 通过
+```
+
+额外静态核对：
+
+- `Source/ApiServer.cpp` 中不存在 `generateID(5/6/7/8/9, ...)` 业务记录 ID 生成调用
+- 业务记录 API 路由不再使用纯数字 `(\d+)` 匹配
+- API 出院逻辑不再出现 `admitMon/nowMon` 或固定 30 天月份算法
+- API 管理员新增不再手写 `newUser->next = dm.getAdminHead()`，统一走 `pushFront()`
+
+### 10. 本次涉及文件
+
+```text
+CMakeLists.txt
+Head/LinkedList.h
+Head/Registration.h
+Head/Consultation.h
+Head/Examination.h
+Head/Hospitalization.h
+Head/MedicationRecord.h
+Head/Medicine.h
+Head/User.h
+Source/ApiServer.cpp
+Source/JsonHelper.cpp
+Source/Patient.cpp
+Source/User.cpp
+main.cpp
+tests/backend_regression.cpp
+```
+
+### 11. 后续可选优化
+
+- 将 `pushFront()` 从 `ApiServer.cpp` 抽为公共链表工具函数，供控制台和 API 共用
+- 为 API 创建记录流程增加更完整的自动化集成测试
+- 如老师要求更严格，可继续把排班 `g_schedules` 从 `std::vector<json>` 改为链式结构或在答辩中说明其为服务器配置数据
+
+---
+
+## 2026.5.7 — 统计报表优化
+
+**1. 移除"数据分析与预测"菜单入口**
+
+- `UI.cpp` `adminReportMenu()` 移除选项 6，`selectIntCheck` 范围改为 `(0,5)`
+- `main.cpp` 移除 `reportChoice == 6` 的 dispatch 调用
+- `CLAUDE.md`、`README.md` 移除 DataAnalysis 模块引用
+
+**2. 医生工作量统计重构**
+
+- 根因：Doctor 结构体的 `consultationCount`/`examinationCount`/`hospitalizationApplyCount` 字段从未被业务逻辑自增，始终为 0
+- 方案：改为动态遍历 Consultation、Examination、Hospitalization 链表按 doctorID 聚合统计
+- 新增：时间范围选择（复用 `timeRangeMenu`）、科室筛选（全院/内科/外科/妇产科/急诊科/儿科）
+- 排版：`std::setw` 列对齐 + 分隔线 + 底部合计行
+- 文件：`Head/Admin.h` 函数签名扩展，`Source/Admin.cpp` 函数重写，`main.cpp` 调用处更新
 
 ---
 
 ## 2026.5.8 — 冗余架构精简、UI 细节修复及最终文档归档
 
-* **解构复杂外围业务**：“药品流水 (`MedicineFlow`)”作为副产物被定性为过度设计，全栈实施手术完全将其从 API 层、前端 UI 与底层文件链表中剔除，聚焦五角色的主脉络。
-* **控制台防闪退兜底机制**：为所有分支和错误回溯点强制挂载拦截器 `pause(breadcrumb)`，解决部分提示语句抛出后屏幕即刻刷新的观感恶化问题。
-* **验收级集成测试回溯**：
-  * 新发起了 80余项全生命周期的连转集成测试，覆盖了数据表（人员/床位/药品/记录）的增删改查及文件同步落地。
-  * 新增 800+ 行极其详尽的总结报告，利用 Mermaid 编织双端调用时序与架构透视图，导出全部真实运行截图，打通期末终期答辩的全套高保真物料。
+### 1. 架构精简：移除 `MedicineFlow` 模块
+
+为精简项目架构并去除过度设计的特性，进行了全栈移除“药品流水”及关联功能的手术：
+
+- **后端**：在 `LoadData.cpp` 和 `SaveData.cpp` 中移除了 `MedicineFlow` 数据的加载与保存；从业务链路中解绑并彻底删除了 `Data/RecordData/MedicineChainData/medicine_flow.txt` 文件。
+- **前端**：删除了视图文件 `views/admin/MedicineFlows.vue`，清理了 `router/index.js` 中的相关路由映射、`Layout.vue` 侧边栏菜单以及 `api/admin.js` 中的 API 接口调用。
+
+### 2. 控制台 UI 交互体验修复
+
+- 修复了 `Source/Nurse.cpp` 和 `Source/Patient.cpp` 等模块中存在的“提示信息闪退”的 Bug。
+- 在用户撤销修改或进行部分失败操作出错的分支后，补充了 `pause(breadcrumb)` 拦截等待，确保状态提示信息对用户可见，优化了黑框命令行的交互体验。
+
+### 3. 全链路测试与底层数据更新
+
+- 发起了一轮详尽的全业务流端到端测试，80余项生命周期的连转操作联动落地，当天的系统操作日志 (`his_2026_05_08.log`) 完整录入了追溯记录。
+- 更新并同步了包括身份注册（如 `nurse_users.txt`）、就医流程（`registrations.txt`、`consultations.txt`、`examinations.txt`）、住院（`hospitalizations.txt`、`bed_info.txt`）以及发药记录在内的所有持久化数据文件，验证了系统的磁盘 I/O 能力完全正轨。
+
+### 4. 课程设计最终报告与可视化工程
+
+- 深度重排并大幅扩写了 `总结报告.md` (新增 800 余行内容)。
+- 新增 `custom-reference.docx` 全量参考文献及附件结构。
+- 引入使用 Mermaid 绘制的前后端双向交互与角色流程，产出了 `程序主要功能简图.mmd` / `.svg`。
+- 在 `Document/image/` 目录下集中整理了由系统全面运行期间捕获的高清测试截图，为最终期末答辩做好了全副武装的素材准备。
