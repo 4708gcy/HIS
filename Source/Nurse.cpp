@@ -232,6 +232,7 @@ bool Nurse::getAllExaminations(Examination *&exaHead)
         if (!current->isDeleted && current->department == this->department)
         {
             printExaminationDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -255,6 +256,7 @@ bool Nurse::getExaminationsByPatientID(Examination *&exaHead)
         if (!current->isDeleted && current->department == this->department && current->patientID == patientID)
         {
             printExaminationDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -278,6 +280,7 @@ bool Nurse::getExaminationsByConsultationID(Examination *&exaHead)
         if (!current->isDeleted && current->department == this->department && current->consultationID == conID)
         {
             printExaminationDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -324,6 +327,7 @@ bool Nurse::getExaminationsByTimeRange(Examination *&exaHead)
             if (examDate >= startDate && examDate <= endDate)
             {
                 printExaminationDetails(current);
+                std::cout << std::endl;
                 found = true;
             }
         }
@@ -353,6 +357,7 @@ bool Nurse::getExaminationsByItemName(Examination *&exaHead)
         if (!current->isDeleted && current->department == this->department && current->itemName == itemName)
         {
             printExaminationDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -395,6 +400,7 @@ bool Nurse::getExaminationsByStatus(Examination *&exaHead)
         if (!current->isDeleted && current->department == this->department && current->status == targetStatus)
         {
             printExaminationDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -760,6 +766,7 @@ bool Nurse::getAllHospitalizations(Hospitalization *&hosHead)
         if (!current->isDeleted && current->department == this->department)
         {
             printHospitalizationDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -783,6 +790,7 @@ bool Nurse::getHospitalizationsByPatientID(Hospitalization *&hosHead)
         if (!current->isDeleted && current->department == this->department && current->patientID == patientID)
         {
             printHospitalizationDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -806,6 +814,7 @@ bool Nurse::getHospitalizationsByConsultationID(Hospitalization *&hosHead)
         if (!current->isDeleted && current->department == this->department && current->consultationID == conID)
         {
             printHospitalizationDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -865,6 +874,7 @@ bool Nurse::getHospitalizationsByStatus(Hospitalization *&hosHead)
         if (!current->isDeleted && current->department == this->department && current->status == targetStatus)
         {
             printHospitalizationDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -894,6 +904,7 @@ bool Nurse::getHospitalizationsByAdmitTimeRange(Hospitalization *&hosHead)
             if (admitDate >= startDate && admitDate <= endDate)
             {
                 printHospitalizationDetails(current);
+                std::cout << std::endl;
                 found = true;
             }
         }
@@ -924,6 +935,7 @@ bool Nurse::getHospitalizationsByDischargeTimeRange(Hospitalization *&hosHead)
             if (dischargeDate >= startDate && dischargeDate <= endDate)
             {
                 printHospitalizationDetails(current);
+                std::cout << std::endl;
                 found = true;
             }
         }
@@ -955,6 +967,7 @@ bool Nurse::getHospitalizationsByWardType(Hospitalization *&hosHead)
         if (!current->isDeleted && current->department == this->department && current->wardType == wardType)
         {
             printHospitalizationDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -978,6 +991,7 @@ bool Nurse::getHospitalizationsByDoctorID(Hospitalization *&hosHead)
         if (!current->isDeleted && current->department == this->department && current->doctorID == doctorID)
         {
             printHospitalizationDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -1008,6 +1022,7 @@ bool Nurse::getHospitalizationsByBedNumber(Hospitalization *&hosHead)
         if (!current->isDeleted && current->department == this->department && current->bedNumber == bedNumber)
         {
             printHospitalizationDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -1072,6 +1087,7 @@ void Nurse::assignBed(Hospitalization *&target, bedInfo *&bedHead)
             current->status == bedStatus::AVAILABLE)
         {
             printBedDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -1156,6 +1172,7 @@ void Nurse::transferBed(Hospitalization *&target, bedInfo *&bedHead)
             current->status == bedStatus::AVAILABLE)
         {
             printBedDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -1276,6 +1293,7 @@ void Nurse::createHospitalization(Hospitalization *&hosHead, Consultation *&conH
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -1519,6 +1537,7 @@ bool Nurse::getAllBeds(bedInfo *&bedHead)
         if (!current->isDeleted && current->department == this->department)
         {
             printBedDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -1557,6 +1576,7 @@ bool Nurse::getBedsByStatus(bedInfo *&bedHead)
         if (!current->isDeleted && current->department == this->department && current->status == targetStatus)
         {
             printBedDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -1596,6 +1616,7 @@ bool Nurse::getBedsByNurseID(bedInfo *&bedHead)
         if (!current->isDeleted && current->department == this->department && current->nurseID == nurseID)
         {
             printBedDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -1623,6 +1644,7 @@ bool Nurse::getBedsByDepartment(bedInfo *&bedHead)
         if (!current->isDeleted && current->department == dept)
         {
             printBedDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -1681,6 +1703,7 @@ bool Nurse::getBedsByWardType(bedInfo *&bedHead)
         if (!current->isDeleted && current->department == this->department && current->wardType == wardType)
         {
             printBedDetails(current);
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;

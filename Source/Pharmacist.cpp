@@ -238,6 +238,7 @@ void Pharmacist::reviewPrescriptions(MedicationRecord *&medRecHead, Consultation
             }
 
             hasUnreviewed = true;
+            std::cout << std::endl;
         }
         con = con->next;
     }
@@ -349,6 +350,7 @@ bool Pharmacist::getAllMedicationRecords(MedicationRecord *&medRecHead)
         {
             printMedicationRecord(current);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -372,6 +374,7 @@ bool Pharmacist::getMedicationRecordsByPatientID(MedicationRecord *&medRecHead)
         {
             printMedicationRecord(current);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -395,6 +398,7 @@ bool Pharmacist::getMedicationRecordsByConsultationID(MedicationRecord *&medRecH
         {
             printMedicationRecord(current);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -452,6 +456,7 @@ bool Pharmacist::getMedicationRecordsByStatus(MedicationRecord *&medRecHead, int
         {
             printMedicationRecord(current);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -482,6 +487,7 @@ bool Pharmacist::getMedicationRecordsByReviewStatus(MedicationRecord *&medRecHea
         {
             printMedicationRecord(current);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -509,6 +515,7 @@ bool Pharmacist::getMedicationRecordsByTimeRange(MedicationRecord *&medRecHead)
             {
                 printMedicationRecord(current);
                 found = true;
+                std::cout << std::endl;
             }
         }
         current = current->next;
@@ -538,6 +545,7 @@ bool Pharmacist::getMedicationRecordsByMedicineName(MedicationRecord *&medRecHea
                 {
                     printMedicationRecord(current);
                     found = true;
+                    std::cout << std::endl;
                     break;
                 }
             }
@@ -634,6 +642,7 @@ void Pharmacist::setMedicationRecordMedicineIncrease(MedicationRecord *&target, 
                       << ", 库存: " << currentMed->stock
                       << ", 销售价格: " << currentMed->salePrice
                       << std::endl;
+            std::cout << std::endl;
         }
         currentMed = currentMed->next;
     }
@@ -892,6 +901,7 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
             }
 
             hasApproved = true;
+            std::cout << std::endl;
         }
         con = con->next;
     }
@@ -1218,6 +1228,7 @@ bool Pharmacist::getAllMedicines(Medicine *&medHead)
                       << ", 备注: " << current->note
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1288,6 +1299,7 @@ bool Pharmacist::getMedicinesByName(Medicine *&medHead)
                       << ", 备注: " << current->note
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1339,6 +1351,7 @@ bool Pharmacist::getMedicinesByStatus(Medicine *&medHead, int select)
                       << ", 备注: " << current->note
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1376,6 +1389,7 @@ bool Pharmacist::getMedicinesByDepartment(Medicine *&medHead)
                       << ", 备注: " << current->note
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }

@@ -218,6 +218,7 @@ bool Patient::getAllRegistrations(Registration *&regHead)
                       << ", 备注: " << current->note
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -260,6 +261,7 @@ bool Patient::getRegistrationsByStatus(Registration *&regHead, int select)
                       << ", 备注: " << current->note
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -290,6 +292,7 @@ bool Patient::getRegistrationsByDepartment(Registration *&regHead)
                       << ", 备注: " << current->note
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -321,6 +324,7 @@ bool Patient::getRegistrationsByDoctorID(Registration *&regHead)
                       << ", 备注: " << current->note
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -354,6 +358,7 @@ bool Patient::getRegistrationsByTimeRange(Registration *&regHead)
                       << ", 备注: " << current->note
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -747,6 +752,7 @@ bool Patient::getAllConsultations(Consultation *&conHead)
                 }
             }
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -861,6 +867,7 @@ bool Patient::getConsultationsByDoctorID(Consultation *&conHead)
                 }
             }
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -920,6 +927,7 @@ bool Patient::getConsultationsByStatus(Consultation *&conHead)
                 }
             }
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -979,6 +987,7 @@ bool Patient::getConsultationsByTimeRange(Consultation *&conHead)
                 }
             }
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1036,6 +1045,7 @@ bool Patient::getConsultationsByChiefComplaint(Consultation *&conHead)
                 }
             }
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1094,6 +1104,7 @@ bool Patient::getConsultationsByDepartment(Consultation *&conHead)
                 }
             }
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1175,6 +1186,7 @@ bool Patient::getAllExaminations(Examination *&examHead)
             std::cout << std::endl;
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1248,6 +1260,7 @@ bool Patient::getExaminationsByConsultationID(Examination *&examHead)
             }
             std::cout << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1290,6 +1303,7 @@ bool Patient::getExaminationsByItemName(Examination *&examHead)
             }
             std::cout << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1349,6 +1363,7 @@ bool Patient::getExaminationsByStatus(Examination *&examHead, int select)
             }
             std::cout << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1386,6 +1401,7 @@ bool Patient::getExaminationsByTimeRange(Examination *&examHead)
             }
             std::cout << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1461,6 +1477,7 @@ bool Patient::getExaminationsByDepartment(Examination *&examHead)
             }
             std::cout << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1625,6 +1642,7 @@ bool Patient::getAllMedications(MedicationRecord *&medHead)
         {
             printMedicationRecord(current);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1662,6 +1680,7 @@ bool Patient::getMedicationsByConsultationID(MedicationRecord *&medHead)
         {
             printMedicationRecord(current);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1692,6 +1711,7 @@ bool Patient::getMedicationsByMedicineName(MedicationRecord *&medHead)
             {
                 printMedicationRecord(current);
                 found = true;
+                std::cout << std::endl;
             }
         }
         current = current->next;
@@ -1729,6 +1749,7 @@ bool Patient::getMedicationsByStatus(MedicationRecord *&medHead, int select)
         {
             printMedicationRecord(current);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1751,6 +1772,7 @@ bool Patient::getMedicationsByTimeRange(MedicationRecord *&medHead)
         {
             printMedicationRecord(current);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1769,6 +1791,7 @@ bool Patient::getMedicationsByDepartment(MedicationRecord *&medHead)
         {
             printMedicationRecord(current);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1949,6 +1972,7 @@ bool Patient::getAllHospitalizations(Hospitalization *&hosHead)
         {
             printHospitalizationRecord(current, this);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1990,6 +2014,7 @@ bool Patient::getHospitalizationsByAdmitTimeRange(Hospitalization *&hosHead)
         {
             printHospitalizationRecord(current, this);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -2012,6 +2037,7 @@ bool Patient::getHospitalizationsByDischargeTimeRange(Hospitalization *&hosHead)
         {
             printHospitalizationRecord(current, this);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -2049,6 +2075,7 @@ bool Patient::getHospitalizationsByStatus(Hospitalization *&hosHead, int select)
         {
             printHospitalizationRecord(current, this);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -2067,6 +2094,7 @@ bool Patient::getHospitalizationsByDepartment(Hospitalization *&hosHead)
         {
             printHospitalizationRecord(current, this);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -2087,6 +2115,7 @@ bool Patient::getHospitalizationsByWardType(Hospitalization *&hosHead)
         {
             printHospitalizationRecord(current, this);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -2112,6 +2141,7 @@ bool Patient::getHospitalizationsByBedNumber(Hospitalization *&hosHead)
         {
             printHospitalizationRecord(current, this);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -2130,6 +2160,7 @@ bool Patient::getHospitalizationsByDoctorID(Hospitalization *&hosHead)
         {
             printHospitalizationRecord(current, this);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -2148,6 +2179,7 @@ bool Patient::getHospitalizationsByConsultationID(Hospitalization *&hosHead)
         {
             printHospitalizationRecord(current, this);
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }

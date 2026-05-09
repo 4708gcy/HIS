@@ -161,6 +161,7 @@ void viewAllAdmins(Admin *&adminHead)
                       + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
                       + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
                       + ", 创建时间: " + current->getCreateTime());
+            lines.push_back("");
         }
         current = current->next;
     }
@@ -208,6 +209,7 @@ void viewAdminsByName(Admin *&admin)
                       + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
                       + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
                       + ", 创建时间: " + current->getCreateTime());
+            lines.push_back("");
             found = true;
         }
         current = current->next;
@@ -238,6 +240,7 @@ void viewAdminsByGender(Admin *&admin)
                       + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
                       + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
                       + ", 创建时间: " + current->getCreateTime());
+            lines.push_back("");
             found = true;
         }
         current = current->next;
@@ -278,6 +281,7 @@ void viewAdminsByAgeGroup(Admin *&admin)
                       + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
                       + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
                       + ", 创建时间: " + current->getCreateTime());
+            lines.push_back("");
             found = true;
         }
         current = current->next;
@@ -325,6 +329,7 @@ void viewAdminsByContactInfo(Admin *&admin)
                           + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
                           + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
                           + ", 创建时间: " + current->getCreateTime());
+                lines.push_back("");
                 found = true;
             }
             current = current->next;
@@ -349,6 +354,7 @@ void viewAdminsByContactInfo(Admin *&admin)
                           + ", 电话: " + current->getTelephone() + ", 邮箱: " + current->getEmail()
                           + ", 账户状态: " + (current->getIsAccountActive() ? "激活" : "锁定")
                           + ", 创建时间: " + current->getCreateTime());
+                lines.push_back("");
                 found = true;
             }
             current = current->next;

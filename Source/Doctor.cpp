@@ -201,6 +201,7 @@ bool Doctor::getAllRegistrations(Registration *&regHead)
                       << ", 状态: " << regStatusToString(current->status)
                       << ", 备注: " << current->note
                       << std::endl;
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -235,6 +236,7 @@ bool Doctor::getRegistrationsByStatus(Registration *&regHead)
                       << ", 状态: " << regStatusToString(current->status)
                       << ", 备注: " << current->note
                       << std::endl;
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -267,6 +269,7 @@ bool Doctor::getRegistrationsByPatientID(Registration *&regHead)
                       << ", 状态: " << regStatusToString(current->status)
                       << ", 备注: " << current->note
                       << std::endl;
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -337,6 +340,7 @@ bool Doctor::getRegistrationsByTimeRange(Registration *&regHead)
                           << ", 状态: " << regStatusToString(current->status)
                           << ", 备注: " << current->note
                           << std::endl;
+                std::cout << std::endl;
                 found = true;
             }
         }
@@ -648,6 +652,7 @@ bool Doctor::getAllConsultations(Consultation *&conHead)
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -690,6 +695,7 @@ bool Doctor::getConsultationsByStatus(Consultation *&conHead)
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -731,6 +737,7 @@ bool Doctor::getConsultationsByPatientID(Consultation *&conHead)
                       << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                       << ", 备注: " << current->note
                       << std::endl;
+            std::cout << std::endl;
             found = true;
         }
         current = current->next;
@@ -776,6 +783,7 @@ bool Doctor::getConsultationsByTimeRange(Consultation *&conHead)
                           << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
                           << ", 备注: " << current->note
                           << std::endl;
+                std::cout << std::endl;
                 found = true;
             }
         }
@@ -1574,6 +1582,7 @@ bool Doctor::getAllExaminations(Examination *&exaHead)
                 std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
             }
             std::cout << std::endl;
+            std::cout << std::endl;
 
             found = true;
         }
@@ -1620,6 +1629,7 @@ bool Doctor::getExaminationsByPatientID(Examination *&exaHead)
                 std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
             }
             std::cout << std::endl;
+            std::cout << std::endl;
 
             found = true;
         }
@@ -1664,6 +1674,7 @@ bool Doctor::getExaminationsByConsultationID(Examination *&exaHead)
             {
                 std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
             }
+            std::cout << std::endl;
             std::cout << std::endl;
 
             found = true;
@@ -1757,6 +1768,7 @@ bool Doctor::getExaminationsByTimeRange(Examination *&exaHead)
                     std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
                 }
                 std::cout << std::endl;
+                std::cout << std::endl;
 
                 found = true;
             }
@@ -1809,6 +1821,7 @@ bool Doctor::getExaminationsByItemName(Examination *&exaHead)
             {
                 std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
             }
+            std::cout << std::endl;
             std::cout << std::endl;
 
             found = true;
@@ -1875,6 +1888,7 @@ bool Doctor::getExaminationsByStatus(Examination *&exaHead)
             {
                 std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
             }
+            std::cout << std::endl;
             std::cout << std::endl;
 
             found = true;

@@ -92,6 +92,7 @@ bool Admin::viewAllRegistrations(Registration *&reg, const std::string &departme
                       << ", 备注: " << current->note
                       << std::endl;
             foundAny = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -125,6 +126,7 @@ bool Admin::viewRegistrationsByDoctor(Registration *&reg, const std::string &dep
                       << ", 备注: " << current->note
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -158,6 +160,7 @@ bool Admin::viewRegistrationsByPatient(Registration *&reg, const std::string &de
                       << ", 备注: " << current->note
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -605,6 +608,7 @@ bool Admin::viewAllConsultations(Consultation *&con, const std::string &departme
                       << ", 备注: " << current->note
                       << std::endl;
             foundAny = true;
+            std::cout << std::endl;
 
             if (statusStr == "正在处理")
             {
@@ -655,6 +659,7 @@ bool Admin::viewAllConsultations(Consultation *&con, const std::string &departme
         std::cout << "是否建议住院: " << (c->isHospitalizationRecommended ? "是" : "否") << std::endl;
 
         std::cout << "  医生备注: " << c->note << std::endl;
+        std::cout << std::endl;
     }
     return true;
 }
@@ -686,6 +691,7 @@ bool Admin::viewConsultationsByDoctor(Consultation *&con, const std::string &dep
                 temp.push_back(current);
             }
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -731,6 +737,7 @@ bool Admin::viewConsultationsByDoctor(Consultation *&con, const std::string &dep
         std::cout << "是否建议住院: " << (c->isHospitalizationRecommended ? "是" : "否") << std::endl;
 
         std::cout << "  医生备注: " << c->note << std::endl;
+        std::cout << std::endl;
     }
     return true;
 }
@@ -762,6 +769,7 @@ bool Admin::viewConsultationsByPatient(Consultation *&con, const std::string &de
                 temp.push_back(current);
             }
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -808,6 +816,7 @@ bool Admin::viewConsultationsByPatient(Consultation *&con, const std::string &de
         std::cout << "是否建议住院: " << (c->isHospitalizationRecommended ? "是" : "否") << std::endl;
 
         std::cout << "  医生备注: " << c->note << std::endl;
+        std::cout << std::endl;
     }
     return true;
 }
@@ -1440,6 +1449,7 @@ bool Admin::viewAllExaminations(Examination *&exam, const std::string &departmen
             }
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1467,6 +1477,7 @@ bool Admin::viewAllExaminations(Examination *&exam, const std::string &departmen
         std::cout << "检查结果：" << findVitalSignToString(e) << std::endl;
         std::cout << "报告摘要：" << e->reportSummary << std::endl;
         std::cout << "医生备注：" << e->note << std::endl;
+        std::cout << std::endl;
     }
     return true;
 }
@@ -1502,6 +1513,7 @@ bool Admin::viewExaminationsByDoctor(Examination *&exam, const std::string &depa
             }
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1529,6 +1541,7 @@ bool Admin::viewExaminationsByDoctor(Examination *&exam, const std::string &depa
         std::cout << "检查结果：" << findVitalSignToString(e) << std::endl;
         std::cout << "报告摘要：" << e->reportSummary << std::endl;
         std::cout << "医生备注：" << e->note << std::endl;
+        std::cout << std::endl;
     }
     return true;
 }
@@ -1564,6 +1577,7 @@ bool Admin::viewExaminationsByPatient(Examination *&exam, const std::string &dep
             }
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -1591,6 +1605,7 @@ bool Admin::viewExaminationsByPatient(Examination *&exam, const std::string &dep
         std::cout << "检查结果：" << findVitalSignToString(e) << std::endl;
         std::cout << "报告摘要：" << e->reportSummary << std::endl;
         std::cout << "医生备注：" << e->note << std::endl;
+        std::cout << std::endl;
     }
     return true;
 }
@@ -2103,6 +2118,7 @@ bool Admin::viewAllHospitalizations(Hospitalization *&hos, const std::string &de
                       << std::endl;
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -2145,6 +2161,7 @@ bool Admin::viewHospitalizationsByPatient(Hospitalization *&hos, const std::stri
                       << std::endl;
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -2187,6 +2204,7 @@ bool Admin::viewHospitalizationsByDoctor(Hospitalization *&hos, const std::strin
                       << std::endl;
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -2882,6 +2900,7 @@ bool Admin::viewAllBeds(bedInfo *&bed, const std::string &department)
                       << std::endl;
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -2920,6 +2939,7 @@ bool Admin::viewBedsByWardType(bedInfo *&bed, const std::string &department)
                       << std::endl;
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -3054,6 +3074,7 @@ bool Admin::viewBedsByNurseID(bedInfo *&bed, const std::string &department)
                       << std::endl;
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -3092,6 +3113,7 @@ bool Admin::viewBedsByPatientID(bedInfo *&bed, const std::string &department)
                       << std::endl;
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -3495,6 +3517,7 @@ bool Admin::viewAllMedicationRecords(MedicationRecord *&medRec, const std::strin
             }
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -3545,6 +3568,7 @@ bool Admin::viewMedicationRecordsByPatient(MedicationRecord *&medRec, const std:
             }
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -3595,6 +3619,7 @@ bool Admin::viewMedicationRecordsByDoctor(MedicationRecord *&medRec, const std::
             }
 
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -4381,6 +4406,7 @@ bool Admin::viewAllMedicines(Medicine *&med, const std::string &department)
             }
             std::cout << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -5046,6 +5072,7 @@ bool Admin::viewAllDoctors(Doctor *&doc, const std::string &department)
                       << ", 累计开具住院证次数: " << current->hospitalizationApplyCount
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -5654,6 +5681,7 @@ bool Admin::viewAllNurses(Nurse *&nurse, const std::string &department)
                       << ", 床位管理次数: " << current->bedManageCount
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -6221,6 +6249,7 @@ bool Admin::viewAllPharmacists(Pharmacist *&pharmacist, const std::string &depar
                       << ", 累计库存管理次数: " << current->inventoryManageCount
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
@@ -6809,6 +6838,7 @@ bool Admin::viewAllPatients(Patient *&patient, const std::string &department)
                       << ", 用药记录数量: " << current->medicationCount
                       << std::endl;
             found = true;
+            std::cout << std::endl;
         }
         current = current->next;
     }
