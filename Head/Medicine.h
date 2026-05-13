@@ -10,7 +10,7 @@
 #ifndef MEDICINE_H
 #define MEDICINE_H
 
-#include "LinkedList.h"
+#include <vector>
 #include <string>
 
 enum class MedicineStatus
@@ -63,7 +63,7 @@ struct Medicine
     std::string genericName = "#";
 
     // 别名/商品名列表（CSV中以 ALIAS: 子行存储）
-    LinkedList<std::string> aliases;
+    std::vector<std::string> aliases;
 
     bool isDeleted = false; // 逻辑删除标志
 

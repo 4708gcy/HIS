@@ -40,10 +40,6 @@ void printMenuTitle(const std::string &title);                 // 打印居中�
 void printMenuItem(int num, const std::string &text);          // 打印格式化菜单项（自动对齐）
 void printMenuLine(const std::string &text);                   // 打印无编号的菜单行
 
-// ======================================== 分页显示工具 =======================================================================
-
-void printWithPagination(const std::vector<std::string> &lines, int pageSize = 10); // 分页打印字符串列表，返回是否被用户中断
-
 // ======================================== 时间范围工具 =====================================================================
 
 // 检查时间戳是否在指定范围内（格式: "YYYY-MM-DD hh:mm:ss"）

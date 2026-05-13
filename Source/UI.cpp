@@ -208,67 +208,6 @@ void printInfoCard(const std::string &title, const std::vector<std::pair<std::st
     resetConsoleColor();
 }
 
-// ======================================== 分页显示函数 =======================================
-
-void printWithPagination(const std::vector<std::string> &lines, int pageSize)
-{
-    if (lines.empty())
-    {
-        setConsoleColor(ConsoleColor::YELLOW);
-        std::cout << "  暂无数据。" << std::endl;
-        resetConsoleColor();
-        return;
-    }
-
-    int totalPages = (static_cast<int>(lines.size()) + pageSize - 1) / pageSize;
-    int currentPage = 1;
-
-    while (currentPage <= totalPages)
-    {
-        int start = (currentPage - 1) * pageSize;
-        int end = (std::min)(start + pageSize, static_cast<int>(lines.size()));
-
-        setConsoleColor(ConsoleColor::CYAN);
-        std::cout << "┌──────────────────────────────────────────────┐" << std::endl;
-        std::cout << "│  ";
-        setConsoleColor(ConsoleColor::WHITE);
-        std::cout << "第 " << currentPage << "/" << totalPages << " 页";
-        setConsoleColor(ConsoleColor::CYAN);
-        int infoWidth = getDisplayWidth("第 " + std::to_string(currentPage) + "/" + std::to_string(totalPages) + " 页");
-        int pad = 44 - infoWidth;
-        if (pad < 0) pad = 0;
-        std::cout << std::string(pad, ' ') << "│" << std::endl;
-        std::cout << "├──────────────────────────────────────────────┤" << std::endl;
-        resetConsoleColor();
-
-        for (int i = start; i < end; i++)
-        {
-            setConsoleColor(ConsoleColor::CYAN);
-            std::cout << "│ ";
-            resetConsoleColor();
-            std::cout << lines[i] << std::endl;
-        }
-
-        setConsoleColor(ConsoleColor::CYAN);
-        std::cout << "└──────────────────────────────────────────────┘" << std::endl;
-        resetConsoleColor();
-
-        if (currentPage < totalPages)
-        {
-            setConsoleColor(ConsoleColor::YELLOW);
-            std::cout << "  按回车查看下一页，输入 0 返回" << std::endl;
-            resetConsoleColor();
-            std::string input;
-            std::getline(std::cin, input);
-            if (input == "0") return;
-        }
-        currentPage++;
-    }
-    setConsoleColor(ConsoleColor::GREEN);
-    std::cout << "  共 " << lines.size() << " 条记录" << std::endl;
-    resetConsoleColor();
-}
-
 // ======================================== 操作日志系统 =======================================
 
 LogManager::LogManager()

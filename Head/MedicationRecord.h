@@ -10,7 +10,7 @@
 #ifndef MEDICATIONRECORD_H
 #define MEDICATIONRECORD_H
 
-#include "LinkedList.h"
+#include <vector>
 #include <string>
 
 /**
@@ -60,7 +60,7 @@ struct MedicationRecord
     std::string department = "#";     // 科室
     std::string createTime = "#";     // 创建时间
 
-    LinkedList<MedicationLine> lines = {}; // 用药明细
+    std::vector<MedicationLine> lines; // 用药明细
     double totalCost = 0.0;                 // 总费用
 
     MedicationReviewStatus reviewStatus = MedicationReviewStatus::PENDING_REVIEW; // 审核状态

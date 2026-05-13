@@ -10,7 +10,7 @@
 #ifndef REGISTRATION_H
 #define REGISTRATION_H
 
-#include "LinkedList.h"
+#include <vector>
 #include <string>
 
 /**
@@ -39,7 +39,7 @@ struct Registration
     std::string note = "#";                                       // 备注信息
 
     // 关联之前的挂号记录（如同一患者多次挂号）
-    LinkedList<std::string> relatedRegistrationIDs = {}; // 相关挂号记录ID列表
+    std::vector<std::string> relatedRegistrationIDs; // 相关挂号记录ID列表
 
     bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）
 

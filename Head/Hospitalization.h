@@ -10,7 +10,7 @@
 #ifndef HOSPITALIZATION_H
 #define HOSPITALIZATION_H
 
-#include "LinkedList.h"
+#include <vector>
 #include <string>
 
 /**
@@ -90,7 +90,7 @@ struct Hospitalization
     bool isDeleted = false; // 逻辑删除标志
 
     // 关联的住院记录ID列表（如转科、转院等情况）
-    LinkedList<std::string> relatedHospitalizationIDs = {}; // 相关住院记录ID列表
+    std::vector<std::string> relatedHospitalizationIDs; // 相关住院记录ID列表
 
     Hospitalization *prev = nullptr;
     Hospitalization *next = nullptr;

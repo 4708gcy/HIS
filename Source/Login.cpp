@@ -169,7 +169,8 @@ void viewAllAdmins(Admin *&adminHead)
     {
         printError("当前没有管理员账号");
     }
-    printWithPagination(lines, 10);
+    for (const auto &line : lines)
+        std::cout << line << std::endl;
 }
 // 根据管理员ID查看管理员信息
 void viewAdminByID(Admin *&adminHead)
@@ -220,7 +221,8 @@ void viewAdminsByName(Admin *&admin)
     }
     else
     {
-        printWithPagination(lines, 10);
+        for (const auto &line : lines)
+            std::cout << line << std::endl;
     }
 }
 // 根据性别查看管理员信息
@@ -251,7 +253,8 @@ void viewAdminsByGender(Admin *&admin)
     }
     else
     {
-        printWithPagination(lines, 10);
+        for (const auto &line : lines)
+            std::cout << line << std::endl;
     }
 }
 // 根据年龄段查看管理员信息
@@ -292,7 +295,8 @@ void viewAdminsByAgeGroup(Admin *&admin)
     }
     else
     {
-        printWithPagination(lines, 10);
+        for (const auto &line : lines)
+            std::cout << line << std::endl;
     }
 }
 // 根据联系方式查看管理员信息
@@ -364,7 +368,8 @@ void viewAdminsByContactInfo(Admin *&admin)
             printError("未找到电子邮箱为 " + email + " 的管理员信息！");
         }
     }
-    printWithPagination(lines, 10);
+    for (const auto &line : lines)
+        std::cout << line << std::endl;
 }
 // 修改管理员名字
 void modifyAdminName(Admin *&admin)
