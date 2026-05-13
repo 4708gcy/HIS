@@ -523,7 +523,6 @@ void Patient::payRegistrationFee(Registration *&target)
         return;
     }
 
-    clearScreen();
     printMenuBorder();
     printMenuTitle("确认支付挂号费");
     printMenuBottom();
@@ -537,6 +536,8 @@ void Patient::payRegistrationFee(Registration *&target)
         this->balance -= target->fee;
         target->status = RegistrationStatus::PAID;
         printSuccess("支付成功！当前账户余额: " + std::to_string(this->balance) + " 元。");
+    }else{
+        printWarning("已取消支付操作。");
     }
 }
 
@@ -612,7 +613,6 @@ void Patient::manageRegistrations(Registration *&regHead, Doctor *&doctorHead, i
                               << ", 备注: " << current->note
                               << std::endl;
 
-                    clearScreen();
                     printMenuBorder();
                     printMenuTitle("撤销挂号申请");
                     printMenuBottom();
@@ -667,23 +667,8 @@ void Patient::manageRegistrations(Registration *&regHead, Doctor *&doctorHead, i
                               << ", 备注: " << current->note
                               << std::endl;
 
-                    clearScreen();
-                    printMenuBorder();
-                    printMenuTitle("支付挂号费用");
-                    printMenuBottom();
-                    printMenuItem(1, "确定");
-                    printMenuItem(0, "取消");
-                    printMenuBottom();
-                    int c = selectIntCheck(0, 1);
+                    payRegistrationFee(current);
 
-                    if (c == 1)
-                    {
-                        payRegistrationFee(current);
-                    }
-                    else
-                    {
-                        printWarning("已取消支付操作。");
-                    }
                 }
                 else
                 {
@@ -1429,7 +1414,6 @@ void Patient::payExaminationFee(Examination *&target)
         return;
     }
 
-    clearScreen();
     printMenuBorder();
     printMenuTitle("确认支付检查费");
     printMenuBottom();
@@ -1563,23 +1547,8 @@ void Patient::manageExaminations(Examination *&examHead)
                     }
                     std::cout << std::endl;
 
-                    clearScreen();
-                    printMenuBorder();
-                    printMenuTitle("支付检查费用");
-                    printMenuBottom();
-                    printMenuItem(1, "确定");
-                    printMenuItem(0, "取消");
-                    printMenuBottom();
-                    int c = selectIntCheck(0, 1);
+                    payExaminationFee(current);
 
-                    if (c == 1)
-                    {
-                        payExaminationFee(current);
-                    }
-                    else
-                    {
-                        printWarning("已取消支付操作。");
-                    }
                 }
                 else
                 {
@@ -1825,7 +1794,6 @@ void Patient::payMedicationFee(MedicationRecord *&target)
         return;
     }
 
-    clearScreen();
     printMenuBorder();
     printMenuTitle("确认支付用药费");
     printMenuBottom();
@@ -1911,23 +1879,8 @@ void Patient::manageMedications(MedicationRecord *&medHead)
                     std::cout << "当前要支付的用药记录信息如下:" << std::endl;
                     printMedicationRecord(current);
 
-                    clearScreen();
-                    printMenuBorder();
-                    printMenuTitle("支付用药费用");
-                    printMenuBottom();
-                    printMenuItem(1, "确定");
-                    printMenuItem(0, "取消");
-                    printMenuBottom();
-                    int c = selectIntCheck(0, 1);
+                    payMedicationFee(current);
 
-                    if (c == 1)
-                    {
-                        payMedicationFee(current);
-                    }
-                    else
-                    {
-                        printWarning("已取消支付操作。");
-                    }
                 }
                 else
                 {
@@ -2318,7 +2271,6 @@ void Patient::payHospitalizationDeposit(Hospitalization *&hosHead)
         return;
     }
 
-    clearScreen();
     printMenuBorder();
     printMenuTitle("确认缴纳费用");
     printMenuBottom();
