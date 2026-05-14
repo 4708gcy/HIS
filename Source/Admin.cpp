@@ -4753,11 +4753,11 @@ void Admin::deleteMedicine(Medicine *&target, const std::string &department)
 // 添加药品（根据输入信息创建新的 Medicine 对象，并插入到链表中）
 bool Admin::addMedicine(Medicine *&med, const std::string &department, int &idCounter)
 {
-    if (department == "全院")
-    {
-        std::cout << "添加药品请先选择具体科室！" << std::endl;
-        return false;
-    }
+    // if (department == "全院")
+    // {
+    //     std::cout << "添加药品请先选择具体科室！" << std::endl;
+    //     return false;
+    // }
 
     Medicine *newMed = new Medicine();
 
@@ -4905,39 +4905,39 @@ void Admin::manageMedicines(Medicine *&med, const std::string &department, int &
                         {
                             break;
                         }
-                        else if (modifyChoice == 1) // 修改药品状态
-                        {
-                            modifyMedicineStatus(target, department);
-                            pause("管理员 > 药品管理");
-                        }
-                        else if (modifyChoice == 2) // 修改药品名称
+                        else if (modifyChoice == 1) // 修改药品名称
                         {
                             modifyMedicineName(target, department);
                             pause("管理员 > 药品管理");
                         }
-                        else if (modifyChoice == 3) // 修改药品规格
+                        else if (modifyChoice == 2) // 修改药品规格描述
                         {
                             modifyMedicineSpecification(target, department);
                             pause("管理员 > 药品管理");
                         }
-                        else if (modifyChoice == 4) // 修改药品进价
+                        else if (modifyChoice == 3) // 修改药品进价
                         {
                             modifyMedicinePurchasePrice(target, department);
                             pause("管理员 > 药品管理");
                         }
-                        else if (modifyChoice == 5) // 修改药品售价
+                        else if (modifyChoice == 4) // 修改药品售价
                         {
                             modifyMedicineSalePrice(target, department);
                             pause("管理员 > 药品管理");
                         }
-                        else if (modifyChoice == 6) // 修改药品库存数量
+                        else if (modifyChoice == 5) // 修改药品库存量
                         {
                             modifyMedicineStock(target, department);
                             pause("管理员 > 药品管理");
                         }
-                        else if (modifyChoice == 7) // 修改药品安全库存阈值
+                        else if (modifyChoice == 6) // 修改药品安全库存阈值
                         {
                             modifyMedicineSafetyStock(target, department);
+                            pause("管理员 > 药品管理");
+                        }
+                        else if (modifyChoice == 7) // 修改药品状态
+                        {
+                            modifyMedicineStatus(target, department);
                             pause("管理员 > 药品管理");
                         }
                         else if (modifyChoice == 8) // 修改药品生产日期
@@ -4945,19 +4945,19 @@ void Admin::manageMedicines(Medicine *&med, const std::string &department, int &
                             modifyMedicineProductionDate(target, department);
                             pause("管理员 > 药品管理");
                         }
-                        else if (modifyChoice == 9) // 修改药品有效期
+                        else if (modifyChoice == 9) // 修改药品有效期限
                         {
                             modifyMedicineExpiryDate(target, department);
                             pause("管理员 > 药品管理");
                         }
-                        else if (modifyChoice == 10) // 修改药品生产厂家
-                        {
-                            modifyMedicineManufacturer(target, department);
-                            pause("管理员 > 药品管理");
-                        }
-                        else if (modifyChoice == 11) // 修改药品备注信息
+                        else if (modifyChoice == 10) // 修改药品备注
                         {
                             modifyMedicineNote(target, department);
+                            pause("管理员 > 药品管理");
+                        }
+                        else if (modifyChoice == 11) // 修改药品生产厂家
+                        {
+                            modifyMedicineManufacturer(target, department);
                             pause("管理员 > 药品管理");
                         }
                     }
@@ -5005,7 +5005,6 @@ void Admin::manageMedicines(Medicine *&med, const std::string &department, int &
                               << ", 备注: " << (target->note.empty() ? "无" : target->note)
                               << std::endl;
 
-                    clearScreen();
                     printMenuBorder();
                     printMenuTitle("确认删除药品");
                     printMenuItem(1, "确认");
