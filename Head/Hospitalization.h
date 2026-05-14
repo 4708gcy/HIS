@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <string>
+#include "Examination.h"
 
 /**
  * @file Hospitalization.h
@@ -31,7 +32,7 @@ enum class HospitalizationStatus
 enum class bedStatus
 {
     OCCUPIED = 1,   // 已占用
-    ClEANING,   // 清洁中
+    CLEANING,   // 清洁中
     AVAILABLE,  // 可分配
     UNAVAILABLE // 不可用（如维修中等）
 };

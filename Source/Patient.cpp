@@ -100,51 +100,51 @@ bool Patient::patientSignIn()
     return false; // 登录失败
 }
 
-std::string Patient::getPatientID()
+const std::string &Patient::getPatientID() const
 {
     return patientID;
 }
-std::string Patient::getAddress()
+const std::string &Patient::getAddress() const
 {
     return address;
 }
-std::string Patient::getIdCardNumber()
+const std::string &Patient::getIdCardNumber() const
 {
     return idCardNumber;
 }
-std::string Patient::getEmergencyContactName()
+const std::string &Patient::getEmergencyContactName() const
 {
     return emergencyContactName;
 }
-std::string Patient::getEmergencyContactPhone()
+const std::string &Patient::getEmergencyContactPhone() const
 {
     return emergencyContactPhone;
 }
-std::string Patient::getAllergyHistory()
+const std::string &Patient::getAllergyHistory() const
 {
     return allergyHistory;
 }
-std::string Patient::getPastMedicalHistory()
+const std::string &Patient::getPastMedicalHistory() const
 {
     return pastMedicalHistory;
 }
-MaritalStatus Patient::getMaritalStatus()
+MaritalStatus Patient::getMaritalStatus() const
 {
     return maritalStatus;
 }
-int Patient::getRegistrationCount()
+int Patient::getRegistrationCount() const
 {
     return registrationCount;
 }
-int Patient::getConsultationCount()
+int Patient::getConsultationCount() const
 {
     return consultationCount;
 }
-int Patient::getHospitalizationCount()
+int Patient::getHospitalizationCount() const
 {
     return hospitalizationCount;
 }
-int Patient::getMedicationCount()
+int Patient::getMedicationCount() const
 {
     return medicationCount;
 }
@@ -696,46 +696,7 @@ bool Patient::getAllConsultations(Consultation *&conHead)
     {
         if (!current->isDeleted && current->patientID == this->patientID)
         {
-            std::cout << "看诊ID: " << current->consultationID
-                      << ", 挂号ID: " << current->registrationID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 时间: " << current->consultationTime
-                      << ", 状态: " << conStatusToString(current->status)
-                      << ", 主诉: " << current->chiefComplaint
-                      << ", 现病史: " << current->historyOfPresentIllness
-                      << ", 既往史: " << current->pastMedicalHistory
-                      << ", 家族史: " << current->familyHistory
-                      << ", 初步诊断: " << current->preliminaryDiagnosis
-                      << ", 检查项目数: " << current->examinationlist.size()
-                      << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
-                      << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
-                      << ", 备注: " << current->note
-                      << std::endl;
-            if (current->examinationlist.size() > 0)
-            {
-                std::cout << "检查项目列表:" << std::endl;
-                for (const auto &exam : current->examinationlist)
-                {
-                    std::cout << "  - " << exam << std::endl;
-                }
-            }
-            if (current->prescriptions.size() > 0)
-            {
-                std::cout << "处方列表:" << std::endl;
-                for (const auto &pres : current->prescriptions)
-                {
-                    std::cout << "  - 药品ID: " << pres.medicineID
-                              << ", 药品名称: " << pres.name
-                              << ", 药品数量: " << pres.quantity
-                              << ", 用量: " << pres.dosage
-                              << ", 频次: " << pres.frequency
-                              << ", 疗程: " << pres.duration
-                              << ", 备注: " << pres.note
-                              << std::endl;
-                }
-            }
+            printConsultationCard(current);
             found = true;
             std::cout << std::endl;
         }
@@ -754,46 +715,7 @@ bool Patient::getConsultationsByID(Consultation *&conHead)
     {
         if (!current->isDeleted && current->patientID == this->patientID && current->consultationID == conID)
         {
-            std::cout << "看诊ID: " << current->consultationID
-                      << ", 挂号ID: " << current->registrationID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 时间: " << current->consultationTime
-                      << ", 状态: " << conStatusToString(current->status)
-                      << ", 主诉: " << current->chiefComplaint
-                      << ", 现病史: " << current->historyOfPresentIllness
-                      << ", 既往史: " << current->pastMedicalHistory
-                      << ", 家族史: " << current->familyHistory
-                      << ", 初步诊断: " << current->preliminaryDiagnosis
-                      << ", 检查项目数: " << current->examinationlist.size()
-                      << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
-                      << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
-                      << ", 备注: " << current->note
-                      << std::endl;
-            if (current->examinationlist.size() > 0)
-            {
-                std::cout << "检查项目列表:" << std::endl;
-                for (const auto &exam : current->examinationlist)
-                {
-                    std::cout << "  - " << exam << std::endl;
-                }
-            }
-            if (current->prescriptions.size() > 0)
-            {
-                std::cout << "处方列表:" << std::endl;
-                for (const auto &pres : current->prescriptions)
-                {
-                    std::cout << "  - 药品ID: " << pres.medicineID
-                              << ", 药品名称: " << pres.name
-                              << ", 药品数量: " << pres.quantity
-                              << ", 用量: " << pres.dosage
-                              << ", 频次: " << pres.frequency
-                              << ", 疗程: " << pres.duration
-                              << ", 备注: " << pres.note
-                              << std::endl;
-                }
-            }
+            printConsultationCard(current);
             found = true;
         }
         current = current->next;
@@ -811,46 +733,7 @@ bool Patient::getConsultationsByDoctorID(Consultation *&conHead)
     {
         if (!current->isDeleted && current->patientID == this->patientID && current->doctorID == docID)
         {
-            std::cout << "看诊ID: " << current->consultationID
-                      << ", 挂号ID: " << current->registrationID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 时间: " << current->consultationTime
-                      << ", 状态: " << conStatusToString(current->status)
-                      << ", 主诉: " << current->chiefComplaint
-                      << ", 现病史: " << current->historyOfPresentIllness
-                      << ", 既往史: " << current->pastMedicalHistory
-                      << ", 家族史: " << current->familyHistory
-                      << ", 初步诊断: " << current->preliminaryDiagnosis
-                      << ", 检查项目数: " << current->examinationlist.size()
-                      << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
-                      << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
-                      << ", 备注: " << current->note
-                      << std::endl;
-            if (current->examinationlist.size() > 0)
-            {
-                std::cout << "检查项目列表:" << std::endl;
-                for (const auto &exam : current->examinationlist)
-                {
-                    std::cout << "  - " << exam << std::endl;
-                }
-            }
-            if (current->prescriptions.size() > 0)
-            {
-                std::cout << "处方列表:" << std::endl;
-                for (const auto &pres : current->prescriptions)
-                {
-                    std::cout << "  - 药品ID: " << pres.medicineID
-                              << ", 药品名称: " << pres.name
-                              << ", 药品数量: " << pres.quantity
-                              << ", 用量: " << pres.dosage
-                              << ", 频次: " << pres.frequency
-                              << ", 疗程: " << pres.duration
-                              << ", 备注: " << pres.note
-                              << std::endl;
-                }
-            }
+            printConsultationCard(current);
             found = true;
             std::cout << std::endl;
         }
@@ -871,46 +754,7 @@ bool Patient::getConsultationsByStatus(Consultation *&conHead)
     {
         if (!current->isDeleted && current->patientID == this->patientID && current->status == targetStatus)
         {
-            std::cout << "看诊ID: " << current->consultationID
-                      << ", 挂号ID: " << current->registrationID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 时间: " << current->consultationTime
-                      << ", 状态: " << conStatusToString(current->status)
-                      << ", 主诉: " << current->chiefComplaint
-                      << ", 现病史: " << current->historyOfPresentIllness
-                      << ", 既往史: " << current->pastMedicalHistory
-                      << ", 家族史: " << current->familyHistory
-                      << ", 初步诊断: " << current->preliminaryDiagnosis
-                      << ", 检查项目数: " << current->examinationlist.size()
-                      << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
-                      << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
-                      << ", 备注: " << current->note
-                      << std::endl;
-            if (current->examinationlist.size() > 0)
-            {
-                std::cout << "检查项目列表:" << std::endl;
-                for (const auto &exam : current->examinationlist)
-                {
-                    std::cout << "  - " << exam << std::endl;
-                }
-            }
-            if (current->prescriptions.size() > 0)
-            {
-                std::cout << "处方列表:" << std::endl;
-                for (const auto &pres : current->prescriptions)
-                {
-                    std::cout << "  - 药品ID: " << pres.medicineID
-                              << ", 药品名称: " << pres.name
-                              << ", 药品数量: " << pres.quantity
-                              << ", 用量: " << pres.dosage
-                              << ", 频次: " << pres.frequency
-                              << ", 疗程: " << pres.duration
-                              << ", 备注: " << pres.note
-                              << std::endl;
-                }
-            }
+            printConsultationCard(current);
             found = true;
             std::cout << std::endl;
         }
@@ -931,46 +775,7 @@ bool Patient::getConsultationsByTimeRange(Consultation *&conHead)
         std::string conDate = current->consultationTime.substr(0, 10);
         if (!current->isDeleted && current->patientID == this->patientID && conDate >= startDate && conDate <= endDate)
         {
-            std::cout << "看诊ID: " << current->consultationID
-                      << ", 挂号ID: " << current->registrationID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 时间: " << current->consultationTime
-                      << ", 状态: " << conStatusToString(current->status)
-                      << ", 主诉: " << current->chiefComplaint
-                      << ", 现病史: " << current->historyOfPresentIllness
-                      << ", 既往史: " << current->pastMedicalHistory
-                      << ", 家族史: " << current->familyHistory
-                      << ", 初步诊断: " << current->preliminaryDiagnosis
-                      << ", 检查项目数: " << current->examinationlist.size()
-                      << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
-                      << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
-                      << ", 备注: " << current->note
-                      << std::endl;
-            if (current->examinationlist.size() > 0)
-            {
-                std::cout << "检查项目列表:" << std::endl;
-                for (const auto &exam : current->examinationlist)
-                {
-                    std::cout << "  - " << exam << std::endl;
-                }
-            }
-            if (current->prescriptions.size() > 0)
-            {
-                std::cout << "处方列表:" << std::endl;
-                for (const auto &pres : current->prescriptions)
-                {
-                    std::cout << "  - 药品ID: " << pres.medicineID
-                              << ", 药品名称: " << pres.name
-                              << ", 药品数量: " << pres.quantity
-                              << ", 用量: " << pres.dosage
-                              << ", 频次: " << pres.frequency
-                              << ", 疗程: " << pres.duration
-                              << ", 备注: " << pres.note
-                              << std::endl;
-                }
-            }
+            printConsultationCard(current);
             found = true;
             std::cout << std::endl;
         }
@@ -989,46 +794,7 @@ bool Patient::getConsultationsByChiefComplaint(Consultation *&conHead)
     {
         if (!current->isDeleted && current->patientID == this->patientID && current->chiefComplaint.find(keyword) != std::string::npos)
         {
-            std::cout << "看诊ID: " << current->consultationID
-                      << ", 挂号ID: " << current->registrationID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 时间: " << current->consultationTime
-                      << ", 状态: " << conStatusToString(current->status)
-                      << ", 主诉: " << current->chiefComplaint
-                      << ", 现病史: " << current->historyOfPresentIllness
-                      << ", 既往史: " << current->pastMedicalHistory
-                      << ", 家族史: " << current->familyHistory
-                      << ", 初步诊断: " << current->preliminaryDiagnosis
-                      << ", 检查项目数: " << current->examinationlist.size()
-                      << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
-                      << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
-                      << ", 备注: " << current->note
-                      << std::endl;
-            if (current->examinationlist.size() > 0)
-            {
-                std::cout << "检查项目列表:" << std::endl;
-                for (const auto &exam : current->examinationlist)
-                {
-                    std::cout << "  - " << exam << std::endl;
-                }
-            }
-            if (current->prescriptions.size() > 0)
-            {
-                std::cout << "处方列表:" << std::endl;
-                for (const auto &pres : current->prescriptions)
-                {
-                    std::cout << "  - 药品ID: " << pres.medicineID
-                              << ", 药品名称: " << pres.name
-                              << ", 药品数量: " << pres.quantity
-                              << ", 用量: " << pres.dosage
-                              << ", 频次: " << pres.frequency
-                              << ", 疗程: " << pres.duration
-                              << ", 备注: " << pres.note
-                              << std::endl;
-                }
-            }
+            printConsultationCard(current);
             found = true;
             std::cout << std::endl;
         }
@@ -1048,46 +814,7 @@ bool Patient::getConsultationsByDepartment(Consultation *&conHead)
     {
         if (!current->isDeleted && current->patientID == this->patientID && current->department.find(dept) != std::string::npos)
         {
-            std::cout << "看诊ID: " << current->consultationID
-                      << ", 挂号ID: " << current->registrationID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 时间: " << current->consultationTime
-                      << ", 状态: " << conStatusToString(current->status)
-                      << ", 主诉: " << current->chiefComplaint
-                      << ", 现病史: " << current->historyOfPresentIllness
-                      << ", 既往史: " << current->pastMedicalHistory
-                      << ", 家族史: " << current->familyHistory
-                      << ", 初步诊断: " << current->preliminaryDiagnosis
-                      << ", 检查项目数: " << current->examinationlist.size()
-                      << ", 处方数: " << current->prescriptions.size()
-                      << ", 处方审核状态: " << (current->isPrescriptionReviewed ? "已审核" : "未审核")
-                      << ", 住院建议: " << (current->isHospitalizationRecommended ? "是" : "否")
-                      << ", 备注: " << current->note
-                      << std::endl;
-            if (current->examinationlist.size() > 0)
-            {
-                std::cout << "检查项目列表:" << std::endl;
-                for (const auto &exam : current->examinationlist)
-                {
-                    std::cout << "  - " << exam << std::endl;
-                }
-            }
-            if (current->prescriptions.size() > 0)
-            {
-                std::cout << "处方列表:" << std::endl;
-                for (const auto &pres : current->prescriptions)
-                {
-                    std::cout << "  - 药品ID: " << pres.medicineID
-                              << ", 药品名称: " << pres.name
-                              << ", 药品数量: " << pres.quantity
-                              << ", 用量: " << pres.dosage
-                              << ", 频次: " << pres.frequency
-                              << ", 疗程: " << pres.duration
-                              << ", 备注: " << pres.note
-                              << std::endl;
-                }
-            }
+            printConsultationCard(current);
             found = true;
             std::cout << std::endl;
         }
@@ -2220,7 +1947,7 @@ void Patient::applyForDischarge(Hospitalization *&hosHead, bedInfo *&bedHead)
         {
             if (b->bedID == current->bedNumber && b->patientID == this->patientID)
             {
-                b->status = bedStatus::ClEANING; // 设置为清洁中
+                b->status = bedStatus::CLEANING; // 设置为清洁中
                 b->patientID = "#";
                 printSuccess("相应床位已释放，交由护士进行清洁！");
                 break;

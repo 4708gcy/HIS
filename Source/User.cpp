@@ -464,7 +464,7 @@ std::string User::bedStatusToString(bedStatus status)
         return "可分配";
     case bedStatus::OCCUPIED:
         return "已占用";
-    case bedStatus::ClEANING:
+    case bedStatus::CLEANING:
         return "清洁中";
     case bedStatus::UNAVAILABLE:
         return "不可用";
@@ -629,6 +629,10 @@ double User::calculateExaminationFee(std::string itemName)
     // 默认价格
     return 5;
 }
+
+User::User()
+    : userID("#"), username("#"), storedHash("#"), salt("#"),
+      createTime("#"), gender("#"), telephone("#"), email("#") {}
 
 User::~User()
 {

@@ -1,78 +1,62 @@
-flowchart TD
+flowchart TB
     classDef sys fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
     classDef role fill:#fff8e1,stroke:#f57f17,stroke-width:2px,color:#e65100
-    classDef data fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
-    classDef menu fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px,color:#4a148c
+    classDef support fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef brace fill:#ffffff,stroke:#888888,stroke-width:1px,color:#222222
 
-    START([HIS 医院信息管理系统]):::sys --> LOAD
-    LOAD[/从 Data/ 目录加载 12 条双向链表数据/]:::sys --> CHECK{管理员链表为空?}
-    CHECK -->|否| MAIN
-    CHECK -->|是| FORCE[强制创建管理员]:::sys
-    FORCE --> MAIN
+    TITLE([HIS 医院信息管理系统]):::sys
 
-    MAIN[登录 · 注册 · 退出]:::sys
-    MAIN -->|退出| SAVE[/保存 12 条链表到 txt 文件 · 释放内存/]:::data
-    MAIN -->|注册| REG[/选择角色 → 采集信息 → SHA-256 加盐哈希 → 头插链表/]:::sys
-    REG -.-> MAIN
-
-    MAIN -->|登录| AUTH[/输入 ID + 密码 → 恒时比较 · 锁定检查/]:::sys
-    AUTH -.->|验证失败| MAIN
-    AUTH -->|验证成功| ROLE{选择角色}:::sys
-
-    ROLE --> RA
-    ROLE --> RB
-    ROLE --> RC
-    ROLE --> RD
-    ROLE --> RE
-
-    RA[管理员]:::role
-    RB[医生]:::role
-    RC[护士]:::role
-    RD[药剂师]:::role
-    RE[患者]:::role
-
-    subgraph S1 [管理员 ─ 全院 / 科室视角]
-        RA --> FA1[账户管理 — 5 类用户增删改查]:::menu
-        RA --> FA2[医疗记录管理 — 挂号 · 看诊 · 检查 · 住院 · 用药]:::menu
-        RA --> FA3[药品管理 — 信息维护 · 库存增减]:::menu
-        RA --> FA4[床位管理]:::menu
-        RA --> FA5[管理员信息管理]:::menu
-        RA --> FA6[个人信息管理]:::menu
-        RA --> FA7[账号封锁管理 — 激活 / 封锁账户]:::menu
-        RA --> FA8[统计报表 — 科室 · 医生 · 患者 · 床位 · 药品]:::menu
+    subgraph ENTRY["公共流程"]
+        direction LR
+        A[启动程序]:::sys --> B[加载 Data/ 中的用户、医疗记录、药品、床位链表]:::sys
+        B --> C{是否已有管理员?}:::sys
+        C -->|否| D[强制创建管理员]:::sys
+        C -->|是| E[登录 / 注册 / 退出]:::sys
+        D --> E
+        E --> F[身份验证：ID + SHA-256 加盐密码 + 锁定检查]:::sys
+        F --> G[进入对应角色菜单]:::sys
+        G --> H[退出时保存 12 条链表到 txt 文件]:::sys
     end
 
-    subgraph S2 [医生 ─ 本人和本科室相关]
-        RB --> FB1[挂号管理 — 查看和处理本人挂号]:::menu
-        RB --> FB2[看诊管理 — 创建看诊记录 · 填写诊断和处方 · 添加检查项目 · 设置住院建议]:::menu
-        RB --> FB3[检查管理 — 创建和维护检查记录]:::menu
-        RB --> FB4[个人信息管理]:::menu
+    TITLE --> ENTRY
+    ENTRY --> ROLES
+
+    subgraph ROLES["五类角色功能（横向大括号汇总）"]
+        direction TB
+        RA["管理员 {"]
+        RAB["账户管理｜医疗记录管理｜药品管理｜床位管理｜账号激活/封锁｜统计报表｜个人信息维护"]
+        RAE["}"]
+
+        RB["医生 {"]
+        RBB["挂号管理｜创建看诊记录｜填写诊断和处方｜添加检查项目｜设置住院建议｜个人信息维护"]
+        RBE["}"]
+
+        RC["护士 {"]
+        RCB["住院记录维护｜分配护士和床位｜床位调整｜出院办理｜维护检查结果｜录入生命体征｜个人信息维护"]
+        RCE["}"]
+
+        RD["药剂师 {"]
+        RDB["处方审核｜创建用药记录｜维护用药明细｜患者缴费后发药｜扣减库存｜药品库存管理｜个人信息维护"]
+        RDE["}"]
+
+        RE["患者 {"]
+        REB["预约挂号｜缴纳挂号费｜撤回未缴费挂号｜查看看诊/检查/用药/住院信息｜缴费｜账户充值｜个人信息维护"]
+        REE["}"]
+
+        RA --> RAB --> RAE
+        RB --> RBB --> RBE
+        RC --> RCB --> RCE
+        RD --> RDB --> RDE
+        RE --> REB --> REE
     end
 
-    subgraph S3 [护士 ─ 本科室相关]
-        RC --> FC1[住院管理 — 创建住院记录 · 分配护士和床位 · 调整床位 · 办理出院]:::menu
-        RC --> FC2[检查管理 — 维护检查结果 · 录入 15 项生命体征]:::menu
-        RC --> FC3[床位管理 — 查看和维护床位信息]:::menu
-        RC --> FC4[个人信息管理]:::menu
-    end
+    ROLES --> SUPPORT
 
-    subgraph S4 [药剂师 ─ 本科室相关]
-        RD --> FD1[处方审核 — 查看和审核看诊处方]:::menu
-        RD --> FD2[用药记录管理 — 创建用药记录 · 审核明细 · 患者缴费后发药 · 扣减库存]:::menu
-        RD --> FD3[药品管理 — 信息维护 · 库存管理]:::menu
-        RD --> FD4[个人信息管理]:::menu
+    subgraph SUPPORT["底层支撑能力"]
+        direction LR
+        S1[动态内存双向链表：5 类用户 + 7 类业务记录]:::support
+        S2[文本文件持久化：CSV 主记录 + 附加行保存嵌套数据]:::support
+        S3[安全机制：SHA-256 加盐哈希、连续失败锁定、恒时比较]:::support
+        S4[输入校验：ID、金额、日期、电话、邮箱、科室、床位编号等]:::support
+        S5[运行保障：操作日志、异常捕获、信号处理与紧急保存]:::support
     end
-
-    subgraph S5 [患者 ─ 本人相关记录]
-        RE --> FE1[预约挂号 · 缴纳挂号费 · 撤回未缴费挂号]:::menu
-        RE --> FE2[查看看诊记录 · 检查记录 · 用药记录]:::menu
-        RE --> FE3[缴纳检查费 · 缴纳药品费]:::menu
-        RE --> FE4[住院信息 · 缴纳押金 · 申请出院]:::menu
-        RE --> FE5[个人信息管理 · 账户充值]:::menu
-    end
-
-    FA1 & FA2 & FA3 & FA4 & FA5 & FA6 & FA7 & FA8 -.->|退出登录| MAIN
-    FB1 & FB2 & FB3 & FB4 -.->|退出登录| MAIN
-    FC1 & FC2 & FC3 & FC4 -.->|退出登录| MAIN
-    FD1 & FD2 & FD3 & FD4 -.->|退出登录| MAIN
-    FE1 & FE2 & FE3 & FE4 & FE5 -.->|退出登录| MAIN

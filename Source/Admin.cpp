@@ -2575,7 +2575,7 @@ bool Admin::addHospitalization(Hospitalization *&hos, Nurse *nurse, const std::s
                 delete newHos; // 释放内存
                 return false;
             }
-            else if (b->status == bedStatus::ClEANING)
+            else if (b->status == bedStatus::CLEANING)
             {
                 std::cout << "该床位正在清洁中！无法添加住院记录。" << std::endl;
                 delete newHos; // 释放内存
@@ -3489,32 +3489,7 @@ bool Admin::viewAllMedicationRecords(MedicationRecord *&medRec, const std::strin
     {
         if (!current->isDeleted && deptMatch(current->department, department))
         {
-            std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
-            std::string statusStr = medicationStatusToString(current->status);
-            std::cout << "用药记录ID: " << current->medRecordID
-                      << ", 关联看诊记录ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
-                      << ", 科室: " << current->department
-                      << ", 审核状态: " << reviewStatusStr
-                      << ", 总费用: " << current->totalCost
-                      << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
-                      << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
-                      << ", 创建时间: " << current->createTime
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
-
-            std::cout << "用药明细: " << std::endl;
-            for (const auto &line : current->lines)
-            {
-                std::cout << "  - 药品ID: " << line.medicineID
-                          << ", 药品名称: " << line.medicineName
-                          << ", 数量: " << line.quantity
-                          << ", 单价: " << line.unitPrice
-                          << ", 用法备注: " << (line.note.empty() ? "无" : line.note)
-                          << std::endl;
-            }
+            printMedicationRecordCard(current);
 
             found = true;
             std::cout << std::endl;
@@ -3540,32 +3515,7 @@ bool Admin::viewMedicationRecordsByPatient(MedicationRecord *&medRec, const std:
     {
         if (!current->isDeleted && current->patientID == patientID && deptMatch(current->department, department))
         {
-            std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
-            std::string statusStr = medicationStatusToString(current->status);
-            std::cout << "用药记录ID: " << current->medRecordID
-                      << ", 关联看诊记录ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
-                      << ", 科室: " << current->department
-                      << ", 审核状态: " << reviewStatusStr
-                      << ", 总费用: " << current->totalCost
-                      << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
-                      << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
-                      << ", 创建时间: " << current->createTime
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
-
-            std::cout << "用药明细: " << std::endl;
-            for (const auto &line : current->lines)
-            {
-                std::cout << "  - 药品ID: " << line.medicineID
-                          << ", 药品名称: " << line.medicineName
-                          << ", 数量: " << line.quantity
-                          << ", 单价: " << line.unitPrice
-                          << ", 用法备注: " << (line.note.empty() ? "无" : line.note)
-                          << std::endl;
-            }
+            printMedicationRecordCard(current);
 
             found = true;
             std::cout << std::endl;
@@ -3591,32 +3541,7 @@ bool Admin::viewMedicationRecordsByDoctor(MedicationRecord *&medRec, const std::
     {
         if (!current->isDeleted && current->doctorID == doctorID && deptMatch(current->department, department))
         {
-            std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
-            std::string statusStr = medicationStatusToString(current->status);
-            std::cout << "用药记录ID: " << current->medRecordID
-                      << ", 关联看诊记录ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
-                      << ", 科室: " << current->department
-                      << ", 审核状态: " << reviewStatusStr
-                      << ", 总费用: " << current->totalCost
-                      << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
-                      << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
-                      << ", 创建时间: " << current->createTime
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
-
-            std::cout << "用药明细: " << std::endl;
-            for (const auto &line : current->lines)
-            {
-                std::cout << "  - 药品ID: " << line.medicineID
-                          << ", 药品名称: " << line.medicineName
-                          << ", 数量: " << line.quantity
-                          << ", 单价: " << line.unitPrice
-                          << ", 用法备注: " << (line.note.empty() ? "无" : line.note)
-                          << std::endl;
-            }
+            printMedicationRecordCard(current);
 
             found = true;
             std::cout << std::endl;
@@ -3642,32 +3567,7 @@ bool Admin::viewMedicationRecordsByPharmacist(MedicationRecord *&medRec, const s
     {
         if (!current->isDeleted && current->pharmacistID == pharmacistID && deptMatch(current->department, department))
         {
-            std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
-            std::string statusStr = medicationStatusToString(current->status);
-            std::cout << "用药记录ID: " << current->medRecordID
-                      << ", 关联看诊记录ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
-                      << ", 科室: " << current->department
-                      << ", 审核状态: " << reviewStatusStr
-                      << ", 总费用: " << current->totalCost
-                      << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
-                      << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
-                      << ", 创建时间: " << current->createTime
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
-
-            std::cout << "用药明细: " << std::endl;
-            for (const auto &line : current->lines)
-            {
-                std::cout << "  - 药品ID: " << line.medicineID
-                          << ", 药品名称: " << line.medicineName
-                          << ", 数量: " << line.quantity
-                          << ", 单价: " << line.unitPrice
-                          << ", 用法备注: " << (line.note.empty() ? "无" : line.note)
-                          << std::endl;
-            }
+            printMedicationRecordCard(current);
 
             found = true;
         }
@@ -3692,32 +3592,7 @@ bool Admin::viewMedicationRecordByID(MedicationRecord *&medRec, const std::strin
     {
         if (!current->isDeleted && current->medRecordID == medRecordID && deptMatch(current->department, department))
         {
-            std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
-            std::string statusStr = medicationStatusToString(current->status);
-            std::cout << "用药记录ID: " << current->medRecordID
-                      << ", 关联看诊记录ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
-                      << ", 科室: " << current->department
-                      << ", 审核状态: " << reviewStatusStr
-                      << ", 总费用: " << current->totalCost
-                      << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
-                      << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
-                      << ", 创建时间: " << current->createTime
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
-
-            std::cout << "用药明细: " << std::endl;
-            for (const auto &line : current->lines)
-            {
-                std::cout << "  - 药品ID: " << line.medicineID
-                          << ", 药品名称: " << line.medicineName
-                          << ", 数量: " << line.quantity
-                          << ", 单价: " << line.unitPrice
-                          << ", 用法备注: " << (line.note.empty() ? "无" : line.note)
-                          << std::endl;
-            }
+            printMedicationRecordCard(current);
 
             found = true;
             break;
@@ -3803,32 +3678,7 @@ bool Admin::viewMedicationRecordsByConsultationID(MedicationRecord *&medRec, con
     {
         if (!current->isDeleted && current->consultationID == consultationID && deptMatch(current->department, department))
         {
-            std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
-            std::string statusStr = medicationStatusToString(current->status);
-            std::cout << "用药记录ID: " << current->medRecordID
-                      << ", 关联看诊记录ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
-                      << ", 科室: " << current->department
-                      << ", 审核状态: " << reviewStatusStr
-                      << ", 总费用: " << current->totalCost
-                      << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
-                      << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
-                      << ", 创建时间: " << current->createTime
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
-
-            std::cout << "用药明细: " << std::endl;
-            for (const auto &line : current->lines)
-            {
-                std::cout << "  - 药品ID: " << line.medicineID
-                          << ", 药品名称: " << line.medicineName
-                          << ", 数量: " << line.quantity
-                          << ", 单价: " << line.unitPrice
-                          << ", 用法备注: " << (line.note.empty() ? "无" : line.note)
-                          << std::endl;
-            }
+            printMedicationRecordCard(current);
 
             found = true;
         }
@@ -3857,32 +3707,7 @@ bool Admin::viewMedicationRecordsByReviewStatus(MedicationRecord *&medRec, const
     {
         if (!current->isDeleted && deptMatch(current->department, department) && current->reviewStatus == filterStatus)
         {
-            std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
-            std::string statusStr = medicationStatusToString(current->status);
-            std::cout << "用药记录ID: " << current->medRecordID
-                      << ", 关联看诊记录ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
-                      << ", 科室: " << current->department
-                      << ", 审核状态: " << reviewStatusStr
-                      << ", 总费用: " << current->totalCost
-                      << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
-                      << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
-                      << ", 创建时间: " << current->createTime
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
-
-            std::cout << "用药明细: " << std::endl;
-            for (const auto &line : current->lines)
-            {
-                std::cout << "  - 药品ID: " << line.medicineID
-                          << ", 药品名称: " << line.medicineName
-                          << ", 数量: " << line.quantity
-                          << ", 单价: " << line.unitPrice
-                          << ", 用法备注: " << (line.note.empty() ? "无" : line.note)
-                          << std::endl;
-            }
+            printMedicationRecordCard(current);
 
             found = true;
         }
@@ -3910,32 +3735,7 @@ bool Admin::viewMedicationRecordsByStatus(MedicationRecord *&medRec, const std::
     {
         if (!current->isDeleted && deptMatch(current->department, department) && current->status == filterStatus)
         {
-            std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
-            std::string statusStr = medicationStatusToString(current->status);
-            std::cout << "用药记录ID: " << current->medRecordID
-                      << ", 关联看诊记录ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
-                      << ", 科室: " << current->department
-                      << ", 审核状态: " << reviewStatusStr
-                      << ", 总费用: " << current->totalCost
-                      << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
-                      << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
-                      << ", 创建时间: " << current->createTime
-                      << ", 备注: " << (current->note.empty() ? "无" : current->note)
-                      << std::endl;
-
-            std::cout << "用药明细: " << std::endl;
-            for (const auto &line : current->lines)
-            {
-                std::cout << "  - 药品ID: " << line.medicineID
-                          << ", 药品名称: " << line.medicineName
-                          << ", 数量: " << line.quantity
-                          << ", 单价: " << line.unitPrice
-                          << ", 用法备注: " << (line.note.empty() ? "无" : line.note)
-                          << std::endl;
-            }
+            printMedicationRecordCard(current);
 
             found = true;
         }
@@ -4303,32 +4103,7 @@ void Admin::manageMedicationRecords(MedicationRecord *&medRec, Consultation *con
                 if (target)
                 {
                     std::cout << "正在删除的用药记录信息如下：" << std::endl;
-                    std::string reviewStatusStr = medicationReviewStatusToString(target->reviewStatus);
-                    std::string statusStr = medicationStatusToString(target->status);
-                    std::cout << "用药记录ID: " << target->medRecordID
-                              << ", 关联看诊记录ID: " << target->consultationID
-                              << ", 患者ID: " << target->patientID
-                              << ", 医生ID: " << target->doctorID
-                              << ", 药师ID: " << (target->pharmacistID.empty() ? "无" : target->pharmacistID)
-                              << ", 科室: " << target->department
-                              << ", 审核状态: " << reviewStatusStr
-                              << ", 总费用: " << target->totalCost
-                              << ", 支付时间: " << (target->paymentTime.empty() ? "未支付" : target->paymentTime)
-                              << ", 发药时间: " << (target->dispenseTime.empty() ? "未发药" : target->dispenseTime)
-                              << ", 创建时间: " << target->createTime
-                              << ", 备注: " << (target->note.empty() ? "无" : target->note)
-                              << std::endl;
-
-                    std::cout << "用药明细: " << std::endl;
-                    for (const auto &line : target->lines)
-                    {
-                        std::cout << "  - 药品ID: " << line.medicineID
-                                  << ", 药品名称: " << line.medicineName
-                                  << ", 数量: " << line.quantity
-                                  << ", 单价: " << line.unitPrice
-                                  << ", 用法备注: " << (line.note.empty() ? "无" : line.note)
-                                  << std::endl;
-                    }
+                    printMedicationRecordCard(target);
 
                     clearScreen();
                     printMenuBorder();

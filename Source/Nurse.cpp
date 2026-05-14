@@ -1195,7 +1195,7 @@ void Nurse::transferBed(Hospitalization *&target, bedInfo *&bedHead)
             current->wardType == target->wardType &&
             current->status == bedStatus::AVAILABLE)
         {
-            oldBed->status = bedStatus::ClEANING;
+            oldBed->status = bedStatus::CLEANING;
             oldBed->patientID = "#";
             oldBed->nurseID = "#";
 
@@ -1230,7 +1230,7 @@ void Nurse::dischargePatient(Hospitalization *&target, bedInfo *&bedHead)
     {
         if (!current->isDeleted && current->bedID == target->bedNumber)
         {
-            current->status = bedStatus::ClEANING;
+            current->status = bedStatus::CLEANING;
             current->patientID = "#";
             current->nurseID = "#";
             break;

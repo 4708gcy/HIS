@@ -131,6 +131,7 @@ public:
     // 注册新用户 : 1 - Admin, 2 - Doctor, 3 - Nurse, 4 - Pharmacist, 5 - Patient
     bool signUp(int choice, int &idCounter); // 注册新用户
 
+    User(); // 默认构造函数，字符串字段初始化为 "#"
     virtual ~User(); // 虚析构函数，确保子类资源正确释放
 
     bool getIsLoggedIn() const;

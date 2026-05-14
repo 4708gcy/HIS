@@ -1,5 +1,34 @@
 #include "../Head/LoadData.h"
 
+// =====================静态辅助函数=====================
+
+// 解析生命体征数据（从分号分隔的字段向量中填充 VitalSigns 结构体）
+// loadExaminations 和 loadBedInfos 共用此函数，避免重复的15字段解析代码
+static void parseVitalSigns(VitalSigns &vs, const std::vector<std::string> &fields)
+{
+    auto safeStod = [](const std::string &s, double fallback = 0.0) -> double
+    {
+        try { return std::stod(s); }
+        catch (...) { return fallback; }
+    };
+
+    if (fields.size() > 0)  vs.temperatureC = safeStod(fields[0]);
+    if (fields.size() > 1)  vs.systolicBP = safeStod(fields[1]);
+    if (fields.size() > 2)  vs.diastolicBP = safeStod(fields[2]);
+    if (fields.size() > 3)  vs.heartRate = safeStod(fields[3]);
+    if (fields.size() > 4)  vs.respiratoryRate = safeStod(fields[4]);
+    if (fields.size() > 5)  vs.spo2 = safeStod(fields[5]);
+    if (fields.size() > 6)  vs.height = safeStod(fields[6]);
+    if (fields.size() > 7)  vs.weight = safeStod(fields[7]);
+    if (fields.size() > 8)  vs.bmi = safeStod(fields[8]);
+    if (fields.size() > 9)  vs.painScore = safeStod(fields[9]);
+    if (fields.size() > 10) vs.waistCircumference = safeStod(fields[10]);
+    if (fields.size() > 11) vs.bloodSugar = safeStod(fields[11]);
+    if (fields.size() > 12) vs.bodyFat = safeStod(fields[12]);
+    if (fields.size() > 13) vs.uricAcid = safeStod(fields[13]);
+    if (fields.size() > 14) vs.cholesterol = safeStod(fields[14]);
+}
+
 // =====================人物数据加载函数=====================
 Admin *loadAdminData(int &count)
 {
@@ -844,127 +873,7 @@ Examination *loadExaminations(int &count)
                     continue;
                 }
 
-                // 按顺序赋值
-                try
-                {
-                    lastExam->vitalSigns.temperatureC = std::stod(fields[0]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.temperatureC = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.systolicBP = std::stod(fields[1]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.systolicBP = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.diastolicBP = std::stod(fields[2]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.diastolicBP = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.heartRate = std::stod(fields[3]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.heartRate = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.respiratoryRate = std::stod(fields[4]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.respiratoryRate = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.spo2 = std::stod(fields[5]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.spo2 = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.height = std::stod(fields[6]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.height = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.weight = std::stod(fields[7]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.weight = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.bmi = std::stod(fields[8]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.bmi = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.painScore = std::stod(fields[9]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.painScore = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.waistCircumference = std::stod(fields[10]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.waistCircumference = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.bloodSugar = std::stod(fields[11]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.bloodSugar = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.bodyFat = std::stod(fields[12]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.bodyFat = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.uricAcid = std::stod(fields[13]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.uricAcid = 0.0;
-                }
-                try
-                {
-                    lastExam->vitalSigns.cholesterol = std::stod(fields[14]);
-                }
-                catch (...)
-                {
-                    lastExam->vitalSigns.cholesterol = 0.0;
-                }
+                parseVitalSigns(lastExam->vitalSigns, fields);
             }
             continue;
         }
@@ -1235,130 +1144,10 @@ bedInfo *loadBedInfos(int &count)
 
             if (fields.size() < 15)
             {
-                std::cerr << "警告: 床位记录的体征数据字段不足(需要15个，实际" << fields.size() << "个)，跳过" << std::endl;
-                continue;
+                std::cerr << "警告: 床位记录的体征数据字段不足(需要15个，实际" << fields.size() << "个)，使用默认值" << std::endl;
             }
 
-            try
-            {
-                newBed->vitalSigns.temperatureC = std::stod(fields[0]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.temperatureC = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.systolicBP = std::stod(fields[1]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.systolicBP = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.diastolicBP = std::stod(fields[2]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.diastolicBP = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.heartRate = std::stod(fields[3]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.heartRate = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.respiratoryRate = std::stod(fields[4]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.respiratoryRate = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.spo2 = std::stod(fields[5]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.spo2 = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.height = std::stod(fields[6]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.height = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.weight = std::stod(fields[7]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.weight = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.bmi = std::stod(fields[8]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.bmi = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.painScore = std::stod(fields[9]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.painScore = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.waistCircumference = std::stod(fields[10]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.waistCircumference = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.bloodSugar = std::stod(fields[11]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.bloodSugar = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.bodyFat = std::stod(fields[12]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.bodyFat = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.uricAcid = std::stod(fields[13]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.uricAcid = 0.0;
-            }
-            try
-            {
-                newBed->vitalSigns.cholesterol = std::stod(fields[14]);
-            }
-            catch (...)
-            {
-                newBed->vitalSigns.cholesterol = 0.0;
-            }
+            parseVitalSigns(newBed->vitalSigns, fields);
         }
 
         // 链表头插

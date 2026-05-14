@@ -51,18 +51,18 @@ public:
     bool patientSignIn();               // 患者登录接口
 
     // ==================== Getter ====================
-    std::string getPatientID();
-    std::string getAddress();
-    std::string getIdCardNumber();
-    std::string getEmergencyContactName();
-    std::string getEmergencyContactPhone();
-    std::string getAllergyHistory();
-    std::string getPastMedicalHistory();
-    MaritalStatus getMaritalStatus();
-    int getRegistrationCount();
-    int getConsultationCount();
-    int getHospitalizationCount();
-    int getMedicationCount();
+    const std::string &getPatientID() const;
+    const std::string &getAddress() const;
+    const std::string &getIdCardNumber() const;
+    const std::string &getEmergencyContactName() const;
+    const std::string &getEmergencyContactPhone() const;
+    const std::string &getAllergyHistory() const;
+    const std::string &getPastMedicalHistory() const;
+    MaritalStatus getMaritalStatus() const;
+    int getRegistrationCount() const;
+    int getConsultationCount() const;
+    int getHospitalizationCount() const;
+    int getMedicationCount() const;
 
     // ==================== Setter ====================
     void setPatientID(const std::string &id);

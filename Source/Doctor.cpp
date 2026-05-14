@@ -1562,26 +1562,7 @@ bool Doctor::getAllExaminations(Examination *&exaHead)
     {
         if (!current->isDeleted && current->doctorID == this->doctorID)
         {
-            std::cout << "检查ID: " << current->examinationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 开单时间: " << current->orderTime
-                      << ", 检查项目: " << current->itemName
-                      << ", 检查结果: " << findVitalSignToString(current)
-                      << ", 报告摘要: " << current->reportSummary
-                      << ", 检查费用: " << current->fee
-                      << ", 出报告时间: " << current->reportTime
-                      << ", 状态: " << examStatusToString(current->status)
-                      << ", 备注: " << current->note;
-
-            std::cout << ", 相关附件: ";
-            for (size_t i = 0; i < current->attachments.size(); ++i)
-            {
-                std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
-            }
-            std::cout << std::endl;
+            printExaminationCard(current);
             std::cout << std::endl;
 
             found = true;
@@ -1599,7 +1580,7 @@ bool Doctor::getAllExaminations(Examination *&exaHead)
 // 根据患者ID获取检查记录信息
 bool Doctor::getExaminationsByPatientID(Examination *&exaHead)
 {
-    std::string patientID = inputRecordIDCheck("请输入要查询的患者ID: ", {"pat"});
+    std::string patientID = inputIDCheck("请输入要查询的患者ID: ");
 
     std::cout << "正在获取患者ID为 " << patientID << " 的检查记录..." << std::endl;
 
@@ -1609,26 +1590,7 @@ bool Doctor::getExaminationsByPatientID(Examination *&exaHead)
     {
         if (!current->isDeleted && current->doctorID == this->doctorID && current->patientID == patientID)
         {
-            std::cout << "检查ID: " << current->examinationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 开单时间: " << current->orderTime
-                      << ", 检查项目: " << current->itemName
-                      << ", 检查结果: " << findVitalSignToString(current)
-                      << ", 报告摘要: " << current->reportSummary
-                      << ", 检查费用: " << current->fee
-                      << ", 出报告时间: " << current->reportTime
-                      << ", 状态: " << examStatusToString(current->status)
-                      << ", 备注: " << current->note;
-
-            std::cout << ", 相关附件: ";
-            for (size_t i = 0; i < current->attachments.size(); ++i)
-            {
-                std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
-            }
-            std::cout << std::endl;
+            printExaminationCard(current);
             std::cout << std::endl;
 
             found = true;
@@ -1655,26 +1617,7 @@ bool Doctor::getExaminationsByConsultationID(Examination *&exaHead)
     {
         if (!current->isDeleted && current->doctorID == this->doctorID && current->consultationID == conID)
         {
-            std::cout << "检查ID: " << current->examinationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 开单时间: " << current->orderTime
-                      << ", 检查项目: " << current->itemName
-                      << ", 检查结果: " << findVitalSignToString(current)
-                      << ", 报告摘要: " << current->reportSummary
-                      << ", 检查费用: " << current->fee
-                      << ", 出报告时间: " << current->reportTime
-                      << ", 状态: " << examStatusToString(current->status)
-                      << ", 备注: " << current->note;
-
-            std::cout << ", 相关附件: ";
-            for (size_t i = 0; i < current->attachments.size(); ++i)
-            {
-                std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
-            }
-            std::cout << std::endl;
+            printExaminationCard(current);
             std::cout << std::endl;
 
             found = true;
@@ -1701,26 +1644,7 @@ bool Doctor::getExaminationsByID(Examination *&exaHead)
     {
         if (!current->isDeleted && current->doctorID == this->doctorID && current->examinationID == examID)
         {
-            std::cout << "检查ID: " << current->examinationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 开单时间: " << current->orderTime
-                      << ", 检查项目: " << current->itemName
-                      << ", 检查结果: " << findVitalSignToString(current)
-                      << ", 报告摘要: " << current->reportSummary
-                      << ", 检查费用: " << current->fee
-                      << ", 出报告时间: " << current->reportTime
-                      << ", 状态: " << examStatusToString(current->status)
-                      << ", 备注: " << current->note;
-
-            std::cout << ", 相关附件: ";
-            for (size_t i = 0; i < current->attachments.size(); ++i)
-            {
-                std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
-            }
-            std::cout << std::endl;
+            printExaminationCard(current);
 
             return true;
         }
@@ -1802,26 +1726,7 @@ bool Doctor::getExaminationsByItemName(Examination *&exaHead)
     {
         if (!current->isDeleted && current->doctorID == this->doctorID && current->itemName == itemName)
         {
-            std::cout << "检查ID: " << current->examinationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 开单时间: " << current->orderTime
-                      << ", 检查项目: " << current->itemName
-                      << ", 检查结果: " << findVitalSignToString(current)
-                      << ", 报告摘要: " << current->reportSummary
-                      << ", 检查费用: " << current->fee
-                      << ", 出报告时间: " << current->reportTime
-                      << ", 状态: " << examStatusToString(current->status)
-                      << ", 备注: " << current->note;
-
-            std::cout << ", 相关附件: ";
-            for (size_t i = 0; i < current->attachments.size(); ++i)
-            {
-                std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
-            }
-            std::cout << std::endl;
+            printExaminationCard(current);
             std::cout << std::endl;
 
             found = true;
@@ -1869,26 +1774,7 @@ bool Doctor::getExaminationsByStatus(Examination *&exaHead)
     {
         if (!current->isDeleted && current->doctorID == this->doctorID && current->status == statusFilter)
         {
-            std::cout << "检查ID: " << current->examinationID
-                      << ", 看诊ID: " << current->consultationID
-                      << ", 患者ID: " << current->patientID
-                      << ", 医生ID: " << current->doctorID
-                      << ", 科室: " << current->department
-                      << ", 开单时间: " << current->orderTime
-                      << ", 检查项目: " << current->itemName
-                      << ", 检查结果: " << findVitalSignToString(current)
-                      << ", 报告摘要: " << current->reportSummary
-                      << ", 检查费用: " << current->fee
-                      << ", 出报告时间: " << current->reportTime
-                      << ", 状态: " << examStatusToString(current->status)
-                      << ", 备注: " << current->note;
-
-            std::cout << ", 相关附件: ";
-            for (size_t i = 0; i < current->attachments.size(); ++i)
-            {
-                std::cout << "[" << (i + 1) << "] " << current->attachments[i] << "  ";
-            }
-            std::cout << std::endl;
+            printExaminationCard(current);
             std::cout << std::endl;
 
             found = true;
@@ -2205,26 +2091,7 @@ void Doctor::manageExaminations(Examination *&exaHead, Consultation *&conHead, i
                     {
                         std::cout << "正在修改的检查记录信息如下：" << std::endl;
 
-                        std::cout << "检查ID: " << target->examinationID
-                                  << ", 看诊ID: " << target->consultationID
-                                  << ", 患者ID: " << target->patientID
-                                  << ", 医生ID: " << target->doctorID
-                                  << ", 科室: " << target->department
-                                  << ", 开单时间: " << target->orderTime
-                                  << ", 检查项目: " << target->itemName
-                                  << ", 检查结果: " << findVitalSignToString(target)
-                                  << ", 报告摘要: " << target->reportSummary
-                                  << ", 检查费用: " << target->fee
-                                  << ", 出报告时间: " << target->reportTime
-                                  << ", 状态: " << examStatusToString(target->status)
-                                  << ", 备注: " << target->note;
-
-                        std::cout << ", 相关附件: ";
-                        for (size_t i = 0; i < target->attachments.size(); ++i)
-                        {
-                            std::cout << "[" << (i + 1) << "] " << target->attachments[i] << "  ";
-                        }
-                        std::cout << std::endl;
+                        printExaminationCard(target);
 
                         int modifyChoice = doctorExaminationModificationMenu();
                         if (modifyChoice == 0)

@@ -1,6 +1,11 @@
 
 #include "../Head/UI.h"
 #include "../Head/GetTime.h"
+#include "../Head/Consultation.h"
+#include "../Head/Examination.h"
+#include "../Head/MedicationRecord.h"
+#include "../Head/Hospitalization.h"
+#include "../Head/User.h"
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -1275,7 +1280,7 @@ std::string ExaminationItemMenu()
     printMenuItem(6, "身高测量");
     printMenuItem(7, "体重测量");
     printMenuItem(8, "BMI计算");
-    printMenuItem(9, "疼痛评估");
+    printMenuItem(9, "疼痛评分");
     printMenuItem(10, "腰围测量");
     printMenuItem(11, "血糖测量");
     printMenuItem(12, "体脂测量");
@@ -1322,7 +1327,7 @@ std::string ExaminationItemMenu()
     }
     else if (itemChoice == 9)
     {
-        itemName = "疼痛评估";
+        itemName = "疼痛评分";
     }
     else if (itemChoice == 10)
     {
@@ -3096,4 +3101,140 @@ int adminReportMenu()
 
     int choice = selectIntCheck(0, 5);
     return choice;
+}
+
+// ======================================== 共享记录显示函数 =======================================
+
+// 打印看诊记录卡片（含检查项目列表和处方列表）
+// 格式与 Patient.cpp 中 getAllConsultations 等函数的输出一致
+void printConsultationCard(const Consultation *con)
+{
+    User u; // 用于调用状态转换函数（这些函数不依赖实例状态）
+
+    std::cout << "看诊ID: " << con->consultationID
+              << ", 挂号ID: " << con->registrationID
+              << ", 医生ID: " << con->doctorID
+              << ", 科室: " << con->department
+              << ", 时间: " << con->consultationTime
+              << ", 状态: " << u.conStatusToString(con->status)
+              << ", 主诉: " << con->chiefComplaint
+              << ", 现病史: " << con->historyOfPresentIllness
+              << ", 既往史: " << con->pastMedicalHistory
+              << ", 家族史: " << con->familyHistory
+              << ", 初步诊断: " << con->preliminaryDiagnosis
+              << ", 检查项目数: " << con->examinationlist.size()
+              << ", 处方数: " << con->prescriptions.size()
+              << ", 处方审核状态: " << (con->isPrescriptionReviewed ? "已审核" : "未审核")
+              << ", 住院建议: " << (con->isHospitalizationRecommended ? "是" : "否")
+              << ", 备注: " << con->note
+              << std::endl;
+    if (con->examinationlist.size() > 0)
+    {
+        std::cout << "检查项目列表:" << std::endl;
+        for (const auto &exam : con->examinationlist)
+        {
+            std::cout << "  - " << exam << std::endl;
+        }
+    }
+    if (con->prescriptions.size() > 0)
+    {
+        std::cout << "处方列表:" << std::endl;
+        for (const auto &pres : con->prescriptions)
+        {
+            std::cout << "  - 药品ID: " << pres.medicineID
+                      << ", 药品名称: " << pres.name
+                      << ", 药品数量: " << pres.quantity
+                      << ", 用量: " << pres.dosage
+                      << ", 频次: " << pres.frequency
+                      << ", 疗程: " << pres.duration
+                      << ", 备注: " << pres.note
+                      << std::endl;
+        }
+    }
+}
+
+// 打印检查记录卡片（含附件信息）
+// 格式与 Doctor.cpp / Nurse.cpp 中检查记录的输出一致
+void printExaminationCard(const Examination *exa)
+{
+    User u; // 用于调用状态转换函数
+
+    std::cout << "检查ID: " << exa->examinationID
+              << ", 看诊ID: " << exa->consultationID
+              << ", 患者ID: " << exa->patientID
+              << ", 医生ID: " << exa->doctorID
+              << ", 科室: " << exa->department
+              << ", 开单时间: " << exa->orderTime
+              << ", 检查项目: " << exa->itemName
+              << ", 检查结果: " << u.findVitalSignToString(const_cast<Examination *>(exa))
+              << ", 报告摘要: " << exa->reportSummary
+              << ", 检查费用: " << exa->fee
+              << ", 出报告时间: " << exa->reportTime
+              << ", 状态: " << u.examStatusToString(exa->status)
+              << ", 备注: " << exa->note;
+
+    std::cout << ", 相关附件: ";
+    for (size_t i = 0; i < exa->attachments.size(); ++i)
+    {
+        std::cout << "[" << (i + 1) << "] " << exa->attachments[i] << "  ";
+    }
+    std::cout << std::endl;
+}
+
+// 打印用药记录卡片（含药品明细，单行紧凑格式）
+// 格式与 Pharmacist.cpp / Admin.cpp 中的用药记录输出一致
+void printMedicationRecordCard(const MedicationRecord *rec)
+{
+    User u; // 用于调用状态转换函数
+
+    std::string reviewStatusStr = u.medicationReviewStatusToString(rec->reviewStatus);
+    std::string statusStr = u.medicationStatusToString(rec->status);
+    std::cout << "用药记录ID: " << rec->medRecordID
+              << ", 关联看诊记录ID: " << rec->consultationID
+              << ", 患者ID: " << rec->patientID
+              << ", 医生ID: " << rec->doctorID
+              << ", 药师ID: " << (rec->pharmacistID.empty() ? "无" : rec->pharmacistID)
+              << ", 科室: " << rec->department
+              << ", 审核状态: " << reviewStatusStr
+              << ", 总费用: " << rec->totalCost
+              << ", 支付时间: " << (rec->paymentTime.empty() ? "未支付" : rec->paymentTime)
+              << ", 发药时间: " << (rec->dispenseTime.empty() ? "未发药" : rec->dispenseTime)
+              << ", 创建时间: " << rec->createTime
+              << ", 备注: " << (rec->note.empty() ? "无" : rec->note)
+              << std::endl;
+
+    std::cout << "用药明细: " << std::endl;
+    for (const auto &line : rec->lines)
+    {
+        std::cout << "  - 药品ID: " << line.medicineID
+                  << ", 药品名称: " << line.medicineName
+                  << ", 数量: " << line.quantity
+                  << ", 单价: " << line.unitPrice
+                  << ", 用法备注: " << (line.note.empty() ? "无" : line.note)
+                  << std::endl;
+    }
+}
+
+// 打印住院记录卡片（含状态字符串）
+// 格式与 Nurse.cpp 中 printHospitalizationDetails 的输出一致
+void printHospitalizationCard(const Hospitalization *hos)
+{
+    User u; // 用于调用状态转换函数
+
+    std::cout << "住院ID: " << hos->hospitalizationID
+              << ", 看诊ID: " << hos->consultationID
+              << ", 患者ID: " << hos->patientID
+              << ", 医生ID: " << hos->doctorID
+              << ", 护士ID: " << hos->nurseID
+              << ", 科室: " << hos->department
+              << ", 病房类型: " << hos->wardType
+              << ", 床位号: " << hos->bedNumber
+              << ", 申请时间: " << hos->applyTime
+              << ", 允许入院时间: " << hos->availableAdmitTime
+              << ", 实际入院时间: " << hos->admitTime
+              << ", 出院时间: " << hos->dischargeTime
+              << ", 押金: " << hos->deposit
+              << ", 总费用: " << hos->totalCost
+              << ", 状态: " << u.hosStatusToString(hos->status)
+              << std::endl;
 }

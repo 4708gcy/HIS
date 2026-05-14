@@ -309,32 +309,7 @@ void Pharmacist::reviewPrescriptions(MedicationRecord *&medRecHead, Consultation
 // ==================== 用药记录管理 ====================
 void Pharmacist::printMedicationRecord(MedicationRecord *current)
 {
-    std::string reviewStatusStr = medicationReviewStatusToString(current->reviewStatus);
-    std::string statusStr = medicationStatusToString(current->status);
-    std::cout << "用药记录ID: " << current->medRecordID
-              << ", 关联看诊记录ID: " << current->consultationID
-              << ", 患者ID: " << current->patientID
-              << ", 医生ID: " << current->doctorID
-              << ", 药师ID: " << (current->pharmacistID.empty() ? "无" : current->pharmacistID)
-              << ", 科室: " << current->department
-              << ", 审核状态: " << reviewStatusStr
-              << ", 总费用: " << current->totalCost
-              << ", 支付时间: " << (current->paymentTime.empty() ? "未支付" : current->paymentTime)
-              << ", 发药时间: " << (current->dispenseTime.empty() ? "未发药" : current->dispenseTime)
-              << ", 创建时间: " << current->createTime
-              << ", 备注: " << (current->note.empty() ? "无" : current->note)
-              << std::endl;
-
-    std::cout << "用药明细: " << std::endl;
-    for (const auto &line : current->lines)
-    {
-        std::cout << "  - 药品ID: " << line.medicineID
-                  << ", 药品名称: " << line.medicineName
-                  << ", 数量: " << line.quantity
-                  << ", 单价: " << line.unitPrice
-                  << ", 用法备注: " << (line.note.empty() ? "无" : line.note)
-                  << std::endl;
-    }
+    printMedicationRecordCard(current);
 }
 
 // 获取全部用药记录（仅限本部门且分配给自己的记录）
@@ -364,7 +339,7 @@ bool Pharmacist::getAllMedicationRecords(MedicationRecord *&medRecHead)
 // 根据患者ID查询用药记录（仅限本部门且分配给自己的记录）
 bool Pharmacist::getMedicationRecordsByPatientID(MedicationRecord *&medRecHead)
 {
-    std::string patientID = inputRecordIDCheck("请输入要查询的患者ID: ", {"pat"});
+    std::string patientID = inputIDCheck("请输入要查询的患者ID: ");
 
     MedicationRecord *current = medRecHead;
     bool found = false;

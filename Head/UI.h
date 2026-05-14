@@ -19,6 +19,19 @@
 #include <fstream>
 #include <mutex>
 
+// 前向声明（用于共享显示函数的参数类型）
+struct Consultation;
+struct Examination;
+struct MedicationRecord;
+struct Hospitalization;
+
+// ======================================== 共享记录显示函数 =======================================
+
+void printConsultationCard(const Consultation *con);      // 打印看诊记录卡片（含检查项目列表和处方列表）
+void printExaminationCard(const Examination *exa);         // 打印检查记录卡片（含附件信息）
+void printMedicationRecordCard(const MedicationRecord *rec); // 打印用药记录卡片（含药品明细，单行紧凑格式）
+void printHospitalizationCard(const Hospitalization *hos); // 打印住院记录卡片（含状态字符串）
+
 void pause(const std::string &breadcrumb = ""); // 暂停函数，等待用户按键继续（支持面包屑导航）
 std::string trim(const std::string &str);       // 去除字符串首尾空格的辅助函数
 void clearScreen();                              // 清屏函数

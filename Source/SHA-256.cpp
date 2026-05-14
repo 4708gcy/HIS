@@ -114,12 +114,12 @@ bool SHA256Verify(const std::string& inputPassword, const std::string& storedHas
     std::string calculatedHash = SHA256Encrypt(inputPassword, salt, iterations);
 
     // 恒定时间比较，防止时序攻击
-    if (calculatedHash.length() != storedHash.length()) {
-        return false;
-    }
-    volatile int result = 0;
-    for (size_t i = 0; i < calculatedHash.length(); ++i) {
-        result |= calculatedHash[i] ^ storedHash[i];
+    volatile int result = static_cast<int>(calculatedHash.length()) ^ static_cast<int>(storedHash.length());
+    size_t maxLen = std::max(calculatedHash.length(), storedHash.length());
+    for (size_t i = 0; i < maxLen; ++i) {
+        char c = i < calculatedHash.length() ? calculatedHash[i] : '\0';
+        char s = i < storedHash.length() ? storedHash[i] : '\0';
+        result |= c ^ s;
     }
     return result == 0;
 }
