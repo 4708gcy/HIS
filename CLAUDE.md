@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 ## Quick Start
 
 ```bash
@@ -17,7 +19,7 @@ First run without admin data forces admin creation (requires API Key: `88888888`
 
 ## Gotchas
 
-- **Working directory is critical.** The executable uses `../Data/` relative paths. Running from the wrong directory causes silent load failures or data loss on save.
+- **Working directory is critical.** All data file paths (`User.h` macros like `ADMIN_FILE`, `REGISTRATION_FILE`, etc.) are relative `../Data/...` — the executable MUST run from `build/`. Running from the wrong directory causes silent load failures or data loss on save.
 - **VS Code `postDebugTask` destroys the build directory.** `launch.json` runs `Remove-Item -Recurse -Force build/*` after every debug session. If you need to preserve build artifacts, remove or comment out `postDebugTask`.
 - **Emergency save uses double pointers.** Global pointers like `static Admin **g_adminHead` point to the local `adminHead` variable's address, not its value. This ensures that after head-insertion changes the local head, `emergencySave()` still dereferences the latest head. If you change this pattern, crash recovery will silently lose newly inserted nodes.
 - **No database — all data is flat text files.** Corruption in any file breaks the corresponding entity chain on next load.
@@ -25,6 +27,7 @@ First run without admin data forces admin creation (requires API Key: `88888888`
 - **No commas in text input.** Validation rejects both `,` and `，` to prevent breaking CSV field structure in data files.
 - **`#` is the empty-field sentinel.** All text fields default to `"#"`, and empty user input is saved as `"#"`. When parsing loaded data, treat `"#"` as empty/null.
 - **`count:N` is the last line of every data file.** Load functions read this to set the global ID counter so new IDs don't collide with existing ones.
+- **No test suite.** There are no tests. Verify changes by building and running the program interactively.
 
 ## Project Overview
 
@@ -43,6 +46,25 @@ Data/                 — persisted flat-file data (loaded at startup, saved at 
   RecordData/{Type}ChainData/*.txt — 7 business record chains
   OperationLog/*.log               — daily operation logs (format: his_YYYY_MM_DD.log)
 Document/             — project documentation, reports, and development log
+```
+
+### Data File Paths (defined in `User.h`)
+
+All paths are relative to the working directory (must be `build/`):
+
+```
+../Data/UserData/AdminChainData/admin_users.txt
+../Data/UserData/DoctorChainData/doctor_users.txt
+../Data/UserData/NurseChainData/nurse_users.txt
+../Data/UserData/PharmacistChainData/pharmacist_users.txt
+../Data/UserData/PatientChainData/patient_users.txt
+../Data/RecordData/RegistrationChainData/registrations.txt
+../Data/RecordData/ConsultationChainData/consultations.txt
+../Data/RecordData/ExaminationChainData/examinations.txt
+../Data/RecordData/HospitalizationChainData/hospitalizations.txt
+../Data/RecordData/MedicineChainData/medication_records.txt
+../Data/RecordData/MedicineChainData/medicines.txt
+../Data/RecordData/HospitalizationChainData/bed_info.txt
 ```
 
 ### Data Model
