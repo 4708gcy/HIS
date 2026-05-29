@@ -1,8 +1,11 @@
 #include <iostream>
-#include "Head/UI.h"
-#include "Head/LoadData.h"
-#include "Head/SaveData.h"
-#include "Head/Login.h"
+#include "Core/UI.h"
+#include "Modules/LoadData.h"
+#include "Modules/SaveData.h"
+#include "Core/Login.h"
+#include "Core/EntityRepository.h"
+#include "Modules/AIQueryClient.h"
+#include "Core/Database.h"
 #include <mutex>
 #include <csignal>
 
@@ -25,6 +28,8 @@ int hospitalizationCount = 0;
 int medicationRecordCount = 0;
 int medicineCount = 0;
 int bedCount = 0;
+int nursingRecordCount = 0;
+EntityRepository<NursingRecord> nursingRecordRepo(nursingRecordCount, "nur", 6);
 
 // 全局指针用于信号处理中的紧急保存
 static Admin **g_adminHead = nullptr;
@@ -39,6 +44,7 @@ static Hospitalization **g_hosHead = nullptr;
 static MedicationRecord **g_medRecHead = nullptr;
 static Medicine **g_medHead = nullptr;
 static bedInfo **g_bedHead = nullptr;
+static NursingRecord **g_nurHead = nullptr; // 兼容紧急保存的双指针
 
 void emergencySave()
 {
@@ -55,6 +61,7 @@ void emergencySave()
     if (g_medRecHead && *g_medRecHead) saveMedicationRecords(*g_medRecHead, medicationRecordCount);
     if (g_medHead && *g_medHead) saveMedicines(*g_medHead, medicineCount);
     if (g_bedHead && *g_bedHead) saveBedInfos(*g_bedHead, bedCount);
+    if (g_nurHead && *g_nurHead) saveNursingRecords(*g_nurHead, nursingRecordCount);
     std::cerr << "数据已紧急保存，程序退出。" << std::endl;
 }
 
@@ -103,6 +110,17 @@ int main()
     std::signal(SIGABRT, signalHandler);
     std::signal(SIGTERM, signalHandler);
 
+    // 连接 MySQL 数据库
+    Database &g_db = GetDB();
+    if (g_db.connect())
+    {
+        std::cout << "✓ 已连接 MySQL 数据库" << std::endl;
+    }
+    else
+    {
+        std::cerr << "⚠ 无法连接 MySQL 数据库，数据无法持久化——程序将以空数据运行" << std::endl;
+    }
+
     Admin *adminHead = loadAdminData(adminIDCount); // 加载管理员数据
     if (adminHead == nullptr)
     {
@@ -132,12 +150,14 @@ int main()
     MedicationRecord *medRecHead = loadMedicationRecords(medicationRecordCount); // 加载用药记录数据
     Medicine *medHead = loadMedicines(medicineCount);                            // 加载药品信息数据
     bedInfo *bedHead = loadBedInfos(bedCount);                                   // 加载床位信息数据
+    NursingRecord *nursingRecordHead = loadNursingRecords(nursingRecordCount);    // 加载护理记录数据
+    nursingRecordRepo.setHead(nursingRecordHead); // 交给 EntityRepository 管理
 
     // 设置全局指针用于信号处理中的紧急保存
     g_adminHead = &adminHead; g_docHead = &docHead; g_nurseHead = &nurseHead;
     g_phaHead = &phaHead; g_patientHead = &patientHead; g_regHead = &regHead;
     g_conHead = &conHead; g_examHead = &examHead; g_hosHead = &hosHead;
-    g_medRecHead = &medRecHead; g_medHead = &medHead; g_bedHead = &bedHead;
+    g_medRecHead = &medRecHead; g_medHead = &medHead; g_bedHead = &bedHead; g_nurHead = &nursingRecordHead;
 
     try
     {
@@ -228,6 +248,78 @@ int main()
                                     else if (reportChoice == 0) break;
                                 }
                             }
+                            else if (adminChoice == 9) // AI 智能分析
+                            {
+                                AIQueryClient aiClient("127.0.0.1", 5001);
+                                std::cout << "\n正在连接 AI 分析服务..." << std::endl;
+                                if (!aiClient.isAvailable())
+                                {
+                                    std::cout << "⚠ AI 服务未启动。请先运行 ai_service 目录下的 Python 服务：\n"
+                                              << "  cd ai_service && pip install -r requirements.txt && python app.py"
+                                              << std::endl;
+                                    pause("管理员 > AI 智能分析");
+                                    continue;
+                                }
+                                std::cout << "✓ AI 服务已连接\n" << std::endl;
+                                while (true)
+                                {
+                                    std::cout << "\n┌──── AI 智能分析 v2.0 ────┐\n"
+                                              << "│ 1. 需求预测              │\n"
+                                              << "│ 2. 异常检测              │\n"
+                                              << "│ 3. 药品库存分析          │\n"
+                                              << "│ 4. 床位优化建议          │\n"
+                                              << "│ 5. 综合仪表盘            │\n"
+                                              << "│ 6. 生成图表 PNG          │\n"
+                                              << "│ 0. 返回上级              │\n"
+                                              << "└─────────────────────────┘\n"
+                                              << "请选择: ";
+                                    int aiChoice;
+                                    std::cin >> aiChoice;
+                                    std::cin.ignore();
+                                    if (aiChoice == 1)
+                                    {
+                                        std::cout << "\n=== Holt-Winters 需求预测 ===\n"
+                                                  << aiClient.getPredictions() << std::endl;
+                                    }
+                                    else if (aiChoice == 2)
+                                    {
+                                        std::cout << "\n=== Z-score 异常检测 ===\n"
+                                                  << aiClient.getAnomalies() << std::endl;
+                                    }
+                                    else if (aiChoice == 3)
+                                    {
+                                        std::cout << "\n=== 药品库存分析 ===\n"
+                                                  << aiClient.getMedicines() << std::endl;
+                                    }
+                                    else if (aiChoice == 4)
+                                    {
+                                        std::cout << "\n=== 床位分配优化 ===\n"
+                                                  << aiClient.getBedOptimization() << std::endl;
+                                    }
+                                    else if (aiChoice == 5)
+                                    {
+                                        std::cout << "\n=== 综合仪表盘 ===\n"
+                                                  << aiClient.getDashboard() << std::endl;
+                                    }
+                                    else if (aiChoice == 6)
+                                    {
+                                        std::cout << "\n生成分析图表 PNG 到 ai_service/charts/ ...\n";
+                                        std::string types[] = {"predictions", "bed-utilization", "anomalies", "medicines"};
+                                        for (const auto &t : types) {
+                                            std::string path = "../ai_service/charts/" + t + ".png";
+                                            std::string result = aiClient.downloadChart(t, path);
+                                            if (!result.empty())
+                                                std::cout << "  ✓ " << t << ".png → " << result << std::endl;
+                                            else
+                                                std::cout << "  ✗ " << t << ".png 生成失败" << std::endl;
+                                        }
+                                        std::cout << "\n请到 ai_service/charts/ 目录查看图表。" << std::endl;
+                                    }
+                                    else if (aiChoice == 0) break;
+                                    else std::cout << "无效的选择!" << std::endl;
+                                    pause("管理员 > AI 智能分析");
+                                }
+                            }
                             else if (adminChoice == 0) // 退出登录
                             {
                                 std::cout << "成功退出登录" << std::endl;
@@ -256,7 +348,7 @@ int main()
                             }
                             else if (doctorChoice == 2)
                             {
-                                client->manageConsultations(conHead, regHead, medHead, consultationCount); // 管理看诊记录
+                                client->manageConsultations(conHead, regHead, medHead, patientHead, consultationCount); // 管理看诊记录
                             }
                             else if (doctorChoice == 3)
                             {
@@ -285,7 +377,7 @@ int main()
                             }
                             else if (nurseChoice == 1)
                             {
-                                client->manageHospitalizations(hosHead, conHead, bedHead, hospitalizationCount); // 管理住院记录和床位信息
+                                client->manageHospitalizations(hosHead, conHead, bedHead, patientHead, hospitalizationCount); // 管理住院记录和床位信息
                             }
                             else if (nurseChoice == 2)
                             {
@@ -296,6 +388,10 @@ int main()
                                 client->manageBeds(bedHead, bedCount); // 管理床位信息
                             }
                             else if (nurseChoice == 4)
+                            {
+                                client->manageNursingRecords(nursingRecordHead, patientHead, nursingRecordCount); // 护理记录管理
+                            }
+                            else if (nurseChoice == 5)
                             {
                                 client->managePersonalInfo(); // 个人信息管理
                             }
@@ -318,7 +414,7 @@ int main()
                             }
                             else if (pharmacistChoice == 1)
                             {
-                                client->reviewPrescriptions(medRecHead, conHead, medHead, medicationRecordCount);
+                                client->reviewPrescriptions(medRecHead, conHead, medHead, patientHead, medicationRecordCount);
                                 pause("药剂师 > 处方审核");
                             }
                             else if (pharmacistChoice == 2)
@@ -510,8 +606,12 @@ int main()
     saveMedicationRecords(medRecHead, medicationRecordCount); // 保存用药记录数据
     saveMedicines(medHead, medicineCount);                    // 保存药品信息数据
     saveBedInfos(bedHead, bedCount);                          // 保存床位信息数据
+    saveNursingRecords(nursingRecordHead, nursingRecordCount); // 保存护理记录数据（使用原始指针兼容）
 
     LogManager::getInstance().info("系统退出，所有数据已保存");
+
+    // 断开 MySQL
+    g_db.disconnect();
 
     // 清理所有链表内存
     while (adminHead) { Admin *n = adminHead->next; delete adminHead; adminHead = n; }
@@ -526,6 +626,7 @@ int main()
     while (medRecHead) { MedicationRecord *n = medRecHead->next; delete medRecHead; medRecHead = n; }
     while (medHead) { Medicine *n = medHead->next; delete medHead; medHead = n; }
     while (bedHead) { bedInfo *n = bedHead->next; delete bedHead; bedHead = n; }
+    // nursingRecordHead 由 nursingRecordRepo 析构时自动清理
     } // end try
     catch (const std::exception &e)
     {

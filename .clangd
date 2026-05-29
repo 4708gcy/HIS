@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -IE:/MySQL/8-0/include
+    - -I${workspaceFolder}/Head
+    - -std=c++17

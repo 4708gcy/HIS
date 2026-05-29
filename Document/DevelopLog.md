@@ -846,3 +846,57 @@ tests/backend_regression.cpp
 - 新增 `custom-reference.docx` 全量参考文献及附件结构。
 - 引入使用 Mermaid 绘制的前后端双向交互与角色流程，产出了 `程序主要功能简图.mmd` / `.svg`。
 - 在 `Document/image/` 目录下集中整理了由系统全面运行期间捕获的高清测试截图，为最终期末答辩做好了全副武装的素材准备。
+
+---
+
+## 2026.5.29 — MySQL 数据库迁移 & 两阶段全面优化
+
+### 第一阶段：业务功能增强（GLM 执行）
+
+| Sprint | 内容 | 关键产出 |
+|:---:|------|------|
+| 1 | 数据完整性修复 | `isHospitalized` 状态同步、金额 `double`→`int`(分)、出院结算 `totalCost` 时序修复、`reg000035` 重复 ID 去重 |
+| 2 | 药物安全系统 | `Head/DrugSafety.h` + `Source/DrugSafety.cpp`，过敏检查 + DDI 检查（30 对药物相互作用），医生开药 + 药剂师审核双端集成 |
+| 3 | 科室去硬编码 | `UI::getDepartmentList()` 从 4 条角色链动态聚合唯一科室，替换 5 处硬编码数组，`inputDepartmentCheck` 接受任意非空科室 |
+| 4 | Admin 修改功能补全 | 5 类记录扩展修改菜单：住院(押金/病房类型/护士ID)、检查(项目名称/报告摘要/备注)、看诊(主诉/现病史/诊断/备注)、挂号(备注)、用药(备注) |
+| 5 | 护理记录模块 | `NursingRecord` 结构体 + load/save + main.cpp 集成 + Nurse CRUD + 生命体征快照，新增 `Data/RecordData/NursingRecordChainData/` |
+| 6 | EntityRepository 模板 | `Head/EntityRepository.h` 泛型数据仓库（O(1) ID 查找/过滤/自动 ID 生成），NursingRecord 链示范集成 |
+| 7 | Holt-Winters + Z-score | `DataAnalysis` 升级：双指数平滑预测（n≥6 覆盖简单预测）+ Z-score 异常检测（按科室），集成到 `runFullAnalysis` 管线 |
+| 8 | Python AI 微服务 | `ai_service/` Flask REST API (7 端点)，C++ `AIQueryClient` HTTP 客户端（WinSock2），管理员菜单选项 9 "AI 智能分析" |
+
+### 第二阶段：MySQL 数据库迁移（GLM 执行）
+
+| Sprint | 内容 | 关键产出 |
+|:---:|------|------|
+| 1 | 数据库建表 | `Data/Schema/schema.sql` — 21 张表（14 主表 + 7 子表），外键约束（SET NULL + CASCADE），CHECK 约束，建表执行通过 |
+| 2 | Database 封装层 | `Head/Database.h` + `Source/Database.cpp` — MySQL C API 封装（query/execute/事务/参数化查询/连接池），`loadConfig` 读取 `Data/DatabaseConfig.txt` |
+| 3 | Load/Save 重写 | 13 个 load 函数 + 13 个 save 函数全部重写为 MySQL 版本：SELECT 加载 + INSERT ON DUPLICATE KEY UPDATE 保存 + 事务 + 回滚 |
+| 4 | main.cpp 集成 | 全局 `Database g_db` 对象，连接→加载→运行→保存→断开 生命周期，ID 计数器从 `SELECT MAX` 初始化 |
+| 5 | 业务 SQL 化 | 5 个统计报表使用 SQL `GROUP BY`/`SUM`/`COUNT` 聚合，保留链表回退路径 |
+| 6 | 数据完整性 | 20 个外键（13 SET NULL + 4 CASCADE + 3 无动作），16 个 CHECK 约束，1 个 UNIQUE 索引 |
+| 7 | 旧代码清理 | CSV 文件路径宏移除、LoadData.h/SaveData.h 注释更新、main.cpp 误导消息修正 |
+
+### 终审修复（本会话执行）
+
+**架构 & 文件统计：**
+- 头文件 19→23（新增 Database/DrugSafety/EntityRepository/AIQueryClient）
+- 源文件 13→16（新增 Database/DrugSafety/AIQueryClient）
+- 记录类型 7→8（新增 NursingRecord）
+- 数据存储：CSV 文本文件 → MySQL 关系型数据库（`his_db`，21 张表）
+
+**Critical Bug 修复：**
+- `Doctor::initConsultationPrescription` 缺少 DrugSafety 检查 → 添加过敏+DDI 检查（与 `addConsultationPrescription` 保持一致），函数签名新增 `Patient *patientHead` 参数，级联更新 2 个调用点
+
+**项目清理：**
+- 删除 `HIS第二阶段-MySQL数据库迁移-执行版.md`（已执行完毕的提示词）
+- 删除 `glm.txt`（GLM 会话日志残留）
+- 删除 `Data/Schema/__pycache__/`（Python 字节码缓存）
+- 删除 `Data/UserData/`（5 个遗留 CSV 用户数据目录，共 5 个 txt 文件）
+- 删除 `Data/RecordData/`（8 个遗留 CSV 记录数据目录，共 7 个 txt 文件 + 1 个空目录）
+
+**CLAUDE.md 维护：**
+- 药物相互作用对数 31→30（与实际文件一致）
+- 移除已删除的 `Data/UserData/` 和 `Data/RecordData/` 目录引用
+- 更新 CSV 遗留数据说明为"已移除，使用 MySQL"
+
+**构建验证：** `his.exe` 全程零错误零警告编译通过
