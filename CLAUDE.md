@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Configure (run once, or when CMakeLists.txt changes)
-cd build && cmake ..
+mkdir build && cd build && cmake ..
 
 # Build
 cmake --build build --config Debug --target his
@@ -20,7 +20,8 @@ First run without admin data forces admin creation (requires API Key: `88888888`
 ## Gotchas
 
 - **Working directory is critical.** All data file paths (`User.h` macros like `ADMIN_FILE`, `REGISTRATION_FILE`, etc.) are relative `../Data/...` — the executable MUST run from `build/`. Running from the wrong directory causes silent load failures or data loss on save.
-- **VS Code `postDebugTask` destroys the build directory.** `launch.json` runs `Remove-Item -Recurse -Force build/*` after every debug session. If you need to preserve build artifacts, remove or comment out `postDebugTask`.
+- **VS Code `postDebugTask` destroys the build directory.** `launch.json` runs `Remove-Item -Recurse -Force build/*` after every debug session. If you need to preserve build artifacts, comment out or remove the `"postDebugTask"` line in `.vscode/launch.json`.
+- **Stale `his_server` task.** `.vscode/tasks.json` has a "CMake: his_server编译" task referencing a `his_server` target that does not exist in `CMakeLists.txt`. This task will fail if run; ignore it unless you add a matching target.
 - **Emergency save uses double pointers.** Global pointers like `static Admin **g_adminHead` point to the local `adminHead` variable's address, not its value. This ensures that after head-insertion changes the local head, `emergencySave()` still dereferences the latest head. If you change this pattern, crash recovery will silently lose newly inserted nodes.
 - **No database — all data is flat text files.** Corruption in any file breaks the corresponding entity chain on next load.
 - **Signal safety.** `emergencySave()` writes files directly (no atomic rename). Ctrl+C during a write can produce truncated files.
@@ -40,7 +41,7 @@ HIS — Hospital Information System. A C++17 console application for a universit
 ```
 main.cpp              — entry point, signal handlers, main loop (load → login/menu → save/cleanup)
 Head/*.h              — 19 header files (data structures, class declarations, enums)
-Source/*.cpp          — 13 implementation files (one per major header)
+Source/*.cpp          — 13 implementation files (struct-only headers like Consultation.h, Examination.h have no dedicated .cpp; their logic lives in UI.cpp, User.cpp, SaveData.cpp, LoadData.cpp)
 Data/                 — persisted flat-file data (loaded at startup, saved at shutdown)
   UserData/{Role}ChainData/*.txt   — 5 per-role user chains
   RecordData/{Type}ChainData/*.txt — 7 business record chains
@@ -144,7 +145,7 @@ Every data file ends with `count:N` storing the current ID counter.
 
 - **Authentication** (`Login.h`, `SHA-256.h`): Salted SHA-256 with 1000 iterations, 16-char random salt. Constant-time comparison (volatile XOR). Account lockout after 5 failed attempts. Admin registration requires API Key `"88888888"`.
 - **Persistence** (`LoadData.h`, `SaveData.h`): 12 load functions + 12 save functions, one per chain. Load uses head-insertion to build lists. Save traverses from head.
-- **UI** (`UI.h`): 80+ menu functions, 20+ input validation functions, `LogManager` singleton (mutex-guarded, logs to `Data/OperationLog/his_YYYY_MM_DD.log`), Unicode box-drawing menus, CJK width calculation, color output, info cards, hidden password input.
+- **UI** (`UI.h`): 80+ menu functions, 20+ input validation functions, `LogManager` singleton (mutex-guarded, writes to `../Data/OperationLog/his_YYYY_MM_DD.log` — the `OperationLog` directory must exist under `Data/`), Unicode box-drawing menus, CJK width calculation, color output, info cards, hidden password input.
 - **Generic account management** (`Login.h`): `AccountManageGeneric<UserType>()` template handles activation/blocking for all 5 role types.
 - **Emergency save** (`main.cpp`): Signal handlers for SIGINT/SIGABRT/SIGTERM. Uses double pointers to follow head-insertion changes. Windows API `ReadFile` for pause prompt (std::cin unsafe in signal context).
 - **Time** (`GetTime.h`): `MyTime` singleton, returns `YYYY-MM-DD HH:MM:SS` format.
@@ -178,6 +179,6 @@ VS Code config in `.vscode/`:
 ## Build Requirements
 
 - CMake 3.24+
-- MSVC (Windows) with C++17 support
+- MSVC (Visual Studio 2017 15.8+) with C++17 support (`/std:c++17`)
 - MSVC `/utf-8` flag is set in CMakeLists.txt for Chinese source and data files
 - No external libraries required
