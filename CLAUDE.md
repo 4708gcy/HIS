@@ -24,7 +24,7 @@ cp E:/MySQL/8-0/lib/libmysql.dll build/Debug/   # ensure DLL is present
 cd build && ./Debug/his.exe
 ```
 
-First run without admin data forces admin creation (requires API Key: `88888888`).
+First run without admin data forces admin creation (requires API Key: `88888888` by default, overridable via `HIS_ADMIN_API_KEY` env var or `Data/AdminAPIKey.txt`).
 
 ## Gotchas
 
@@ -34,7 +34,10 @@ First run without admin data forces admin creation (requires API Key: `88888888`
 - **VS Code `postDebugTask` destroys the build directory.** `launch.json` runs `Remove-Item -Recurse -Force build/*` after every debug session. This also deletes `libmysql.dll` — you'll need to recopy it.
 - **Stale `his_server` task.** `.vscode/tasks.json` references a non-existent target; ignore it.
 - **Emergency save uses double pointers.** Global pointers like `static Admin **g_adminHead` point to the local `adminHead` variable's address. MySQL C API is NOT signal-safe — `emergencySave()` in signal handlers may be unreliable.
-- **`#` is the empty-field sentinel.** Text fields default to `"#"`, which maps to SQL `NULL` in the database layer (`dbStr()` and `dbDateTime()` helpers).
+- **`#` is the empty-field sentinel.** Text fields default to `"#"`, which maps to SQL `NULL` in the database layer (`dbStr()` helper maps `"#"` → empty string → SQL NULL; `dbDateTime()` uses `\x01` prefix convention to inject raw SQL NULL, recognized by `buildSql()`).
+- **`clearScreen()` uses safe Win32 API** (`FillConsoleOutputCharacter` + `SetConsoleCursorPosition`) on Windows, ANSI escape `\033[2J\033[1;1H` on Linux. No `system("cls")` call.
+- **EntityRepository ID fields are immutable via the repo.** `getIdField()` returns `const std::string&` — modifying entity IDs externally will cause `idMap` index to go stale. Call `repo.reindex()` after any external ID change.
+- **API Key has 3-level priority:** Environment variable `HIS_ADMIN_API_KEY` → config file `Data/AdminAPIKey.txt` → hardcoded default `88888888`. Same pattern applies to AI service (`HIS_API_KEY` env var).
 - **No test suite.** Verify changes by building and running the program interactively.
 - **New `.cpp` files require CMake reconfigure.** `CMakeLists.txt` uses `file(GLOB)` for source discovery across `Source/Core/`, `Source/Roles/`, `Source/Modules/`. After creating a new `.cpp` file, run `cd build && cmake ..`.
 - **All monetary values are in cents (int).** Amount fields in MySQL are `INT` columns (`fee_cents`, `deposit_cents`, `balance_cents`, etc.). Divide by 100.0 for yuan display. Never use `double` for money comparisons.
@@ -52,8 +55,8 @@ HIS — Hospital Information System. A C++17 console application backed by MySQL
 
 ```
 main.cpp              — entry point, signal handlers, main loop (connect DB → load → login/menu → save → disconnect)
-Head/                 — 23 header files in 4 subdirs: Core(7)/Entities(6)/Roles(5)/Modules(5)
-Source/               — 16 source files in 3 subdirs: Core(6)/Roles(5)/Modules(5)
+Head/                 — 25 header files in 4 subdirs: Core(7)/Entities(7)/Roles(5)/Modules(6)
+Source/               — 18 source files in 3 subdirs: Core(6)/Roles(8)/Modules(5)
 Data/
   DatabaseConfig.txt  — MySQL connection config (host, port, user, password, database)
   Schema/
@@ -94,7 +97,7 @@ ai_service/           — Python Flask AI v2.0 (MySQL + matplotlib + pandas)
 
 **13 doubly-linked list chains** (5 user + 8 business record). Each node has `prev`/`next` raw pointers. New nodes use head insertion. Deletion sets `isDeleted` flag (logical delete). Nested sub-collections use `std::vector<T>`.
 
-`NursingRecord` chain is also managed by `EntityRepository<NursingRecord>` (template class in `EntityRepository.h`) providing O(1) ID lookup.
+`NursingRecord` chain is also managed by `EntityRepository<NursingRecord>` (template class in `EntityRepository.h`) providing O(1) ID lookup. `Patient` and `Registration` chains are now also managed by `EntityRepository` via template specializations (`getIdField` returns `patientID` / `registrationID` respectively).
 
 **User hierarchy:**
 ```
@@ -131,12 +134,12 @@ User (base, virtual destructor)
 
 - **Database** (`Database.h`, `Database.cpp`): MySQL C API wrapper. Singleton via `GetDB()`. Provides `connect()`, `query()`, `execute()`, `queryPrepared()`, `executePrepared()`, transaction support (`beginTransaction/commit/rollback`), and row-reading helpers.
 - **Persistence** (`LoadData.h`, `SaveData.h`): 13 load functions read from MySQL into linked lists. 13 save functions sync linked lists to MySQL via `INSERT ... ON DUPLICATE KEY UPDATE`. Save wraps each chain in a transaction with rollback on error.
-- **Authentication** (`Login.h`, `SHA-256.h`): Salted SHA-256, account lockout after 5 failures. Admin registration requires API Key `"88888888"`.
-- **UI** (`UI.h`): 80+ menu functions, 20+ input validation functions, `LogManager` singleton, Unicode box-drawing, CJK width, color output.
-- **Admin Reports** (`Admin.cpp`): 5 report functions use SQL aggregation when DB is connected, with linked-list fallback. Direct `GROUP BY`/`SUM`/`COUNT` queries replace manual chain traversal.
+- **Authentication** (`Login.h`, `SHA-256.h`): Salted SHA-256 with 10000 iterations (backward-compatible with legacy 1000-iteration hashes via `verifyPasswordCompat()`), account lockout after 5 failures. Admin registration API Key has 3-level priority: env var `HIS_ADMIN_API_KEY` → `Data/AdminAPIKey.txt` → default `88888888`.
+- **UI** (`UI.h/cpp`): 80+ menu functions, 20+ input validation functions, `LogManager` singleton, Unicode box-drawing, CJK width, color output. Safe `clearScreen()` using Win32 `FillConsoleOutputCharacter`+`SetConsoleCursorPosition` (no `system()`). Generic `displayChainByDept<T>` and `displayChainByFilter<T>` templates for reusable linked-list traversal. Six `printXxxCard()` functions for consistent entity display.
+- **Admin Reports** (`AdminReports.cpp`): 6 report functions (`showDepartmentReport`, `showDoctorWorkloadReport`, `showPatientReport`, `showBedUtilizationReport`, `showMedicineInventoryReport`, `showDataAnalysisReport`) use SQL aggregation when DB is connected, with linked-list fallback. `Admin.cpp` split into 4 files: `Admin.cpp` (auth+shared), `AdminRecords.cpp` (7 record-type CRUD), `AdminUsers.cpp` (4 user-type CRUD), `AdminReports.cpp` (reports).
 - **Data Analysis** (`DataAnalysis.h`): Holt-Winters prediction, Z-score anomaly detection, bed utilization analysis.
-- **Drug Safety** (`DrugSafety.h`): Rule-engine drug interaction detection (30 pairs in `Data/DrugData/interactions.txt`).
-- **Entity Repository** (`EntityRepository.h`): Generic template for O(1) ID lookup. Used by NursingRecord chain.
+- **Drug Safety** (`DrugSafety.h`): Tokenized drug interaction detection (30 pairs in `Data/DrugData/interactions.txt`). `tokenizeDrugName()` splits drug names by delimiters (`/`, `+`, `-`, etc.) for exact constituent matching — prevents false positives like "阿莫西林克拉维酸钾" matching "阿莫西林". Also checks patient allergy history against prescribed drug constituents.
+- **Entity Repository** (`EntityRepository.h`): Generic template for O(1) ID lookup via `std::unordered_map`. `getIdField()` returns `const std::string&` (ID immutability through repo). Template specializations for `Patient` (`patientID`), `Registration` (`registrationID`), and `NursingRecord` (`recordID`). Manages lifecycle for 3 chains: NursingRecord, Patient, Registration.
 - **Python AI Service** (`ai_service/`): Flask REST API v2.0 on port 5001. Uses pymysql to connect to `his_db`, pandas for data analysis, matplotlib for chart generation. 12 endpoints including bed optimization and 4 PNG chart outputs. Start with `cd ai_service && pip install -r requirements.txt && python app.py`.
 - **AI Query Client** (`AIQueryClient.h`): C++ HTTP client via WinSock2. Provides `getPredictions()`, `getAnomalies()`, `getMedicines()`, `getBedOptimization()`, `getDashboard()`, and `downloadChart()` methods. Admin menu option 9 (6 sub-options).
 
@@ -160,6 +163,8 @@ VS Code config in `.vscode/`:
 - **"调试 HIS 程序"**: Builds with pre-launch task, runs `build/Debug/his.exe` in external terminal with `cwd: build/`
 - **Warning**: `postDebugTask` runs `Remove-Item -Recurse -Force build/*` — deletes build dir including `libmysql.dll`
 
+- **CMakeLists.txt** supports both Debug (default) and Release builds. Release adds `/GL` (whole-program optimization) + `/LTCG` (link-time code generation) for MSVC.
+
 ## Build Requirements
 
 - CMake 3.24+
@@ -168,3 +173,26 @@ VS Code config in `.vscode/`:
 - MySQL 8.0 Server (running on `localhost:3307`, user `root`, password `123456`, database `his_db`)
 - MySQL C Client library: `E:/MySQL/8-0/include/` (headers) + `E:/MySQL/8-0/lib/` (`libmysql.lib`, `libmysql.dll`)
 - Python 3.8+ with `pymysql`, `pandas`, `matplotlib`, `flask`, `flask-cors`, `numpy` (for AI service)
+
+## Recent Improvements (2026.5.30)
+
+### Security
+- **Safe clearScreen**: Replaced `system("cls")` with Win32 `FillConsoleOutputCharacter` + `SetConsoleCursorPosition` (Windows) / ANSI `\033[2J\033[1;1H` (Linux).
+- **API Key 3-level priority**: `HIS_ADMIN_API_KEY` env var → `Data/AdminAPIKey.txt` → default `88888888`. Same pattern for AI service (`HIS_API_KEY`).
+- **Removed `CLIENT_MULTI_STATEMENTS`**: MySQL connection no longer allows multi-statement execution.
+- **SHA-256 10000 iterations**: With backward-compatible `verifyPasswordCompat()` fallback to legacy 1000.
+- **AI service**: `debug=False`, `host='127.0.0.1'`, `@require_api_key` on all non-health endpoints.
+
+### Bug Fixes
+- **PNG download binary-safe**: `AIQueryClient::downloadChart()` uses `Content-Length` parsing, binary file I/O (`std::ios::binary`), and larger buffer (8KB).
+- **EntityRepository ID immutability**: `getIdField()` returns `const std::string&` for all 3 specializations.
+- **Drug interaction tokenized matching**: `tokenizeDrugName()` + `isConstituentOf()` for exact constituent matching, fixes false positives from substring matching.
+- **dbDateTime SQL NULL**: Uses `\x01` prefix convention so `buildSql()` injects raw SQL NULL without quoting.
+
+### Code Quality
+- **Admin.cpp split**: 8586-line monolith → 4 files: `Admin.cpp` (64 lines, auth/shared), `AdminRecords.cpp` (~5200 lines, 7 record types), `AdminUsers.cpp` (~4000 lines, 4 user types), `AdminReports.cpp` (~1000 lines, 6 reports).
+- **printXxxCard() functions**: 6 centralized entity display functions in `UI.h/cpp` — `printRegistrationCard`, `printConsultationCard`, `printExaminationCard`, `printMedicationRecordCard`, `printHospitalizationCard`, `printMedicineCard`.
+- **displayChainByFilter<T>**: Generic linked-list traversal template accepting lambda predicates. Complements existing `displayChainByDept<T>`.
+- **NursingRecord.h**: Moved `NursingRecord` struct from `User.h` to dedicated `Head/Entities/NursingRecord.h`.
+- **CMake Release build**: Supports `-DCMAKE_BUILD_TYPE=Release` with MSVC `/GL` + `/LTCG`.
+- **Dead code removed**: `fillUserBase()` in `LoadData.cpp`.

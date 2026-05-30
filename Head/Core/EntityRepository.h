@@ -6,6 +6,7 @@
 #include <string>
 #include <functional>
 #include <algorithm>
+#include "Entities/Registration.h"
 
 template <typename T>
 class EntityRepository
@@ -29,9 +30,6 @@ private:
         }
     }
 
-    // 默认 ID 字段访问器 — 子类可特化
-    static std::string &getIdField(T *entity) { return entity->recordID; }
-
 public:
     EntityRepository(int &counter, const std::string &prefix = "", int digits = 6)
         : idCounter(counter), idPrefix(prefix), idDigits(digits) {}
@@ -39,6 +37,8 @@ public:
     ~EntityRepository() { clear(); }
 
     T *getHead() { return head; }
+    // 设置链表头并重建索引
+    // 警告：接管后，实体的 ID 字段不应被外部修改（否则 idMap 过期，需手动调用 reindex()）
     void setHead(T *h) { head = h; rebuildIndex(); }
     int &getCounter() { return idCounter; }
 
@@ -147,6 +147,10 @@ public:
         idMap.clear();
     }
 
+    // ID 字段访问器 — 默认返回 recordID，各实体类型可特化
+    // 注意：返回 const 引用，禁止通过此接口修改 ID（否则 idMap 索引会过期）
+    static const std::string &getIdField(T *entity) { return entity->recordID; }
+
     // 重建索引（外部修改链表后调用）
     void reindex() { rebuildIndex(); }
 
@@ -159,5 +163,21 @@ public:
         return s;
     }
 };
+
+// ==================== 实体类型 ID 字段特化 ====================
+
+// Patient 使用 patientID 作为 ID 字段（而非默认的 recordID）
+// 注意：返回 const 引用，禁止通过此接口修改 ID（否则 idMap 索引会过期）
+template<>
+inline const std::string& EntityRepository<Patient>::getIdField(Patient *entity) {
+    return entity->patientID;
+}
+
+// Registration 使用 registrationID 作为 ID 字段
+// 注意：返回 const 引用，禁止通过此接口修改 ID（否则 idMap 索引会过期）
+template<>
+inline const std::string& EntityRepository<Registration>::getIdField(Registration *entity) {
+    return entity->registrationID;
+}
 
 #endif // ENTITY_REPOSITORY_H

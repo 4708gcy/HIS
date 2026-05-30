@@ -18,12 +18,16 @@
 #include <vector>
 #include <fstream>
 #include <mutex>
+#include <functional>
 
 // 前向声明（用于共享显示函数的参数类型）
+struct Registration;
 struct Consultation;
 struct Examination;
 struct MedicationRecord;
 struct Hospitalization;
+struct Medicine;
+struct bedInfo;
 class Doctor;
 class Nurse;
 class Pharmacist;
@@ -32,12 +36,66 @@ class Patient;
 // 从角色链表中聚合所有唯一科室名（排序后返回，无数据时返回默认5科室）
 std::vector<std::string> getDepartmentList(Doctor *docHead, Nurse *nurseHead, Pharmacist *phaHead, Patient *patientHead);
 
-// ======================================== 共享记录显示函数 =======================================
+// ====================== 实体卡片打印函数 ======================
 
-void printConsultationCard(const Consultation *con);      // 打印看诊记录卡片（含检查项目列表和处方列表）
-void printExaminationCard(const Examination *exa);         // 打印检查记录卡片（含附件信息）
-void printMedicationRecordCard(const MedicationRecord *rec); // 打印用药记录卡片（含药品明细，单行紧凑格式）
-void printHospitalizationCard(const Hospitalization *hos); // 打印住院记录卡片（含状态字符串）
+void printRegistrationCard(const Registration *reg);        // 打印挂号记录卡片（单行紧凑格式）
+void printConsultationCard(const Consultation *con);        // 打印看诊记录卡片（含检查项目列表和处方列表）
+void printExaminationCard(const Examination *exa);          // 打印检查记录卡片（含附件信息）
+void printMedicationRecordCard(const MedicationRecord *rec);// 打印用药记录卡片（含药品明细，单行紧凑格式）
+void printHospitalizationCard(const Hospitalization *hos);  // 打印住院记录卡片（含状态字符串）
+void printMedicineCard(const Medicine *med);                // 打印药品信息卡片
+void printBedCard(const bedInfo *bed);                      // 打印床位信息卡片
+
+// ====================== 通用链表遍历辅助 ======================
+
+/// 遍历链表并调用打印函数，仅显示未删除且匹配科室的记录
+/// @param head    链表头指针
+/// @param dept    目标科室（"全院" 显示所有科室）
+/// @param printer 打印回调，签名为 void(T*)
+template<typename T>
+bool displayChainByDept(T *head, const std::string &dept,
+                        std::function<void(T*)> printer) {
+    T *cur = head;
+    bool found = false;
+    while (cur) {
+        if (!cur->isDeleted && deptMatch(cur->department, dept)) {
+            printer(cur);
+            found = true;
+            std::cout << std::endl;
+        }
+        cur = cur->next;
+    }
+    if (!found)
+        std::cout << "  无记录。" << std::endl;
+    return found;
+}
+
+/// 遍历链表，按自定义过滤条件显示记录
+/// @param head    链表头指针
+/// @param filter  过滤回调，签名为 bool(const T*) — 返回 true 表示该记录需要显示
+/// @param printer 打印回调，签名为 void(const T*)
+/// @return 是否至少显示了一条记录
+template<typename T>
+bool displayChainByFilter(T *head,
+                          std::function<bool(const T*)> filter,
+                          std::function<void(const T*)> printer)
+{
+    T *cur = head;
+    bool found = false;
+    while (cur)
+    {
+        if (!cur->isDeleted && filter(cur))
+        {
+            printer(cur);
+            std::cout << std::endl;
+            found = true;
+        }
+        cur = cur->next;
+    }
+    if (!found)
+        std::cout << "  无记录。" << std::endl;
+    return found;
+}
 
 void pause(const std::string &breadcrumb = ""); // 暂停函数，等待用户按键继续（支持面包屑导航）
 std::string trim(const std::string &str);       // 去除字符串首尾空格的辅助函数

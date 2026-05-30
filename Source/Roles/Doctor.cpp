@@ -9,6 +9,10 @@
 
 #include "Roles/Doctor.h"
 #include "Modules/DrugSafety.h"
+#include "Entities/Registration.h"
+#include "Entities/Consultation.h"
+#include "Entities/Examination.h"
+#include "Entities/Medicine.h"
 #include <iomanip>
 
 Doctor::Doctor()
@@ -81,7 +85,7 @@ bool Doctor::doctorSignIn()
             return false;
         }
 
-        bool success = SHA256Verify(pwd, storedHash, kHashIterations);
+        bool success = verifyPasswordCompat(pwd, storedHash);
 
         if (success)
         {
@@ -928,26 +932,7 @@ void Doctor::addConsultationExamination(Consultation *&target)
             break;
         }
 
-        // 检查是否已存在
-        bool exists = false;
-        for (const auto &exam : target->examinationlist)
-        {
-            if (exam == newExam)
-            {
-                exists = true;
-                break;
-            }
-        }
-
-        if (exists)
-        {
-            printError("该检查项目已存在，不能重复添加！");
-        }
-        else
-        {
-            target->examinationlist.push_back(newExam);
-            printSuccess("检查项目信息已添加！");
-        }
+        addExaminationItem(target, newExam);
     }
 }
 // 向看诊记录添加处方信息
@@ -1151,28 +1136,8 @@ void Doctor::initConsultationExamination(Consultation *&target)
             break;
         }
 
-        // 检查是否已存在
-        bool exists = false;
-        for (const auto &exam : target->examinationlist)
-        {
-            if (exam == newExam)
-            {
-                exists = true;
-                break;
-            }
-        }
-
-        if (exists)
-        {
-            printError("该检查项目已存在，不能重复添加！");
-        }
-        else
-        {
-            target->examinationlist.push_back(newExam);
-            printSuccess("检查项目信息已添加！");
-        }
+        addExaminationItem(target, newExam);
     }
-    return;
 }
 // 初始化看诊记录的处方列表
 void Doctor::initConsultationPrescription(Consultation *&target, Medicine *&medHead, Patient *patientHead)
@@ -2469,7 +2434,7 @@ void Doctor::managePersonalInfo()
                 {
                     std::string oldpwd = inputPwdCheck("请输入当前密码以验证身份: ");
 
-                    if (SHA256Verify(oldpwd, this->storedHash, this->kHashIterations))
+                    if (verifyPasswordCompat(oldpwd, this->storedHash))
                     {
                         std::string newpwd1 = inputPwdCheck("请输入新的密码: ");
                         std::string newpwd2 = inputPwdCheck("请再次输入新的密码以确认: ");
@@ -2497,4 +2462,15 @@ void Doctor::managePersonalInfo()
             }
         }
     }
+}
+
+void Doctor::addExaminationItem(Consultation *target, const std::string &itemName) {
+    for (const auto &item : target->examinationlist) {
+        if (item == itemName) {
+            printError("该检查项目已存在，不能重复添加！");
+            return;
+        }
+    }
+    target->examinationlist.push_back(itemName);
+    printSuccess("检查项目信息已添加！");
 }

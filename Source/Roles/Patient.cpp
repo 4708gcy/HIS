@@ -9,6 +9,11 @@
 
 #include "Roles/Patient.h"
 #include <ctime>
+#include "Entities/Registration.h"
+#include "Entities/Consultation.h"
+#include "Entities/Examination.h"
+#include "Entities/Hospitalization.h"
+#include "Entities/MedicationRecord.h"
 #include "Roles/Doctor.h"
 #include "Core/UI.h"
 #include "Core/GetTime.h"
@@ -77,7 +82,7 @@ bool Patient::patientSignIn()
             return false;
         }
 
-        bool success = SHA256Verify(pwd, storedHash, kHashIterations);
+        bool success = verifyPasswordCompat(pwd, storedHash);
 
         if (success)
         {
@@ -2222,7 +2227,7 @@ void Patient::managePersonalInfo()
                 {
                     std::string oldpwd = inputPwdCheck("请输入当前密码以验证身份: ");
 
-                    if (SHA256Verify(oldpwd, this->storedHash, this->kHashIterations))
+                    if (verifyPasswordCompat(oldpwd, this->storedHash))
                     {
                         std::string newpwd1 = inputPwdCheck("请输入新的密码: ");
                         std::string newpwd2 = inputPwdCheck("请再次输入新的密码以确认: ");

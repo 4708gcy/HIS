@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include "Core/UI.h"
 #include "Modules/LoadData.h"
 #include "Modules/SaveData.h"
@@ -8,6 +9,13 @@
 #include "Core/Database.h"
 #include <mutex>
 #include <csignal>
+#include "Entities/Registration.h"
+#include "Entities/Consultation.h"
+#include "Entities/Examination.h"
+#include "Entities/Hospitalization.h"
+#include "Entities/MedicationRecord.h"
+#include "Entities/Medicine.h"
+#include "Entities/NursingRecord.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -30,6 +38,8 @@ int medicineCount = 0;
 int bedCount = 0;
 int nursingRecordCount = 0;
 EntityRepository<NursingRecord> nursingRecordRepo(nursingRecordCount, "nur", 6);
+EntityRepository<Patient> patientRepo(patientIDCount, "4", 5);
+EntityRepository<Registration> regRepo(registrationCount, "reg", 6);
 
 // 全局指针用于信号处理中的紧急保存
 static Admin **g_adminHead = nullptr;
@@ -142,8 +152,10 @@ int main()
     Nurse *nurseHead = loadNurseData(nurseIDCount);              // 加载护士数据
     Pharmacist *phaHead = loadPharmacistData(pharmacistIDCount); // 加载药师数据
     Patient *patientHead = loadPatientData(patientIDCount);      // 加载患者数据
+    patientRepo.setHead(patientHead); // 交给 EntityRepository 管理生命周期
 
     Registration *regHead = loadRegistrations(registrationCount);                // 加载挂号记录数据
+    regRepo.setHead(regHead); // 交给 EntityRepository 管理生命周期
     Consultation *conHead = loadConsultations(consultationCount);                // 加载看诊记录数据
     Examination *examHead = loadExaminations(examinationCount);                  // 加载检查记录数据
     Hospitalization *hosHead = loadHospitalizations(hospitalizationCount);       // 加载住院记录数据
@@ -274,8 +286,9 @@ int main()
                                               << "└─────────────────────────┘\n"
                                               << "请选择: ";
                                     int aiChoice;
-                                    std::cin >> aiChoice;
-                                    std::cin.ignore();
+                                    std::string aiLine;
+                                    if (!std::getline(std::cin, aiLine)) break;
+                                    { std::stringstream ss(aiLine); if (!(ss >> aiChoice)) aiChoice = -1; }
                                     if (aiChoice == 1)
                                     {
                                         std::cout << "\n=== Holt-Winters 需求预测 ===\n"
@@ -618,8 +631,8 @@ int main()
     while (docHead) { Doctor *n = docHead->next; delete docHead; docHead = n; }
     while (nurseHead) { Nurse *n = nurseHead->next; delete nurseHead; nurseHead = n; }
     while (phaHead) { Pharmacist *n = phaHead->next; delete phaHead; phaHead = n; }
-    while (patientHead) { Patient *n = patientHead->next; delete patientHead; patientHead = n; }
-    while (regHead) { Registration *n = regHead->next; delete regHead; regHead = n; }
+    // patientHead 由 patientRepo 析构时自动清理（EntityRepository::~EntityRepository → clear()）
+    // regHead 由 regRepo 析构时自动清理
     while (conHead) { Consultation *n = conHead->next; delete conHead; conHead = n; }
     while (examHead) { Examination *n = examHead->next; delete examHead; examHead = n; }
     while (hosHead) { Hospitalization *n = hosHead->next; delete hosHead; hosHead = n; }

@@ -78,7 +78,7 @@ bool Database::connect()
     }
     MYSQL *result = mysql_real_connect(
         conn, host.c_str(), user.c_str(), password.c_str(),
-        dbName.c_str(), port, nullptr, CLIENT_MULTI_STATEMENTS);
+        dbName.c_str(), port, nullptr, 0);
     if (!result)
     {
         std::cerr << "[DB] Connect failed: " << mysql_error(conn) << std::endl;
@@ -130,7 +130,8 @@ int Database::execute(const std::string &sql)
 // Parameterized helpers — simple ? replacement with escaping
 // ---------------------------------------------------------------------------
 static std::string buildSql(Database &db, const std::string &sql,
-                             const std::vector<std::string> &params)
+                             const std::vector<std::string> &params,
+                             const std::vector<bool> &nulls = {})
 {
     std::string result;
     result.reserve(sql.size() + params.size() * 32);
@@ -139,17 +140,28 @@ static std::string buildSql(Database &db, const std::string &sql,
     {
         if (sql[i] == '?' && paramIdx < params.size())
         {
-            const std::string &p = params[paramIdx++];
-            if (p == "NULL")
+            const std::string &p = params[paramIdx];
+            // SOH 前缀（\x01）表示该值为原始 SQL 片段（不转义、不加引号）
+            // 用于传递 SQL NULL 关键字等特殊值
+            if (!p.empty() && p[0] == '\x01')
             {
-                result += "NULL";
+                result += p.substr(1);  // 去掉前缀，直接拼接 SQL 片段
             }
             else
             {
-                result += "'";
-                result += Database::escapeString(p);
-                result += "'";
+                bool isNull = (paramIdx < nulls.size()) ? nulls[paramIdx] : false;
+                if (isNull)
+                {
+                    result += "NULL";
+                }
+                else
+                {
+                    result += "'";
+                    result += Database::escapeString(p);
+                    result += "'";
+                }
             }
+            ++paramIdx;
         }
         else
         {
@@ -160,15 +172,29 @@ static std::string buildSql(Database &db, const std::string &sql,
 }
 
 MYSQL_RES *Database::queryPrepared(const std::string &sql,
+                                    const std::vector<std::string> &params,
+                                    const std::vector<bool> &nulls)
+{
+    return query(buildSql(*this, sql, params, nulls));
+}
+
+int Database::executePrepared(const std::string &sql,
+                               const std::vector<std::string> &params,
+                               const std::vector<bool> &nulls)
+{
+    return execute(buildSql(*this, sql, params, nulls));
+}
+
+MYSQL_RES *Database::queryPrepared(const std::string &sql,
                                     const std::vector<std::string> &params)
 {
-    return query(buildSql(*this, sql, params));
+    return queryPrepared(sql, params, {});
 }
 
 int Database::executePrepared(const std::string &sql,
                                const std::vector<std::string> &params)
 {
-    return execute(buildSql(*this, sql, params));
+    return executePrepared(sql, params, {});
 }
 
 // ---------------------------------------------------------------------------

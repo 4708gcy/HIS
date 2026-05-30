@@ -1,5 +1,13 @@
 CompileFlags:
   Add:
+    # Project headers
+    - -ID:/vscode编程练习c/C课设-HIS/Head
+    # MySQL client headers
     - -IE:/MySQL/8-0/include
-    - -I${workspaceFolder}/Head
+    # MSVC standard library
+    - -ID:/Visual Studio/Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/include
+    # Windows SDK
+    - -ID:/Windows Kits/10/Include/10.0.26100.0/ucrt
+    - -ID:/Windows Kits/10/Include/10.0.26100.0/um
+    - -ID:/Windows Kits/10/Include/10.0.26100.0/shared
     - -std=c++17

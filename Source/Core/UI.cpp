@@ -1,9 +1,11 @@
 
 #include "Core/UI.h"
 #include "Core/GetTime.h"
+#include "Entities/Registration.h"
 #include "Entities/Consultation.h"
 #include "Entities/Examination.h"
 #include "Entities/MedicationRecord.h"
+#include "Entities/Medicine.h"
 #include "Entities/Hospitalization.h"
 #include "Core/User.h"
 #include "Roles/Doctor.h"
@@ -93,9 +95,30 @@ void resetConsoleColor()
 void clearScreen()
 {
 #ifdef _WIN32
-    system("cls");
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hConsole == INVALID_HANDLE_VALUE)
+        return;
+
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (!GetConsoleScreenBufferInfo(hConsole, &csbi))
+        return;
+
+    DWORD cellCount = csbi.dwSize.X * csbi.dwSize.Y;
+    DWORD count;
+    COORD homeCoord = {0, 0};
+    DWORD written;
+
+    // 用空格填充整个控制台缓冲区
+    if (!FillConsoleOutputCharacter(hConsole, ' ', cellCount, homeCoord, &count))
+        return;
+    // 重置所有字符的属性为默认值
+    if (!FillConsoleOutputAttribute(hConsole, csbi.wAttributes, cellCount, homeCoord, &count))
+        return;
+    // 将光标移到左上角
+    SetConsoleCursorPosition(hConsole, homeCoord);
 #else
-    system("clear");
+    // ANSI 转义序列：\033[2J 清屏，\033[1;1H 光标移到 (1,1)
+    std::cout << "\033[2J\033[1;1H" << std::flush;
 #endif
 }
 
@@ -880,6 +903,7 @@ int inputIntCheck(const std::string &prompt, int min, int max)
     {
         std::cout << prompt;
         std::getline(std::cin, line);
+        if (std::cin.eof() || std::cin.fail()) return 0;
         line = trim(line); // 去除首尾空格
         std::stringstream ss(line);
         if (ss >> value && !(ss >> line) && value >= min && value <= max)
@@ -902,6 +926,7 @@ double inputDoubleCheck(const std::string &prompt, double min, double max)
     {
         std::cout << prompt;
         std::getline(std::cin, line);
+        if (std::cin.eof() || std::cin.fail()) return 0.0;
         line = trim(line); // 去除首尾空格
         std::stringstream ss(line);
         if (ss >> value && !(ss >> line) && value >= min && value <= max)
@@ -3249,25 +3274,88 @@ void printMedicationRecordCard(const MedicationRecord *rec)
 }
 
 // 打印住院记录卡片（含状态字符串）
-// 格式与 Nurse.cpp 中 printHospitalizationDetails 的输出一致
+// 格式与 Admin.cpp 中的住院记录输出一致
 void printHospitalizationCard(const Hospitalization *hos)
 {
+    if (!hos) return;
     User u; // 用于调用状态转换函数
 
-    std::cout << "住院ID: " << hos->hospitalizationID
-              << ", 看诊ID: " << hos->consultationID
+    std::string wardTypeStr = hos->wardType;
+    std::cout << "ID: " << hos->hospitalizationID
               << ", 患者ID: " << hos->patientID
               << ", 医生ID: " << hos->doctorID
-              << ", 护士ID: " << hos->nurseID
+              << ", 负责护士ID: " << hos->nurseID
               << ", 科室: " << hos->department
-              << ", 病房类型: " << hos->wardType
-              << ", 床位号: " << hos->bedNumber
+              << ", 病房类型: " << (wardTypeStr.empty() ? "未分配" : wardTypeStr)
+              << ", 床位号: " << (hos->bedNumber.empty() ? "未分配" : hos->bedNumber)
               << ", 申请时间: " << hos->applyTime
-              << ", 允许入院时间: " << hos->availableAdmitTime
-              << ", 实际入院时间: " << hos->admitTime
-              << ", 出院时间: " << hos->dischargeTime
+              << ", 允许入院时间: " << (hos->availableAdmitTime.empty() ? "未分配" : hos->availableAdmitTime)
+              << ", 实际入院时间: " << (hos->admitTime.empty() ? "未入院" : hos->admitTime)
+              << ", 出院时间: " << (hos->dischargeTime.empty() ? "未出院" : hos->dischargeTime)
               << ", 押金: " << std::fixed << std::setprecision(2) << (hos->deposit / 100.0)
               << ", 总费用: " << std::fixed << std::setprecision(2) << (hos->totalCost / 100.0)
-              << ", 状态: " << u.hosStatusToString(hos->status)
-              << std::endl;
+              << ", 住院记录状态: " << u.hosStatusToString(hos->status);
+}
+
+// ====================== 新增实体卡片打印函数实现 ======================
+
+// 打印挂号记录卡片（单行紧凑格式，匹配 Admin.cpp 格式）
+void printRegistrationCard(const Registration *reg)
+{
+    if (!reg) return;
+    User u;
+    std::cout << "ID: " << reg->registrationID
+              << ", 患者ID: " << reg->patientID
+              << ", 医生ID: " << reg->doctorID
+              << ", 时间: " << reg->registerTime
+              << ", 费用: " << std::fixed << std::setprecision(2) << (reg->fee / 100.0)
+              << ", 状态: " << u.regStatusToString(reg->status)
+              << ", 备注: " << reg->note;
+}
+
+// 打印药品信息卡片（匹配 Admin.cpp 格式）
+void printMedicineCard(const Medicine *med)
+{
+    if (!med) return;
+    User u;
+    std::cout << "药品ID: " << med->medicineID
+              << ", 药品名称: " << med->name
+              << ", 通用名: " << (med->genericName == "#" ? "无" : med->genericName)
+              << ", 规格: " << med->specification
+              << ", 进价: " << std::fixed << std::setprecision(2) << (med->purchasePrice / 100.0)
+              << ", 售价: " << std::fixed << std::setprecision(2) << (med->salePrice / 100.0)
+              << ", 状态: " << u.medicineStatusToString(med->status)
+              << ", 当前库存数量: " << med->stock
+              << ", 安全库存阈值: " << med->safetyStock
+              << ", 生产日期: " << med->productionDate
+              << ", 有效期至: " << med->expiryDate
+              << ", 生产厂家: " << med->manufacturer
+              << ", 备注: " << (med->note.empty() ? "无" : med->note);
+    if (!med->aliases.empty())
+    {
+        std::cout << ", 别名: ";
+        for (size_t i = 0; i < med->aliases.size(); ++i)
+        {
+            if (i > 0) std::cout << ", ";
+            std::cout << med->aliases[i];
+        }
+    }
+}
+
+// 打印床位信息卡片（匹配 Admin.cpp 格式）
+void printBedCard(const bedInfo *bed)
+{
+    if (!bed) return;
+    User u;
+    std::cout << "床位ID: " << bed->bedID
+              << ", 科室: " << bed->department
+              << ", 区域: " << bed->areaNumber
+              << ", 病房号: " << bed->wardNumber
+              << ", 床位号: " << bed->bedNumber
+              << ", 病房类型: " << bed->wardType
+              << ", 床位状态: " << u.bedStatusToString(bed->status)
+              << ", 患者ID: " << (bed->patientID.empty() ? "无" : bed->patientID)
+              << ", 护士ID: " << (bed->nurseID.empty() ? "无" : bed->nurseID)
+              << ", 使用次数: " << bed->useTimes
+              << ", 占用天数: " << bed->daysOccupied;
 }

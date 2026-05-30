@@ -15,40 +15,34 @@
 #include <vector>
 #include "Core/SHA-256.h"
 #include "Core/GetTime.h"
-#include "Entities/Registration.h"
-#include "Entities/Consultation.h"
-#include "Entities/Examination.h"
-#include "Entities/Hospitalization.h"
-#include "Entities/MedicationRecord.h"
-#include "Entities/Medicine.h"
+
+// 前向声明（替代 6 个 Entity 头文件，消除循环依赖）
+struct Registration;
+struct Consultation;
+struct Examination;
+struct Hospitalization;
+struct MedicationRecord;
+struct Medicine;
+struct VitalSigns;
+struct bedInfo;
+
+enum class RegistrationStatus : int;
+enum class ConsultationStatus : int;
+enum class ExaminationStatus : int;
+enum class HospitalizationStatus : int;
+enum class MedicationStatus : int;
+enum class MedicationReviewStatus : int;
+enum class MedicineStatus : int;
+enum class bedStatus : int;
+
 #include "Core/UI.h"
 
 // CSV 文件路径宏已移除——数据持久化已迁移至 MySQL（参见 Database.h）
 
 // 定义全局常量
 #define failedLoginLimit 5  // 连续登录失败次数限制
-#define hashIterations 1000 // 密码哈希迭代次数
-
-/**
- * @brief 护理记录结构体
- */
-struct NursingRecord
-{
-    std::string recordID;           // 格式 "nur" + 6位数字
-    std::string patientID;          // 所属患者
-    std::string nurseID;            // 执行护士
-    std::string department;         // 执行科室
-    std::string operationTime;      // 操作时间
-    int operationType = 1;          // 操作类型: 1=生命体征测量 2=静脉输液 3=肌肉注射 4=口服给药 5=换药 6=翻身拍背 7=导尿 8=其他
-    std::string detail;             // 操作详情
-    std::string vitalSignsSnapshot; // 生命体征快照（分号分隔）
-    std::string note;               // 备注
-    bool isDeleted = false;
-    NursingRecord *prev = nullptr;
-    NursingRecord *next = nullptr;
-
-    NursingRecord() : operationType(1), isDeleted(false), prev(nullptr), next(nullptr) {}
-};
+#define hashIterations 10000 // 密码哈希迭代次数
+#define hashIterationsLegacy 1000 // 旧迭代次数（兼容旧密码）
 
 /**
  * @file User.h
@@ -132,6 +126,10 @@ protected:
 
     static constexpr int kMaxLoginAttempts = failedLoginLimit; // 锁定门槛
     static constexpr int kHashIterations = hashIterations;     // 哈希迭代次数
+    static constexpr int kHashIterationsLegacy = hashIterationsLegacy; // 旧迭代次数
+
+    // 兼容旧密码的验证方法：先尝试新迭代次数，失败后回退旧迭代次数
+    static bool verifyPasswordCompat(const std::string& input, const std::string& storedHash);
 
 public:
     bool isDeleted = false; // 逻辑删除标志（实际删除时设置为 true）

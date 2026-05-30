@@ -23,6 +23,21 @@ HIS AI 微服务 — Flask REST API v2.0
 """
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
+import os
+from functools import wraps
+
+API_KEY = os.environ.get('HIS_API_KEY', 'his-default-key-change-me')
+
+def require_api_key(f):
+    """API Key 认证装饰器。请求头中必须包含 X-API-Key。"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        key = request.headers.get('X-API-Key', '')
+        if key != API_KEY:
+            return jsonify({'error': 'Unauthorized — 缺少有效的 API Key'}), 401
+        return f(*args, **kwargs)
+    return decorated
+
 from data_loader import (
     load_hospitalizations, load_registrations, load_medicines, load_beds,
     extract_monthly_stats, load_doctors, load_consultations
@@ -84,18 +99,21 @@ def health():
 
 
 @app.route('/api/stats/monthly')
+@require_api_key
 def monthly_stats():
     stats = get_monthly_stats()
     return jsonify({'count': len(stats), 'data': stats})
 
 
 @app.route('/api/predictions')
+@require_api_key
 def predictions():
     preds = get_predictions()
     return jsonify({'count': len(preds), 'data': preds})
 
 
 @app.route('/api/anomalies')
+@require_api_key
 def anomalies():
     threshold = request.args.get('threshold', 2.0, type=float)
     stats = get_monthly_stats()
@@ -104,6 +122,7 @@ def anomalies():
 
 
 @app.route('/api/medicines')
+@require_api_key
 def medicines_analysis():
     meds = load_medicines()
     result = analyze_medicine_inventory(meds)
@@ -111,6 +130,7 @@ def medicines_analysis():
 
 
 @app.route('/api/bed-optimization')
+@require_api_key
 def bed_optimization():
     """床位分配分析与优化建议 — 课程要求 (4) 核心功能"""
     beds, hospitalizations = get_bed_data()
@@ -143,6 +163,7 @@ def bed_optimization():
 
 
 @app.route('/api/forecast', methods=['POST'])
+@require_api_key
 def forecast():
     from analyzer import holt_winters_forecast
     params = request.get_json(silent=True) or {}
@@ -180,6 +201,7 @@ def forecast():
 
 
 @app.route('/api/dashboard')
+@require_api_key
 def dashboard():
     """综合仪表盘"""
     hos = load_hospitalizations()
@@ -216,6 +238,7 @@ def dashboard():
 # ==================== 图表 API（课程要求 (4)"多种形式展示"） ====================
 
 @app.route('/api/charts/predictions')
+@require_api_key
 def chart_predictions():
     """生成需求预测对比柱状图 PNG"""
     from charts import generate_prediction_chart
@@ -225,6 +248,7 @@ def chart_predictions():
 
 
 @app.route('/api/charts/bed-utilization')
+@require_api_key
 def chart_bed_utilization():
     """生成床位利用率图表 PNG（柱状图 + 堆叠图）"""
     from charts import generate_bed_utilization_chart
@@ -236,6 +260,7 @@ def chart_bed_utilization():
 
 
 @app.route('/api/charts/anomalies')
+@require_api_key
 def chart_anomalies():
     """生成异常检测时序折线图 PNG"""
     from charts import generate_anomaly_scatter_chart
@@ -248,6 +273,7 @@ def chart_anomalies():
 
 
 @app.route('/api/charts/medicines')
+@require_api_key
 def chart_medicines():
     """生成药品库存状态饼图 PNG"""
     from charts import generate_medicine_pie_chart
@@ -267,4 +293,4 @@ if __name__ == '__main__':
     print(f"  API 文档: http://localhost:5001/api/health")
     print(f"  图表接口: http://localhost:5001/api/charts/predictions")
     print("=" * 50)
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='127.0.0.1', port=5001, debug=False)

@@ -1,8 +1,20 @@
 #include "Modules/SaveData.h"
 #include "Core/Database.h"
+#include "Entities/Registration.h"
+#include "Entities/Consultation.h"
+#include "Entities/Examination.h"
+#include "Entities/Hospitalization.h"
+#include "Entities/MedicationRecord.h"
+#include "Entities/Medicine.h"
+#include "Entities/NursingRecord.h"
 #include <iostream>
 
 // ===================== MySQL 版本：人物数据保存函数 =====================
+//
+// \x01 前缀约定：
+//   dbDateTime() 空值时返回 "\x01NULL"，buildSql() 识别 \x01 前缀后，
+//   将后续内容（"NULL"）作为原始 SQL 片段直接拼接，不加引号、不转义。
+//   这确保了 DATETIME 字段在数据库中存储为真正的 SQL NULL 而非字符串 'NULL'。
 
 // Helper: convert "#" sentinel to empty string for SQL NULL coalescing
 static inline std::string dbStr(const std::string &s)
@@ -10,10 +22,11 @@ static inline std::string dbStr(const std::string &s)
     return (s == "#") ? std::string() : s;
 }
 
-// For DATETIME columns: empty or "#" → "NULL" (SQL keyword, not quoted by buildSql)
+// 空日期时间返回 \x01 前缀标记，buildSql() 识别后输出 SQL NULL（不带引号）
+// 非空时正常返回日期时间字符串（由 buildSql() 转义并加引号）
 static inline std::string dbDateTime(const std::string &s)
 {
-    if (s.empty() || s == "#" || s == "无") return "NULL";
+    if (s.empty() || s == "#" || s == "无") return std::string("\x01NULL");
     return s;
 }
 
@@ -524,6 +537,7 @@ void saveExaminations(Examination *examHead, int count)
             }
             else
             {
+                std::string examReportTime = dbDateTime(current->reportTime);
                 db.executePrepared(
                     "INSERT INTO examinations (examination_id, consultation_id, patient_id, doctor_id, "
                     "department, item_name, order_time, report_time, report_summary, fee_cents, status, is_deleted) "
@@ -541,11 +555,14 @@ void saveExaminations(Examination *examHead, int count)
                      dbStr(current->department),
                      dbStr(current->itemName),
                      dbDateTime(current->orderTime),
-                     dbDateTime(current->reportTime),
+                     examReportTime,
                      dbStr(current->reportSummary),
                      std::to_string(current->fee),
                      std::to_string(static_cast<int>(current->status)),
-                     "0"});
+                     "0"},
+                    {false, false, false, false, false, false, false,
+                     examReportTime.empty(),  // reportTime → SQL NULL when empty
+                     false, false, false, false});
 
                 // Sub-table: vital_signs — delete-then-insert
                 const VitalSigns &vs = current->vitalSigns;
@@ -627,6 +644,9 @@ void saveHospitalizations(Hospitalization *hosHead, int count)
             }
             else
             {
+                std::string hosAdmitTime = dbDateTime(current->admitTime);
+                std::string hosDischargeTime = dbDateTime(current->dischargeTime);
+                std::string hosAvailableAdmitTime = dbDateTime(current->availableAdmitTime);
                 db.executePrepared(
                     "INSERT INTO hospitalizations (hospitalization_id, consultation_id, patient_id, doctor_id, "
                     "nurse_id, department, ward_type, bed_number, apply_time, admit_time, discharge_time, "
@@ -648,13 +668,18 @@ void saveHospitalizations(Hospitalization *hosHead, int count)
                      dbStr(current->wardType),
                      current->bedNumber,
                      dbDateTime(current->applyTime),
-                     dbDateTime(current->admitTime),
-                     dbDateTime(current->dischargeTime),
-                     dbDateTime(current->availableAdmitTime),
+                     hosAdmitTime,
+                     hosDischargeTime,
+                     hosAvailableAdmitTime,
                      std::to_string(current->deposit),
                      std::to_string(current->totalCost),
                      std::to_string(static_cast<int>(current->status)),
-                     "0"});
+                     "0"},
+                    {false, false, false, false, false, false, false, false, false,
+                     hosAdmitTime.empty(),           // admitTime → SQL NULL when empty
+                     hosDischargeTime.empty(),        // dischargeTime → SQL NULL when empty
+                     hosAvailableAdmitTime.empty(),   // availableAdmitTime → SQL NULL when empty
+                     false, false, false, false});
 
                 // Sub-table: related_record_ids — delete-then-insert
                 db.executePrepared(
@@ -698,6 +723,8 @@ void saveMedicationRecords(MedicationRecord *medRecHead, int count)
             }
             else
             {
+                std::string medPaymentTime = dbDateTime(current->paymentTime);
+                std::string medDispenseTime = dbDateTime(current->dispenseTime);
                 db.executePrepared(
                     "INSERT INTO medication_records (medication_record_id, consultation_id, doctor_id, "
                     "pharmacist_id, patient_id, department, create_time, total_cost_cents, "
@@ -720,10 +747,14 @@ void saveMedicationRecords(MedicationRecord *medRecHead, int count)
                      std::to_string(current->totalCost),
                      std::to_string(static_cast<int>(current->reviewStatus)),
                      std::to_string(static_cast<int>(current->status)),
-                     dbDateTime(current->paymentTime),
-                     dbDateTime(current->dispenseTime),
+                     medPaymentTime,
+                     medDispenseTime,
                      dbStr(current->note),
-                     "0"});
+                     "0"},
+                    {false, false, false, false, false, false, false, false, false, false,
+                     medPaymentTime.empty(),   // paymentTime → SQL NULL when empty
+                     medDispenseTime.empty(),  // dispenseTime → SQL NULL when empty
+                     false, false});
 
                 // Sub-table: medication_lines — delete-then-insert
                 db.executePrepared(
@@ -846,6 +877,8 @@ void saveBedInfos(bedInfo *bedHead, int count)
             }
             else
             {
+                std::string bedPatientID = (current->patientID == "#" || current->patientID.empty()) ? "" : current->patientID;
+                std::string bedNurseID = (current->nurseID == "#" || current->nurseID.empty()) ? "" : current->nurseID;
                 db.executePrepared(
                     "INSERT INTO bed_info (bed_id, status, ward_type, department, area_number, "
                     "ward_number, bed_number, note, patient_id, nurse_id, is_deleted, use_times, days_occupied) "
@@ -864,11 +897,15 @@ void saveBedInfos(bedInfo *bedHead, int count)
                      std::to_string(current->wardNumber),
                      std::to_string(current->bedNumber),
                      dbStr(current->note),
-                     (current->patientID == "#" || current->patientID.empty()) ? "NULL" : current->patientID,
-                     (current->nurseID == "#" || current->nurseID.empty()) ? "NULL" : current->nurseID,
+                     bedPatientID,
+                     bedNurseID,
                      "0",
                      std::to_string(current->useTimes),
-                     std::to_string(current->daysOccupied)});
+                     std::to_string(current->daysOccupied)},
+                    {false, false, false, false, false, false, false, false,
+                     bedPatientID.empty(),  // patient_id → SQL NULL when empty
+                     bedNurseID.empty(),    // nurse_id → SQL NULL when empty
+                     false, false, false});
 
                 // Sub-table: vital_signs — delete-then-insert
                 const VitalSigns &vs = current->vitalSigns;

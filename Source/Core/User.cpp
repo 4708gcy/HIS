@@ -1,10 +1,17 @@
 #include "Core/User.h"
+#include "Entities/Registration.h"
+#include "Entities/Consultation.h"
+#include "Entities/Examination.h"
+#include "Entities/Hospitalization.h"
+#include "Entities/MedicationRecord.h"
+#include "Entities/Medicine.h"
 #include <fstream>
 #include <sstream>
 #include <random>
 #include <algorithm>
 #include <iostream>
 #include <cstdio>
+#include <cstdlib>
 #include <ctime>
 
 namespace
@@ -39,6 +46,11 @@ namespace
     }
 }
 
+bool User::verifyPasswordCompat(const std::string& input, const std::string& storedHash) {
+    if (SHA256Verify(input, storedHash, kHashIterations)) return true;
+    return SHA256Verify(input, storedHash, kHashIterationsLegacy);
+}
+
 // 1 - Admin, 2 - Doctor, 3 - Nurse, 4 - Pharmacist, 5 - Patient
 bool User::signUp(int choice, int &idCounter)
 {
@@ -48,7 +60,30 @@ bool User::signUp(int choice, int &idCounter)
     {
         std::string apiKey = inputStringCheck("请输入管理员注册API密钥: ");
 
-        if (apiKey == "88888888")
+        // 三级优先级读取 API 密钥：环境变量 > 配置文件 > 硬编码默认值
+        std::string expectedKey = "88888888";  // 最后回退的默认值
+
+        // 第一优先级：环境变量
+        const char *envKey = std::getenv("HIS_ADMIN_API_KEY");
+        if (envKey && envKey[0] != '\0') {
+            expectedKey = envKey;
+        } else {
+            // 第二优先级：配置文件
+            std::ifstream keyFile("../Data/AdminAPIKey.txt");
+            if (keyFile.is_open()) {
+                std::getline(keyFile, expectedKey);
+                if (!expectedKey.empty()) {
+                    expectedKey.erase(0, expectedKey.find_first_not_of(" \t\r\n"));
+                    expectedKey.erase(expectedKey.find_last_not_of(" \t\r\n") + 1);
+                }
+                keyFile.close();
+            } else {
+                std::cerr << "[警告] 环境变量 HIS_ADMIN_API_KEY 未设置，且 Data/AdminAPIKey.txt 未找到，"
+                          << "使用默认API密钥。" << std::endl;
+            }
+        }
+
+        if (apiKey == expectedKey)
         {
             role = UserRole::ADMIN;
             userID = "0" + padId(idCounter, 5);

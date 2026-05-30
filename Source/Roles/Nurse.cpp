@@ -9,6 +9,10 @@
  */
 
 #include "Roles/Nurse.h"
+#include "Core/UI.h"
+#include "Entities/Consultation.h"
+#include "Entities/Examination.h"
+#include "Entities/Hospitalization.h"
 #include <iomanip>
 
 Nurse::Nurse()
@@ -77,7 +81,7 @@ bool Nurse::nurseSignIn()
             return false;
         }
 
-        bool success = SHA256Verify(pwd, storedHash, kHashIterations);
+        bool success = verifyPasswordCompat(pwd, storedHash);
 
         if (success)
         {
@@ -198,27 +202,7 @@ void Nurse::printExaminationDetails(Examination *&exa)
         printError("检查记录不存在。");
         return;
     }
-
-    std::cout << "检查ID: " << exa->examinationID
-              << ", 看诊ID: " << exa->consultationID
-              << ", 患者ID: " << exa->patientID
-              << ", 医生ID: " << exa->doctorID
-              << ", 科室: " << exa->department
-              << ", 开单时间: " << exa->orderTime
-              << ", 检查项目: " << exa->itemName
-              << ", 检查结果: " << findVitalSignToString(exa)
-              << ", 报告摘要: " << exa->reportSummary
-              << ", 检查费用: " << std::fixed << std::setprecision(2) << (exa->fee / 100.0)
-              << ", 出报告时间: " << exa->reportTime
-              << ", 状态: " << examStatusToString(exa->status)
-              << ", 备注: " << exa->note;
-
-    std::cout << ", 相关附件: ";
-    for (size_t i = 0; i < exa->attachments.size(); ++i)
-    {
-        std::cout << "[" << (i + 1) << "] " << exa->attachments[i] << "  ";
-    }
-    std::cout << std::endl;
+    printExaminationCard(exa);
 }
 
 // 查询本科室的所有检查记录
@@ -2350,7 +2334,7 @@ void Nurse::managePersonalInfo()
                 else if (modifyChoice == 10)
                 {
                     std::string oldpwd = inputPwdCheck("请输入当前密码以验证身份: ");
-                    if (SHA256Verify(oldpwd, this->storedHash, this->kHashIterations))
+                    if (verifyPasswordCompat(oldpwd, this->storedHash))
                     {
                         std::string newpwd1 = inputPwdCheck("请输入新的密码: ");
                         std::string newpwd2 = inputPwdCheck("请再次输入新的密码以确认: ");

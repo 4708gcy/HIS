@@ -12,6 +12,7 @@
 #define NURSE_H
 
 #include "Core/User.h"
+#include "Entities/NursingRecord.h"
 #include "Roles/Patient.h"
 
 /**

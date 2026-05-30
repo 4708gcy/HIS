@@ -114,6 +114,9 @@ public:
     void manageExaminations(Examination *&exaHead, Consultation *&conHead, int &idCounter);              // 管理检查记录（查看、修改状态等）
 
     void managePersonalInfo(); // 管理个人信息（查看、修改基本信息等）
+
+private:
+    void addExaminationItem(Consultation *target, const std::string &itemName); // 向看诊记录添加检查项目（查重后追加）
 };
 
 #endif // DOCTOR_H

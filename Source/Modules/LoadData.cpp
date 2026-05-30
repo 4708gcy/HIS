@@ -1,5 +1,12 @@
 #include "Modules/LoadData.h"
 #include "Core/Database.h"
+#include "Entities/Registration.h"
+#include "Entities/Consultation.h"
+#include "Entities/Examination.h"
+#include "Entities/Hospitalization.h"
+#include "Entities/MedicationRecord.h"
+#include "Entities/Medicine.h"
+#include "Entities/NursingRecord.h"
 
 // =====================Static helper for MySQL vital signs parsing=====================
 
@@ -26,23 +33,6 @@ static void fillVitalSignsFromRow(VitalSigns &vs, MYSQL_ROW row)
     vs.cholesterol        = Database::readDouble(row, 14);
 }
 
-// Common User base fields shared by all 5 role tables
-// Column mapping (0-indexed): 0=id, 1=username, 2=stored_hash, 3=salt,
-// 4=login_attempts, 5=is_active, 6=create_time, 7=gender, 8=age, 9=telephone, 10=email
-static void fillUserBase(class User *u, MYSQL_ROW row)
-{
-    u->setUserID(Database::readString(row, 0));
-    u->setUsername(Database::readString(row, 1));
-    u->setStoredHash(Database::readString(row, 2));
-    u->setSalt(Database::readString(row, 3));
-    u->setLoginAttempts(Database::readInt(row, 4));
-    u->setIsAccountActive(Database::readBool(row, 5));
-    u->setCreateTime(Database::readString(row, 6));
-    u->setGender(Database::readString(row, 7));
-    u->setAge(Database::readInt(row, 8));
-    u->setTelephone(Database::readString(row, 9));
-    u->setEmail(Database::readString(row, 10));
-}
 
 // =====================User data loading functions (MySQL)=====================
 

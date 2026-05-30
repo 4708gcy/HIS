@@ -47,7 +47,7 @@
 .
 ├── main.cpp                      # 程序入口：信号处理、数据库连接、主循环、保存与清理
 ├── CMakeLists.txt                # CMake 配置：C++17、/utf-8、libmysql 链接
-├── Head/                         # 23 个头文件，分 4 个子目录
+├── Head/                         # 25 个头文件，分 4 个子目录
 │   ├── Core/                     # 7 文件：基础类
 │   │   ├── User.h                # 用户基类（通用属性、安全认证、枚举转换、费用计算）
 │   │   ├── Database.h            # MySQL C API 封装（单例、事务、参数化查询）
@@ -56,30 +56,35 @@
 │   │   ├── SHA-256.h             # SHA-256 哈希算法
 │   │   ├── GetTime.h             # 时间获取工具
 │   │   └── EntityRepository.h    # 模板类：O(1) ID 查找、逻辑删除、链表管理
-│   ├── Entities/                 # 6 文件：数据实体结构体
+│   ├── Entities/                 # 7 文件：数据实体结构体
 │   │   ├── Registration.h        # 挂号记录
 │   │   ├── Consultation.h        # 看诊记录（含处方子表、检查项目子表）
 │   │   ├── Examination.h         # 检查记录（含生命体征、附件子表）
 │   │   ├── Hospitalization.h     # 住院记录 + bedInfo
 │   │   ├── MedicationRecord.h    # 用药记录（含药品明细子表）
-│   │   └── Medicine.h            # 药品信息（库存、有效期、别名）
+│   │   ├── Medicine.h            # 药品信息（库存、有效期、别名）
+│   │   └── NursingRecord.h       # 护理记录（独立实体，之前嵌套在 User.h 中）
 │   ├── Roles/                    # 5 文件：用户角色类
 │   │   ├── Admin.h               # 管理员（账户管理、报表、全局管理）
 │   │   ├── Doctor.h              # 医生（科室、职称、排班、工作量统计）
 │   │   ├── Nurse.h               # 护士（等级、床位管理、护理记录）
 │   │   ├── Pharmacist.h          # 药剂师（处方审核、发药、库存）
 │   │   └── Patient.h             # 患者（身份证号、过敏史、余额、婚姻状态）
-│   └── Modules/                  # 5 文件：功能模块
-│       ├── DrugSafety.h          # 药品相互作用规则引擎
+│   └── Modules/                  # 6 文件：功能模块
+│       ├── DrugSafety.h          # 药品相互作用（成分级精确匹配，防假阳性）
 │       ├── DataAnalysis.h        # Holt-Winters 预测、Z-score 异常检测
-│       ├── AIQueryClient.h       # C++ HTTP 客户端（WinSock2）连接 AI 服务
+│       ├── AIQueryClient.h       # C++ HTTP 客户端（WinSock2，PNG 二进制安全下载）
 │       ├── LoadData.h            # 13 个 MySQL→内存链表加载函数
 │       └── SaveData.h            # 13 个内存链表→MySQL 保存函数（事务）
-├── Source/                       # 16 个实现文件，分 3 个子目录（与 Head 对应）
+├── Source/                       # 18 个实现文件，分 3 个子目录
 │   ├── Core/                     # 6 文件
 │   │   ├── User.cpp, Database.cpp, UI.cpp, Login.cpp, SHA-256.cpp, GetTime.cpp
-│   ├── Roles/                    # 5 文件
-│   │   ├── Admin.cpp, Doctor.cpp, Nurse.cpp, Pharmacist.cpp, Patient.cpp
+│   ├── Roles/                    # 8 文件（Admin 拆分为 4 文件）
+│   │   ├── Admin.cpp             # 注册/登录 + include 聚合
+│   │   ├── AdminRecords.cpp      # 7 类记录管理
+│   │   ├── AdminReports.cpp      # 6 个统计报表
+│   │   ├── AdminUsers.cpp        # 4 类用户管理 + 个人信息
+│   │   ├── Doctor.cpp, Nurse.cpp, Pharmacist.cpp, Patient.cpp
 │   └── Modules/                  # 5 文件
 │       ├── DrugSafety.cpp, DataAnalysis.cpp, AIQueryClient.cpp, LoadData.cpp, SaveData.cpp
 ├── Data/
@@ -198,12 +203,12 @@ User（虚析构函数）
 
 - **Database**（`Database.h/cpp`）：MySQL C API 单例封装。提供 `connect()`、`query()`、`execute()`、参数化查询（`queryPrepared`/`executePrepared`）、事务（`beginTransaction`/`commit`/`rollback`）及 NULL 安全的行读取辅助函数。
 - **持久化层**（`LoadData.h/cpp`、`SaveData.h/cpp`）：13 对加载/保存函数。加载时从 MySQL `SELECT` 到链表；保存时用 `INSERT ... ON DUPLICATE KEY UPDATE` 同步回数据库，每条链表一个事务，出错自动回滚。
-- **认证层**（`Login.h/cpp`、`SHA-256.h/cpp`）：带盐 SHA-256 哈希，1000 次迭代。连续失败 5 次锁定账户。管理员首次注册需 API Key `88888888`。
-- **UI 层**（`UI.h/cpp`）：80+ 菜单函数、20+ 输入校验函数、`LogManager` 单例日志、Unicode 制表符边框、CJK 宽度感知、终端彩色输出。
-- **EntityRepository**（`EntityRepository.h`）：泛型模板，为链表提供 O(1) ID 查找（`unordered_map` 索引）、逻辑删除、过滤查询。目前实际用于 `NursingRecord`。
-- **AI 查询客户端**（`AIQueryClient.h/cpp`）：基于 WinSock2 的 HTTP 客户端，连接 `127.0.0.1:5001`，提供 `getPredictions()`、`getAnomalies()`、`getMedicines()`、`getBedOptimization()`、`getDashboard()`、`downloadChart()` 等方法。
+- **认证层**（`Login.h/cpp`、`SHA-256.h/cpp`）：带盐 SHA-256 哈希，10000 次迭代（`verifyPasswordCompat()` 向后兼容旧 1000 次迭代密码）。连续失败 5 次锁定账户。管理员注册 API Key 三级优先级：环境变量 `HIS_ADMIN_API_KEY` → 配置文件 `Data/AdminAPIKey.txt` → 默认 `88888888`。
+- **UI 层**（`UI.h/cpp`）：80+ 菜单函数、20+ 输入校验函数、`LogManager` 单例日志、Unicode 制表符边框、CJK 宽度感知、终端彩色输出。安全清屏（Win32 API / ANSI 转义，无 `system()` 调用）。6 个 `printXxxCard()` 函数集中管理实体显示。`displayChainByDept<T>` 和 `displayChainByFilter<T>` 通用链表遍历模板。
+- **EntityRepository**（`EntityRepository.h`）：泛型模板，为链表提供 O(1) ID 查找（`unordered_map` 索引）、逻辑删除、过滤查询。`getIdField()` 返回 `const std::string&`（ID 不可变）。模板特化管理 3 条链：`NursingRecord`、`Patient`、`Registration`。
+- **AI 查询客户端**（`AIQueryClient.h/cpp`）：基于 WinSock2 的 HTTP 客户端，连接 `127.0.0.1:5001`，提供 `getPredictions()`、`getAnomalies()`、`getMedicines()`、`getBedOptimization()`、`getDashboard()`、`downloadChart()` 等方法。`downloadChart()` 使用二进制安全接收（Content-Length 解析 + `std::ios::binary` 写入）。
 - **数据分析**（`DataAnalysis.h/cpp`）：Holt-Winters 需求预测、Z-score 异常检测、床位利用率分析。
-- **药品安全**（`DrugSafety.h/cpp`）：基于 `Data/DrugData/interactions.txt` 的 30 组药品相互作用规则引擎。
+- **药品安全**（`DrugSafety.h/cpp`）：基于 `Data/DrugData/interactions.txt` 的 30 组药品相互作用规则引擎。`tokenizeDrugName()` 实现成分级精确匹配（按分隔符拆分药品名），消除子字符串假阳性（如"阿莫西林克拉维酸钾"不会误匹配"阿莫西林"）。
 
 ## 开发约定
 
@@ -255,13 +260,15 @@ User（虚析构函数）
 
 ## 安全注意事项
 
-- **密码存储**：使用带盐 SHA-256，1000 次迭代，格式为 `salt$hash`。严禁明文存储。
+- **密码存储**：使用带盐 SHA-256，10000 次迭代（向后兼容旧 1000 次迭代密码），格式为 `salt$hash`。严禁明文存储。
 - **账户锁定**：连续 5 次登录失败后自动锁定账户，需管理员手动激活。
-- **SQL 注入防护**：使用 `Database::queryPrepared()` / `executePrepared()` 进行参数化查询，禁止直接字符串拼接 SQL。
+- **SQL 注入防护**：使用 `Database::queryPrepared()` / `executePrepared()` 进行参数化查询，移除 `CLIENT_MULTI_STATEMENTS` 标志。`dbDateTime()` 使用 `\x01` 前缀约定安全注入 SQL NULL。
+- **API Key 管理**：管理员注册密钥三级优先级：`HIS_ADMIN_API_KEY` 环境变量 → `Data/AdminAPIKey.txt` → 默认值。AI 服务同理（`HIS_API_KEY`）。
 - **路径安全**：`Data/DatabaseConfig.txt` 包含数据库明文密码（`123456`），在生产环境中必须更换并限制文件权限。
 - **DLL 依赖**：`libmysql.dll` 必须放在可执行文件同级目录，缺失会导致启动崩溃。
 - **工作目录依赖**：程序使用相对路径 `../Data/DatabaseConfig.txt` 读取配置，必须在 `build/` 目录下运行。
-- **AI 服务**：Flask 以 `debug=True` 运行，仅用于本地开发，不可直接暴露于公网。
+- **AI 服务**：Flask 以 `debug=False`、`host='127.0.0.1'` 运行，所有 API 端点（除 `/api/health`）需 `X-API-Key` 认证。`clearScreen()` 使用 Win32 API/ANSI 转义，不再调用 `system()`。
+- **清屏安全**：`clearScreen()` 使用 `FillConsoleOutputCharacter` + `SetConsoleCursorPosition`（Windows）/ ANSI `\033[2J\033[1;1H`（Linux），移除 `system("cls")` / `system("clear")` 调用。
 
 ## 数据库配置
 

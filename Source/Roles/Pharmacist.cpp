@@ -10,6 +10,9 @@
 
 #include "Roles/Pharmacist.h"
 #include "Modules/DrugSafety.h"
+#include "Entities/Consultation.h"
+#include "Entities/MedicationRecord.h"
+#include "Entities/Medicine.h"
 #include "Roles/Patient.h"
 #include "Core/UI.h"
 #include <iomanip>
@@ -80,7 +83,7 @@ bool Pharmacist::pharmacistSignIn()
             return false;
         }
 
-        bool success = SHA256Verify(pwd, storedHash, kHashIterations);
+        bool success = verifyPasswordCompat(pwd, storedHash);
 
         if (success)
         {
@@ -871,46 +874,7 @@ void Pharmacist::addMedicationRecord(MedicationRecord *&medRecHead, Consultation
                 continue;
             }
 
-            std::cout << "看诊ID: " << con->consultationID
-                      << ", 挂号ID: " << con->registrationID
-                      << ", 医生ID: " << con->doctorID
-                      << ", 科室: " << con->department
-                      << ", 时间: " << con->consultationTime
-                      << ", 状态: " << conStatusToString(con->status)
-                      << ", 主诉: " << con->chiefComplaint
-                      << ", 现病史: " << con->historyOfPresentIllness
-                      << ", 既往史: " << con->pastMedicalHistory
-                      << ", 家族史: " << con->familyHistory
-                      << ", 初步诊断: " << con->preliminaryDiagnosis
-                      << ", 检查项目数: " << con->examinationlist.size()
-                      << ", 处方数: " << con->prescriptions.size()
-                      << ", 处方审核状态: 已审核通过"
-                      << ", 住院建议: " << (con->isHospitalizationRecommended ? "是" : "否")
-                      << ", 备注: " << con->note
-                      << std::endl;
-            if (con->examinationlist.size() > 0)
-            {
-                std::cout << "检查项目列表:" << std::endl;
-                for (const auto &exam : con->examinationlist)
-                {
-                    std::cout << "  - " << exam << std::endl;
-                }
-            }
-            if (con->prescriptions.size() > 0)
-            {
-                std::cout << "处方列表:" << std::endl;
-                for (const auto &pres : con->prescriptions)
-                {
-                    std::cout << "  - 药品ID: " << pres.medicineID
-                              << ", 药品名称: " << pres.name
-                              << ", 药品数量: " << pres.quantity
-                              << ", 用量: " << pres.dosage
-                              << ", 频次: " << pres.frequency
-                              << ", 疗程: " << pres.duration
-                              << ", 备注: " << pres.note
-                              << std::endl;
-                }
-            }
+            printConsultationCard(con);
 
             hasApproved = true;
             std::cout << std::endl;
@@ -1932,7 +1896,7 @@ void Pharmacist::managePersonalInfo()
                 else if (modifyChoice == 10)
                 {
                     std::string oldpwd = inputPwdCheck("请输入当前密码以验证身份: ");
-                    if (SHA256Verify(oldpwd, this->storedHash, this->kHashIterations))
+                    if (verifyPasswordCompat(oldpwd, this->storedHash))
                     {
                         std::string newpwd1 = inputPwdCheck("请输入新的密码: ");
                         std::string newpwd2 = inputPwdCheck("请再次输入新的密码以确认: ");

@@ -45,6 +45,34 @@ static bool initWinsock()
     #define CLOSE_SOCKET(s) close(s)
 #endif
 
+// 从 HTTP 响应中提取 Content-Length 头部值，返回 -1 表示未找到
+static int parseContentLength(const std::string &headers)
+{
+    const std::string key = "Content-Length:";
+    auto pos = headers.find(key);
+    if (pos == std::string::npos)
+    {
+        // 尝试小写
+        const std::string keyLower = "content-length:";
+        pos = headers.find(keyLower);
+    }
+    if (pos == std::string::npos)
+        return -1;
+
+    pos += std::string("Content-Length:").length();
+    while (pos < headers.size() && (headers[pos] == ' ' || headers[pos] == '\t'))
+        pos++;
+
+    std::string num;
+    while (pos < headers.size() && headers[pos] >= '0' && headers[pos] <= '9')
+    {
+        num += headers[pos];
+        pos++;
+    }
+    if (num.empty()) return -1;
+    return std::stoi(num);
+}
+
 std::string AIQueryClient::httpGet(const std::string &path)
 {
     if (!initWinsock()) return "{}";
@@ -91,14 +119,13 @@ std::string AIQueryClient::httpGet(const std::string &path)
         return "{}";
     }
 
-    // 接收响应
+    // 接收响应（使用 std::string::append 的 count 版本避免 \0 截断）
     std::string response;
     char buf[4096];
     int received;
-    while ((received = (int)recv(sock, buf, sizeof(buf) - 1, 0)) > 0)
+    while ((received = (int)recv(sock, buf, sizeof(buf), 0)) > 0)
     {
-        buf[received] = '\0';
-        response += buf;
+        response.append(buf, received);  // 使用带长度的 append，不依赖 \0 终止
     }
     CLOSE_SOCKET(sock);
 
@@ -154,13 +181,13 @@ std::string AIQueryClient::httpPost(const std::string &path, const std::string &
         return "{}";
     }
 
+    // 接收响应（使用 std::string::append 的 count 版本避免 \0 截断）
     std::string response;
     char buf[4096];
     int received;
-    while ((received = (int)recv(sock, buf, sizeof(buf) - 1, 0)) > 0)
+    while ((received = (int)recv(sock, buf, sizeof(buf), 0)) > 0)
     {
-        buf[received] = '\0';
-        response += buf;
+        response.append(buf, received);
     }
     CLOSE_SOCKET(sock);
 
@@ -304,16 +331,97 @@ std::string AIQueryClient::getBedOptimization()
 std::string AIQueryClient::downloadChart(const std::string &chartType, const std::string &savePath)
 {
     std::string path = "/api/charts/" + chartType;
-    std::string pngData = httpGet(path);
 
-    if (pngData.empty() || pngData == "{}" || pngData.find("error") != std::string::npos)
+    // 发起 HTTP GET，获取完整响应（头部+体）
+    if (!initWinsock()) return "";
+
+    struct addrinfo hints{}, *result = nullptr;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    std::string portStr = std::to_string(port);
+    if (getaddrinfo(host.c_str(), portStr.c_str(), &hints, &result) != 0)
         return "";
 
-    // 写入 PNG 文件
+    int sock = (int)socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+    if (sock < 0) { freeaddrinfo(result); return ""; }
+
+    int timeout = 10000;  // 图表生成可能需要更长时间，使用 10 秒超时
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(timeout));
+    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout, sizeof(timeout));
+
+    if (connect(sock, result->ai_addr, (int)result->ai_addrlen) < 0)
+    {
+        CLOSE_SOCKET(sock);
+        freeaddrinfo(result);
+        return "";
+    }
+    freeaddrinfo(result);
+
+    std::ostringstream req;
+    req << "GET " << path << " HTTP/1.1\r\n"
+        << "Host: " << host << ":" << port << "\r\n"
+        << "Connection: close\r\n"
+        << "Accept: image/png\r\n"
+        << "\r\n";
+
+    std::string reqStr = req.str();
+    if (send(sock, reqStr.c_str(), (int)reqStr.size(), 0) < 0)
+    {
+        CLOSE_SOCKET(sock);
+        return "";
+    }
+
+    // 接收完整 HTTP 响应
+    std::string httpResponse;
+    char buf[8192];  // PNG 可能较大，使用更大的缓冲区
+    int received;
+    while ((received = (int)recv(sock, buf, sizeof(buf), 0)) > 0)
+    {
+        httpResponse.append(buf, received);
+    }
+    CLOSE_SOCKET(sock);
+
+    // 分离 HTTP 头部和体
+    auto headerEnd = httpResponse.find("\r\n\r\n");
+    if (headerEnd == std::string::npos)
+        return "";
+    if (httpResponse.size() <= headerEnd + 4)
+        return "";
+
+    // 检查 HTTP 状态码
+    std::string headers = httpResponse.substr(0, headerEnd);
+    if (headers.find("200 OK") == std::string::npos &&
+        headers.find("200 ") == std::string::npos)
+    {
+        std::cerr << "[AIQueryClient] HTTP 错误，状态行: "
+                  << headers.substr(0, headers.find('\r')) << std::endl;
+        return "";
+    }
+
+    // 提取 PNG 二进制数据
+    const char *bodyStart = httpResponse.data() + headerEnd + 4;
+    size_t bodySize = httpResponse.size() - (headerEnd + 4);
+
+    if (bodySize == 0)
+        return "";
+
+    // 根据 Content-Length 校验（如果存在的话）
+    int contentLength = parseContentLength(headers);
+    if (contentLength > 0 && static_cast<size_t>(contentLength) != bodySize)
+    {
+        std::cerr << "[AIQueryClient] 警告: Content-Length=" << contentLength
+                  << " 但实际体大小=" << bodySize << std::endl;
+        // 继续保存，但发出警告
+    }
+
+    // 写入文件（使用 data() + size() 确保二进制安全）
     std::ofstream out(savePath, std::ios::binary);
     if (!out.is_open())
         return "";
-    out.write(pngData.data(), pngData.size());
+    out.write(bodyStart, bodySize);
     out.close();
+
     return savePath;
 }

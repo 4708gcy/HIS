@@ -2,6 +2,40 @@
 
 ---
 
+## 2026.5.30 — 第四轮优化：安全加固、Bug 修复、代码质量提升
+
+基于全面代码审查报告（karpathy-coder），GLM 完成了 11 项改进任务：
+
+### 安全加固
+- **替换 `system("cls")`**：`UI.cpp` 的 `clearScreen()` 改用 Win32 `FillConsoleOutputCharacter` + `SetConsoleCursorPosition`（Windows）/ ANSI `\033[2J\033[1;1H`（Linux），不再调用 `system()`
+- **移除 `CLIENT_MULTI_STATEMENTS`**：`Database.cpp` 的 `mysql_real_connect()` 调用中移除此标志，防止多语句 SQL 注入
+- **API Key 三级优先级**：`User.cpp` 的 `signUp()` 中 API Key 读取顺序改为 `HIS_ADMIN_API_KEY` 环境变量 → `Data/AdminAPIKey.txt` → 默认 `88888888`；AI 服务 `app.py` 同理支持 `HIS_API_KEY` 环境变量
+
+### Bug 修复
+- **PNG 下载二进制安全**：`AIQueryClient::downloadChart()` 新增 `parseContentLength()` 解析响应头、使用 `std::ios::binary` 写入、8KB 缓冲区、Content-Length 校验
+- **EntityRepository ID 不变性**：`getIdField()` 三个版本（主模板 + Patient/Registration 特化）均返回 `const std::string&`，防止外部修改 ID 导致 `idMap` 索引过期
+- **药物相互作用精确匹配**：`DrugSafety.cpp` 新增 `tokenizeDrugName()`（按 `/`, `+`, `-`, `·`, `\`, `&` 分隔药品名）和 `isConstituentOf()`，用成分级精确匹配替代子字符串匹配，消除"阿莫西林克拉维酸钾"误匹配"阿莫西林"的假阳性
+- **dbDateTime SQL NULL 改进**：空日期时间返回 `\x01NULL`（`\x01` 前缀标记），`Database::buildSql()` 识别后将 `NULL` 作为原始 SQL 片段注入，不加引号不转义
+
+### 代码质量提升
+- **拆分 Admin.cpp 巨型文件**：8586 行单文件 → 4 个文件
+  - `Admin.cpp`（64 行）：注册/登录 + include 聚合
+  - `AdminRecords.cpp`（~5200 行）：挂号/看诊/检查/住院/床位/用药记录/药品管理
+  - `AdminUsers.cpp`（~4000 行）：医生/护士/药剂师/患者管理 + 个人信息
+  - `AdminReports.cpp`（~1000 行）：6 个统计报表函数
+- **提取实体打印函数**：`UI.h/cpp` 中新增 6 个 `printXxxCard()` 函数（Registration/Consultation/Examination/MedicationRecord/Hospitalization/Medicine），集中管理实体显示格式
+- **通用查询过滤模板**：`UI.h` 新增 `displayChainByFilter<T>(head, filterFn, printer)`，接受 lambda 谓词，替代手动 while 循环
+- **移动 NursingRecord**：从 `User.h`（用户基类头文件）移至 `Head/Entities/NursingRecord.h`（实体头文件目录），改善模块边界
+- **CMake 构建类型**：`CMakeLists.txt` 新增 Debug（默认）/ Release 两种构建类型支持，Release 开启 MSVC `/GL` + `/LTCG`
+- **删除死代码**：移除 `LoadData.cpp` 中未被调用的 `fillUserBase()` 函数
+
+### 项目统计更新
+- Head/ 从 23 增至 25 个头文件（Entities 新增 NursingRecord.h，Modules 新增 DrugInteractionUtils.h）
+- Source/Roles/ 从 5 增至 8 个源文件（Admin 拆分为 4 文件）
+- 总文件数：25 头文件 + 18 源文件 = 43 个 C++ 源文件
+
+---
+
 ## 2026.4.8 — 项目初始化
 
 - 创建核心医疗信息类：`Registration`、`Consultation`、`Examination`

@@ -31,6 +31,15 @@ public:
     int execute(const std::string &sql);
 
     // Parameterized (escapes params, replaces ? left-to-right)
+    // With explicit NULL markers (nulls[i]=true → SQL NULL for param i)
+    MYSQL_RES *queryPrepared(const std::string &sql,
+                             const std::vector<std::string> &params,
+                             const std::vector<bool> &nulls);
+    int executePrepared(const std::string &sql,
+                        const std::vector<std::string> &params,
+                        const std::vector<bool> &nulls);
+
+    // Overload without NULL markers (all params are quoted strings)
     MYSQL_RES *queryPrepared(const std::string &sql,
                              const std::vector<std::string> &params);
     int executePrepared(const std::string &sql,
