@@ -1,18 +1,13 @@
-"""
-API Key 认证
-参考来源：es_kb_api.py 的 Depends 注入 + HIS 原项目的 API Key 设计
-"""
+"""API Key 认证"""
+import hmac
 from fastapi import Header, HTTPException, status
 from core.config import settings
 
 
 async def verify_api_key(authorization: str = Header(None, alias="X-API-Key")):
-    """
-    验证 API Key（依赖注入方式）
-    请求头中必须包含 X-API-Key
-    """
-    expected = settings.security.get("api_key") or "his-default-key"
-    if not authorization or authorization != expected:
+    # X-API-Key 请求头认证
+    expected = settings.security.get("api_key", "")
+    if not expected or not authorization or not hmac.compare_digest(authorization.encode(), expected.encode()):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={

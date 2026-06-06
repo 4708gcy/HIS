@@ -1,22 +1,14 @@
-"""
-配置加载模块
-参考来源：04-government-rag 的 yaml.safe_load 配置驱动
-"""
+"""配置加载"""
 import os
 import yaml
-from typing import Dict, Any
 
 
 class Settings:
-    """配置单例，支持环境变量覆盖 YAML 配置"""
-    _instance = None
-    _config: Dict[str, Any] = {}
+    """配置管理，env 覆盖 config.yaml"""
+    pass
 
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._load()
-        return cls._instance
+    def __init__(self):
+        self._load()
 
     def _load(self):
         config_path = os.path.join(os.path.dirname(__file__), "..", "config.yaml")
@@ -41,27 +33,27 @@ class Settings:
     def get(self, section: str, key: str, default=None):
         return self._config.get(section, {}).get(key, default)
 
-    def section(self, name: str) -> Dict[str, Any]:
+    def section(self, name: str) -> dict:
         return self._config.get(name, {})
 
     @property
-    def llm(self) -> Dict[str, Any]:
+    def llm(self) -> dict:
         return self.section("llm")
 
     @property
-    def database(self) -> Dict[str, Any]:
+    def database(self) -> dict:
         return self.section("database")
 
     @property
-    def security(self) -> Dict[str, Any]:
+    def security(self) -> dict:
         return self.section("security")
 
     @property
-    def rag(self) -> Dict[str, Any]:
+    def rag(self) -> dict:
         return self.section("rag")
 
     @property
-    def analysis(self) -> Dict[str, Any]:
+    def analysis(self) -> dict:
         return self.section("analysis")
 
 

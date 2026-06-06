@@ -1,7 +1,4 @@
-"""
-数据库连接池
-参考来源：mock_login.py 的 pymysql + 04-rag 的 SQLAlchemy 思路
-"""
+"""数据库连接池"""
 import pymysql
 from pymysql.cursors import DictCursor
 from contextlib import contextmanager
@@ -9,7 +6,7 @@ from core.config import settings
 
 
 class DatabasePool:
-    """MySQL 连接池（简化版）"""
+    """pymysql 连接池，延迟初始化"""
 
     def __init__(self):
         db = settings.database
@@ -25,17 +22,25 @@ class DatabasePool:
         }
         self._pool = []
         self._max_size = db.get("pool_size", 5)
-        for _ in range(self._max_size):
-            self._pool.append(self._create_conn())
 
     def _create_conn(self):
         return pymysql.connect(**self.config)
+
+    def _get_conn(self):
+        while self._pool:
+            conn = self._pool.pop()
+            try:
+                conn.ping(reconnect=True)
+                return conn
+            except pymysql.Error:
+                continue
+        return self._create_conn()
 
     @contextmanager
     def get_cursor(self):
         conn = None
         try:
-            conn = self._pool.pop() if self._pool else self._create_conn()
+            conn = self._get_conn()
             yield conn.cursor()
         finally:
             if conn:

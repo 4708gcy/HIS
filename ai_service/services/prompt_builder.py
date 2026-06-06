@@ -1,9 +1,6 @@
-"""
-动态 Few-shot Prompt 构建器（LangChain 版）
-参考来源：02_LangChain_2_提示词模板.py（ChatPromptTemplate.from_messages）
-"""
+"""动态 Few-shot Prompt 构建器"""
 import json
-from typing import List, Dict, Any
+import numpy as np
 import jieba
 from sklearn.feature_extraction.text import TfidfVectorizer
 from langchain_core.prompts import ChatPromptTemplate
@@ -17,8 +14,7 @@ class PromptBuilder:
         self.top_k = settings.analysis.get("few_shot_topk", 5)
         self.vectorizer = TfidfVectorizer(tokenizer=jieba.lcut, lowercase=False)
 
-    def _find_similar_cases(self, query_text: str, historical_cases: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """用 TF-IDF 从历史案例中找到与当前场景最相似的 top_k 条记录"""
+    def _find_similar_cases(self, query_text, historical_cases):
         if not historical_cases or len(historical_cases) < 3:
             return historical_cases[:self.top_k]
 
@@ -32,22 +28,19 @@ class PromptBuilder:
         try:
             tfidf_matrix = self.vectorizer.fit_transform(corpus)
             query_vec = tfidf_matrix[-1]
-            import numpy as np
             similarities = np.dot(tfidf_matrix[:-1], query_vec.T).toarray().flatten()
             top_indices = similarities.argsort()[::-1][:self.top_k]
             return [historical_cases[i] for i in top_indices]
         except Exception:
             return historical_cases[-self.top_k:]
 
-    def _format_few_shot(self, cases: List[Dict[str, Any]]) -> str:
-        """将案例格式化为 few-shot 文本"""
+    def _format_few_shot(self, cases):
         lines = []
         for i, case in enumerate(cases, 1):
             lines.append(f"案例{i}：{case.get('department', '')} 在 {case.get('month', '')} 入院 {case.get('new_admissions', 0)} 人，后续趋势为 {case.get('trend', '平稳')}。")
         return "\n".join(lines)
 
-    def get_prediction_prompt(self, current_data: Dict[str, Any], historical_cases: List[Dict[str, Any]]):
-        """构建需求预测 prompt → 返回 ChatPromptValue"""
+    def get_prediction_prompt(self, current_data, historical_cases):
         query_text = f"{current_data.get('department', '')} " + " ".join(
             [f"{m['month']}入院{m['new_admissions']}人" for m in current_data.get('months_data', [])]
         )
@@ -56,7 +49,7 @@ class PromptBuilder:
 
         template = ChatPromptTemplate.from_messages([
             ("system", "你是医院运营管理专家，擅长基于历史数据预测科室需求。只输出 JSON，不要其他内容。"),
-            ("human", """## 历史相似场景（参考）
+            ("human", """## 历史相似场景
 {few_shots}
 
 ## 当前数据
@@ -86,8 +79,7 @@ class PromptBuilder:
             "data": "\n".join([f"- {m['month']}: {m['new_admissions']} 人" for m in current_data.get("months_data", [])])
         })
 
-    def get_anomaly_prompt(self, anomaly_data: Dict[str, Any]):
-        """构建异常解读 prompt"""
+    def get_anomaly_prompt(self, anomaly_data):
         template = ChatPromptTemplate.from_messages([
             ("system", "你是医院数据分析师，用简洁专业的语言解读数据异常。"),
             ("human", """## 异常信息
@@ -111,8 +103,7 @@ Z-score：{z_score}（{direction}）
             "direction": "显著偏高" if anomaly_data.get("direction") == "high" else "显著偏低"
         })
 
-    def get_bed_prompt(self, bed_data: Dict[str, Any]):
-        """构建床位优化 prompt"""
+    def get_bed_prompt(self, bed_data):
         template = ChatPromptTemplate.from_messages([
             ("system", "你是医院床位管理专家，只输出 JSON，不要其他内容。"),
             ("human", """## 当前床位数据
@@ -146,8 +137,7 @@ Z-score：{z_score}（{direction}）
             "avg_stay": bed_data.get("avg_stay_days", 0)
         })
 
-    def get_dashboard_prompt(self, summary_data: Dict[str, Any]):
-        """构建综合仪表盘摘要 prompt"""
+    def get_dashboard_prompt(self, summary_data):
         template = ChatPromptTemplate.from_messages([
             ("system", "你是医院运营总监的 AI 助手，请基于数据生成运营摘要。"),
             ("human", """## 数据概览
@@ -163,8 +153,7 @@ Z-score：{z_score}（{direction}）
             "data": json.dumps(summary_data, ensure_ascii=False, indent=2)
         })
 
-    def get_rag_prompt(self, query: str, retrieved_docs: List[str]):
-        """构建 RAG 问答 prompt"""
+    def get_rag_prompt(self, query, retrieved_docs):
         context = "\n\n".join([f"资料{i+1}：{doc}" for i, doc in enumerate(retrieved_docs)])
         template = ChatPromptTemplate.from_messages([
             ("system", "你是医院运营管理专家，请结合给定资料回答用户问题。如果资料中没有相关信息，请回答'根据现有资料无法回答'。"),

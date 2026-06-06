@@ -1,33 +1,29 @@
-"""
-统一响应封装
-参考来源：04-government-rag 的标准化 Response 设计
-"""
+"""统一响应封装"""
 import uuid
 import time
-from typing import Dict, Any, Optional
+from typing import Optional
 from fastapi.responses import JSONResponse
 
 
 class ResponseBuilder:
-    """构建统一格式响应"""
 
     @staticmethod
-    def success(data: Optional[Dict[str, Any]] = None, msg: str = "ok",
+    def success(data: Optional[dict] = None, msg: str = "ok",
                 start_time: Optional[float] = None) -> JSONResponse:
-        processing_time = round(time.time() - start_time, 3) if start_time else 0.0
+        elapsed = round(time.time() - start_time, 3) if start_time else 0.0
         return JSONResponse(content={
             "request_id": str(uuid.uuid4()),
             "data": data or {},
             "response_code": 200,
             "response_msg": msg,
             "process_status": "completed",
-            "processing_time": processing_time
+            "processing_time": elapsed
         })
 
     @staticmethod
-    def error(msg: str, code: int = 500, data: Optional[Dict[str, Any]] = None,
+    def error(msg: str, code: int = 500, data: Optional[dict] = None,
               start_time: Optional[float] = None) -> JSONResponse:
-        processing_time = round(time.time() - start_time, 3) if start_time else 0.0
+        elapsed = round(time.time() - start_time, 3) if start_time else 0.0
         return JSONResponse(
             status_code=code,
             content={
@@ -36,12 +32,12 @@ class ResponseBuilder:
                 "response_code": code,
                 "response_msg": msg,
                 "process_status": "failed",
-                "processing_time": processing_time
+                "processing_time": elapsed
             }
         )
 
     @staticmethod
-    def processing(request_id: str) -> Dict[str, Any]:
+    def processing(request_id: str) -> dict:
         return {
             "request_id": request_id,
             "data": None,

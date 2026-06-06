@@ -1,8 +1,5 @@
-"""
-综合报告生成器（LangChain 版）
-"""
+"""综合报告生成器"""
 import time
-from typing import Dict, Any
 from services.data_loader import DataLoader
 from services.analyzer import TraditionalAnalyzer
 from services.llm_client import llm_client
@@ -10,13 +7,13 @@ from services.prompt_builder import PromptBuilder
 
 
 class ReportGenerator:
-    """综合报告生成器：整合所有数据 → LangChain LLM Executive Summary"""
+    """聚合数据 + LLM 生成运营摘要"""
 
     def __init__(self):
         self.prompt_builder = PromptBuilder()
 
-    def generate(self, strategy: str = "llm") -> Dict[str, Any]:
-        start_time = time.time()
+    def generate(self, strategy="llm"):
+        start = time.time()
 
         monthly_stats = DataLoader.load_monthly_stats(6)
         beds = DataLoader.load_bed_info()
@@ -29,7 +26,7 @@ class ReportGenerator:
         medicine_analysis = TraditionalAnalyzer.analyze_medicine_inventory(medicines)
 
         summary = {
-            "monthly_stats_count": len(monthly_stats),
+            "stats_count": len(monthly_stats),
             "departments": list(set([s["department"] for s in monthly_stats])),
             "bed_summary": bed_analysis,
             "medicine_summary": {
@@ -46,11 +43,10 @@ class ReportGenerator:
         else:
             summary["executive_summary"] = "（传统模式不生成 LLM 摘要）"
 
-        summary["processing_time"] = round(time.time() - start_time, 3)
+        summary["processing_time"] = round(time.time() - start, 3)
         return summary
 
-    def _llm_summary(self, summary_data: Dict[str, Any]) -> str:
-        """LangChain LLM 生成运营摘要"""
+    def _llm_summary(self, summary_data):
         try:
             prompt = self.prompt_builder.get_dashboard_prompt(summary_data)
             return llm_client.invoke_with_prompt(prompt, temperature=0.5)

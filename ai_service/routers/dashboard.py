@@ -14,7 +14,6 @@ report_gen = ReportGenerator()
 
 @router.post("", dependencies=[Depends(verify_api_key)])
 def get_dashboard(req: DashboardRequest):
-    """综合仪表盘（含 LLM Executive Summary）"""
     start = time.time()
     result = report_gen.generate(strategy=req.strategy.value)
     return ResponseBuilder.success(result, "仪表盘数据加载完成", start_time=start)

@@ -14,7 +14,6 @@ predictor = Predictor()
 
 @router.post("", dependencies=[Depends(verify_api_key)])
 def predict_demand(req: PredictRequest):
-    """需求预测（支持 traditional / llm / auto 三策略）"""
     start = time.time()
     result = predictor.predict(
         months=req.months,

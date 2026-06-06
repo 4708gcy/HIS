@@ -1,7 +1,4 @@
-"""
-传统统计算法（保留作为 fallback）
-参考来源：HIS 原 analyzer.py
-"""
+"""传统统计算法"""
 from typing import List, Dict, Any
 from collections import defaultdict
 
@@ -80,7 +77,7 @@ class TraditionalAnalyzer:
                     a = datetime.strptime(str(admit)[:10], "%Y-%m-%d")
                     d = datetime.strptime(str(discharge)[:10], "%Y-%m-%d")
                     dept_stays[dept].append(max(1, (d - a).days))
-                except:
+                except (ValueError, TypeError):
                     pass
 
         result = []

@@ -1,17 +1,11 @@
-"""
-数据加载服务
-从 HIS MySQL 数据库加载各维度数据
-"""
-from typing import List, Dict, Any
+"""从 HIS MySQL 加载各维度数据"""
 from core.database import db_pool
 
 
 class DataLoader:
-    """HIS 数据加载器"""
 
     @staticmethod
-    def load_monthly_stats(months: int = 6, department: str = None) -> List[Dict[str, Any]]:
-        """加载月度统计数据（科室入院人数）"""
+    def load_monthly_stats(months=6, department=None):
         sql = """
             SELECT
                 department,
@@ -29,8 +23,7 @@ class DataLoader:
         return db_pool.execute(sql, tuple(params))
 
     @staticmethod
-    def load_bed_info(department: str = None) -> List[Dict[str, Any]]:
-        """加载床位信息"""
+    def load_bed_info(department=None):
         sql = "SELECT * FROM bed_info WHERE 1=1"
         params = []
         if department:
@@ -39,8 +32,7 @@ class DataLoader:
         return db_pool.execute(sql, tuple(params))
 
     @staticmethod
-    def load_hospitalizations(department: str = None) -> List[Dict[str, Any]]:
-        """加载住院记录"""
+    def load_hospitalizations(department=None):
         sql = "SELECT * FROM hospitalizations WHERE discharge_time IS NOT NULL"
         params = []
         if department:
@@ -49,13 +41,11 @@ class DataLoader:
         return db_pool.execute(sql, tuple(params))
 
     @staticmethod
-    def load_medicine_inventory() -> List[Dict[str, Any]]:
-        """加载药品库存"""
+    def load_medicine_inventory():
         return db_pool.execute("SELECT * FROM medicines")
 
     @staticmethod
-    def load_doctor_workload() -> List[Dict[str, Any]]:
-        """加载医生工作量"""
+    def load_doctor_workload():
         return db_pool.execute("""
             SELECT department,
                    COUNT(*) as doctor_count,
@@ -65,8 +55,7 @@ class DataLoader:
         """)
 
     @staticmethod
-    def load_patient_visits() -> List[Dict[str, Any]]:
-        """加载患者就诊统计"""
+    def load_patient_visits():
         return db_pool.execute("""
             SELECT department,
                    COUNT(*) as patient_count,

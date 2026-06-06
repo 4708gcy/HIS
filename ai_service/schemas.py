@@ -1,8 +1,5 @@
-"""
-Pydantic 数据模型
-参考来源：es_kb_api.py 的复杂嵌套模型设计 + fastapi-student-crud-demo 的基础模型
-"""
-from typing import Optional, List, Dict, Any, Union
+"""Pydantic 数据模型"""
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 from enum import Enum
 
@@ -16,7 +13,7 @@ class Strategy(str, Enum):
 
 class HISResponse(BaseModel):
     """
-    统一响应格式（参考 04-government-rag 的标准化 response）
+    统一响应格式
     """
     request_id: str = Field(..., description="唯一请求 ID")
     data: Optional[Dict[str, Any]] = Field(None, description="业务数据")

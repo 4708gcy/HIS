@@ -1,9 +1,7 @@
-"""
-需求预测引擎（LangChain 版）
-"""
+"""需求预测引擎"""
 import json
+import re
 import time
-from typing import List, Dict, Any
 from services.data_loader import DataLoader
 from services.analyzer import TraditionalAnalyzer
 from services.llm_client import llm_client
@@ -11,15 +9,22 @@ from services.prompt_builder import PromptBuilder
 from core.config import settings
 
 
+def extract_json(raw):
+    """从 LLM 输出提取 JSON"""
+    match = re.search(r'```(?:json)?\s*\n?(.*?)```', raw, re.DOTALL)
+    text = match.group(1).strip() if match else raw.strip()
+    return json.loads(text)
+
+
 class Predictor:
-    """需求预测引擎：传统算法 + LangChain LLM 双策略"""
+    """traditional / llm / auto 三策略"""
 
     def __init__(self):
         self.prompt_builder = PromptBuilder()
         self.auto_threshold = settings.analysis.get("auto_threshold", 12)
 
-    def predict(self, months: int = 6, department: str = None, strategy: str = "auto") -> Dict[str, Any]:
-        start_time = time.time()
+    def predict(self, months=6, department=None, strategy="auto"):
+        start = time.time()
 
         stats = DataLoader.load_monthly_stats(months, department)
         if not stats:
@@ -46,11 +51,10 @@ class Predictor:
         return {
             "strategy": strategy,
             "predictions": results,
-            "processing_time": round(time.time() - start_time, 3)
+            "processing_time": round(time.time() - start, 3)
         }
 
-    def _predict_traditional(self, dept: str, data: List[Dict]) -> Dict[str, Any]:
-        """传统统计算法"""
+    def _predict_traditional(self, dept, data):
         values = [d["new_admissions"] for d in data]
         n = len(values)
         ma_count = min(n, 3)
@@ -72,26 +76,17 @@ class Predictor:
             "historical_context": []
         }
 
-    def _predict_llm(self, dept: str, data: List[Dict], all_stats: List[Dict]) -> Dict[str, Any]:
-        """LangChain LLM 动态 Few-shot 预测"""
+    def _predict_llm(self, dept, data, all_stats):
         current_data = {
             "department": dept,
             "months_data": data
         }
 
         try:
-            # LangChain ChatPromptTemplate → invoke → 获取结果
             prompt = self.prompt_builder.get_prediction_prompt(current_data, all_stats)
             raw = llm_client.invoke_with_prompt(prompt, temperature=0.3)
 
-            # 提取 JSON
-            json_str = raw
-            if "```json" in raw:
-                json_str = raw.split("```json")[1].split("```")[0].strip()
-            elif "```" in raw:
-                json_str = raw.split("```")[1].split("```")[0].strip()
-
-            result = json.loads(json_str)
+            result = extract_json(raw)
             result["department"] = dept
             result.setdefault("historical_context", [])
             return result

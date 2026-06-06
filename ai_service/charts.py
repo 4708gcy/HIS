@@ -1,16 +1,14 @@
 """
 HIS AI 微服务 — 数据可视化模块
-使用 matplotlib 生成图表 PNG 文件，服务课程要求 (4) 的"多种形式展示分析结果"
 """
 import os
 import matplotlib
-matplotlib.use('Agg')  # 无头模式，不弹窗
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import numpy as np
 from collections import defaultdict
 
-# ==================== 中文字体配置 ====================
 
 def _setup_cn_font():
     """配置中文字体（Windows: SimHei/微软雅黑, fallback: sans-serif）"""
@@ -32,13 +30,8 @@ os.makedirs(CHARTS_DIR, exist_ok=True)
 _font_name = _setup_cn_font()
 
 
-# ==================== 图表生成函数 ====================
-
+# predictions: list from predict_demand()
 def generate_prediction_chart(predictions, filename='predictions.png'):
-    """
-    各科室需求预测对比柱状图
-    predictions: predict_demand() 返回的列表
-    """
     depts = [p['department'] for p in predictions]
     hw_vals = [p.get('holt_winters', 0) for p in predictions]
     ma_vals = [p.get('moving_avg_3m', 0) for p in predictions]
@@ -60,7 +53,6 @@ def generate_prediction_chart(predictions, filename='predictions.png'):
     ax.legend(loc='upper right')
     ax.grid(axis='y', alpha=0.3)
 
-    # 在柱上标注数值
     for bar in bars3:
         height = bar.get_height()
         if height > 0:
@@ -74,11 +66,8 @@ def generate_prediction_chart(predictions, filename='predictions.png'):
     return path
 
 
+# bed_analyses: [{department, total_beds, occupied, utilization_pct}]
 def generate_bed_utilization_chart(bed_analyses, filename='bed_utilization.png'):
-    """
-    各科室床位利用率饼图 + 柱状图
-    bed_analyses: [{department, total_beds, occupied, utilization_pct, ...}]
-    """
     depts = [b['department'] for b in bed_analyses if b.get('department')]
     utilization = [b.get('utilization_pct', 0) for b in bed_analyses if b.get('department')]
     occupied = [b.get('occupied', 0) for b in bed_analyses if b.get('department')]
@@ -87,7 +76,6 @@ def generate_bed_utilization_chart(bed_analyses, filename='bed_utilization.png')
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
-    # 左：利用率柱状图
     colors = ['#4caf50' if u < 70 else '#ff9800' if u < 85 else '#f44336'
               for u in utilization]
     bars = ax1.bar(depts, utilization, color=colors)
@@ -101,7 +89,6 @@ def generate_bed_utilization_chart(bed_analyses, filename='bed_utilization.png')
         ax1.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1,
                  f'{u:.1f}%', ha='center', fontsize=9)
 
-    # 右：占用/空闲堆叠柱状图
     x = np.arange(len(depts))
     ax2.bar(x, occupied, label='已占用', color='#f44336')
     ax2.bar(x, available, bottom=occupied, label='空闲', color='#4caf50')
@@ -121,9 +108,6 @@ def generate_bed_utilization_chart(bed_analyses, filename='bed_utilization.png')
 
 
 def generate_anomaly_scatter_chart(monthly_stats, anomalies=None, filename='anomalies.png'):
-    """
-    各科室入院人数时序折线图 + 异常点标注
-    """
     if anomalies is None:
         anomalies = []
 
@@ -133,7 +117,6 @@ def generate_anomaly_scatter_chart(monthly_stats, anomalies=None, filename='anom
 
     anomaly_dept_months = set()
     for a in anomalies:
-        # anomalies 格式: [{department, label(month), ...}]
         if 'department' in a and 'label' in a:
             anomaly_dept_months.add((a['department'], a['label']))
 
@@ -151,7 +134,6 @@ def generate_anomaly_scatter_chart(monthly_stats, anomalies=None, filename='anom
         values = [d[1] for d in data]
         ax.plot(months, values, 'o-', color='#1976d2', linewidth=2, markersize=6, label='入院人数')
 
-        # 标记异常点
         for i, (m, v) in enumerate(zip(months, values)):
             if (dept, m) in anomaly_dept_months:
                 ax.scatter(m, v, color='red', s=120, zorder=5, edgecolors='darkred', linewidths=1.5)
@@ -172,11 +154,8 @@ def generate_anomaly_scatter_chart(monthly_stats, anomalies=None, filename='anom
     return path
 
 
+# stats_by_dept: [{department, registration_count, ...}]
 def generate_department_report_chart(stats_by_dept, filename='dept_report.png'):
-    """
-    综合科室报表：多指标对比雷达图 + 柱状图
-    stats_by_dept: [{department, doctors, registrations, consultations, revenue_yuan, ...}]
-    """
     depts = [s['department'] for s in stats_by_dept]
     n = len(depts)
     if n == 0:
@@ -184,26 +163,22 @@ def generate_department_report_chart(stats_by_dept, filename='dept_report.png'):
 
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 
-    # 左上：挂号量
     regs = [s.get('registration_count', 0) for s in stats_by_dept]
     axes[0, 0].bar(depts, regs, color='#42a5f5')
     axes[0, 0].set_title('各科室挂号量', fontsize=13, fontweight='bold')
     axes[0, 0].set_ylabel('挂号数')
     plt.setp(axes[0, 0].xaxis.get_majorticklabels(), rotation=30, ha='right')
 
-    # 右上：收入
     revenues = [s.get('revenue_yuan', 0) for s in stats_by_dept]
     axes[0, 1].bar(depts, revenues, color='#66bb6a')
     axes[0, 1].set_title('各科室挂号收入 (元)', fontsize=13, fontweight='bold')
     plt.setp(axes[0, 1].xaxis.get_majorticklabels(), rotation=30, ha='right')
 
-    # 左下：医生数
     docs = [s.get('doctor_count', 0) for s in stats_by_dept]
     axes[1, 0].bar(depts, docs, color='#ffa726')
     axes[1, 0].set_title('各科室医生数', fontsize=13, fontweight='bold')
     plt.setp(axes[1, 0].xaxis.get_majorticklabels(), rotation=30, ha='right')
 
-    # 右下：看诊量
     cons = [s.get('consultation_count', 0) for s in stats_by_dept]
     axes[1, 1].bar(depts, cons, color='#ab47bc')
     axes[1, 1].set_title('各科室看诊量', fontsize=13, fontweight='bold')
@@ -216,11 +191,8 @@ def generate_department_report_chart(stats_by_dept, filename='dept_report.png'):
     return path
 
 
+# medicine_analysis: from analyze_medicine_inventory()
 def generate_medicine_pie_chart(medicine_analysis, filename='medicines.png'):
-    """
-    药品库存状态饼图
-    medicine_analysis: analyze_medicine_inventory() 返回的字典
-    """
     total_low = len(medicine_analysis.get('low_stock_items', []))
     total_expired = len(medicine_analysis.get('expired_items', []))
     total_types = medicine_analysis.get('total_types', 0)
@@ -231,7 +203,6 @@ def generate_medicine_pie_chart(medicine_analysis, filename='medicines.png'):
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 
-    # 饼图
     labels = ['正常', '低库存', '已过期']
     sizes = [total_normal, total_low, total_expired]
     colors = ['#4caf50', '#ff9800', '#f44336']
@@ -240,7 +211,6 @@ def generate_medicine_pie_chart(medicine_analysis, filename='medicines.png'):
             shadow=True, startangle=90)
     ax1.set_title('药品库存状态分布', fontsize=14, fontweight='bold')
 
-    # 柱状图
     ax2.bar(labels, sizes, color=colors)
     ax2.set_ylabel('药品种类数', fontsize=12)
     ax2.set_title('库存状态统计', fontsize=14, fontweight='bold')

@@ -14,7 +14,6 @@ detector = AnomalyDetector()
 
 @router.post("", dependencies=[Depends(verify_api_key)])
 def detect_anomalies(req: AnomalyRequest):
-    """异常检测 + LLM 解读"""
     start = time.time()
     result = detector.detect(
         months=req.months,

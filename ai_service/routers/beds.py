@@ -14,7 +14,6 @@ optimizer = BedOptimizer()
 
 @router.post("", dependencies=[Depends(verify_api_key)])
 def optimize_beds(req: BedOptimizeRequest):
-    """床位分配优化 + LLM 报告"""
     start = time.time()
     result = optimizer.optimize(
         department=req.department,
