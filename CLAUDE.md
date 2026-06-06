@@ -65,13 +65,40 @@ Data/
   DrugData/interactions.txt — 30 drug-drug interaction pairs (still file-based)
   OperationLog/*.log   — daily operation logs
 Document/             — project documentation
-ai_service/           — Python Flask AI v2.0 (MySQL + matplotlib + pandas)
-  requirements.txt    — flask, pymysql, pandas, matplotlib
-  app.py              — 12 endpoints (predictions/anomalies/medicines/bed-optimization/dashboard/forecast + 4 chart PNGs)
-  data_loader.py      — MySQL data loader (replaces deleted CSV files)
-  analyzer.py         — Holt-Winters, Z-score, bed analysis, pandas pivot
-  charts.py           — matplotlib charts (prediction bars, bed utilization, anomaly scatter, medicine pie)
-  charts/             — generated PNG output
+ai_service/           — Python FastAPI AI v2.0 (LangChain + MySQL + matplotlib)
+  main.py             — FastAPI entry point (uvicorn on port 5001)
+  schemas.py          — Pydantic request/response models (Strategy enum, HISResponse)
+  config.yaml         — YAML configuration center (app/llm/database/security/rag/analysis/charts)
+  Dockerfile          — Docker deployment (python:3.11-slim + uvicorn)
+  requirements.txt    — fastapi, uvicorn, pydantic, langchain, langchain-openai, faiss-cpu, sentence-transformers, jieba, scikit-learn, pymysql, matplotlib, pandas, numpy, pyyaml, pdfplumber, python-docx
+  core/               — Foundation layer
+    config.py         — Settings singleton (YAML load + env var overrides: HIS_LLM_API_KEY, HIS_API_KEY, HIS_DB_HOST, etc.)
+    database.py       — MySQL connection pool (DatabasePool, DictCursor, contextmanager)
+    security.py       — API Key auth via FastAPI Depends (X-API-Key header)
+    response.py       — ResponseBuilder (unified JSON format: request_id, data, response_code, response_msg, process_status, processing_time)
+    exceptions.py     — HISException, LLMException, DataLoadException
+    llm_provider.py   — LangChain ChatOpenAI factory (OpenAI-compatible API, default: Qwen on Aliyun Bailian)
+  routers/            — API route layer (all /api/v2/ prefix, all require X-API-Key except health/root)
+    predictions.py    — POST /api/v2/predictions (demand forecasting with traditional/llm/auto strategy)
+    anomalies.py      — POST /api/v2/anomalies (Z-score anomaly detection + LLM interpretation)
+    beds.py           — POST /api/v2/beds (bed allocation optimization + LLM report)
+    dashboard.py      — POST /api/v2/dashboard (comprehensive dashboard with LLM executive summary)
+    charts.py         — GET /api/v2/charts/{type} (PNG chart generation)
+    rag.py            — POST /api/v2/rag/chat + /api/v2/rag/upload (RAG knowledge base Q&A + async document upload)
+  services/           — Business logic layer
+    analyzer.py       — Traditional algorithms (Holt-Winters, Z-score, bed utilization, medicine inventory)
+    predictor.py      — Prediction engine (traditional / llm / auto strategy dispatch)
+    anomaly_detector.py — Anomaly detection engine (traditional stats + LLM interpretation)
+    bed_optimizer.py  — Bed optimization engine (utilization analysis + LLM report)
+    report_generator.py — Dashboard report generator (multi-source aggregation + LLM summary)
+    data_loader.py    — MySQL data loader (monthly stats, bed info, hospitalizations, medicine inventory)
+    llm_client.py     — LangChain LLM client wrapper (invoke, chat, invoke_with_prompt)
+    prompt_builder.py — Dynamic Few-shot Prompt builder (TF-IDF similar case retrieval + ChatPromptTemplate)
+    rag_engine.py     — RAG engine (sentence-transformers embedding + faiss vector store + sliding-window chunking)
+  tests/
+    test_services.py  — pytest unit tests (TraditionalAnalyzer, PromptBuilder, LLMProvider)
+  charts.py           — Matplotlib chart generators (prediction bars, bed utilization, anomaly scatter, medicine pie)
+  charts/             — Generated PNG output
 ```
 
 ### MySQL Database (`his_db`)
@@ -140,8 +167,8 @@ User (base, virtual destructor)
 - **Data Analysis** (`DataAnalysis.h`): Holt-Winters prediction, Z-score anomaly detection, bed utilization analysis.
 - **Drug Safety** (`DrugSafety.h`): Tokenized drug interaction detection (30 pairs in `Data/DrugData/interactions.txt`). `tokenizeDrugName()` splits drug names by delimiters (`/`, `+`, `-`, etc.) for exact constituent matching — prevents false positives like "阿莫西林克拉维酸钾" matching "阿莫西林". Also checks patient allergy history against prescribed drug constituents.
 - **Entity Repository** (`EntityRepository.h`): Generic template for O(1) ID lookup via `std::unordered_map`. `getIdField()` returns `const std::string&` (ID immutability through repo). Template specializations for `Patient` (`patientID`), `Registration` (`registrationID`), and `NursingRecord` (`recordID`). Manages lifecycle for 3 chains: NursingRecord, Patient, Registration.
-- **Python AI Service** (`ai_service/`): Flask REST API v2.0 on port 5001. Uses pymysql to connect to `his_db`, pandas for data analysis, matplotlib for chart generation. 12 endpoints including bed optimization and 4 PNG chart outputs. Start with `cd ai_service && pip install -r requirements.txt && python app.py`.
-- **AI Query Client** (`AIQueryClient.h`): C++ HTTP client via WinSock2. Provides `getPredictions()`, `getAnomalies()`, `getMedicines()`, `getBedOptimization()`, `getDashboard()`, and `downloadChart()` methods. Admin menu option 9 (6 sub-options).
+- **Python AI Service** (`ai_service/`): FastAPI REST API v2.0 on port 5001. LangChain + OpenAI-compatible LLM (default: Qwen on Aliyun Bailian). Multi-strategy routing (traditional / llm / auto) for predictions, anomaly detection, and bed optimization. RAG knowledge base with faiss vector search and async document upload. Pydantic validation, YAML config (`config.yaml`) with environment variable overrides. Dockerfile for containerized deployment. Start with `cd ai_service && pip install -r requirements.txt && python main.py`.
+- **AI Query Client** (`AIQueryClient.h`): C++ HTTP client via WinSock2. Supports both GET and POST (`httpGet`/`httpPost`) requests to AI service v2.0. Provides `getPredictions()`, `getAnomalies()`, `getMedicines()`, `getBedOptimization()`, `getDashboard()`, `ragChat()`, and `downloadChart()` methods. Overloaded methods accept strategy and department parameters. Admin menu option 9.
 
 ### Data Flow
 
@@ -172,16 +199,43 @@ VS Code config in `.vscode/`:
 - MSVC `/utf-8` flag is set in CMakeLists.txt for Chinese source and data files
 - MySQL 8.0 Server (running on `localhost:3307`, user `root`, password `123456`, database `his_db`)
 - MySQL C Client library: `E:/MySQL/8-0/include/` (headers) + `E:/MySQL/8-0/lib/` (`libmysql.lib`, `libmysql.dll`)
-- Python 3.8+ with `pymysql`, `pandas`, `matplotlib`, `flask`, `flask-cors`, `numpy` (for AI service)
+- Python 3.8+ with `fastapi`, `uvicorn`, `pydantic`, `langchain`, `langchain-openai`, `langchain-community`, `langgraph`, `faiss-cpu`, `sentence-transformers`, `jieba`, `scikit-learn`, `pymysql`, `matplotlib`, `pandas`, `numpy`, `pyyaml`, `pdfplumber`, `python-docx` (for AI service)
 
 ## Recent Improvements (2026.5.30)
+
+### AI Service v2.0 Refactor (2026.6.6)
+
+- **Flask → FastAPI**: Full framework migration. Entry point `app.py` → `main.py`. All endpoints now POST with JSON body and `/api/v2/` prefix. Pydantic models for request/response validation.
+- **LangChain + LLM Integration**: `langchain-openai` ChatOpenAI client (default: Qwen on Aliyun Bailian). Dynamic Few-shot Prompt via TF-IDF similar case retrieval (`prompt_builder.py`). OpenAI-compatible API interface.
+- **Multi-strategy Routing**: Every analysis endpoint supports `strategy` parameter: `traditional` (Holt-Winters/Z-score/stats) → `llm` (LangChain prompt → LLM inference) → `auto` (data-point threshold dispatch, default ≥12 uses traditional).
+- **RAG Knowledge Base**: `rag_engine.py` using `sentence-transformers` (BAAI/bge-small-zh-v1.5) for embedding + `faiss-cpu` for vector search. Async document upload with `BackgroundTasks` (PDF via pdfplumber, TXT). Sliding-window chunking with overlap.
+- **Architecture Restructure**: Flat 4-file layout → `core/` (config, database pool, security, response, exceptions, llm_provider) + `routers/` (6 route modules) + `services/` (9 service modules) + `tests/`. Unified response format: `{request_id, data, response_code, response_msg, process_status, processing_time}`.
+- **Configuration Center**: `config.yaml` YAML configuration with environment variable overrides (`HIS_LLM_API_KEY`, `HIS_API_KEY`, `HIS_DB_HOST`, `HIS_DB_PORT`, `HIS_DB_PASSWORD`). Settings singleton pattern.
+- **AIQueryClient C++ Upgrade**: New `httpPost()` method for POST requests. New `ragChat()` for RAG Q&A. Overloaded methods for strategy/department parameters. All calls adapted to v2 API.
+- **Dockerfile**: `python:3.11-slim` + `uvicorn` deployment. Standard containerized FastAPI deployment.
+- **Dependencies Updated**: Removed `flask`, `flask-cors`. Added `fastapi`, `uvicorn`, `pydantic`, `langchain`, `langchain-openai`, `langchain-community`, `langgraph`, `faiss-cpu`, `sentence-transformers`, `jieba`, `scikit-learn`, `pdfplumber`, `python-docx`, `pyyaml`, `python-multipart`.
+
+### API Endpoint Mapping (v1 → v2)
+
+| v1 (Flask GET) | v2 (FastAPI POST) |
+|---|---|
+| `GET /api/stats` | `POST /api/v2/dashboard` |
+| `GET /api/predictions` | `POST /api/v2/predictions` |
+| `GET /api/anomalies` | `POST /api/v2/anomalies` |
+| `GET /api/medicines` | `POST /api/v2/dashboard` (medicine data in dashboard) |
+| `GET /api/dashboard` | `POST /api/v2/dashboard` |
+| `GET /api/beds` | `POST /api/v2/beds` |
+| `GET /api/charts/<type>` | `GET /api/v2/charts/{type}` |
+| _(new)_ | `POST /api/v2/rag/chat` |
+| _(new)_ | `POST /api/v2/rag/upload` |
+| — | `GET /health`, `GET /` |
 
 ### Security
 - **Safe clearScreen**: Replaced `system("cls")` with Win32 `FillConsoleOutputCharacter` + `SetConsoleCursorPosition` (Windows) / ANSI `\033[2J\033[1;1H` (Linux).
 - **API Key 3-level priority**: `HIS_ADMIN_API_KEY` env var → `Data/AdminAPIKey.txt` → default `88888888`. Same pattern for AI service (`HIS_API_KEY`).
 - **Removed `CLIENT_MULTI_STATEMENTS`**: MySQL connection no longer allows multi-statement execution.
 - **SHA-256 10000 iterations**: With backward-compatible `verifyPasswordCompat()` fallback to legacy 1000.
-- **AI service**: `debug=False`, `host='127.0.0.1'`, `@require_api_key` on all non-health endpoints.
+- **AI service**: FastAPI `host='127.0.0.1'`, `Depends(verify_api_key)` on all non-health endpoints via `X-API-Key` header.
 
 ### Bug Fixes
 - **PNG download binary-safe**: `AIQueryClient::downloadChart()` uses `Content-Length` parsing, binary file I/O (`std::ios::binary`), and larger buffer (8KB).

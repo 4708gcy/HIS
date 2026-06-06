@@ -263,16 +263,20 @@ int main()
                             else if (adminChoice == 9) // AI 智能分析
                             {
                                 AIQueryClient aiClient("127.0.0.1", 5001);
+                                // 从环境变量读取 API Key，未设置则使用默认
+                                const char *envKey = std::getenv("HIS_API_KEY");
+                                aiClient.setApiKey(envKey ? envKey : "his-default-key");
+
                                 std::cout << "\n正在连接 AI 分析服务..." << std::endl;
                                 if (!aiClient.isAvailable())
                                 {
                                     std::cout << "⚠ AI 服务未启动。请先运行 ai_service 目录下的 Python 服务：\n"
-                                              << "  cd ai_service && pip install -r requirements.txt && python app.py"
+                                              << "  cd ai_service && pip install -r requirements.txt && uvicorn main:app --port 5001"
                                               << std::endl;
                                     pause("管理员 > AI 智能分析");
                                     continue;
                                 }
-                                std::cout << "✓ AI 服务已连接\n" << std::endl;
+                                std::cout << "✓ AI 服务已连接 (LangChain + FastAPI)\n" << std::endl;
                                 while (true)
                                 {
                                     std::cout << "\n┌──── AI 智能分析 v2.0 ────┐\n"
@@ -282,6 +286,7 @@ int main()
                                               << "│ 4. 床位优化建议          │\n"
                                               << "│ 5. 综合仪表盘            │\n"
                                               << "│ 6. 生成图表 PNG          │\n"
+                                              << "│ 7. 知识库问答 (RAG)      │\n"
                                               << "│ 0. 返回上级              │\n"
                                               << "└─────────────────────────┘\n"
                                               << "请选择: ";
@@ -291,12 +296,12 @@ int main()
                                     { std::stringstream ss(aiLine); if (!(ss >> aiChoice)) aiChoice = -1; }
                                     if (aiChoice == 1)
                                     {
-                                        std::cout << "\n=== Holt-Winters 需求预测 ===\n"
+                                        std::cout << "\n=== LLM 增强需求预测 ===\n"
                                                   << aiClient.getPredictions() << std::endl;
                                     }
                                     else if (aiChoice == 2)
                                     {
-                                        std::cout << "\n=== Z-score 异常检测 ===\n"
+                                        std::cout << "\n=== LLM 异常检测与解读 ===\n"
                                                   << aiClient.getAnomalies() << std::endl;
                                     }
                                     else if (aiChoice == 3)
@@ -317,7 +322,7 @@ int main()
                                     else if (aiChoice == 6)
                                     {
                                         std::cout << "\n生成分析图表 PNG 到 ai_service/charts/ ...\n";
-                                        std::string types[] = {"predictions", "bed-utilization", "anomalies", "medicines"};
+                                        std::string types[] = {"prediction", "bed", "anomaly", "medicine"};
                                         for (const auto &t : types) {
                                             std::string path = "../ai_service/charts/" + t + ".png";
                                             std::string result = aiClient.downloadChart(t, path);
@@ -327,6 +332,17 @@ int main()
                                                 std::cout << "  ✗ " << t << ".png 生成失败" << std::endl;
                                         }
                                         std::cout << "\n请到 ai_service/charts/ 目录查看图表。" << std::endl;
+                                    }
+                                    else if (aiChoice == 7)
+                                    {
+                                        std::cout << "\n请输入问题（知识库问答）：";
+                                        std::string query;
+                                        std::getline(std::cin, query);
+                                        if (!query.empty())
+                                        {
+                                            std::cout << "\n=== RAG 知识库问答 ===\n"
+                                                      << aiClient.ragChat(query) << std::endl;
+                                        }
                                     }
                                     else if (aiChoice == 0) break;
                                     else std::cout << "无效的选择!" << std::endl;

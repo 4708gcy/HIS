@@ -2,6 +2,178 @@
 
 ---
 
+## 2026.6.6 — AI 服务 v2.0 重构：Flask → FastAPI + LangChain + RAG
+
+### 背景
+
+基于 `Model-Learning-Source` 中学习的大模型工程化代码模式，将 `ai_service/` 从传统 Flask + 统计模型升级为 FastAPI + LLM 增强的智能分析服务。
+
+### 架构变更
+
+**框架迁移：** Flask → FastAPI
+
+| 项目 | 旧版 (Flask v1) | 新版 (FastAPI v2.0) |
+|------|-----------------|---------------------|
+| 框架 | Flask + flask-cors | FastAPI + uvicorn |
+| 数据校验 | 手动 | Pydantic BaseModel |
+| API 风格 | GET + 查询参数 | POST + JSON body |
+| API 前缀 | `/api/` | `/api/v2/` |
+| 入口文件 | `app.py` | `main.py` |
+| 配置方式 | 硬编码 | `config.yaml` + 环境变量覆盖 |
+| 认证方式 | `@require_api_key` 装饰器 | FastAPI `Depends(verify_api_key)` |
+| 响应格式 | 自定义 dict | `ResponseBuilder` 统一格式 |
+| LLM 支持 | 无 | LangChain + ChatOpenAI |
+| 向量检索 | 无 | faiss + sentence-transformers |
+| 部署方式 | `python app.py` | `python main.py` / Docker |
+
+**目录结构重构：** 4 个扁平文件 → 分层模块架构
+
+```text
+旧版:                        新版:
+ai_service/                  ai_service/
+├── app.py                   ├── main.py              # FastAPI 入口
+├── analyzer.py              ├── schemas.py           # Pydantic 模型
+├── charts.py                ├── config.yaml          # YAML 配置中心
+├── data_loader.py           ├── Dockerfile           # Docker 部署
+└── charts/                  ├── core/
+                                 ├── config.py         # Settings 单例
+                                 ├── database.py       # MySQL 连接池
+                                 ├── security.py       # API Key 认证
+                                 ├── response.py       # 统一响应格式
+                                 ├── exceptions.py     # 自定义异常
+                                 └── llm_provider.py   # LLM 工厂
+                             ├── routers/
+                             │   ├── predictions.py    # 需求预测
+                             │   ├── anomalies.py      # 异常检测
+                             │   ├── beds.py           # 床位优化
+                             │   ├── dashboard.py      # 综合仪表盘
+                             │   ├── charts.py         # PNG 图表
+                             │   └── rag.py            # RAG 知识库
+                             ├── services/
+                             │   ├── analyzer.py       # 传统统计算法
+                             │   ├── predictor.py      # 预测引擎
+                             │   ├── anomaly_detector.py # 异常检测引擎
+                             │   ├── bed_optimizer.py  # 床位优化引擎
+                             │   ├── report_generator.py # 报告生成器
+                             │   ├── data_loader.py    # 数据加载器
+                             │   ├── llm_client.py     # LLM 客户端
+                             │   ├── prompt_builder.py # 动态 Prompt 构建器
+                             │   └── rag_engine.py     # RAG 引擎
+                             ├── tests/
+                             │   └── test_services.py  # 单元测试
+                             ├── charts.py             # Matplotlib 图表
+                             └── charts/               # PNG 输出
+```
+
+### 新增核心能力
+
+**1. 多策略路由（Multi-Strategy Routing）**
+
+每个分析接口支持 `strategy` 参数：
+- `traditional` — Holt-Winters / Z-score / 利用率计算（纯统计算法）
+- `llm` — LangChain ChatPromptTemplate → OpenAI 兼容 LLM（默认：阿里云百炼 Qwen）
+- `auto` — 根据数据点数自动选择（≥12 用 traditional，<12 用 llm）
+
+**2. 动态 Few-shot Prompt**
+
+`prompt_builder.py` 使用 TF-IDF 从历史运营数据中找到与当前场景最相似的 5 条记录，格式化为 few-shot examples，拼进 LangChain `ChatPromptTemplate`，让 LLM 基于"历史相似情况 + 当前数据"推理。
+
+**3. RAG 知识库**
+
+`rag_engine.py` 实现完整的 RAG 管线：
+- 文档上传：FastAPI `BackgroundTasks` 异步处理（PDF 用 pdfplumber、TXT 直读）
+- 分块：滑动窗口（512 字符 + 64 字符重叠）
+- 向量化：`sentence-transformers` (BAAI/bge-small-zh-v1.5) 中文 Embedding
+- 向量存储：`faiss-cpu` 轻量向量库
+- 检索生成：Embedding 相似度检索 → RAG prompt → LLM 生成
+
+**4. 统一响应格式**
+
+```python
+class HISResponse(BaseModel):
+    request_id: str
+    data: Optional[Dict]
+    response_code: int
+    response_msg: str
+    process_status: str       # processing / completed / failed
+    processing_time: float    # 秒
+```
+
+### API 端点变更
+
+| 旧端点 (v1 GET) | 新端点 (v2 POST) | 变化说明 |
+|---|---|---|
+| `GET /api/stats` | `POST /api/v2/dashboard` | 合并入仪表盘 |
+| `GET /api/predictions` | `POST /api/v2/predictions` | 新增 strategy 参数 |
+| `GET /api/anomalies` | `POST /api/v2/anomalies` | 新增 LLM 解读 |
+| `GET /api/medicines` | `POST /api/v2/dashboard` | 合并入仪表盘 |
+| `GET /api/dashboard` | `POST /api/v2/dashboard` | 新增 LLM summary |
+| `GET /api/beds` | `POST /api/v2/beds` | 新增 LLM 报告 |
+| `GET /api/charts/<type>` | `GET /api/v2/charts/{type}` | 路径变更 |
+| — | `POST /api/v2/rag/chat` | **新增** RAG 问答 |
+| — | `POST /api/v2/rag/upload` | **新增** 文档上传 |
+| — | `GET /health` | **新增** 健康检查 |
+| — | `GET /` | **新增** 服务信息 |
+
+### C++ AIQueryClient 同步更新
+
+`Head/Modules/AIQueryClient.h` + `Source/Modules/AIQueryClient.cpp` 适配 v2 API：
+- 新增 `httpPost()` 方法（发送 JSON body POST 请求）
+- 新增 `ragChat(query, topK)` RAG 问答接口
+- 所有现有方法内部自动适配 v2 端点
+- 新增重载方法支持 `strategy` 和 `department` 参数
+- API Key 认证头：`X-API-Key`
+
+### 配置中心
+
+`config.yaml` 集中管理所有参数，支持环境变量覆盖：
+
+| 配置节 | 环境变量覆盖 | 说明 |
+|--------|-------------|------|
+| `app` | — | 服务名、版本、host、port |
+| `llm` | `HIS_LLM_API_KEY`, `HIS_LLM_BASE_URL` | LLM 模型配置（阿里云百炼 Qwen） |
+| `database` | `HIS_DB_HOST`, `HIS_DB_PORT`, `HIS_DB_PASSWORD` | MySQL 连接（与主项目共用 his_db） |
+| `security` | `HIS_API_KEY` | API Key 认证 |
+| `rag` | — | Embedding 模型、chunk 参数、向量库 |
+| `analysis` | — | 策略阈值、few-shot top-k |
+| `charts` | — | DPI、格式、输出目录 |
+
+### 依赖变更
+
+```text
+移除: flask, flask-cors
+新增: fastapi, uvicorn[standard], pydantic, python-multipart,
+      langchain, langchain-openai, langchain-community, langchain-text-splitters, langgraph,
+      faiss-cpu, sentence-transformers, jieba, scikit-learn,
+      pdfplumber, python-docx, pyyaml
+保留: pymysql, matplotlib, pandas, numpy
+```
+
+### 构建与部署
+
+- **开发启动**: `cd ai_service && pip install -r requirements.txt && python main.py`
+- **Docker 部署**: `docker build -t his-ai-service . && docker run -p 5001:5001 his-ai-service`
+- **单元测试**: `cd ai_service && pytest tests/test_services.py -v`
+
+### 文件统计
+
+```text
+删除: ai_service/app.py, ai_service/analyzer.py, ai_service/data_loader.py
+新增: ai_service/main.py, ai_service/schemas.py, ai_service/config.yaml, ai_service/Dockerfile
+新增: ai_service/core/ (6 文件), ai_service/routers/ (6 文件), ai_service/services/ (9 文件), ai_service/tests/ (1 文件)
+修改: ai_service/requirements.txt, ai_service/charts.py (保留)
+修改: Head/Modules/AIQueryClient.h, Source/Modules/AIQueryClient.cpp
+修改: CLAUDE.md, README.md, Document/DevelopLog.md
+```
+
+### 同步更新的文档
+
+- `CLAUDE.md` — 更新 ai_service 目录结构、Key Subsystems、Build Requirements、Recent Improvements
+- `README.md` — 更新 Architecture、Tech Stack、Endpoints、Project Structure、Testing、启动命令
+- `Document/DevelopLog.md` — 本条日志
+
+---
+
 ## 2026.5.30 — 第四轮优化：安全加固、Bug 修复、代码质量提升
 
 基于全面代码审查报告（karpathy-coder），GLM 完成了 11 项改进任务：

@@ -1,6 +1,39 @@
-flask>=2.3
-flask-cors>=4.0
-numpy>=1.24
-pymysql>=1.0
-pandas>=2.0
-matplotlib>=3.7
+# HIS AI Service v2.0 Dependencies (LangChain + FastAPI)
+
+# Web Framework
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+
+# Data Validation
+pydantic>=2.6.0
+
+# LangChain Ecosystem
+langchain>=0.3.0
+langchain-openai>=0.2.0
+langchain-community>=0.3.0
+langchain-text-splitters>=0.3.0
+langgraph>=0.2.0
+
+# Vector Search (RAG)
+faiss-cpu>=1.7.4
+sentence-transformers>=2.5.0
+
+# NLP & ML
+jieba>=0.42.1
+scikit-learn>=1.4.0
+
+# Database
+pymysql>=1.1.0
+
+# Document Processing
+pdfplumber>=0.10.0
+python-docx>=1.1.0
+
+# Data & Visualization
+matplotlib>=3.8.0
+pandas>=2.2.0
+numpy>=1.26.0
+
+# Utils
+pyyaml>=6.0.1

@@ -1,2 +1,7 @@
 build/
 Data/DatabaseConfig.txt
+__pycache__/
+*.pyc
+*.pyo
+.claude/
+.codegraph/
