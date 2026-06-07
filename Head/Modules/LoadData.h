@@ -28,6 +28,6 @@ MedicationRecord *loadMedicationRecords(int &count); // 从 MySQL 加载用药�
 Medicine *loadMedicines(int &count);                 // 从 MySQL 加载药品信息
 bedInfo *loadBedInfos(int &count);                   // 从 MySQL 加载床位信息
 struct NursingRecord;
-NursingRecord *loadNursingRecords(int &count);         // 从 MySQL 加载护理记录
+NursingRecord *loadNursingRecords(int &count); // 从 MySQL 加载护理记录
 
 #endif // LOADDATA_H
