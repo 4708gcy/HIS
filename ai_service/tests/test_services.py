@@ -38,26 +38,19 @@ class TestTraditionalAnalyzer:
 
 
 class TestPromptBuilder:
-    """LangChain Prompt 构建器测试"""
+    """Prompt 构建器测试"""
 
-    def test_get_prediction_prompt_structure(self):
+    def test_get_prediction_summary_prompt(self):
         builder = PromptBuilder()
-        current = {
-            "department": "心内科",
-            "months_data": [
-                {"month": "2024-01", "new_admissions": 100},
-                {"month": "2024-02", "new_admissions": 110}
-            ]
-        }
-        historical = [
-            {"department": "心内科", "month": "2023-12", "new_admissions": 95, "trend": "上升"}
+        predictions = [
+            {"department": "内科", "predicted_next_month": 45, "growth_rate": 5.2, "confidence": "medium"},
+            {"department": "外科", "predicted_next_month": 30, "growth_rate": -10.0, "confidence": "medium"},
         ]
-        prompt = builder.get_prediction_prompt(current, historical)
-        # 返回的是 ChatPromptValue，转为字符串检查
+        prompt = builder.get_prediction_summary_prompt(predictions)
         prompt_str = str(prompt)
-        assert "心内科" in prompt_str
-        assert "2024-01" in prompt_str
-        assert "JSON" in prompt_str
+        assert "内科" in prompt_str
+        assert "45" in prompt_str
+        assert "增长率" in prompt_str
 
     def test_get_anomaly_prompt(self):
         builder = PromptBuilder()
@@ -92,17 +85,6 @@ class TestPromptBuilder:
         assert "心内科" in prompt_str
         assert "50" in prompt_str
         assert "JSON" in prompt_str
-
-    def test_find_similar_cases_basic(self):
-        builder = PromptBuilder()
-        historical = [
-            {"department": "心内科", "month": "2023-01", "new_admissions": 100},
-            {"department": "心内科", "month": "2023-02", "new_admissions": 110},
-            {"department": "外科", "month": "2023-01", "new_admissions": 80},
-        ]
-        similar = builder._find_similar_cases("心内科 2024-01 入院100人", historical)
-        assert len(similar) > 0
-
 
 import os
 

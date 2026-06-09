@@ -1,27 +1,16 @@
 """需求预测引擎"""
-import json
-import re
 import time
 from services.data_loader import DataLoader
 from services.analyzer import TraditionalAnalyzer
 from services.llm_client import llm_client
 from services.prompt_builder import PromptBuilder
-from core.config import settings
-
-
-def extract_json(raw):
-    """从 LLM 输出提取 JSON"""
-    match = re.search(r'```(?:json)?\s*\n?(.*?)```', raw, re.DOTALL)
-    text = match.group(1).strip() if match else raw.strip()
-    return json.loads(text)
 
 
 class Predictor:
-    """traditional / llm / auto 三策略"""
+    """预测引擎：始终用传统统计算法，可选 LLM 写总结"""
 
     def __init__(self):
         self.prompt_builder = PromptBuilder()
-        self.auto_threshold = settings.analysis.get("auto_threshold", 12)
 
     def predict(self, months=6, department=None, strategy="auto"):
         start = time.time()
@@ -30,9 +19,6 @@ class Predictor:
         if not stats:
             return {"error": "无可用数据"}
 
-        if strategy == "auto":
-            strategy = "traditional" if len(stats) >= self.auto_threshold else "llm"
-
         dept_data = {}
         for s in stats:
             dept = s["department"]
@@ -40,13 +26,17 @@ class Predictor:
                 dept_data[dept] = []
             dept_data[dept].append(s)
 
+        # 始终用传统算法计算预测值
         results = []
         for dept, data in dept_data.items():
-            if strategy == "traditional":
-                result = self._predict_traditional(dept, data)
-            else:
-                result = self._predict_llm(dept, data, stats)
+            result = self._predict_traditional(dept, data)
             results.append(result)
+
+        # llm/auto 策略：额外调用 LLM 写趋势总结
+        if strategy in ("llm", "auto"):
+            summary = self._summarize_predictions(results)
+            for r in results:
+                r["interpretation"] += f"\n\n【AI 分析】{summary}"
 
         return {
             "strategy": strategy,
@@ -76,21 +66,10 @@ class Predictor:
             "historical_context": []
         }
 
-    def _predict_llm(self, dept, data, all_stats):
-        current_data = {
-            "department": dept,
-            "months_data": data
-        }
-
+    def _summarize_predictions(self, predictions):
+        """让 LLM 对传统预测结果写自然语言总结"""
         try:
-            prompt = self.prompt_builder.get_prediction_prompt(current_data, all_stats)
-            raw = llm_client.invoke_with_prompt(prompt, temperature=0.3)
-
-            result = extract_json(raw)
-            result["department"] = dept
-            result.setdefault("historical_context", [])
-            return result
+            prompt = self.prompt_builder.get_prediction_summary_prompt(predictions)
+            return llm_client.invoke_with_prompt(prompt, temperature=0.3)
         except Exception as e:
-            fallback = self._predict_traditional(dept, data)
-            fallback["interpretation"] += f" (LLM 失败，fallback: {str(e)})"
-            return fallback
+            return f"总结生成失败: {str(e)}"

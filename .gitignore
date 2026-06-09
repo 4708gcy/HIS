@@ -5,3 +5,23 @@ __pycache__/
 *.pyo
 .claude/
 .codegraph/
+
+# LaTeX 编译临时文件
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.toc
+
+# AI 服务生成文件
+ai_service/charts/*.png
+ai_service/knowledge_base/
+
+# 每日操作日志
+Data/OperationLog/*.log

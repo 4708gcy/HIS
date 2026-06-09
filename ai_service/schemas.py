@@ -43,6 +43,7 @@ class PredictResponseData(BaseModel):
 class AnomalyRequest(BaseModel):
     """异常检测请求"""
     department: Optional[str] = Field(None, description="科室名称")
+    months: int = Field(12, ge=3, le=24, description="参考历史月数")
     threshold: float = Field(2.0, ge=1.0, le=4.0, description="Z-score 阈值")
     strategy: Strategy = Field(Strategy.AUTO, description="分析策略")
 
@@ -98,7 +99,3 @@ class DocumentUploadResponse(BaseModel):
     status: str                              # processing / completed / failed
 
 
-class ChartRequest(BaseModel):
-    """图表生成请求"""
-    chart_type: str = Field(..., pattern="^(prediction|bed|anomaly|medicine)$")
-    department: Optional[str] = None

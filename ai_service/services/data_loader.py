@@ -58,9 +58,8 @@ class DataLoader:
     def load_patient_visits():
         return db_pool.execute("""
             SELECT department,
-                   COUNT(*) as patient_count,
-                   SUM(registrationCount) as total_registrations,
-                   SUM(consultationCount) as total_consultations
+                   COUNT(*) as patient_count
             FROM patients
+            WHERE is_deleted = 0
             GROUP BY department
         """)

@@ -69,7 +69,7 @@ def generate_prediction_chart(predictions, filename='predictions.png'):
 # bed_analyses: [{department, total_beds, occupied, utilization_pct}]
 def generate_bed_utilization_chart(bed_analyses, filename='bed_utilization.png'):
     depts = [b['department'] for b in bed_analyses if b.get('department')]
-    utilization = [b.get('utilization_pct', 0) for b in bed_analyses if b.get('department')]
+    utilization = [b.get('utilization_rate', 0) for b in bed_analyses if b.get('department')]
     occupied = [b.get('occupied', 0) for b in bed_analyses if b.get('department')]
     total = [b.get('total_beds', 1) for b in bed_analyses if b.get('department')]
     available = [t - o for t, o in zip(total, occupied)]

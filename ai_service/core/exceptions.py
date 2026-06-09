@@ -16,7 +16,3 @@ class LLMException(HISException):
         super().__init__(msg, code=503)
 
 
-class DataLoadException(HISException):
-    """数据加载异常"""
-    def __init__(self, msg: str):
-        super().__init__(msg, code=500)

@@ -26,6 +26,9 @@ private:
   // 简单的 JSON 美化打印（key: value 格式）
   static std::string formatJsonSimple(const std::string &json);
 
+  // JSON 字符串反转义（\n → 换行, \t → 制表, \" → 引号, \\ → 反斜杠）
+  static std::string unescapeJson(const std::string &s);
+
 public:
   AIQueryClient(const std::string &host = "127.0.0.1", int port = 5001);
 
@@ -82,6 +85,26 @@ public:
   /// 下载图表 PNG 到本地文件，返回文件路径（空字符串=失败）
   std::string downloadChart(const std::string &chartType,
                             const std::string &savePath);
+
+  // ==================== 格式化显示接口 ====================
+
+  /// 格式化显示需求预测结果（返回可读中文文本）
+  std::string displayPredictions();
+
+  /// 格式化显示异常检测结果
+  std::string displayAnomalies();
+
+  /// 格式化显示床位优化建议
+  std::string displayBedOptimization();
+
+  /// 格式化显示综合仪表盘
+  std::string displayDashboard();
+
+  /// 格式化显示药品库存分析
+  std::string displayMedicines();
+
+  /// 格式化显示知识库问答结果
+  std::string displayRagChat(const std::string &query);
 };
 
 #endif // AI_QUERY_CLIENT_H

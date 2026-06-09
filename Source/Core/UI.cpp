@@ -1185,12 +1185,11 @@ int adminMenu()
     printMenuItem(5, "管理员信息管理");
     printMenuItem(6, "个人信息管理");
     printMenuItem(7, "账号封锁管理");
-    printMenuItem(8, "统计报表");
-    printMenuItem(9, "AI 智能分析");
+    printMenuItem(8, "统计报表与智能分析");
     printMenuItem(0, "退出登录");
     printMenuBottom();
 
-    int choice = selectIntCheck(0, 9);
+    int choice = selectIntCheck(0, 8);
     return choice;
 }
 
@@ -3147,17 +3146,23 @@ int adminReportMenu()
 {
     clearScreen();
     printMenuBorder();
-    printMenuTitle("统计报表");
+    printMenuTitle("统计报表与智能分析");
     printMenuBottom();
     printMenuItem(1, "科室统计总览");
     printMenuItem(2, "医生工作量统计");
     printMenuItem(3, "患者就诊统计");
     printMenuItem(4, "床位使用率统计");
     printMenuItem(5, "药品库存统计");
+    printMenuItem(6, "AI 需求预测");
+    printMenuItem(7, "AI 异常检测");
+    printMenuItem(8, "AI 床位优化建议");
+    printMenuItem(9, "AI 综合仪表盘");
+    printMenuItem(10, "生成分析图表");
+    printMenuItem(11, "知识库问答");
     printMenuItem(0, "返回上级菜单");
     printMenuBottom();
 
-    int choice = selectIntCheck(0, 5);
+    int choice = selectIntCheck(0, 11);
     return choice;
 }
 

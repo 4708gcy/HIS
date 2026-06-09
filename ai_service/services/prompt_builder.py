@@ -1,83 +1,38 @@
-"""动态 Few-shot Prompt 构建器"""
+"""Prompt 构建器"""
 import json
-import numpy as np
-import jieba
-from sklearn.feature_extraction.text import TfidfVectorizer
+from decimal import Decimal
 from langchain_core.prompts import ChatPromptTemplate
-from core.config import settings
+
+
+class _DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super().default(obj)
 
 
 class PromptBuilder:
-    """Prompt 构建器：LangChain ChatPromptTemplate + 动态 Few-shot"""
 
-    def __init__(self):
-        self.top_k = settings.analysis.get("few_shot_topk", 5)
-        self.vectorizer = TfidfVectorizer(tokenizer=jieba.lcut, lowercase=False)
-
-    def _find_similar_cases(self, query_text, historical_cases):
-        if not historical_cases or len(historical_cases) < 3:
-            return historical_cases[:self.top_k]
-
-        corpus = []
-        for case in historical_cases:
-            text = f"{case.get('department', '')} {case.get('month', '')} 入院{case.get('new_admissions', 0)}人"
-            corpus.append(text)
-
-        corpus.append(query_text)
-
-        try:
-            tfidf_matrix = self.vectorizer.fit_transform(corpus)
-            query_vec = tfidf_matrix[-1]
-            similarities = np.dot(tfidf_matrix[:-1], query_vec.T).toarray().flatten()
-            top_indices = similarities.argsort()[::-1][:self.top_k]
-            return [historical_cases[i] for i in top_indices]
-        except Exception:
-            return historical_cases[-self.top_k:]
-
-    def _format_few_shot(self, cases):
-        lines = []
-        for i, case in enumerate(cases, 1):
-            lines.append(f"案例{i}：{case.get('department', '')} 在 {case.get('month', '')} 入院 {case.get('new_admissions', 0)} 人，后续趋势为 {case.get('trend', '平稳')}。")
-        return "\n".join(lines)
-
-    def get_prediction_prompt(self, current_data, historical_cases):
-        query_text = f"{current_data.get('department', '')} " + " ".join(
-            [f"{m['month']}入院{m['new_admissions']}人" for m in current_data.get('months_data', [])]
-        )
-        similar_cases = self._find_similar_cases(query_text, historical_cases)
-        few_shots = self._format_few_shot(similar_cases)
-
-        template = ChatPromptTemplate.from_messages([
-            ("system", "你是医院运营管理专家，擅长基于历史数据预测科室需求。只输出 JSON，不要其他内容。"),
-            ("human", """## 历史相似场景
-{few_shots}
-
-## 当前数据
-科室：{dept}
-近{months}个月入院数据：
-{data}
-
-## 任务
-1. 预测下一个月的入院人数（给出具体数字和置信度：高/中/低）
-2. 分析增长趋势（增长率）
-3. 用 1-2 句话给出运营建议
-
-请用 JSON 格式输出：
-{{
-    "predicted_next_month": 数字,
-    "growth_rate": 浮点数,
-    "confidence": "高/中/低",
-    "interpretation": "自然语言解读",
-    "suggestion": "运营建议"
-}}""")
+    def get_prediction_summary_prompt(self, predictions):
+        """根据传统算法的预测结果，让 LLM 写自然语言总结"""
+        pred_text = "\n".join([
+            f"- {p['department']}：预测下月入院 {p['predicted_next_month']} 人，"
+            f"增长率 {p['growth_rate']}%，置信度 {p['confidence']}"
+            for p in predictions
         ])
 
-        return template.invoke({
-            "few_shots": few_shots,
-            "dept": current_data.get("department", "未知科室"),
-            "months": len(current_data.get("months_data", [])),
-            "data": "\n".join([f"- {m['month']}: {m['new_admissions']} 人" for m in current_data.get("months_data", [])])
-        })
+        template = ChatPromptTemplate.from_messages([
+            ("system", "你是医院运营管理分析师。根据统计算法的预测结果，用自然语言写一段简洁的趋势总结。"),
+            ("human", """## 统计算法预测结果
+{predictions}
+
+## 要求
+1. 用中文输出，控制在 150 字以内
+2. 总结各科室的需求趋势（上升/下降/平稳）
+3. 指出需要关注的科室
+4. 给出 1-2 条资源调配建议""")
+        ])
+        return template.invoke({"predictions": pred_text})
 
     def get_anomaly_prompt(self, anomaly_data):
         template = ChatPromptTemplate.from_messages([
@@ -150,22 +105,5 @@ Z-score：{z_score}（{direction}）
 4. 语气专业、简洁""")
         ])
         return template.invoke({
-            "data": json.dumps(summary_data, ensure_ascii=False, indent=2)
+            "data": json.dumps(summary_data, ensure_ascii=False, indent=2, cls=_DecimalEncoder)
         })
-
-    def get_rag_prompt(self, query, retrieved_docs):
-        context = "\n\n".join([f"资料{i+1}：{doc}" for i, doc in enumerate(retrieved_docs)])
-        template = ChatPromptTemplate.from_messages([
-            ("system", "你是医院运营管理专家，请结合给定资料回答用户问题。如果资料中没有相关信息，请回答'根据现有资料无法回答'。"),
-            ("human", """## 资料
-{context}
-
-## 问题
-{query}
-
-## 要求
-1. 回答要基于资料，不要编造
-2. 如果有多条资料支持，请综合回答
-3. 控制在 300 字以内""")
-        ])
-        return template.invoke({"context": context, "query": query})

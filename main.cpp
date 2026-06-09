@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
 #include "Core/UI.h"
 #include "Modules/LoadData.h"
 #include "Modules/SaveData.h"
@@ -205,6 +206,7 @@ int main()
                                         else if (userChoice == 4) client->managePatients(patientHead, department, patientIDCount);
                                         else if (userChoice == 0) break;
                                         else std::cout << "无效的选择! 请重新选择。" << std::endl;
+                                        pause("账户管理");
                                     }
                             }
                             else if (adminChoice == 2) // 医疗记录管理
@@ -221,6 +223,7 @@ int main()
                                         else if (recordChoice == 5) client->manageMedicationRecords(medRecHead, conHead, phaHead, medHead, department, medicationRecordCount);
                                         else if (recordChoice == 0) break;
                                         else std::cout << "无效的选择! 请重新选择。" << std::endl;
+                                        pause("医疗记录管理");
                                     }
                             }
                             else if (adminChoice == 3) // 药品管理
@@ -247,8 +250,16 @@ int main()
                             {
                                 AccountManagement(adminHead, docHead, nurseHead, phaHead, patientHead); // 调用账号激活/封锁管理函数
                             }
-                            else if (adminChoice == 8) // 统计报表
+                            else if (adminChoice == 8) // 统计报表与智能分析
                             {
+                                // 一次性检测 AI 服务
+                                AIQueryClient aiClient("127.0.0.1", 5001);
+                                const char *envKey = std::getenv("HIS_API_KEY");
+                                aiClient.setApiKey(envKey ? envKey : "his-default-key");
+                                bool aiAvailable = aiClient.isAvailable();
+                                if (!aiAvailable)
+                                    std::cout << "⚠ AI 服务未启动，AI 功能不可用（仅传统报表可用）\n";
+
                                 while (true)
                                 {
                                     int reportChoice = adminReportMenu();
@@ -257,96 +268,64 @@ int main()
                                     else if (reportChoice == 3) client->showPatientReport(patientHead, regHead, conHead);
                                     else if (reportChoice == 4) client->showBedUtilizationReport(bedHead, hosHead);
                                     else if (reportChoice == 5) client->showMedicineInventoryReport(medHead, medRecHead);
-                                    else if (reportChoice == 0) break;
-                                }
-                            }
-                            else if (adminChoice == 9) // AI 智能分析
-                            {
-                                AIQueryClient aiClient("127.0.0.1", 5001);
-                                // 从环境变量读取 API Key，未设置则使用默认
-                                const char *envKey = std::getenv("HIS_API_KEY");
-                                aiClient.setApiKey(envKey ? envKey : "his-default-key");
-
-                                std::cout << "\n正在连接 AI 分析服务..." << std::endl;
-                                if (!aiClient.isAvailable())
-                                {
-                                    std::cout << "⚠ AI 服务未启动。请先运行 ai_service 目录下的 Python 服务：\n"
-                                              << "  cd ai_service && pip install -r requirements.txt && uvicorn main:app --port 5001"
-                                              << std::endl;
-                                    pause("管理员 > AI 智能分析");
-                                    continue;
-                                }
-                                std::cout << "✓ AI 服务已连接 (LangChain + FastAPI)\n" << std::endl;
-                                while (true)
-                                {
-                                    std::cout << "\n┌──── AI 智能分析 v2.0 ────┐\n"
-                                              << "│ 1. 需求预测              │\n"
-                                              << "│ 2. 异常检测              │\n"
-                                              << "│ 3. 药品库存分析          │\n"
-                                              << "│ 4. 床位优化建议          │\n"
-                                              << "│ 5. 综合仪表盘            │\n"
-                                              << "│ 6. 生成图表 PNG          │\n"
-                                              << "│ 7. 知识库问答 (RAG)      │\n"
-                                              << "│ 0. 返回上级              │\n"
-                                              << "└─────────────────────────┘\n"
-                                              << "请选择: ";
-                                    int aiChoice;
-                                    std::string aiLine;
-                                    if (!std::getline(std::cin, aiLine)) break;
-                                    { std::stringstream ss(aiLine); if (!(ss >> aiChoice)) aiChoice = -1; }
-                                    if (aiChoice == 1)
+                                    else if (reportChoice == 6) // AI 需求预测
                                     {
-                                        std::cout << "\n=== LLM 增强需求预测 ===\n"
-                                                  << aiClient.getPredictions() << std::endl;
+                                        if (!aiAvailable) { std::cout << "AI 服务未启动，无法使用此功能。\n"; }
+                                        else { std::cout << aiClient.displayPredictions() << std::endl; }
                                     }
-                                    else if (aiChoice == 2)
+                                    else if (reportChoice == 7) // AI 异常检测
                                     {
-                                        std::cout << "\n=== LLM 异常检测与解读 ===\n"
-                                                  << aiClient.getAnomalies() << std::endl;
+                                        if (!aiAvailable) { std::cout << "AI 服务未启动，无法使用此功能。\n"; }
+                                        else { std::cout << aiClient.displayAnomalies() << std::endl; }
                                     }
-                                    else if (aiChoice == 3)
+                                    else if (reportChoice == 8) // AI 床位优化建议
                                     {
-                                        std::cout << "\n=== 药品库存分析 ===\n"
-                                                  << aiClient.getMedicines() << std::endl;
+                                        if (!aiAvailable) { std::cout << "AI 服务未启动，无法使用此功能。\n"; }
+                                        else { std::cout << aiClient.displayBedOptimization() << std::endl; }
                                     }
-                                    else if (aiChoice == 4)
+                                    else if (reportChoice == 9) // AI 综合仪表盘
                                     {
-                                        std::cout << "\n=== 床位分配优化 ===\n"
-                                                  << aiClient.getBedOptimization() << std::endl;
+                                        if (!aiAvailable) { std::cout << "AI 服务未启动，无法使用此功能。\n"; }
+                                        else { std::cout << aiClient.displayDashboard() << std::endl; }
                                     }
-                                    else if (aiChoice == 5)
+                                    else if (reportChoice == 10) // 生成分析图表
                                     {
-                                        std::cout << "\n=== 综合仪表盘 ===\n"
-                                                  << aiClient.getDashboard() << std::endl;
-                                    }
-                                    else if (aiChoice == 6)
-                                    {
-                                        std::cout << "\n生成分析图表 PNG 到 ai_service/charts/ ...\n";
-                                        std::string types[] = {"prediction", "bed", "anomaly", "medicine"};
-                                        for (const auto &t : types) {
-                                            std::string path = "../ai_service/charts/" + t + ".png";
-                                            std::string result = aiClient.downloadChart(t, path);
-                                            if (!result.empty())
-                                                std::cout << "  ✓ " << t << ".png → " << result << std::endl;
-                                            else
-                                                std::cout << "  ✗ " << t << ".png 生成失败" << std::endl;
-                                        }
-                                        std::cout << "\n请到 ai_service/charts/ 目录查看图表。" << std::endl;
-                                    }
-                                    else if (aiChoice == 7)
-                                    {
-                                        std::cout << "\n请输入问题（知识库问答）：";
-                                        std::string query;
-                                        std::getline(std::cin, query);
-                                        if (!query.empty())
+                                        if (!aiAvailable) { std::cout << "AI 服务未启动，无法使用此功能。\n"; }
+                                        else
                                         {
-                                            std::cout << "\n=== RAG 知识库问答 ===\n"
-                                                      << aiClient.ragChat(query) << std::endl;
+                                            std::cout << "\n正在生成分析图表...\n";
+                                            std::string types[] = {"prediction", "bed", "anomaly", "medicine"};
+                                            for (const auto &t : types) {
+                                                std::string path = "../ai_service/charts/" + t + ".png";
+                                                std::string result = aiClient.downloadChart(t, path);
+                                                if (!result.empty())
+                                                    std::cout << "  ✓ " << t << ".png → " << result << std::endl;
+                                                else
+                                                    std::cout << "  ✗ " << t << ".png 生成失败" << std::endl;
+                                            }
+                                            // 自动打开浏览器查看图表仪表盘
+                                            std::cout << "\n正在打开浏览器查看图表仪表盘...\n";
+#ifdef _WIN32
+                                            system("start http://127.0.0.1:5001/api/v2/charts/view");
+#else
+                                            system("xdg-open http://127.0.0.1:5001/api/v2/charts/view 2>/dev/null &");
+#endif
                                         }
                                     }
-                                    else if (aiChoice == 0) break;
-                                    else std::cout << "无效的选择!" << std::endl;
-                                    pause("管理员 > AI 智能分析");
+                                    else if (reportChoice == 11) // 知识库问答
+                                    {
+                                        if (!aiAvailable) { std::cout << "AI 服务未启动，无法使用此功能。\n"; }
+                                        else
+                                        {
+                                            std::cout << "\n请输入问题（知识库问答）：";
+                                            std::string query;
+                                            std::getline(std::cin, query);
+                                            if (!query.empty())
+                                                std::cout << aiClient.displayRagChat(query) << std::endl;
+                                        }
+                                    }
+                                    else if (reportChoice == 0) break;
+                                    pause("统计报表与智能分析");
                                 }
                             }
                             else if (adminChoice == 0) // 退出登录
@@ -354,6 +333,7 @@ int main()
                                 std::cout << "成功退出登录" << std::endl;
                                 break;
                             }
+                            pause("管理员");
                         }
                     }
                     pause();
@@ -387,6 +367,7 @@ int main()
                             {
                                 client->managePersonalInfo(); // 个人信息管理
                             }
+                            pause("医生");
                         }
                     }
                     pause();
@@ -424,6 +405,7 @@ int main()
                             {
                                 client->managePersonalInfo(); // 个人信息管理
                             }
+                            pause("护士");
                         }
                     }
                     pause();
@@ -458,6 +440,7 @@ int main()
                             {
                                 client->managePersonalInfo(); // 个人信息管理
                             }
+                            pause("药剂师");
                         }
                     }
                     pause("药剂师 > 退出登录");
@@ -503,6 +486,7 @@ int main()
                             {
                                 std::cout << "无效的选择! 请重新选择。" << std::endl;
                             }
+                            pause("患者");
                         }
                     }
                     pause();

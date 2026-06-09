@@ -4,9 +4,9 @@ import pickle
 from typing import List, Dict, Any
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.output_parsers import StrOutputParser
 from core.config import settings
 from core.llm_provider import get_llm
 
@@ -20,8 +20,8 @@ class RAGEngine:
         self.chunk_overlap = cfg.get("chunk_overlap", 64)
         self.top_k = cfg.get("top_k", 5)
         self.kb_dir = cfg.get("knowledge_base_dir", "./knowledge_base")
-        self.index_path = os.path.join(self.kb_dir, "faiss.index")
-        self.docs_path = os.path.join(self.kb_dir, "docs.pkl")
+        self.index_path = os.path.join(self.kb_dir, "index.faiss")
+        self.docs_path = os.path.join(self.kb_dir, "index.pkl")
 
         # 滑动窗口分块
         self.text_splitter = RecursiveCharacterTextSplitter(
@@ -31,8 +31,11 @@ class RAGEngine:
             is_separator_regex=False,
         )
 
-        # bge-small-zh-v1.5
+        # bge-small-zh-v1.5（优先使用本地路径）
         model_name = cfg.get("embedding_model", "BAAI/bge-small-zh-v1.5")
+        local_model = cfg.get("embedding_model_local", "")
+        if local_model and os.path.isdir(local_model):
+            model_name = local_model
         self.embeddings = HuggingFaceEmbeddings(
             model_name=model_name,
             model_kwargs={"device": "cpu"},
@@ -97,15 +100,16 @@ class RAGEngine:
             if not docs:
                 return {"answer": "未找到相关资料。", "sources": []}
 
-            # 构建 chain
+            # 构建 chain（LCEL 方式）
             prompt = ChatPromptTemplate.from_messages([
                 ("system", "你是医院运营管理专家，请结合给定资料回答用户问题。\n\n{context}"),
                 ("human", "{input}")
             ])
 
-            combine_docs_chain = create_stuff_documents_chain(get_llm(), prompt)
-            answer = combine_docs_chain.invoke({
-                "context": docs,
+            chain = prompt | get_llm() | StrOutputParser()
+            context_text = "\n\n".join([d.page_content for d in docs])
+            answer = chain.invoke({
+                "context": context_text,
                 "input": query
             })
 

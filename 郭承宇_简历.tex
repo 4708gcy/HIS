@@ -1,0 +1,156 @@
+
+%%%%%%%%%%%%%%%%%
+% 郭承宇 — 个人简历
+% 基于 MAltaCV 模板 (github.com/Manciukic/MAltaCV)
+% 编译方式: XeLaTeX → PDF
+% 需要: maltacv.cls (同目录), 微软雅黑字体 (Windows 自带)
+%%%%%%%%%%%%%%%%%
+
+\documentclass[10pt,a4paper,ragged2e]{maltacv}
+
+%% ===== 中文支持 =====
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setCJKmainfont{Microsoft YaHei}[BoldFont=Microsoft YaHei Bold, ItalicFont=Microsoft YaHei]
+\setCJKsansfont{Microsoft YaHei}[ItalicFont=Microsoft YaHei]
+\setCJKmonofont{Microsoft YaHei}[ItalicFont=Microsoft YaHei]
+
+%% 抑制 biblatex Biber 警告（简历未使用参考文献）
+\makeatletter
+\def\blx@bcf@error#1{}
+\makeatother
+
+%% 调整行距以适应中文
+\usepackage{multicol}
+\usepackage{setspace}
+\setstretch{1.15}
+
+%% 调整段落间距
+\setlength{\parskip}{0pt}
+
+%% 显式设置列表环境 (避免 setspace/enumitem 冲突)
+\setlist[itemize]{leftmargin=2em,labelsep=0.5em,nosep,itemsep=0pt}
+
+%% ===== 色彩方案 =====
+\setcolorscheme{raisinblack_flame}  %% 黑 + 火焰橙
+
+%% ===== 去除 biblatex (中文简历不需要) =====
+%% maltacv.cls 默认加载了 biblatex，但中文简历通常不需要
+%% 如果编译报 bibliography 相关错误，可忽略
+
+%% ===== 照片设置 =====
+%% 把照片放到同目录下命名为 photo.jpg，然后取消下一行注释
+%% \@normalphototrue  % 方形照片，默认圆形
+
+%% ===== 姓名 =====
+\name{郭承宇}
+\firstname{郭}
+\familyname{承宇}
+
+\begin{document}
+
+%% ===== 副标题 =====
+\tagline{后端开发工程师 · 暑期实习}
+
+%% ===== 个人信息栏 =====
+\personalinfo{%
+  \email{gcy\_4708@qq.com}
+  \phone{15047894708}
+  \github{4708gcy}
+  %% \linkedin 和 \location 已省略
+}
+
+%% ===== 个人概述 =====
+\bio{
+  软件工程专业大三学生。从 C 语言课程设计起步，独立将 HIS 医院管理系统
+  从 CSV 文件存储演进到 C++17 + MySQL 8.0 全栈架构，并搭建了基于
+  FastAPI + LangChain 的 AI 分析服务。享受将一个问题做深做透的过程——
+  调过中文编码、数据库迁移、DLL 依赖等工程细节，表结构在迭代中多次推翻重来，
+  不满足于功能跑通。习惯自主查阅资料边学边做，目前专注于后端开发与系统设计方向。
+}
+
+\makecvheader
+
+%% ============================================
+%% 技能
+%% ============================================
+\cvsection{专业技能}
+
+\begin{center}
+\begin{multicols}{4}
+\cvlistitem{C/C++17}{}
+\cvlistitem{Python}{}
+\cvlistitem{MySQL 8.0}{}
+\cvlistitem{Git \& CMake}{}
+\cvlistitem{FastAPI}{}
+\cvlistitem{LangChain}{}
+\cvlistitem{数据结构与算法}{}
+\cvlistitem{VS Code}{}
+\end{multicols}
+\end{center}
+
+%% ============================================
+%% 教育背景
+%% ============================================
+\cvsection{教育背景}
+
+\cvuniversity
+  {软件工程（本科）}
+  {吉林大学（985 / 双一流）}
+  {2023.08 -- 2028.06（预计）}
+  {长春}
+
+\begin{itemize}
+\item GPA：3.56 / 4.0 \quad | \quad 专业排名：40 / 350（前 11.4\%）
+\item 主修课程：数据库系统、操作系统、计算机网络、数据结构、面向对象程序设计、算法设计与分析
+\end{itemize}
+
+%% ============================================
+%% 项目经验
+%% ============================================
+\cvsection{项目经验}
+
+\cvexperience
+  {独立开发}
+  {HIS 医院信息系统}
+  {2026.04 -- 2026.06}
+  {课程设计项目}
+  {C++17, MySQL 8.0, FastAPI, LangChain, WinSock2}
+
+\begin{itemize}
+\item \textbf{数据库架构设计：}
+  独立设计 14 主表 + 7 子表的 MySQL 关系模型，包含完整的外键约束与 CHECK 约束；
+  编写 Python 迁移脚本完成 CSV 历史数据的清洗与导入，踩过数据丢失的坑并修复
+
+\item \textbf{内存-数据库双向同步：}
+  13 条双向链表作为运行时数据结构，退出时通过事务包装
+  \texttt{INSERT ... ON DUPLICATE KEY UPDATE} 与 MySQL 全量同步，
+  每条链表独立事务，异常自动回滚
+
+\item \textbf{架构重构与泛型抽象：}
+  将 Admin 模块从单文件拆分为 4 个职责子模块；
+  抽象 \texttt{EntityRepository<T>} 泛型模板统一 3 条链表的 O(1) ID 查找，
+  \texttt{displayChainByFilter<T>} 泛型筛选消除链表遍历重复代码
+
+\item \textbf{安全机制：}
+  SHA-256 加盐哈希（10,000 次迭代，兼容旧版 1,000 次）；
+  全参数化查询防 SQL 注入；复方药物成分级分词匹配，解决
+  "阿莫西林"误匹配"阿莫西林克拉维酸钾"的假阳性问题
+
+\item \textbf{AI 分析服务（Python）：}
+  基于 FastAPI + LangChain 搭建，提供 9 个 REST API 端点；
+  传统统计（Holt-Winters 预测、Z-score 异常检测）与 LLM 双策略路由；
+  RAG 知识库检索（sentence-transformers 嵌入 + FAISS 向量搜索）
+\end{itemize}
+
+%% ============================================
+%% 荣誉奖项
+%% ============================================
+\cvsection{荣誉奖项}
+
+\begin{multicols}{2}
+\cvlistitem{校级二等奖学金}{吉林大学}
+\cvlistitem{院优秀学生}{吉林大学}
+\end{multicols}
+
+\end{document}
