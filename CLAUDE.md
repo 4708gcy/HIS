@@ -199,9 +199,17 @@ VS Code config in `.vscode/`:
 - MSVC `/utf-8` flag is set in CMakeLists.txt for Chinese source and data files
 - MySQL 8.0 Server (running on `localhost:3307`, user `root`, password `123456`, database `his_db`)
 - MySQL C Client library: `E:/MySQL/8-0/include/` (headers) + `E:/MySQL/8-0/lib/` (`libmysql.lib`, `libmysql.dll`)
-- Python 3.8+ with `fastapi`, `uvicorn`, `pydantic`, `langchain`, `langchain-openai`, `langchain-community`, `langgraph`, `faiss-cpu`, `sentence-transformers`, `jieba`, `scikit-learn`, `pymysql`, `matplotlib`, `pandas`, `numpy`, `pyyaml`, `pdfplumber`, `python-docx` (for AI service)
+- Python 3.8+ with `fastapi`, `uvicorn`, `pydantic`, `langchain>=1.3.0`, `langchain-openai`, `langchain-community`, `langchain-huggingface`, `faiss-cpu`, `sentence-transformers`, `pymysql`, `matplotlib`, `pandas`, `numpy`, `pyyaml`, `pdfplumber`, `python-docx`, `python-multipart` (for AI service)
 
-## Recent Improvements (2026.5.30)
+## Recent Improvements (2026.6.9)
+
+### RAG Knowledge Base Fixes & AI Service Cleanup (2026.6.9)
+
+- **RAG index path fix**: `rag_engine.py` corrected persistent index filenames from `faiss.index`/`docs.pkl` to `index.faiss`/`index.pkl`, matching actual FAISS output so the index reloads after service restart.
+- **AIQueryClient output quality**: Added `unescapeJson()` to convert escaped `\n`, `\t`, `\"`, `\\` into real characters; rewrote line-wrapping to split on UTF-8 multi-byte boundaries (1–6 bytes) so CJK characters are no longer truncated mid-glyph.
+- **AI service dead-code removal**: Deleted ~120 lines of obsolete code — old TF-IDF/few-shot methods in `prompt_builder.py`, `extract_json()` from `predictor.py` (moved to `bed_optimizer.py`), unused `ChartRequest` schema, `DataLoadException`, `cache` config section, and stale deps (`jieba`, `scikit-learn`, `langgraph`).
+- **Dependency refresh**: Added `langchain-huggingface>=0.1.0`, upgraded `langchain>=1.3.0`, and added `test_get_prediction_summary_prompt`.
+- **Project housekeeping**: Removed `学习计划.md`; created MAltaCV-based resume (`郭承宇_简历.tex` + `.pdf`) and updated Markdown version; expanded `.gitignore` for LaTeX aux files, `ai_service/charts/*.png`, `ai_service/knowledge_base/`, and daily operation logs.
 
 ### AI Service v2.0 Refactor (2026.6.6)
 

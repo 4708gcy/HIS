@@ -1,4 +1,3 @@
-
 %%%%%%%%%%%%%%%%%
 % 郭承宇 — 个人简历
 % 基于 MAltaCV 模板 (github.com/Manciukic/MAltaCV)
@@ -23,24 +22,16 @@
 %% 调整行距以适应中文
 \usepackage{multicol}
 \usepackage{setspace}
-\setstretch{1.15}
+\setstretch{1.12}
 
-%% 调整段落间距
-\setlength{\parskip}{0pt}
+%% 消除分栏多余的垂直间距
+\setlength\multicolsep{0pt}
 
-%% 显式设置列表环境 (避免 setspace/enumitem 冲突)
-\setlist[itemize]{leftmargin=2em,labelsep=0.5em,nosep,itemsep=0pt}
+%% 调整列表左边距（覆盖模板默认值，适配中文）
+\setlist[itemize]{leftmargin=2em,labelsep=0.5em,nosep,itemsep=1pt,label=\itemmarker}
 
 %% ===== 色彩方案 =====
-\setcolorscheme{raisinblack_flame}  %% 黑 + 火焰橙
-
-%% ===== 去除 biblatex (中文简历不需要) =====
-%% maltacv.cls 默认加载了 biblatex，但中文简历通常不需要
-%% 如果编译报 bibliography 相关错误，可忽略
-
-%% ===== 照片设置 =====
-%% 把照片放到同目录下命名为 photo.jpg，然后取消下一行注释
-%% \@normalphototrue  % 方形照片，默认圆形
+\setcolorscheme{raisinblack_flame}
 
 %% ===== 姓名 =====
 \name{郭承宇}
@@ -57,11 +48,10 @@
   \email{gcy\_4708@qq.com}
   \phone{15047894708}
   \github{4708gcy}
-  %% \linkedin 和 \location 已省略
 }
 
 %% ===== 个人概述 =====
-\bio{
+\bio{%
   软件工程专业大三学生。从 C 语言课程设计起步，独立将 HIS 医院管理系统
   从 CSV 文件存储演进到 C++17 + MySQL 8.0 全栈架构，并搭建了基于
   FastAPI + LangChain 的 AI 分析服务。享受将一个问题做深做透的过程——
@@ -75,17 +65,18 @@
 %% 技能
 %% ============================================
 \cvsection{专业技能}
+\medskip
 
 \begin{center}
 \begin{multicols}{4}
-\cvlistitem{C/C++17}{}
-\cvlistitem{Python}{}
-\cvlistitem{MySQL 8.0}{}
-\cvlistitem{Git \& CMake}{}
-\cvlistitem{FastAPI}{}
-\cvlistitem{LangChain}{}
-\cvlistitem{数据结构与算法}{}
-\cvlistitem{VS Code}{}
+  \cvlistitem{C/C++17}{}
+  \cvlistitem{Python}{}
+  \cvlistitem{MySQL 8.0}{}
+  \cvlistitem{Git \& CMake}{}
+  \cvlistitem{FastAPI}{}
+  \cvlistitem{LangChain}{}
+  \cvlistitem{数据结构与算法}{}
+  \cvlistitem{VS Code}{}
 \end{multicols}
 \end{center}
 
@@ -93,6 +84,7 @@
 %% 教育背景
 %% ============================================
 \cvsection{教育背景}
+\medskip
 
 \cvuniversity
   {软件工程（本科）}
@@ -109,6 +101,7 @@
 %% 项目经验
 %% ============================================
 \cvsection{项目经验}
+\medskip
 
 \cvexperience
   {独立开发}
@@ -120,7 +113,7 @@
 \begin{itemize}
 \item \textbf{数据库架构设计：}
   独立设计 14 主表 + 7 子表的 MySQL 关系模型，包含完整的外键约束与 CHECK 约束；
-  编写 Python 迁移脚本完成 CSV 历史数据的清洗与导入，踩过数据丢失的坑并修复
+  编写 Python 迁移脚本完成 CSV 历史数据的清洗与导入
 
 \item \textbf{内存-数据库双向同步：}
   13 条双向链表作为运行时数据结构，退出时通过事务包装
@@ -147,10 +140,15 @@
 %% 荣誉奖项
 %% ============================================
 \cvsection{荣誉奖项}
+\medskip
 
 \begin{multicols}{2}
-\cvlistitem{校级二等奖学金}{吉林大学}
-\cvlistitem{院优秀学生}{吉林大学}
+  \cvlistitem{校级二等奖学金}{吉林大学}
+
+  \vfill\null
+  \columnbreak
+
+  \cvlistitem{院优秀学生}{吉林大学}
 \end{multicols}
 
 \end{document}

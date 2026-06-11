@@ -2,6 +2,92 @@
 
 ---
 
+## 2026.6.9 — RAG 修复、AI 服务死代码清理与项目周边整理
+
+### 1. RAG 知识库修复与验证
+
+**问题发现（通过 C++ 客户端菜单 11 测试）：**
+- 问答返回 "知识库为空，请先上传文档"
+- 上传后日志报错 `Could not import faiss python package`
+- 回答中 JSON `\n` 未转义为真实换行，且 UTF-8 中文字符在多字节边界被截断为乱码
+
+**修复内容：**
+
+| 文件 | 修复 |
+|---|---|
+| `ai_service/services/rag_engine.py` | 索引文件路径 `faiss.index`/`docs.pkl` → `index.faiss`/`index.pkl`，与服务实际落盘文件名一致，重启后能正确加载已有索引 |
+| `Source/Modules/AIQueryClient.cpp` | 新增 `unescapeJson()` 处理 `\n` `\t` `\"` `\\` 转义；`jsonGetStr()` 返回值经反转义 |
+| `Source/Modules/AIQueryClient.cpp` | 重写回答换行逻辑：按 UTF-8 多字节字符（1–6 字节）安全分块，不在 CJK 字符中间截断 |
+| `Head/Modules/AIQueryClient.h` | 同步声明 `unescapeJson()` |
+| 环境 | 安装 `faiss-cpu` |
+
+**验证结果：**
+- 成功上传 `HIS系统说明.txt` 到知识库
+- 提问 "HIS系统有几个角色" 返回正确结果："HIS 系统共有 5 种用户角色……"
+
+### 2. AI 服务死代码清理（约 120 行）
+
+| 文件 | 删除内容 | 原因 |
+|---|---|---|
+| `ai_service/services/prompt_builder.py` | `jieba`/`numpy`/`TfidfVectorizer` 导入、`_find_similar_cases()`、`_format_few_shot()`、`get_prediction_prompt()`、`get_rag_prompt()`、`self.top_k`/`self.vectorizer` | 旧版 LLM 预测逻辑已废弃 |
+| `ai_service/services/predictor.py` | `extract_json()` 函数及 `json`/`re`/`settings` 导入 | 迁移至唯一使用方 `bed_optimizer.py` |
+| `ai_service/schemas.py` | `ChartRequest` 类 | 图表路由使用路径参数，从未作为请求体 |
+| `ai_service/core/exceptions.py` | `DataLoadException` 类 | 全代码库无引用 |
+| `ai_service/config.yaml` | `cache` 配置节 | 全代码库无读取 |
+| `ai_service/requirements.txt` | `jieba`、`scikit-learn`、`langgraph` | 无任何代码引用 |
+| `ai_service/tests/test_services.py` | `test_get_prediction_prompt_structure`、`test_find_similar_cases_basic` | 测试已删除的方法 |
+
+**新增/修正：**
+- `bed_optimizer.py` 本地新增 `_extract_json()`（从 `predictor.py` 迁移）
+- `requirements.txt` 新增 `langchain-huggingface>=0.1.0`，`langchain` 升级到 `>=1.3.0`
+- `tests/test_services.py` 新增 `test_get_prediction_summary_prompt`
+
+### 3. 项目周边整理
+
+- **删除 `学习计划.md`**：内容已消化吸收
+- **简历双版本定稿**：
+  - 基于 MAltaCV 模板创建 `maltacv.cls` + `郭承宇_简历.tex`
+  - 同步更新 `郭承宇_简历.md`
+  - 生成 `郭承宇_简历.pdf`
+- **`.gitignore` 扩展**：
+  - LaTeX 编译临时文件（`*.aux`、`* .log`、`* .synctex.gz` 等）
+  - AI 服务生成文件（`ai_service/charts/*.png`、`ai_service/knowledge_base/`）
+  - 每日操作日志（`Data/OperationLog/*.log`）
+- **`.vscode/settings.json`**：LaTeX Workshop 配置优化，移除重复 key
+- **清理 LaTeX 编译产物**：删除 `.aux`、`.log`、`.synctex.gz` 等临时文件
+
+### 4. 涉及文件
+
+```text
+修改:
+  ai_service/services/rag_engine.py
+  ai_service/services/prompt_builder.py
+  ai_service/services/predictor.py
+  ai_service/services/bed_optimizer.py
+  ai_service/schemas.py
+  ai_service/core/exceptions.py
+  ai_service/config.yaml
+  ai_service/requirements.txt
+  ai_service/tests/test_services.py
+  Source/Modules/AIQueryClient.cpp
+  Head/Modules/AIQueryClient.h
+  .gitignore
+  .vscode/settings.json
+  郭承宇_简历.md
+删除:
+  学习计划.md
+  ai_service/knowledge_base/files/HIS系统说明.txt（重复原始文件）
+  LaTeX 编译临时文件（*.aux *.log *.synctex.gz 等）
+新增:
+  maltacv.cls
+  郭承宇_简历.tex
+  郭承宇_简历.pdf
+  ai_service/knowledge_base/index.faiss
+  ai_service/knowledge_base/index.pkl
+```
+
+---
+
 ## 2026.6.6 — AI 服务 v2.0 重构：Flask → FastAPI + LangChain + RAG
 
 ### 背景
