@@ -7,22 +7,32 @@
 
 \documentclass[10pt,a4paper,ragged2e]{maltacv}
 
-%% ===== 中文支持 =====
+%% ===== 字体设置（经典正式：宋体 + Times New Roman）=====
 \usepackage{fontspec}
 \usepackage{xeCJK}
-\setCJKmainfont{Microsoft YaHei}[BoldFont=Microsoft YaHei Bold, ItalicFont=Microsoft YaHei]
-\setCJKsansfont{Microsoft YaHei}[ItalicFont=Microsoft YaHei]
-\setCJKmonofont{Microsoft YaHei}[ItalicFont=Microsoft YaHei]
+
+% 中文正文：宋体（衬线，正式）；加粗用黑体（宋体无粗体字形）
+% 不设斜体（宋体无斜体，强设会变伪斜体歪扭）
+\setCJKmainfont{SimSun}[BoldFont=SimHei]
+% 显式声明：宋体斜体回退为正体（宋体无斜体字形，消除 Font Warning）
+\setCJKmainfont{SimSun}[BoldFont=SimHei,ItalicFont=SimSun]
+\setCJKsansfont{SimHei}
+\setCJKmonofont{FangSong}        % 中文代码注释用仿宋
+
+% 英文/数字：Times New Roman（与宋体搭配的经典组合，字形协调）
+\setmainfont{Times New Roman}
+\setsansfont{Times New Roman}
+% 代码：等宽字体 Consolas（保证 INSERT...ON DUPLICATE 等代码对齐）
+\setmonofont{Consolas}[Scale=0.85]
 
 %% 抑制 biblatex Biber 警告（简历未使用参考文献）
 \makeatletter
 \def\blx@bcf@error#1{}
 \makeatother
 
-%% 调整行距以适应中文
 \usepackage{multicol}
 \usepackage{setspace}
-\setstretch{1.12}
+\setstretch{1.06}
 
 %% 消除分栏多余的垂直间距
 \setlength\multicolsep{0pt}
@@ -35,13 +45,13 @@
 
 %% ===== 姓名 =====
 \name{郭承宇}
-\firstname{郭}
-\familyname{承宇}
+\firstname{郭承宇}
+\familyname{}
 
 \begin{document}
 
 %% ===== 副标题 =====
-\tagline{后端开发工程师 · 暑期实习}
+\tagline{后端开发工程师}
 
 %% ===== 个人信息栏 =====
 \personalinfo{%
@@ -50,14 +60,9 @@
   \github{4708gcy}
 }
 
-%% ===== 个人概述 =====
-\bio{%
-  软件工程专业大三学生。从 C 语言课程设计起步，独立将 HIS 医院管理系统
-  从 CSV 文件存储演进到 C++17 + MySQL 8.0 全栈架构，并搭建了基于
-  FastAPI + LangChain 的 AI 分析服务。享受将一个问题做深做透的过程——
-  调过中文编码、数据库迁移、DLL 依赖等工程细节，表结构在迭代中多次推翻重来，
-  不满足于功能跑通。习惯自主查阅资料边学边做，目前专注于后端开发与系统设计方向。
-}
+%% ===== 个人概述（留空：MAltaCV 的 \makecvheader 内部会读取 \@bio，
+%%      不赋值会报 Undefined control sequence。赋空值即可：既不显示文字，又不破坏模板）=====
+\bio{}
 
 \makecvheader
 
@@ -68,16 +73,15 @@
 \medskip
 
 \begin{center}
-\begin{multicols}{4}
-  \cvlistitem{C/C++17}{}
-  \cvlistitem{Python}{}
-  \cvlistitem{MySQL 8.0}{}
-  \cvlistitem{Git \& CMake}{}
-  \cvlistitem{FastAPI}{}
-  \cvlistitem{LangChain}{}
-  \cvlistitem{数据结构与算法}{}
-  \cvlistitem{VS Code}{}
-\end{multicols}
+  \begin{multicols}{4}
+    \cvlistitem{C/C++17}{}
+    \cvlistitem{Python}{}
+    \cvlistitem{MySQL}{}
+    \cvlistitem{FastAPI}{}
+    \cvlistitem{Elasticsearch}{}
+    \cvlistitem{Git \& CMake}{}
+    \cvlistitem{数据结构与算法}{}
+  \end{multicols}
 \end{center}
 
 %% ============================================
@@ -87,14 +91,14 @@
 \medskip
 
 \cvuniversity
-  {软件工程（本科）}
-  {吉林大学（985 / 双一流）}
-  {2023.08 -- 2028.06（预计）}
-  {长春}
+{软件工程（本科）}
+{吉林大学（985 / 双一流）}
+{2023.08 -- 2028.06（预计）}
+{长春}
 
 \begin{itemize}
-\item GPA：3.56 / 4.0 \quad | \quad 专业排名：40 / 350（前 11.4\%）
-\item 主修课程：数据库系统、操作系统、计算机网络、数据结构、面向对象程序设计、算法设计与分析
+  \item GPA：3.56 / 4.0 \quad | \quad 专业排名：40 / 350（前 11.4\%）
+  \item 主修：数据库系统、操作系统、计算机网络、数据结构、算法设计与分析
 \end{itemize}
 
 %% ============================================
@@ -104,36 +108,60 @@
 \medskip
 
 \cvexperience
-  {独立开发}
-  {HIS 医院信息系统}
-  {2026.04 -- 2026.06}
-  {课程设计项目}
-  {C++17, MySQL 8.0, FastAPI, LangChain, WinSock2}
+{独立开发}
+{HIS 医院信息系统}
+{2026.04 -- 2026.06}
+{课程设计项目}
+{C++17, MySQL 8.0, FastAPI, LangChain, WinSock2 \quad \href{https://github.com/4708gcy/HIS}{github.com/4708gcy/HIS}}
 
 \begin{itemize}
-\item \textbf{数据库架构设计：}
-  独立设计 14 主表 + 7 子表的 MySQL 关系模型，包含完整的外键约束与 CHECK 约束；
-  编写 Python 迁移脚本完成 CSV 历史数据的清洗与导入
+  \item \textbf{数据库架构设计：}
+        独立设计 13 主表 + 7 子表的 MySQL 关系模型，含外键约束与 CHECK 约束；
+        编写 Python 脚本完成 CSV 历史数据清洗与迁移
 
-\item \textbf{内存-数据库双向同步：}
-  13 条双向链表作为运行时数据结构，退出时通过事务包装
-  \texttt{INSERT ... ON DUPLICATE KEY UPDATE} 与 MySQL 全量同步，
-  每条链表独立事务，异常自动回滚
+  \item \textbf{内存-数据库双向同步：}
+        13 条双向链表作运行时数据结构，退出时每条链表独立事务包装
+        \texttt{INSERT ... ON DUPLICATE KEY UPDATE} 与 MySQL 全量同步，异常自动回滚
 
-\item \textbf{架构重构与泛型抽象：}
-  将 Admin 模块从单文件拆分为 4 个职责子模块；
-  抽象 \texttt{EntityRepository<T>} 泛型模板统一 3 条链表的 O(1) ID 查找，
-  \texttt{displayChainByFilter<T>} 泛型筛选消除链表遍历重复代码
+  \item \textbf{架构重构与泛型抽象：}
+        将 Admin 模块从单文件拆为 4 个职责子模块；
+        抽象 \texttt{EntityRepository<T>} 泛型模板统一 3 条链表 O(1) ID 查找，
+        \texttt{displayChainByFilter<T>} 消除遍历重复代码
 
-\item \textbf{安全机制：}
-  SHA-256 加盐哈希（10,000 次迭代，兼容旧版 1,000 次）；
-  全参数化查询防 SQL 注入；复方药物成分级分词匹配，解决
-  "阿莫西林"误匹配"阿莫西林克拉维酸钾"的假阳性问题
+  \item \textbf{安全机制：}
+        手写 SHA-256 加盐哈希（10,000 次迭代，兼容旧版 1,000 次）；
+        统一参数化封装 + 字符串转义防 SQL 注入；复方药物成分级分词匹配，
+        解决"阿莫西林"误匹配"阿莫西林克拉维酸钾"假阳性
 
-\item \textbf{AI 分析服务（Python）：}
-  基于 FastAPI + LangChain 搭建，提供 9 个 REST API 端点；
-  传统统计（Holt-Winters 预测、Z-score 异常检测）与 LLM 双策略路由；
-  RAG 知识库检索（sentence-transformers 嵌入 + FAISS 向量搜索）
+  \item \textbf{AI 分析服务（Python）：}
+        基于 FastAPI + LangChain 搭建 9 个 REST 端点；传统统计
+        （Holt-Winters 双指数预测、Z-score 异常检测）与 LLM 双策略路由；
+        RAG 知识库（BGE 嵌入 + FAISS 向量检索）
+\end{itemize}
+
+\medskip
+
+\cvexperience
+{AI 辅助开发}
+{PaperLens 论文与课件学习智能体}
+{2026.06}
+{个人项目}
+{LangChain, LangGraph, FastAPI, Elasticsearch, BGE-m3 \quad \href{https://github.com/4708gcy/PaperLens}{github.com/4708gcy/PaperLens}}
+
+\begin{itemize}
+  \item \textbf{AI 辅助开发实践：}
+        系统学习大模型工程并完成大量代码练习后，让 AI 读取已掌握的代码库生成工程方案，
+        再由 AI 编程实现。核心价值在驾驭 AI 做复杂工程——通过提供大量真实上下文
+        压缩模型自由发挥空间以减少幻觉、设技术边界、主导架构决策与产出验收
+
+  \item \textbf{双通路 + 三级素材降级：}
+        论文精读走 ES 多路召回 RAG（BM25 + BGE-m3 + RRF + Cross-Encoder 重排），
+        学习助手走全文通读；超长文档按上下文预算自适应——通读优先，超限降级检索 / 截断，
+        解决思考模型 98K 输入限制
+
+  \item \textbf{LangGraph 多分支 Agent：}
+        Send API 章节并行综述、多轮记忆注入历史窗口、思考模型分级（深度任务开 / 结构化关）。
+        自建 60 条评测集对比 4 策略，LLM-as-Judge 验证 RAG 提升答案质量 +68.4\%
 \end{itemize}
 
 %% ============================================
