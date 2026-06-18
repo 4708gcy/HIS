@@ -19,6 +19,11 @@ __pycache__/
 *.fdb_latexmk
 *.toc
 
+# 个人简历（含电话/邮箱等隐私，不上传）
+郭承宇_简历.tex
+郭承宇_简历.pdf
+郭承宇_简历.md
+
 # AI 服务生成文件
 ai_service/charts/*.png
 ai_service/knowledge_base/
