@@ -1,8 +1,0 @@
-defaultSettings:
-    indent: 4
-    sentenceTerminalComma: true
-    oneSentencePerLine: false
-    maxLineLength: 100
-    alignComments: true
-    removeTrailingWhitespace: false
-    onlyRemoveTrailingWhitespaceInComments: true

@@ -23,6 +23,8 @@ __pycache__/
 郭承宇_简历.tex
 郭承宇_简历.pdf
 郭承宇_简历.md
+maltacv.cls
+.latexindent.yaml
 
 # AI 服务生成文件
 ai_service/charts/*.png
